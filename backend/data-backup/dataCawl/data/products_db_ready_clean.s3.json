@@ -1,0 +1,5141 @@
+{
+  "metadata": {
+    "source": "local image folder",
+    "rules": {
+      "ignore_icon_images": "skip all images ending with index 0",
+      "map_pedal_models_to": "xe-dap-dien",
+      "map_motorbike_models_to": "xe-dien"
+    },
+    "total_products": 42,
+    "image_storage": {
+      "provider": "aws-s3",
+      "total_uploaded_images": 168
+    }
+  },
+  "products": [
+    {
+      "source_group": "xe-máy-dibao-sir-50cc",
+      "category": {
+        "name": "Xe điện",
+        "slug": "xe-dien",
+        "description": "Dòng xe điện đô thị với thiết kế gọn, vận hành êm và phù hợp di chuyển hằng ngày.",
+        "vehicle_type": "E_SCOOTER"
+      },
+      "product": {
+        "name": "KINETIC Sir 50CC",
+        "slug": "kinetic-sir-50cc",
+        "description": "KINETIC Sir 50CC la dong xe dien thiet ke cho di chuyen hang ngay, van hanh em va de tiep can. Xe dung pin LEAD_ACID, cong suat 800W, toc do toi da 50 km/h va tam hoat dong den 90 km.",
+        "price": 17900000,
+        "discount_price": null,
+        "stock_quantity": 48,
+        "rating": 0,
+        "review_count": 0,
+        "is_featured": true,
+        "is_active": true
+      },
+      "specification": {
+        "model_code": "SIR-50CC",
+        "brand": "KINETIC",
+        "vehicle_type": "E_SCOOTER",
+        "battery_type": "LEAD_ACID",
+        "battery_capacity_ah": 24,
+        "battery_voltage_v": 60,
+        "charging_time_hours": 7.0,
+        "max_speed_kmh": 50,
+        "max_range_km": 90,
+        "motor_power_watts": 800,
+        "peak_motor_power_watts": 1080,
+        "max_load_kg": 180,
+        "product_weight_kg": 92,
+        "wheel_size_inch": 10,
+        "brake_type": "DRUM",
+        "drive_type": "HUB_MOTOR",
+        "water_resistance_rating": "IPX5",
+        "frame_material": "Alloy Steel",
+        "suspension_type": "Front Telescopic",
+        "display_type": "LED Digital Display",
+        "smart_features": "Digital dashboard, anti-theft lock and USB charging port.",
+        "warranty_months": 24,
+        "dimensions_mm": "1850 x 700 x 1120"
+      },
+      "variants": [
+        {
+          "sku": "kinetic-sir-50cc-pearl-white",
+          "variant_name": "Pearl White",
+          "color_name": "Pearl White",
+          "color_hex": "#F5F5F4",
+          "battery_capacity_ah": 24,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": true,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-sir-50cc-matte-black",
+          "variant_name": "Matte Black",
+          "color_name": "Matte Black",
+          "color_hex": "#18181B",
+          "battery_capacity_ah": 24,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-sir-50cc-ocean-blue",
+          "variant_name": "Ocean Blue",
+          "color_name": "Ocean Blue",
+          "color_hex": "#2563EB",
+          "battery_capacity_ah": 24,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-sir-50cc-cherry-red",
+          "variant_name": "Cherry Red",
+          "color_name": "Cherry Red",
+          "color_hex": "#DC2626",
+          "battery_capacity_ah": 24,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        }
+      ],
+      "images": [
+        {
+          "variant_sku": "kinetic-sir-50cc-pearl-white",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-sir-50cc-pearl-white.jpg",
+          "alt_text": "KINETIC Sir 50CC - Pearl White",
+          "sort_order": 0,
+          "is_primary": true
+        },
+        {
+          "variant_sku": "kinetic-sir-50cc-matte-black",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-sir-50cc-matte-black.jpg",
+          "alt_text": "KINETIC Sir 50CC - Matte Black",
+          "sort_order": 1,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-sir-50cc-ocean-blue",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-sir-50cc-ocean-blue.jpg",
+          "alt_text": "KINETIC Sir 50CC - Ocean Blue",
+          "sort_order": 2,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-sir-50cc-cherry-red",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-sir-50cc-cherry-red.jpg",
+          "alt_text": "KINETIC Sir 50CC - Cherry Red",
+          "sort_order": 3,
+          "is_primary": false
+        }
+      ]
+    },
+    {
+      "source_group": "xe-máy-tay-ga-50cc-dibao-creer",
+      "category": {
+        "name": "Xe điện",
+        "slug": "xe-dien",
+        "description": "Dòng xe điện đô thị với thiết kế gọn, vận hành êm và phù hợp di chuyển hằng ngày.",
+        "vehicle_type": "E_SCOOTER"
+      },
+      "product": {
+        "name": "KINETIC Creer",
+        "slug": "kinetic-creer",
+        "description": "KINETIC Creer la dong xe dien thiet ke cho di chuyen hang ngay, van hanh em va de tiep can. Xe dung pin LEAD_ACID, cong suat 800W, toc do toi da 50 km/h va tam hoat dong den 80 km.",
+        "price": 19400000,
+        "discount_price": null,
+        "stock_quantity": 48,
+        "rating": 0,
+        "review_count": 0,
+        "is_featured": true,
+        "is_active": true
+      },
+      "specification": {
+        "model_code": "CREER",
+        "brand": "KINETIC",
+        "vehicle_type": "E_SCOOTER",
+        "battery_type": "LEAD_ACID",
+        "battery_capacity_ah": 30,
+        "battery_voltage_v": 60,
+        "charging_time_hours": 7.0,
+        "max_speed_kmh": 50,
+        "max_range_km": 80,
+        "motor_power_watts": 800,
+        "peak_motor_power_watts": 1080,
+        "max_load_kg": 180,
+        "product_weight_kg": 92,
+        "wheel_size_inch": 10,
+        "brake_type": "DISC",
+        "drive_type": "HUB_MOTOR",
+        "water_resistance_rating": "IPX5",
+        "frame_material": "Alloy Steel",
+        "suspension_type": "Front Telescopic",
+        "display_type": "LED Digital Display",
+        "smart_features": "Digital dashboard, anti-theft lock and USB charging port.",
+        "warranty_months": 24,
+        "dimensions_mm": "1850 x 700 x 1120"
+      },
+      "variants": [
+        {
+          "sku": "kinetic-creer-pearl-white",
+          "variant_name": "Pearl White",
+          "color_name": "Pearl White",
+          "color_hex": "#F5F5F4",
+          "battery_capacity_ah": 30,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": true,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-creer-matte-black",
+          "variant_name": "Matte Black",
+          "color_name": "Matte Black",
+          "color_hex": "#18181B",
+          "battery_capacity_ah": 30,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-creer-ocean-blue",
+          "variant_name": "Ocean Blue",
+          "color_name": "Ocean Blue",
+          "color_hex": "#2563EB",
+          "battery_capacity_ah": 30,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-creer-cherry-red",
+          "variant_name": "Cherry Red",
+          "color_name": "Cherry Red",
+          "color_hex": "#DC2626",
+          "battery_capacity_ah": 30,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        }
+      ],
+      "images": [
+        {
+          "variant_sku": "kinetic-creer-pearl-white",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-creer-pearl-white.jpg",
+          "alt_text": "KINETIC Creer - Pearl White",
+          "sort_order": 0,
+          "is_primary": true
+        },
+        {
+          "variant_sku": "kinetic-creer-matte-black",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-creer-matte-black.jpg",
+          "alt_text": "KINETIC Creer - Matte Black",
+          "sort_order": 1,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-creer-ocean-blue",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-creer-ocean-blue.jpg",
+          "alt_text": "KINETIC Creer - Ocean Blue",
+          "sort_order": 2,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-creer-cherry-red",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-creer-cherry-red.jpg",
+          "alt_text": "KINETIC Creer - Cherry Red",
+          "sort_order": 3,
+          "is_primary": false
+        }
+      ]
+    },
+    {
+      "source_group": "xe-máy-tay-ga-50cc-dibao-gofast",
+      "category": {
+        "name": "Xe điện",
+        "slug": "xe-dien",
+        "description": "Dòng xe điện đô thị với thiết kế gọn, vận hành êm và phù hợp di chuyển hằng ngày.",
+        "vehicle_type": "E_SCOOTER"
+      },
+      "product": {
+        "name": "KINETIC Gofast",
+        "slug": "kinetic-gofast",
+        "description": "KINETIC Gofast la dong xe dien thiet ke cho di chuyen hang ngay, van hanh em va de tiep can. Xe dung pin LEAD_ACID, cong suat 800W, toc do toi da 45 km/h va tam hoat dong den 90 km.",
+        "price": 17900000,
+        "discount_price": null,
+        "stock_quantity": 48,
+        "rating": 0,
+        "review_count": 0,
+        "is_featured": true,
+        "is_active": true
+      },
+      "specification": {
+        "model_code": "GOFAST",
+        "brand": "KINETIC",
+        "vehicle_type": "E_SCOOTER",
+        "battery_type": "LEAD_ACID",
+        "battery_capacity_ah": 28,
+        "battery_voltage_v": 60,
+        "charging_time_hours": 7.0,
+        "max_speed_kmh": 45,
+        "max_range_km": 90,
+        "motor_power_watts": 800,
+        "peak_motor_power_watts": 1080,
+        "max_load_kg": 180,
+        "product_weight_kg": 92,
+        "wheel_size_inch": 10,
+        "brake_type": "DRUM",
+        "drive_type": "HUB_MOTOR",
+        "water_resistance_rating": "IPX5",
+        "frame_material": "Alloy Steel",
+        "suspension_type": "Front Telescopic",
+        "display_type": "LED Digital Display",
+        "smart_features": "Digital dashboard, anti-theft lock and USB charging port.",
+        "warranty_months": 24,
+        "dimensions_mm": "1850 x 700 x 1120"
+      },
+      "variants": [
+        {
+          "sku": "kinetic-gofast-pearl-white",
+          "variant_name": "Pearl White",
+          "color_name": "Pearl White",
+          "color_hex": "#F5F5F4",
+          "battery_capacity_ah": 28,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": true,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-gofast-matte-black",
+          "variant_name": "Matte Black",
+          "color_name": "Matte Black",
+          "color_hex": "#18181B",
+          "battery_capacity_ah": 28,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-gofast-ocean-blue",
+          "variant_name": "Ocean Blue",
+          "color_name": "Ocean Blue",
+          "color_hex": "#2563EB",
+          "battery_capacity_ah": 28,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-gofast-cherry-red",
+          "variant_name": "Cherry Red",
+          "color_name": "Cherry Red",
+          "color_hex": "#DC2626",
+          "battery_capacity_ah": 28,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        }
+      ],
+      "images": [
+        {
+          "variant_sku": "kinetic-gofast-pearl-white",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-gofast-pearl-white.jpg",
+          "alt_text": "KINETIC Gofast - Pearl White",
+          "sort_order": 0,
+          "is_primary": true
+        },
+        {
+          "variant_sku": "kinetic-gofast-matte-black",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-gofast-matte-black.jpg",
+          "alt_text": "KINETIC Gofast - Matte Black",
+          "sort_order": 1,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-gofast-ocean-blue",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-gofast-ocean-blue.jpg",
+          "alt_text": "KINETIC Gofast - Ocean Blue",
+          "sort_order": 2,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-gofast-cherry-red",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-gofast-cherry-red.jpg",
+          "alt_text": "KINETIC Gofast - Cherry Red",
+          "sort_order": 3,
+          "is_primary": false
+        }
+      ]
+    },
+    {
+      "source_group": "xe-máy-tay-ga-50cc-dibao-pansy-xs1-bản-nâng-cấp",
+      "category": {
+        "name": "Xe điện",
+        "slug": "xe-dien",
+        "description": "Dòng xe điện đô thị với thiết kế gọn, vận hành êm và phù hợp di chuyển hằng ngày.",
+        "vehicle_type": "E_SCOOTER"
+      },
+      "product": {
+        "name": "KINETIC Pansy Xs1 Bản Nâng Cấp",
+        "slug": "kinetic-pansy-xs1-ban-nang-cap",
+        "description": "KINETIC Pansy Xs1 Bản Nâng Cấp la dong xe dien thiet ke cho di chuyen hang ngay, van hanh em va de tiep can. Xe dung pin LEAD_ACID, cong suat 1400W, toc do toi da 55 km/h va tam hoat dong den 110 km.",
+        "price": 20300000,
+        "discount_price": null,
+        "stock_quantity": 48,
+        "rating": 0,
+        "review_count": 0,
+        "is_featured": false,
+        "is_active": true
+      },
+      "specification": {
+        "model_code": "PANSY-XS1-BAN-NANG-CAP",
+        "brand": "KINETIC",
+        "vehicle_type": "E_SCOOTER",
+        "battery_type": "LEAD_ACID",
+        "battery_capacity_ah": 32,
+        "battery_voltage_v": 60,
+        "charging_time_hours": 7.0,
+        "max_speed_kmh": 55,
+        "max_range_km": 110,
+        "motor_power_watts": 1400,
+        "peak_motor_power_watts": 1890,
+        "max_load_kg": 180,
+        "product_weight_kg": 92,
+        "wheel_size_inch": 10,
+        "brake_type": "DRUM",
+        "drive_type": "HUB_MOTOR",
+        "water_resistance_rating": "IPX5",
+        "frame_material": "Alloy Steel",
+        "suspension_type": "Front Telescopic",
+        "display_type": "LED Digital Display",
+        "smart_features": "Digital dashboard, anti-theft lock and USB charging port.",
+        "warranty_months": 24,
+        "dimensions_mm": "1850 x 700 x 1120"
+      },
+      "variants": [
+        {
+          "sku": "kinetic-pansy-xs1-ban-nang-cap-pearl-white",
+          "variant_name": "Pearl White",
+          "color_name": "Pearl White",
+          "color_hex": "#F5F5F4",
+          "battery_capacity_ah": 32,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": true,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-pansy-xs1-ban-nang-cap-matte-black",
+          "variant_name": "Matte Black",
+          "color_name": "Matte Black",
+          "color_hex": "#18181B",
+          "battery_capacity_ah": 32,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-pansy-xs1-ban-nang-cap-ocean-blue",
+          "variant_name": "Ocean Blue",
+          "color_name": "Ocean Blue",
+          "color_hex": "#2563EB",
+          "battery_capacity_ah": 32,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-pansy-xs1-ban-nang-cap-cherry-red",
+          "variant_name": "Cherry Red",
+          "color_name": "Cherry Red",
+          "color_hex": "#DC2626",
+          "battery_capacity_ah": 32,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        }
+      ],
+      "images": [
+        {
+          "variant_sku": "kinetic-pansy-xs1-ban-nang-cap-pearl-white",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-pansy-xs1-ban-nang-cap-pearl-white.jpg",
+          "alt_text": "KINETIC Pansy Xs1 Bản Nâng Cấp - Pearl White",
+          "sort_order": 0,
+          "is_primary": true
+        },
+        {
+          "variant_sku": "kinetic-pansy-xs1-ban-nang-cap-matte-black",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-pansy-xs1-ban-nang-cap-matte-black.jpg",
+          "alt_text": "KINETIC Pansy Xs1 Bản Nâng Cấp - Matte Black",
+          "sort_order": 1,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-pansy-xs1-ban-nang-cap-ocean-blue",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-pansy-xs1-ban-nang-cap-ocean-blue.jpg",
+          "alt_text": "KINETIC Pansy Xs1 Bản Nâng Cấp - Ocean Blue",
+          "sort_order": 2,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-pansy-xs1-ban-nang-cap-cherry-red",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-pansy-xs1-ban-nang-cap-cherry-red.jpg",
+          "alt_text": "KINETIC Pansy Xs1 Bản Nâng Cấp - Cherry Red",
+          "sort_order": 3,
+          "is_primary": false
+        }
+      ]
+    },
+    {
+      "source_group": "xe-máy-tay-ga-dibao-pansy-xs",
+      "category": {
+        "name": "Xe điện",
+        "slug": "xe-dien",
+        "description": "Dòng xe điện đô thị với thiết kế gọn, vận hành êm và phù hợp di chuyển hằng ngày.",
+        "vehicle_type": "E_SCOOTER"
+      },
+      "product": {
+        "name": "KINETIC Pansy Xs",
+        "slug": "kinetic-pansy-xs",
+        "description": "KINETIC Pansy Xs la dong xe dien thiet ke cho di chuyen hang ngay, van hanh em va de tiep can. Xe dung pin LITHIUM_ION, cong suat 1400W, toc do toi da 50 km/h va tam hoat dong den 80 km.",
+        "price": 23300000,
+        "discount_price": null,
+        "stock_quantity": 48,
+        "rating": 0,
+        "review_count": 0,
+        "is_featured": false,
+        "is_active": true
+      },
+      "specification": {
+        "model_code": "PANSY-XS",
+        "brand": "KINETIC",
+        "vehicle_type": "E_SCOOTER",
+        "battery_type": "LITHIUM_ION",
+        "battery_capacity_ah": 30,
+        "battery_voltage_v": 60,
+        "charging_time_hours": 7.0,
+        "max_speed_kmh": 50,
+        "max_range_km": 80,
+        "motor_power_watts": 1400,
+        "peak_motor_power_watts": 1890,
+        "max_load_kg": 180,
+        "product_weight_kg": 92,
+        "wheel_size_inch": 10,
+        "brake_type": "DISC",
+        "drive_type": "HUB_MOTOR",
+        "water_resistance_rating": "IPX5",
+        "frame_material": "Alloy Steel",
+        "suspension_type": "Front Telescopic",
+        "display_type": "LED Digital Display",
+        "smart_features": "Digital dashboard, anti-theft lock and USB charging port.",
+        "warranty_months": 24,
+        "dimensions_mm": "1850 x 700 x 1120"
+      },
+      "variants": [
+        {
+          "sku": "kinetic-pansy-xs-pearl-white",
+          "variant_name": "Pearl White",
+          "color_name": "Pearl White",
+          "color_hex": "#F5F5F4",
+          "battery_capacity_ah": 30,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": true,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-pansy-xs-matte-black",
+          "variant_name": "Matte Black",
+          "color_name": "Matte Black",
+          "color_hex": "#18181B",
+          "battery_capacity_ah": 30,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-pansy-xs-ocean-blue",
+          "variant_name": "Ocean Blue",
+          "color_name": "Ocean Blue",
+          "color_hex": "#2563EB",
+          "battery_capacity_ah": 30,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-pansy-xs-cherry-red",
+          "variant_name": "Cherry Red",
+          "color_name": "Cherry Red",
+          "color_hex": "#DC2626",
+          "battery_capacity_ah": 30,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        }
+      ],
+      "images": [
+        {
+          "variant_sku": "kinetic-pansy-xs-pearl-white",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-pansy-xs-pearl-white.jpg",
+          "alt_text": "KINETIC Pansy Xs - Pearl White",
+          "sort_order": 0,
+          "is_primary": true
+        },
+        {
+          "variant_sku": "kinetic-pansy-xs-matte-black",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-pansy-xs-matte-black.jpg",
+          "alt_text": "KINETIC Pansy Xs - Matte Black",
+          "sort_order": 1,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-pansy-xs-ocean-blue",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-pansy-xs-ocean-blue.jpg",
+          "alt_text": "KINETIC Pansy Xs - Ocean Blue",
+          "sort_order": 2,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-pansy-xs-cherry-red",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-pansy-xs-cherry-red.jpg",
+          "alt_text": "KINETIC Pansy Xs - Cherry Red",
+          "sort_order": 3,
+          "is_primary": false
+        }
+      ]
+    },
+    {
+      "source_group": "xe-máy-tay-ga-dibao-pansy-xs1",
+      "category": {
+        "name": "Xe điện",
+        "slug": "xe-dien",
+        "description": "Dòng xe điện đô thị với thiết kế gọn, vận hành êm và phù hợp di chuyển hằng ngày.",
+        "vehicle_type": "E_SCOOTER"
+      },
+      "product": {
+        "name": "KINETIC Pansy Xs1",
+        "slug": "kinetic-pansy-xs1",
+        "description": "KINETIC Pansy Xs1 la dong xe dien thiet ke cho di chuyen hang ngay, van hanh em va de tiep can. Xe dung pin LITHIUM_ION, cong suat 1200W, toc do toi da 50 km/h va tam hoat dong den 80 km.",
+        "price": 22200000,
+        "discount_price": null,
+        "stock_quantity": 48,
+        "rating": 0,
+        "review_count": 0,
+        "is_featured": false,
+        "is_active": true
+      },
+      "specification": {
+        "model_code": "PANSY-XS1",
+        "brand": "KINETIC",
+        "vehicle_type": "E_SCOOTER",
+        "battery_type": "LITHIUM_ION",
+        "battery_capacity_ah": 30,
+        "battery_voltage_v": 60,
+        "charging_time_hours": 7.0,
+        "max_speed_kmh": 50,
+        "max_range_km": 80,
+        "motor_power_watts": 1200,
+        "peak_motor_power_watts": 1620,
+        "max_load_kg": 180,
+        "product_weight_kg": 92,
+        "wheel_size_inch": 10,
+        "brake_type": "DISC",
+        "drive_type": "HUB_MOTOR",
+        "water_resistance_rating": "IPX5",
+        "frame_material": "Alloy Steel",
+        "suspension_type": "Front Telescopic",
+        "display_type": "LED Digital Display",
+        "smart_features": "Digital dashboard, anti-theft lock and USB charging port.",
+        "warranty_months": 24,
+        "dimensions_mm": "1850 x 700 x 1120"
+      },
+      "variants": [
+        {
+          "sku": "kinetic-pansy-xs1-pearl-white",
+          "variant_name": "Pearl White",
+          "color_name": "Pearl White",
+          "color_hex": "#F5F5F4",
+          "battery_capacity_ah": 30,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": true,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-pansy-xs1-matte-black",
+          "variant_name": "Matte Black",
+          "color_name": "Matte Black",
+          "color_hex": "#18181B",
+          "battery_capacity_ah": 30,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-pansy-xs1-ocean-blue",
+          "variant_name": "Ocean Blue",
+          "color_name": "Ocean Blue",
+          "color_hex": "#2563EB",
+          "battery_capacity_ah": 30,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-pansy-xs1-cherry-red",
+          "variant_name": "Cherry Red",
+          "color_name": "Cherry Red",
+          "color_hex": "#DC2626",
+          "battery_capacity_ah": 30,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        }
+      ],
+      "images": [
+        {
+          "variant_sku": "kinetic-pansy-xs1-pearl-white",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-pansy-xs1-pearl-white.jpg",
+          "alt_text": "KINETIC Pansy Xs1 - Pearl White",
+          "sort_order": 0,
+          "is_primary": true
+        },
+        {
+          "variant_sku": "kinetic-pansy-xs1-matte-black",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-pansy-xs1-matte-black.jpg",
+          "alt_text": "KINETIC Pansy Xs1 - Matte Black",
+          "sort_order": 1,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-pansy-xs1-ocean-blue",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-pansy-xs1-ocean-blue.jpg",
+          "alt_text": "KINETIC Pansy Xs1 - Ocean Blue",
+          "sort_order": 2,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-pansy-xs1-cherry-red",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-pansy-xs1-cherry-red.jpg",
+          "alt_text": "KINETIC Pansy Xs1 - Cherry Red",
+          "sort_order": 3,
+          "is_primary": false
+        }
+      ]
+    },
+    {
+      "source_group": "xe-máy-điện-có-bàn-đạp-dibao-amy",
+      "category": {
+        "name": "Xe đạp điện",
+        "slug": "xe-dap-dien",
+        "description": "Dòng xe đạp điện trợ lực, có bàn đạp, linh hoạt cho học sinh sinh viên và di chuyển trong phố.",
+        "vehicle_type": "E_BIKE"
+      },
+      "product": {
+        "name": "KINETIC Amy",
+        "slug": "kinetic-amy",
+        "description": "KINETIC Amy la mau xe dap dien co ban dap, gon nhe va de dieu khien trong do thi. Xe su dung dong co 650W, van toc toi da 35 km/h va quang duong di duoc toi da 100 km cho moi lan sac.",
+        "price": 17700000,
+        "discount_price": null,
+        "stock_quantity": 48,
+        "rating": 0,
+        "review_count": 0,
+        "is_featured": false,
+        "is_active": true
+      },
+      "specification": {
+        "model_code": "AMY",
+        "brand": "KINETIC",
+        "vehicle_type": "E_BIKE",
+        "battery_type": "LITHIUM_ION",
+        "battery_capacity_ah": 24,
+        "battery_voltage_v": 48,
+        "charging_time_hours": 5.5,
+        "max_speed_kmh": 35,
+        "max_range_km": 100,
+        "motor_power_watts": 650,
+        "peak_motor_power_watts": 877,
+        "max_load_kg": 150,
+        "product_weight_kg": 68,
+        "wheel_size_inch": 14,
+        "brake_type": "DISC",
+        "drive_type": "CHAIN",
+        "water_resistance_rating": "IPX5",
+        "frame_material": "Alloy Steel",
+        "suspension_type": "Front Telescopic",
+        "display_type": "LED Digital Display",
+        "smart_features": "Digital dashboard, anti-theft lock and USB charging port.",
+        "warranty_months": 24,
+        "dimensions_mm": "1850 x 700 x 1120"
+      },
+      "variants": [
+        {
+          "sku": "kinetic-amy-pearl-white",
+          "variant_name": "Pearl White",
+          "color_name": "Pearl White",
+          "color_hex": "#F5F5F4",
+          "battery_capacity_ah": 24,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": true,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-amy-matte-black",
+          "variant_name": "Matte Black",
+          "color_name": "Matte Black",
+          "color_hex": "#18181B",
+          "battery_capacity_ah": 24,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-amy-ocean-blue",
+          "variant_name": "Ocean Blue",
+          "color_name": "Ocean Blue",
+          "color_hex": "#2563EB",
+          "battery_capacity_ah": 24,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-amy-cherry-red",
+          "variant_name": "Cherry Red",
+          "color_name": "Cherry Red",
+          "color_hex": "#DC2626",
+          "battery_capacity_ah": 24,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        }
+      ],
+      "images": [
+        {
+          "variant_sku": "kinetic-amy-pearl-white",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/dd-kinetic-amy-pearl-white.jpg",
+          "alt_text": "KINETIC Amy - Pearl White",
+          "sort_order": 0,
+          "is_primary": true
+        },
+        {
+          "variant_sku": "kinetic-amy-matte-black",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/dd-kinetic-amy-matte-black.jpg",
+          "alt_text": "KINETIC Amy - Matte Black",
+          "sort_order": 1,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-amy-ocean-blue",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/dd-kinetic-amy-ocean-blue.jpg",
+          "alt_text": "KINETIC Amy - Ocean Blue",
+          "sort_order": 2,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-amy-cherry-red",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/dd-kinetic-amy-cherry-red.jpg",
+          "alt_text": "KINETIC Amy - Cherry Red",
+          "sort_order": 3,
+          "is_primary": false
+        }
+      ]
+    },
+    {
+      "source_group": "xe-máy-điện-có-bàn-đạp-dibao-ella",
+      "category": {
+        "name": "Xe đạp điện",
+        "slug": "xe-dap-dien",
+        "description": "Dòng xe đạp điện trợ lực, có bàn đạp, linh hoạt cho học sinh sinh viên và di chuyển trong phố.",
+        "vehicle_type": "E_BIKE"
+      },
+      "product": {
+        "name": "KINETIC Ella",
+        "slug": "kinetic-ella",
+        "description": "KINETIC Ella la mau xe dap dien co ban dap, gon nhe va de dieu khien trong do thi. Xe su dung dong co 450W, van toc toi da 45 km/h va quang duong di duoc toi da 80 km cho moi lan sac.",
+        "price": 19500000,
+        "discount_price": null,
+        "stock_quantity": 48,
+        "rating": 0,
+        "review_count": 0,
+        "is_featured": false,
+        "is_active": true
+      },
+      "specification": {
+        "model_code": "ELLA",
+        "brand": "KINETIC",
+        "vehicle_type": "E_BIKE",
+        "battery_type": "LITHIUM_ION",
+        "battery_capacity_ah": 28,
+        "battery_voltage_v": 48,
+        "charging_time_hours": 5.5,
+        "max_speed_kmh": 45,
+        "max_range_km": 80,
+        "motor_power_watts": 450,
+        "peak_motor_power_watts": 607,
+        "max_load_kg": 150,
+        "product_weight_kg": 68,
+        "wheel_size_inch": 14,
+        "brake_type": "DISC",
+        "drive_type": "CHAIN",
+        "water_resistance_rating": "IPX5",
+        "frame_material": "Alloy Steel",
+        "suspension_type": "Front Telescopic",
+        "display_type": "LED Digital Display",
+        "smart_features": "Digital dashboard, anti-theft lock and USB charging port.",
+        "warranty_months": 24,
+        "dimensions_mm": "1850 x 700 x 1120"
+      },
+      "variants": [
+        {
+          "sku": "kinetic-ella-pearl-white",
+          "variant_name": "Pearl White",
+          "color_name": "Pearl White",
+          "color_hex": "#F5F5F4",
+          "battery_capacity_ah": 28,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": true,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-ella-matte-black",
+          "variant_name": "Matte Black",
+          "color_name": "Matte Black",
+          "color_hex": "#18181B",
+          "battery_capacity_ah": 28,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-ella-ocean-blue",
+          "variant_name": "Ocean Blue",
+          "color_name": "Ocean Blue",
+          "color_hex": "#2563EB",
+          "battery_capacity_ah": 28,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-ella-cherry-red",
+          "variant_name": "Cherry Red",
+          "color_name": "Cherry Red",
+          "color_hex": "#DC2626",
+          "battery_capacity_ah": 28,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        }
+      ],
+      "images": [
+        {
+          "variant_sku": "kinetic-ella-pearl-white",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/dd-kinetic-ella-pearl-white.jpg",
+          "alt_text": "KINETIC Ella - Pearl White",
+          "sort_order": 0,
+          "is_primary": true
+        },
+        {
+          "variant_sku": "kinetic-ella-matte-black",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/dd-kinetic-ella-matte-black.jpg",
+          "alt_text": "KINETIC Ella - Matte Black",
+          "sort_order": 1,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-ella-ocean-blue",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/dd-kinetic-ella-ocean-blue.jpg",
+          "alt_text": "KINETIC Ella - Ocean Blue",
+          "sort_order": 2,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-ella-cherry-red",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/dd-kinetic-ella-cherry-red.jpg",
+          "alt_text": "KINETIC Ella - Cherry Red",
+          "sort_order": 3,
+          "is_primary": false
+        }
+      ]
+    },
+    {
+      "source_group": "xe-máy-điện-có-bàn-đạp-dibao-queen",
+      "category": {
+        "name": "Xe đạp điện",
+        "slug": "xe-dap-dien",
+        "description": "Dòng xe đạp điện trợ lực, có bàn đạp, linh hoạt cho học sinh sinh viên và di chuyển trong phố.",
+        "vehicle_type": "E_BIKE"
+      },
+      "product": {
+        "name": "KINETIC Queen",
+        "slug": "kinetic-queen",
+        "description": "KINETIC Queen la mau xe dap dien co ban dap, gon nhe va de dieu khien trong do thi. Xe su dung dong co 650W, van toc toi da 45 km/h va quang duong di duoc toi da 100 km cho moi lan sac.",
+        "price": 16800000,
+        "discount_price": null,
+        "stock_quantity": 48,
+        "rating": 0,
+        "review_count": 0,
+        "is_featured": false,
+        "is_active": true
+      },
+      "specification": {
+        "model_code": "QUEEN",
+        "brand": "KINETIC",
+        "vehicle_type": "E_BIKE",
+        "battery_type": "LITHIUM_ION",
+        "battery_capacity_ah": 22,
+        "battery_voltage_v": 48,
+        "charging_time_hours": 5.5,
+        "max_speed_kmh": 45,
+        "max_range_km": 100,
+        "motor_power_watts": 650,
+        "peak_motor_power_watts": 877,
+        "max_load_kg": 150,
+        "product_weight_kg": 68,
+        "wheel_size_inch": 14,
+        "brake_type": "DISC",
+        "drive_type": "CHAIN",
+        "water_resistance_rating": "IPX5",
+        "frame_material": "Alloy Steel",
+        "suspension_type": "Front Telescopic",
+        "display_type": "LED Digital Display",
+        "smart_features": "Digital dashboard, anti-theft lock and USB charging port.",
+        "warranty_months": 24,
+        "dimensions_mm": "1850 x 700 x 1120"
+      },
+      "variants": [
+        {
+          "sku": "kinetic-queen-pearl-white",
+          "variant_name": "Pearl White",
+          "color_name": "Pearl White",
+          "color_hex": "#F5F5F4",
+          "battery_capacity_ah": 22,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": true,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-queen-matte-black",
+          "variant_name": "Matte Black",
+          "color_name": "Matte Black",
+          "color_hex": "#18181B",
+          "battery_capacity_ah": 22,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-queen-ocean-blue",
+          "variant_name": "Ocean Blue",
+          "color_name": "Ocean Blue",
+          "color_hex": "#2563EB",
+          "battery_capacity_ah": 22,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-queen-cherry-red",
+          "variant_name": "Cherry Red",
+          "color_name": "Cherry Red",
+          "color_hex": "#DC2626",
+          "battery_capacity_ah": 22,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        }
+      ],
+      "images": [
+        {
+          "variant_sku": "kinetic-queen-pearl-white",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/dd-kinetic-queen-pearl-white.jpg",
+          "alt_text": "KINETIC Queen - Pearl White",
+          "sort_order": 0,
+          "is_primary": true
+        },
+        {
+          "variant_sku": "kinetic-queen-matte-black",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/dd-kinetic-queen-matte-black.jpg",
+          "alt_text": "KINETIC Queen - Matte Black",
+          "sort_order": 1,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-queen-ocean-blue",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/dd-kinetic-queen-ocean-blue.jpg",
+          "alt_text": "KINETIC Queen - Ocean Blue",
+          "sort_order": 2,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-queen-cherry-red",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/dd-kinetic-queen-cherry-red.jpg",
+          "alt_text": "KINETIC Queen - Cherry Red",
+          "sort_order": 3,
+          "is_primary": false
+        }
+      ]
+    },
+    {
+      "source_group": "xe-máy-điện-có-bàn-đạp-dibao-ryan",
+      "category": {
+        "name": "Xe đạp điện",
+        "slug": "xe-dap-dien",
+        "description": "Dòng xe đạp điện trợ lực, có bàn đạp, linh hoạt cho học sinh sinh viên và di chuyển trong phố.",
+        "vehicle_type": "E_BIKE"
+      },
+      "product": {
+        "name": "KINETIC Ryan",
+        "slug": "kinetic-ryan",
+        "description": "KINETIC Ryan la mau xe dap dien co ban dap, gon nhe va de dieu khien trong do thi. Xe su dung dong co 650W, van toc toi da 45 km/h va quang duong di duoc toi da 100 km cho moi lan sac.",
+        "price": 17700000,
+        "discount_price": null,
+        "stock_quantity": 48,
+        "rating": 0,
+        "review_count": 0,
+        "is_featured": false,
+        "is_active": true
+      },
+      "specification": {
+        "model_code": "RYAN",
+        "brand": "KINETIC",
+        "vehicle_type": "E_BIKE",
+        "battery_type": "LITHIUM_ION",
+        "battery_capacity_ah": 24,
+        "battery_voltage_v": 48,
+        "charging_time_hours": 5.5,
+        "max_speed_kmh": 45,
+        "max_range_km": 100,
+        "motor_power_watts": 650,
+        "peak_motor_power_watts": 877,
+        "max_load_kg": 150,
+        "product_weight_kg": 68,
+        "wheel_size_inch": 14,
+        "brake_type": "DISC",
+        "drive_type": "CHAIN",
+        "water_resistance_rating": "IPX5",
+        "frame_material": "Alloy Steel",
+        "suspension_type": "Front Telescopic",
+        "display_type": "LED Digital Display",
+        "smart_features": "Digital dashboard, anti-theft lock and USB charging port.",
+        "warranty_months": 24,
+        "dimensions_mm": "1850 x 700 x 1120"
+      },
+      "variants": [
+        {
+          "sku": "kinetic-ryan-pearl-white",
+          "variant_name": "Pearl White",
+          "color_name": "Pearl White",
+          "color_hex": "#F5F5F4",
+          "battery_capacity_ah": 24,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": true,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-ryan-matte-black",
+          "variant_name": "Matte Black",
+          "color_name": "Matte Black",
+          "color_hex": "#18181B",
+          "battery_capacity_ah": 24,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-ryan-ocean-blue",
+          "variant_name": "Ocean Blue",
+          "color_name": "Ocean Blue",
+          "color_hex": "#2563EB",
+          "battery_capacity_ah": 24,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-ryan-cherry-red",
+          "variant_name": "Cherry Red",
+          "color_name": "Cherry Red",
+          "color_hex": "#DC2626",
+          "battery_capacity_ah": 24,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        }
+      ],
+      "images": [
+        {
+          "variant_sku": "kinetic-ryan-pearl-white",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/dd-kinetic-ryan-pearl-white.jpg",
+          "alt_text": "KINETIC Ryan - Pearl White",
+          "sort_order": 0,
+          "is_primary": true
+        },
+        {
+          "variant_sku": "kinetic-ryan-matte-black",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/dd-kinetic-ryan-matte-black.jpg",
+          "alt_text": "KINETIC Ryan - Matte Black",
+          "sort_order": 1,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-ryan-ocean-blue",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/dd-kinetic-ryan-ocean-blue.jpg",
+          "alt_text": "KINETIC Ryan - Ocean Blue",
+          "sort_order": 2,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-ryan-cherry-red",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/dd-kinetic-ryan-cherry-red.jpg",
+          "alt_text": "KINETIC Ryan - Cherry Red",
+          "sort_order": 3,
+          "is_primary": false
+        }
+      ]
+    },
+    {
+      "source_group": "xe-máy-điện-có-bàn-đạp-dibao-s-one",
+      "category": {
+        "name": "Xe đạp điện",
+        "slug": "xe-dap-dien",
+        "description": "Dòng xe đạp điện trợ lực, có bàn đạp, linh hoạt cho học sinh sinh viên và di chuyển trong phố.",
+        "vehicle_type": "E_BIKE"
+      },
+      "product": {
+        "name": "KINETIC S One",
+        "slug": "kinetic-s-one",
+        "description": "KINETIC S One la mau xe dap dien co ban dap, gon nhe va de dieu khien trong do thi. Xe su dung dong co 650W, van toc toi da 35 km/h va quang duong di duoc toi da 100 km cho moi lan sac.",
+        "price": 15900000,
+        "discount_price": null,
+        "stock_quantity": 48,
+        "rating": 0,
+        "review_count": 0,
+        "is_featured": true,
+        "is_active": true
+      },
+      "specification": {
+        "model_code": "S-ONE",
+        "brand": "KINETIC",
+        "vehicle_type": "E_BIKE",
+        "battery_type": "LITHIUM_ION",
+        "battery_capacity_ah": 20,
+        "battery_voltage_v": 48,
+        "charging_time_hours": 5.5,
+        "max_speed_kmh": 35,
+        "max_range_km": 100,
+        "motor_power_watts": 650,
+        "peak_motor_power_watts": 877,
+        "max_load_kg": 150,
+        "product_weight_kg": 68,
+        "wheel_size_inch": 14,
+        "brake_type": "DISC",
+        "drive_type": "CHAIN",
+        "water_resistance_rating": "IPX5",
+        "frame_material": "Alloy Steel",
+        "suspension_type": "Front Telescopic",
+        "display_type": "LED Digital Display",
+        "smart_features": "Digital dashboard, anti-theft lock and USB charging port.",
+        "warranty_months": 24,
+        "dimensions_mm": "1850 x 700 x 1120"
+      },
+      "variants": [
+        {
+          "sku": "kinetic-s-one-pearl-white",
+          "variant_name": "Pearl White",
+          "color_name": "Pearl White",
+          "color_hex": "#F5F5F4",
+          "battery_capacity_ah": 20,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": true,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-s-one-matte-black",
+          "variant_name": "Matte Black",
+          "color_name": "Matte Black",
+          "color_hex": "#18181B",
+          "battery_capacity_ah": 20,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-s-one-ocean-blue",
+          "variant_name": "Ocean Blue",
+          "color_name": "Ocean Blue",
+          "color_hex": "#2563EB",
+          "battery_capacity_ah": 20,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-s-one-cherry-red",
+          "variant_name": "Cherry Red",
+          "color_name": "Cherry Red",
+          "color_hex": "#DC2626",
+          "battery_capacity_ah": 20,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        }
+      ],
+      "images": [
+        {
+          "variant_sku": "kinetic-s-one-pearl-white",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/dd-kinetic-s-one-pearl-white.jpg",
+          "alt_text": "KINETIC S One - Pearl White",
+          "sort_order": 0,
+          "is_primary": true
+        },
+        {
+          "variant_sku": "kinetic-s-one-matte-black",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/dd-kinetic-s-one-matte-black.jpg",
+          "alt_text": "KINETIC S One - Matte Black",
+          "sort_order": 1,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-s-one-ocean-blue",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/dd-kinetic-s-one-ocean-blue.jpg",
+          "alt_text": "KINETIC S One - Ocean Blue",
+          "sort_order": 2,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-s-one-cherry-red",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/dd-kinetic-s-one-cherry-red.jpg",
+          "alt_text": "KINETIC S One - Cherry Red",
+          "sort_order": 3,
+          "is_primary": false
+        }
+      ]
+    },
+    {
+      "source_group": "xe-máy-điện-dibao-creer-e",
+      "category": {
+        "name": "Xe điện",
+        "slug": "xe-dien",
+        "description": "Dòng xe điện đô thị với thiết kế gọn, vận hành êm và phù hợp di chuyển hằng ngày.",
+        "vehicle_type": "E_SCOOTER"
+      },
+      "product": {
+        "name": "KINETIC Creer E",
+        "slug": "kinetic-creer-e",
+        "description": "KINETIC Creer E la dong xe dien thiet ke cho di chuyen hang ngay, van hanh em va de tiep can. Xe dung pin LITHIUM_ION, cong suat 800W, toc do toi da 45 km/h va tam hoat dong den 90 km.",
+        "price": 21500000,
+        "discount_price": null,
+        "stock_quantity": 48,
+        "rating": 0,
+        "review_count": 0,
+        "is_featured": true,
+        "is_active": true
+      },
+      "specification": {
+        "model_code": "CREER-E",
+        "brand": "KINETIC",
+        "vehicle_type": "E_SCOOTER",
+        "battery_type": "LITHIUM_ION",
+        "battery_capacity_ah": 28,
+        "battery_voltage_v": 60,
+        "charging_time_hours": 7.0,
+        "max_speed_kmh": 45,
+        "max_range_km": 90,
+        "motor_power_watts": 800,
+        "peak_motor_power_watts": 1080,
+        "max_load_kg": 180,
+        "product_weight_kg": 92,
+        "wheel_size_inch": 10,
+        "brake_type": "DRUM",
+        "drive_type": "HUB_MOTOR",
+        "water_resistance_rating": "IPX5",
+        "frame_material": "Alloy Steel",
+        "suspension_type": "Front Telescopic",
+        "display_type": "LED Digital Display",
+        "smart_features": "Digital dashboard, anti-theft lock and USB charging port.",
+        "warranty_months": 24,
+        "dimensions_mm": "1850 x 700 x 1120"
+      },
+      "variants": [
+        {
+          "sku": "kinetic-creer-e-pearl-white",
+          "variant_name": "Pearl White",
+          "color_name": "Pearl White",
+          "color_hex": "#F5F5F4",
+          "battery_capacity_ah": 28,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": true,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-creer-e-matte-black",
+          "variant_name": "Matte Black",
+          "color_name": "Matte Black",
+          "color_hex": "#18181B",
+          "battery_capacity_ah": 28,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-creer-e-ocean-blue",
+          "variant_name": "Ocean Blue",
+          "color_name": "Ocean Blue",
+          "color_hex": "#2563EB",
+          "battery_capacity_ah": 28,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-creer-e-cherry-red",
+          "variant_name": "Cherry Red",
+          "color_name": "Cherry Red",
+          "color_hex": "#DC2626",
+          "battery_capacity_ah": 28,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        }
+      ],
+      "images": [
+        {
+          "variant_sku": "kinetic-creer-e-pearl-white",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-creer-e-pearl-white.jpg",
+          "alt_text": "KINETIC Creer E - Pearl White",
+          "sort_order": 0,
+          "is_primary": true
+        },
+        {
+          "variant_sku": "kinetic-creer-e-matte-black",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-creer-e-matte-black.jpg",
+          "alt_text": "KINETIC Creer E - Matte Black",
+          "sort_order": 1,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-creer-e-ocean-blue",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-creer-e-ocean-blue.jpg",
+          "alt_text": "KINETIC Creer E - Ocean Blue",
+          "sort_order": 2,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-creer-e-cherry-red",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-creer-e-cherry-red.jpg",
+          "alt_text": "KINETIC Creer E - Cherry Red",
+          "sort_order": 3,
+          "is_primary": false
+        }
+      ]
+    },
+    {
+      "source_group": "xe-máy-điện-dibao-creer-nile",
+      "category": {
+        "name": "Xe điện",
+        "slug": "xe-dien",
+        "description": "Dòng xe điện đô thị với thiết kế gọn, vận hành êm và phù hợp di chuyển hằng ngày.",
+        "vehicle_type": "E_SCOOTER"
+      },
+      "product": {
+        "name": "KINETIC Creer Nile",
+        "slug": "kinetic-creer-nile",
+        "description": "KINETIC Creer Nile la dong xe dien thiet ke cho di chuyen hang ngay, van hanh em va de tiep can. Xe dung pin LITHIUM_ION, cong suat 1200W, toc do toi da 45 km/h va tam hoat dong den 80 km.",
+        "price": 27000000,
+        "discount_price": null,
+        "stock_quantity": 48,
+        "rating": 0,
+        "review_count": 0,
+        "is_featured": false,
+        "is_active": true
+      },
+      "specification": {
+        "model_code": "CREER-NILE",
+        "brand": "KINETIC",
+        "vehicle_type": "E_SCOOTER",
+        "battery_type": "LITHIUM_ION",
+        "battery_capacity_ah": 22,
+        "battery_voltage_v": 60,
+        "charging_time_hours": 7.0,
+        "max_speed_kmh": 45,
+        "max_range_km": 80,
+        "motor_power_watts": 1200,
+        "peak_motor_power_watts": 1620,
+        "max_load_kg": 180,
+        "product_weight_kg": 92,
+        "wheel_size_inch": 10,
+        "brake_type": "DISC",
+        "drive_type": "HUB_MOTOR",
+        "water_resistance_rating": "IPX5",
+        "frame_material": "Alloy Steel",
+        "suspension_type": "Front Telescopic",
+        "display_type": "LED Digital Display",
+        "smart_features": "Digital dashboard, anti-theft lock and USB charging port.",
+        "warranty_months": 24,
+        "dimensions_mm": "1850 x 700 x 1120"
+      },
+      "variants": [
+        {
+          "sku": "kinetic-creer-nile-pearl-white",
+          "variant_name": "Pearl White",
+          "color_name": "Pearl White",
+          "color_hex": "#F5F5F4",
+          "battery_capacity_ah": 22,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": true,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-creer-nile-matte-black",
+          "variant_name": "Matte Black",
+          "color_name": "Matte Black",
+          "color_hex": "#18181B",
+          "battery_capacity_ah": 22,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-creer-nile-ocean-blue",
+          "variant_name": "Ocean Blue",
+          "color_name": "Ocean Blue",
+          "color_hex": "#2563EB",
+          "battery_capacity_ah": 22,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-creer-nile-cherry-red",
+          "variant_name": "Cherry Red",
+          "color_name": "Cherry Red",
+          "color_hex": "#DC2626",
+          "battery_capacity_ah": 22,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        }
+      ],
+      "images": [
+        {
+          "variant_sku": "kinetic-creer-nile-pearl-white",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-creer-nile-pearl-white.jpg",
+          "alt_text": "KINETIC Creer Nile - Pearl White",
+          "sort_order": 0,
+          "is_primary": true
+        },
+        {
+          "variant_sku": "kinetic-creer-nile-matte-black",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-creer-nile-matte-black.jpg",
+          "alt_text": "KINETIC Creer Nile - Matte Black",
+          "sort_order": 1,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-creer-nile-ocean-blue",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-creer-nile-ocean-blue.jpg",
+          "alt_text": "KINETIC Creer Nile - Ocean Blue",
+          "sort_order": 2,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-creer-nile-cherry-red",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-creer-nile-cherry-red.jpg",
+          "alt_text": "KINETIC Creer Nile - Cherry Red",
+          "sort_order": 3,
+          "is_primary": false
+        }
+      ]
+    },
+    {
+      "source_group": "xe-máy-điện-dibao-gogo-cross",
+      "category": {
+        "name": "Xe điện",
+        "slug": "xe-dien",
+        "description": "Dòng xe điện đô thị với thiết kế gọn, vận hành êm và phù hợp di chuyển hằng ngày.",
+        "vehicle_type": "E_SCOOTER"
+      },
+      "product": {
+        "name": "KINETIC Gogo Cross",
+        "slug": "kinetic-gogo-cross",
+        "description": "KINETIC Gogo Cross la dong xe dien thiet ke cho di chuyen hang ngay, van hanh em va de tiep can. Xe dung pin LITHIUM_ION, cong suat 1600W, toc do toi da 45 km/h va tam hoat dong den 100 km.",
+        "price": 23700000,
+        "discount_price": null,
+        "stock_quantity": 48,
+        "rating": 0,
+        "review_count": 0,
+        "is_featured": false,
+        "is_active": true
+      },
+      "specification": {
+        "model_code": "GOGO-CROSS",
+        "brand": "KINETIC",
+        "vehicle_type": "E_SCOOTER",
+        "battery_type": "LITHIUM_ION",
+        "battery_capacity_ah": 22,
+        "battery_voltage_v": 60,
+        "charging_time_hours": 7.0,
+        "max_speed_kmh": 45,
+        "max_range_km": 100,
+        "motor_power_watts": 1600,
+        "peak_motor_power_watts": 2160,
+        "max_load_kg": 180,
+        "product_weight_kg": 92,
+        "wheel_size_inch": 10,
+        "brake_type": "DISC",
+        "drive_type": "HUB_MOTOR",
+        "water_resistance_rating": "IPX5",
+        "frame_material": "Alloy Steel",
+        "suspension_type": "Front Telescopic",
+        "display_type": "LED Digital Display",
+        "smart_features": "Digital dashboard, anti-theft lock and USB charging port.",
+        "warranty_months": 24,
+        "dimensions_mm": "1850 x 700 x 1120"
+      },
+      "variants": [
+        {
+          "sku": "kinetic-gogo-cross-pearl-white",
+          "variant_name": "Pearl White",
+          "color_name": "Pearl White",
+          "color_hex": "#F5F5F4",
+          "battery_capacity_ah": 22,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": true,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-gogo-cross-matte-black",
+          "variant_name": "Matte Black",
+          "color_name": "Matte Black",
+          "color_hex": "#18181B",
+          "battery_capacity_ah": 22,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-gogo-cross-ocean-blue",
+          "variant_name": "Ocean Blue",
+          "color_name": "Ocean Blue",
+          "color_hex": "#2563EB",
+          "battery_capacity_ah": 22,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-gogo-cross-cherry-red",
+          "variant_name": "Cherry Red",
+          "color_name": "Cherry Red",
+          "color_hex": "#DC2626",
+          "battery_capacity_ah": 22,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        }
+      ],
+      "images": [
+        {
+          "variant_sku": "kinetic-gogo-cross-pearl-white",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-gogo-cross-pearl-white.jpg",
+          "alt_text": "KINETIC Gogo Cross - Pearl White",
+          "sort_order": 0,
+          "is_primary": true
+        },
+        {
+          "variant_sku": "kinetic-gogo-cross-matte-black",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-gogo-cross-matte-black.jpg",
+          "alt_text": "KINETIC Gogo Cross - Matte Black",
+          "sort_order": 1,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-gogo-cross-ocean-blue",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-gogo-cross-ocean-blue.jpg",
+          "alt_text": "KINETIC Gogo Cross - Ocean Blue",
+          "sort_order": 2,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-gogo-cross-cherry-red",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-gogo-cross-cherry-red.jpg",
+          "alt_text": "KINETIC Gogo Cross - Cherry Red",
+          "sort_order": 3,
+          "is_primary": false
+        }
+      ]
+    },
+    {
+      "source_group": "xe-máy-điện-dibao-gogo-cross-g",
+      "category": {
+        "name": "Xe điện",
+        "slug": "xe-dien",
+        "description": "Dòng xe điện đô thị với thiết kế gọn, vận hành êm và phù hợp di chuyển hằng ngày.",
+        "vehicle_type": "E_SCOOTER"
+      },
+      "product": {
+        "name": "KINETIC Gogo Cross G",
+        "slug": "kinetic-gogo-cross-g",
+        "description": "KINETIC Gogo Cross G la dong xe dien thiet ke cho di chuyen hang ngay, van hanh em va de tiep can. Xe dung pin LITHIUM_ION, cong suat 1600W, toc do toi da 55 km/h va tam hoat dong den 100 km.",
+        "price": 22600000,
+        "discount_price": null,
+        "stock_quantity": 48,
+        "rating": 0,
+        "review_count": 0,
+        "is_featured": false,
+        "is_active": true
+      },
+      "specification": {
+        "model_code": "GOGO-CROSS-G",
+        "brand": "KINETIC",
+        "vehicle_type": "E_SCOOTER",
+        "battery_type": "LITHIUM_ION",
+        "battery_capacity_ah": 26,
+        "battery_voltage_v": 60,
+        "charging_time_hours": 7.0,
+        "max_speed_kmh": 55,
+        "max_range_km": 100,
+        "motor_power_watts": 1600,
+        "peak_motor_power_watts": 2160,
+        "max_load_kg": 180,
+        "product_weight_kg": 92,
+        "wheel_size_inch": 10,
+        "brake_type": "DISC",
+        "drive_type": "HUB_MOTOR",
+        "water_resistance_rating": "IPX5",
+        "frame_material": "Alloy Steel",
+        "suspension_type": "Front Telescopic",
+        "display_type": "LED Digital Display",
+        "smart_features": "Digital dashboard, anti-theft lock and USB charging port.",
+        "warranty_months": 24,
+        "dimensions_mm": "1850 x 700 x 1120"
+      },
+      "variants": [
+        {
+          "sku": "kinetic-gogo-cross-g-pearl-white",
+          "variant_name": "Pearl White",
+          "color_name": "Pearl White",
+          "color_hex": "#F5F5F4",
+          "battery_capacity_ah": 26,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": true,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-gogo-cross-g-matte-black",
+          "variant_name": "Matte Black",
+          "color_name": "Matte Black",
+          "color_hex": "#18181B",
+          "battery_capacity_ah": 26,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-gogo-cross-g-ocean-blue",
+          "variant_name": "Ocean Blue",
+          "color_name": "Ocean Blue",
+          "color_hex": "#2563EB",
+          "battery_capacity_ah": 26,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-gogo-cross-g-cherry-red",
+          "variant_name": "Cherry Red",
+          "color_name": "Cherry Red",
+          "color_hex": "#DC2626",
+          "battery_capacity_ah": 26,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        }
+      ],
+      "images": [
+        {
+          "variant_sku": "kinetic-gogo-cross-g-pearl-white",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-gogo-cross-g-pearl-white.jpg",
+          "alt_text": "KINETIC Gogo Cross G - Pearl White",
+          "sort_order": 0,
+          "is_primary": true
+        },
+        {
+          "variant_sku": "kinetic-gogo-cross-g-matte-black",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-gogo-cross-g-matte-black.jpg",
+          "alt_text": "KINETIC Gogo Cross G - Matte Black",
+          "sort_order": 1,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-gogo-cross-g-ocean-blue",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-gogo-cross-g-ocean-blue.jpg",
+          "alt_text": "KINETIC Gogo Cross G - Ocean Blue",
+          "sort_order": 2,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-gogo-cross-g-cherry-red",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-gogo-cross-g-cherry-red.jpg",
+          "alt_text": "KINETIC Gogo Cross G - Cherry Red",
+          "sort_order": 3,
+          "is_primary": false
+        }
+      ]
+    },
+    {
+      "source_group": "xe-máy-điện-dibao-gogo-crown",
+      "category": {
+        "name": "Xe điện",
+        "slug": "xe-dien",
+        "description": "Dòng xe điện đô thị với thiết kế gọn, vận hành êm và phù hợp di chuyển hằng ngày.",
+        "vehicle_type": "E_SCOOTER"
+      },
+      "product": {
+        "name": "KINETIC Gogo Crown",
+        "slug": "kinetic-gogo-crown",
+        "description": "KINETIC Gogo Crown la dong xe dien thiet ke cho di chuyen hang ngay, van hanh em va de tiep can. Xe dung pin LITHIUM_ION, cong suat 1000W, toc do toi da 55 km/h va tam hoat dong den 100 km.",
+        "price": 20400000,
+        "discount_price": null,
+        "stock_quantity": 48,
+        "rating": 0,
+        "review_count": 0,
+        "is_featured": false,
+        "is_active": true
+      },
+      "specification": {
+        "model_code": "GOGO-CROWN",
+        "brand": "KINETIC",
+        "vehicle_type": "E_SCOOTER",
+        "battery_type": "LITHIUM_ION",
+        "battery_capacity_ah": 26,
+        "battery_voltage_v": 60,
+        "charging_time_hours": 7.0,
+        "max_speed_kmh": 55,
+        "max_range_km": 100,
+        "motor_power_watts": 1000,
+        "peak_motor_power_watts": 1350,
+        "max_load_kg": 180,
+        "product_weight_kg": 92,
+        "wheel_size_inch": 10,
+        "brake_type": "DISC",
+        "drive_type": "HUB_MOTOR",
+        "water_resistance_rating": "IPX5",
+        "frame_material": "Alloy Steel",
+        "suspension_type": "Front Telescopic",
+        "display_type": "LED Digital Display",
+        "smart_features": "Digital dashboard, anti-theft lock and USB charging port.",
+        "warranty_months": 24,
+        "dimensions_mm": "1850 x 700 x 1120"
+      },
+      "variants": [
+        {
+          "sku": "kinetic-gogo-crown-pearl-white",
+          "variant_name": "Pearl White",
+          "color_name": "Pearl White",
+          "color_hex": "#F5F5F4",
+          "battery_capacity_ah": 26,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": true,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-gogo-crown-matte-black",
+          "variant_name": "Matte Black",
+          "color_name": "Matte Black",
+          "color_hex": "#18181B",
+          "battery_capacity_ah": 26,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-gogo-crown-ocean-blue",
+          "variant_name": "Ocean Blue",
+          "color_name": "Ocean Blue",
+          "color_hex": "#2563EB",
+          "battery_capacity_ah": 26,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-gogo-crown-cherry-red",
+          "variant_name": "Cherry Red",
+          "color_name": "Cherry Red",
+          "color_hex": "#DC2626",
+          "battery_capacity_ah": 26,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        }
+      ],
+      "images": [
+        {
+          "variant_sku": "kinetic-gogo-crown-pearl-white",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-gogo-crown-pearl-white.jpg",
+          "alt_text": "KINETIC Gogo Crown - Pearl White",
+          "sort_order": 0,
+          "is_primary": true
+        },
+        {
+          "variant_sku": "kinetic-gogo-crown-matte-black",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-gogo-crown-matte-black.jpg",
+          "alt_text": "KINETIC Gogo Crown - Matte Black",
+          "sort_order": 1,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-gogo-crown-ocean-blue",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-gogo-crown-ocean-blue.jpg",
+          "alt_text": "KINETIC Gogo Crown - Ocean Blue",
+          "sort_order": 2,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-gogo-crown-cherry-red",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-gogo-crown-cherry-red.jpg",
+          "alt_text": "KINETIC Gogo Crown - Cherry Red",
+          "sort_order": 3,
+          "is_primary": false
+        }
+      ]
+    },
+    {
+      "source_group": "xe-máy-điện-dibao-gogo-moon",
+      "category": {
+        "name": "Xe điện",
+        "slug": "xe-dien",
+        "description": "Dòng xe điện đô thị với thiết kế gọn, vận hành êm và phù hợp di chuyển hằng ngày.",
+        "vehicle_type": "E_SCOOTER"
+      },
+      "product": {
+        "name": "KINETIC Gogo Moon",
+        "slug": "kinetic-gogo-moon",
+        "description": "KINETIC Gogo Moon la dong xe dien thiet ke cho di chuyen hang ngay, van hanh em va de tiep can. Xe dung pin LITHIUM_ION, cong suat 800W, toc do toi da 55 km/h va tam hoat dong den 80 km.",
+        "price": 21500000,
+        "discount_price": null,
+        "stock_quantity": 48,
+        "rating": 0,
+        "review_count": 0,
+        "is_featured": true,
+        "is_active": true
+      },
+      "specification": {
+        "model_code": "GOGO-MOON",
+        "brand": "KINETIC",
+        "vehicle_type": "E_SCOOTER",
+        "battery_type": "LITHIUM_ION",
+        "battery_capacity_ah": 26,
+        "battery_voltage_v": 60,
+        "charging_time_hours": 7.0,
+        "max_speed_kmh": 55,
+        "max_range_km": 80,
+        "motor_power_watts": 800,
+        "peak_motor_power_watts": 1080,
+        "max_load_kg": 180,
+        "product_weight_kg": 92,
+        "wheel_size_inch": 10,
+        "brake_type": "DISC",
+        "drive_type": "HUB_MOTOR",
+        "water_resistance_rating": "IPX5",
+        "frame_material": "Alloy Steel",
+        "suspension_type": "Front Telescopic",
+        "display_type": "LED Digital Display",
+        "smart_features": "Digital dashboard, anti-theft lock and USB charging port.",
+        "warranty_months": 24,
+        "dimensions_mm": "1850 x 700 x 1120"
+      },
+      "variants": [
+        {
+          "sku": "kinetic-gogo-moon-pearl-white",
+          "variant_name": "Pearl White",
+          "color_name": "Pearl White",
+          "color_hex": "#F5F5F4",
+          "battery_capacity_ah": 26,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": true,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-gogo-moon-matte-black",
+          "variant_name": "Matte Black",
+          "color_name": "Matte Black",
+          "color_hex": "#18181B",
+          "battery_capacity_ah": 26,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-gogo-moon-ocean-blue",
+          "variant_name": "Ocean Blue",
+          "color_name": "Ocean Blue",
+          "color_hex": "#2563EB",
+          "battery_capacity_ah": 26,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-gogo-moon-cherry-red",
+          "variant_name": "Cherry Red",
+          "color_name": "Cherry Red",
+          "color_hex": "#DC2626",
+          "battery_capacity_ah": 26,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        }
+      ],
+      "images": [
+        {
+          "variant_sku": "kinetic-gogo-moon-pearl-white",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-gogo-moon-pearl-white.jpg",
+          "alt_text": "KINETIC Gogo Moon - Pearl White",
+          "sort_order": 0,
+          "is_primary": true
+        },
+        {
+          "variant_sku": "kinetic-gogo-moon-matte-black",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-gogo-moon-matte-black.jpg",
+          "alt_text": "KINETIC Gogo Moon - Matte Black",
+          "sort_order": 1,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-gogo-moon-ocean-blue",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-gogo-moon-ocean-blue.jpg",
+          "alt_text": "KINETIC Gogo Moon - Ocean Blue",
+          "sort_order": 2,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-gogo-moon-cherry-red",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-gogo-moon-cherry-red.jpg",
+          "alt_text": "KINETIC Gogo Moon - Cherry Red",
+          "sort_order": 3,
+          "is_primary": false
+        }
+      ]
+    },
+    {
+      "source_group": "xe-máy-điện-dibao-keva",
+      "category": {
+        "name": "Xe điện",
+        "slug": "xe-dien",
+        "description": "Dòng xe điện đô thị với thiết kế gọn, vận hành êm và phù hợp di chuyển hằng ngày.",
+        "vehicle_type": "E_SCOOTER"
+      },
+      "product": {
+        "name": "KINETIC Keva",
+        "slug": "kinetic-keva",
+        "description": "KINETIC Keva la dong xe dien thiet ke cho di chuyen hang ngay, van hanh em va de tiep can. Xe dung pin LITHIUM_ION, cong suat 800W, toc do toi da 50 km/h va tam hoat dong den 90 km.",
+        "price": 25500000,
+        "discount_price": null,
+        "stock_quantity": 48,
+        "rating": 0,
+        "review_count": 0,
+        "is_featured": true,
+        "is_active": true
+      },
+      "specification": {
+        "model_code": "KEVA",
+        "brand": "KINETIC",
+        "vehicle_type": "E_SCOOTER",
+        "battery_type": "LITHIUM_ION",
+        "battery_capacity_ah": 24,
+        "battery_voltage_v": 60,
+        "charging_time_hours": 7.0,
+        "max_speed_kmh": 50,
+        "max_range_km": 90,
+        "motor_power_watts": 800,
+        "peak_motor_power_watts": 1080,
+        "max_load_kg": 180,
+        "product_weight_kg": 92,
+        "wheel_size_inch": 10,
+        "brake_type": "DRUM",
+        "drive_type": "HUB_MOTOR",
+        "water_resistance_rating": "IPX5",
+        "frame_material": "Alloy Steel",
+        "suspension_type": "Front Telescopic",
+        "display_type": "LED Digital Display",
+        "smart_features": "Digital dashboard, anti-theft lock and USB charging port.",
+        "warranty_months": 24,
+        "dimensions_mm": "1850 x 700 x 1120"
+      },
+      "variants": [
+        {
+          "sku": "kinetic-keva-pearl-white",
+          "variant_name": "Pearl White",
+          "color_name": "Pearl White",
+          "color_hex": "#F5F5F4",
+          "battery_capacity_ah": 24,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": true,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-keva-matte-black",
+          "variant_name": "Matte Black",
+          "color_name": "Matte Black",
+          "color_hex": "#18181B",
+          "battery_capacity_ah": 24,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-keva-ocean-blue",
+          "variant_name": "Ocean Blue",
+          "color_name": "Ocean Blue",
+          "color_hex": "#2563EB",
+          "battery_capacity_ah": 24,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-keva-cherry-red",
+          "variant_name": "Cherry Red",
+          "color_name": "Cherry Red",
+          "color_hex": "#DC2626",
+          "battery_capacity_ah": 24,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        }
+      ],
+      "images": [
+        {
+          "variant_sku": "kinetic-keva-pearl-white",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-keva-pearl-white.jpg",
+          "alt_text": "KINETIC Keva - Pearl White",
+          "sort_order": 0,
+          "is_primary": true
+        },
+        {
+          "variant_sku": "kinetic-keva-matte-black",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-keva-matte-black.jpg",
+          "alt_text": "KINETIC Keva - Matte Black",
+          "sort_order": 1,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-keva-ocean-blue",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-keva-ocean-blue.jpg",
+          "alt_text": "KINETIC Keva - Ocean Blue",
+          "sort_order": 2,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-keva-cherry-red",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-keva-cherry-red.jpg",
+          "alt_text": "KINETIC Keva - Cherry Red",
+          "sort_order": 3,
+          "is_primary": false
+        }
+      ]
+    },
+    {
+      "source_group": "xe-máy-điện-dibao-ls007",
+      "category": {
+        "name": "Xe điện",
+        "slug": "xe-dien",
+        "description": "Dòng xe điện đô thị với thiết kế gọn, vận hành êm và phù hợp di chuyển hằng ngày.",
+        "vehicle_type": "E_SCOOTER"
+      },
+      "product": {
+        "name": "KINETIC Ls007",
+        "slug": "kinetic-ls007",
+        "description": "KINETIC Ls007 la dong xe dien thiet ke cho di chuyen hang ngay, van hanh em va de tiep can. Xe dung pin LITHIUM_ION, cong suat 1600W, toc do toi da 45 km/h va tam hoat dong den 80 km.",
+        "price": 23300000,
+        "discount_price": null,
+        "stock_quantity": 48,
+        "rating": 0,
+        "review_count": 0,
+        "is_featured": false,
+        "is_active": true
+      },
+      "specification": {
+        "model_code": "LS007",
+        "brand": "KINETIC",
+        "vehicle_type": "E_SCOOTER",
+        "battery_type": "LITHIUM_ION",
+        "battery_capacity_ah": 22,
+        "battery_voltage_v": 60,
+        "charging_time_hours": 7.0,
+        "max_speed_kmh": 45,
+        "max_range_km": 80,
+        "motor_power_watts": 1600,
+        "peak_motor_power_watts": 2160,
+        "max_load_kg": 180,
+        "product_weight_kg": 92,
+        "wheel_size_inch": 10,
+        "brake_type": "DISC",
+        "drive_type": "HUB_MOTOR",
+        "water_resistance_rating": "IPX5",
+        "frame_material": "Alloy Steel",
+        "suspension_type": "Front Telescopic",
+        "display_type": "LED Digital Display",
+        "smart_features": "Digital dashboard, anti-theft lock and USB charging port.",
+        "warranty_months": 24,
+        "dimensions_mm": "1850 x 700 x 1120"
+      },
+      "variants": [
+        {
+          "sku": "kinetic-ls007-pearl-white",
+          "variant_name": "Pearl White",
+          "color_name": "Pearl White",
+          "color_hex": "#F5F5F4",
+          "battery_capacity_ah": 22,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": true,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-ls007-matte-black",
+          "variant_name": "Matte Black",
+          "color_name": "Matte Black",
+          "color_hex": "#18181B",
+          "battery_capacity_ah": 22,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-ls007-ocean-blue",
+          "variant_name": "Ocean Blue",
+          "color_name": "Ocean Blue",
+          "color_hex": "#2563EB",
+          "battery_capacity_ah": 22,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-ls007-cherry-red",
+          "variant_name": "Cherry Red",
+          "color_name": "Cherry Red",
+          "color_hex": "#DC2626",
+          "battery_capacity_ah": 22,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        }
+      ],
+      "images": [
+        {
+          "variant_sku": "kinetic-ls007-pearl-white",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-ls007-pearl-white.jpg",
+          "alt_text": "KINETIC Ls007 - Pearl White",
+          "sort_order": 0,
+          "is_primary": true
+        },
+        {
+          "variant_sku": "kinetic-ls007-matte-black",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-ls007-matte-black.jpg",
+          "alt_text": "KINETIC Ls007 - Matte Black",
+          "sort_order": 1,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-ls007-ocean-blue",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-ls007-ocean-blue.jpg",
+          "alt_text": "KINETIC Ls007 - Ocean Blue",
+          "sort_order": 2,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-ls007-cherry-red",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-ls007-cherry-red.jpg",
+          "alt_text": "KINETIC Ls007 - Cherry Red",
+          "sort_order": 3,
+          "is_primary": false
+        }
+      ]
+    },
+    {
+      "source_group": "xe-máy-điện-dibao-m-one",
+      "category": {
+        "name": "Xe điện",
+        "slug": "xe-dien",
+        "description": "Dòng xe điện đô thị với thiết kế gọn, vận hành êm và phù hợp di chuyển hằng ngày.",
+        "vehicle_type": "E_SCOOTER"
+      },
+      "product": {
+        "name": "KINETIC M One",
+        "slug": "kinetic-m-one",
+        "description": "KINETIC M One la dong xe dien thiet ke cho di chuyen hang ngay, van hanh em va de tiep can. Xe dung pin LITHIUM_ION, cong suat 1600W, toc do toi da 50 km/h va tam hoat dong den 90 km.",
+        "price": 25500000,
+        "discount_price": null,
+        "stock_quantity": 48,
+        "rating": 0,
+        "review_count": 0,
+        "is_featured": false,
+        "is_active": true
+      },
+      "specification": {
+        "model_code": "M-ONE",
+        "brand": "KINETIC",
+        "vehicle_type": "E_SCOOTER",
+        "battery_type": "LITHIUM_ION",
+        "battery_capacity_ah": 24,
+        "battery_voltage_v": 60,
+        "charging_time_hours": 7.0,
+        "max_speed_kmh": 50,
+        "max_range_km": 90,
+        "motor_power_watts": 1600,
+        "peak_motor_power_watts": 2160,
+        "max_load_kg": 180,
+        "product_weight_kg": 92,
+        "wheel_size_inch": 10,
+        "brake_type": "DRUM",
+        "drive_type": "HUB_MOTOR",
+        "water_resistance_rating": "IPX5",
+        "frame_material": "Alloy Steel",
+        "suspension_type": "Front Telescopic",
+        "display_type": "LED Digital Display",
+        "smart_features": "Digital dashboard, anti-theft lock and USB charging port.",
+        "warranty_months": 24,
+        "dimensions_mm": "1850 x 700 x 1120"
+      },
+      "variants": [
+        {
+          "sku": "kinetic-m-one-pearl-white",
+          "variant_name": "Pearl White",
+          "color_name": "Pearl White",
+          "color_hex": "#F5F5F4",
+          "battery_capacity_ah": 24,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": true,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-m-one-matte-black",
+          "variant_name": "Matte Black",
+          "color_name": "Matte Black",
+          "color_hex": "#18181B",
+          "battery_capacity_ah": 24,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-m-one-ocean-blue",
+          "variant_name": "Ocean Blue",
+          "color_name": "Ocean Blue",
+          "color_hex": "#2563EB",
+          "battery_capacity_ah": 24,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-m-one-cherry-red",
+          "variant_name": "Cherry Red",
+          "color_name": "Cherry Red",
+          "color_hex": "#DC2626",
+          "battery_capacity_ah": 24,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        }
+      ],
+      "images": [
+        {
+          "variant_sku": "kinetic-m-one-pearl-white",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-m-one-pearl-white.jpg",
+          "alt_text": "KINETIC M One - Pearl White",
+          "sort_order": 0,
+          "is_primary": true
+        },
+        {
+          "variant_sku": "kinetic-m-one-matte-black",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-m-one-matte-black.jpg",
+          "alt_text": "KINETIC M One - Matte Black",
+          "sort_order": 1,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-m-one-ocean-blue",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-m-one-ocean-blue.jpg",
+          "alt_text": "KINETIC M One - Ocean Blue",
+          "sort_order": 2,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-m-one-cherry-red",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-m-one-cherry-red.jpg",
+          "alt_text": "KINETIC M One - Cherry Red",
+          "sort_order": 3,
+          "is_primary": false
+        }
+      ]
+    },
+    {
+      "source_group": "xe-máy-điện-dibao-mxs",
+      "category": {
+        "name": "Xe điện",
+        "slug": "xe-dien",
+        "description": "Dòng xe điện đô thị với thiết kế gọn, vận hành êm và phù hợp di chuyển hằng ngày.",
+        "vehicle_type": "E_SCOOTER"
+      },
+      "product": {
+        "name": "KINETIC Mxs",
+        "slug": "kinetic-mxs",
+        "description": "KINETIC Mxs la dong xe dien thiet ke cho di chuyen hang ngay, van hanh em va de tiep can. Xe dung pin LITHIUM_ION, cong suat 1200W, toc do toi da 50 km/h va tam hoat dong den 100 km.",
+        "price": 20000000,
+        "discount_price": null,
+        "stock_quantity": 48,
+        "rating": 0,
+        "review_count": 0,
+        "is_featured": false,
+        "is_active": true
+      },
+      "specification": {
+        "model_code": "MXS",
+        "brand": "KINETIC",
+        "vehicle_type": "E_SCOOTER",
+        "battery_type": "LITHIUM_ION",
+        "battery_capacity_ah": 30,
+        "battery_voltage_v": 60,
+        "charging_time_hours": 7.0,
+        "max_speed_kmh": 50,
+        "max_range_km": 100,
+        "motor_power_watts": 1200,
+        "peak_motor_power_watts": 1620,
+        "max_load_kg": 180,
+        "product_weight_kg": 92,
+        "wheel_size_inch": 10,
+        "brake_type": "DISC",
+        "drive_type": "HUB_MOTOR",
+        "water_resistance_rating": "IPX5",
+        "frame_material": "Alloy Steel",
+        "suspension_type": "Front Telescopic",
+        "display_type": "LED Digital Display",
+        "smart_features": "Digital dashboard, anti-theft lock and USB charging port.",
+        "warranty_months": 24,
+        "dimensions_mm": "1850 x 700 x 1120"
+      },
+      "variants": [
+        {
+          "sku": "kinetic-mxs-pearl-white",
+          "variant_name": "Pearl White",
+          "color_name": "Pearl White",
+          "color_hex": "#F5F5F4",
+          "battery_capacity_ah": 30,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": true,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-mxs-matte-black",
+          "variant_name": "Matte Black",
+          "color_name": "Matte Black",
+          "color_hex": "#18181B",
+          "battery_capacity_ah": 30,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-mxs-ocean-blue",
+          "variant_name": "Ocean Blue",
+          "color_name": "Ocean Blue",
+          "color_hex": "#2563EB",
+          "battery_capacity_ah": 30,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-mxs-cherry-red",
+          "variant_name": "Cherry Red",
+          "color_name": "Cherry Red",
+          "color_hex": "#DC2626",
+          "battery_capacity_ah": 30,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        }
+      ],
+      "images": [
+        {
+          "variant_sku": "kinetic-mxs-pearl-white",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-mxs-pearl-white.jpg",
+          "alt_text": "KINETIC Mxs - Pearl White",
+          "sort_order": 0,
+          "is_primary": true
+        },
+        {
+          "variant_sku": "kinetic-mxs-matte-black",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-mxs-matte-black.jpg",
+          "alt_text": "KINETIC Mxs - Matte Black",
+          "sort_order": 1,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-mxs-ocean-blue",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-mxs-ocean-blue.jpg",
+          "alt_text": "KINETIC Mxs - Ocean Blue",
+          "sort_order": 2,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-mxs-cherry-red",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-mxs-cherry-red.jpg",
+          "alt_text": "KINETIC Mxs - Cherry Red",
+          "sort_order": 3,
+          "is_primary": false
+        }
+      ]
+    },
+    {
+      "source_group": "xe-máy-điện-dibao-pansy-dio",
+      "category": {
+        "name": "Xe điện",
+        "slug": "xe-dien",
+        "description": "Dòng xe điện đô thị với thiết kế gọn, vận hành êm và phù hợp di chuyển hằng ngày.",
+        "vehicle_type": "E_SCOOTER"
+      },
+      "product": {
+        "name": "KINETIC Pansy Dio",
+        "slug": "kinetic-pansy-dio",
+        "description": "KINETIC Pansy Dio la dong xe dien thiet ke cho di chuyen hang ngay, van hanh em va de tiep can. Xe dung pin LITHIUM_ION, cong suat 1200W, toc do toi da 55 km/h va tam hoat dong den 80 km.",
+        "price": 18900000,
+        "discount_price": null,
+        "stock_quantity": 48,
+        "rating": 0,
+        "review_count": 0,
+        "is_featured": false,
+        "is_active": true
+      },
+      "specification": {
+        "model_code": "PANSY-DIO",
+        "brand": "KINETIC",
+        "vehicle_type": "E_SCOOTER",
+        "battery_type": "LITHIUM_ION",
+        "battery_capacity_ah": 26,
+        "battery_voltage_v": 60,
+        "charging_time_hours": 7.0,
+        "max_speed_kmh": 55,
+        "max_range_km": 80,
+        "motor_power_watts": 1200,
+        "peak_motor_power_watts": 1620,
+        "max_load_kg": 180,
+        "product_weight_kg": 92,
+        "wheel_size_inch": 10,
+        "brake_type": "DISC",
+        "drive_type": "HUB_MOTOR",
+        "water_resistance_rating": "IPX5",
+        "frame_material": "Alloy Steel",
+        "suspension_type": "Front Telescopic",
+        "display_type": "LED Digital Display",
+        "smart_features": "Digital dashboard, anti-theft lock and USB charging port.",
+        "warranty_months": 24,
+        "dimensions_mm": "1850 x 700 x 1120"
+      },
+      "variants": [
+        {
+          "sku": "kinetic-pansy-dio-pearl-white",
+          "variant_name": "Pearl White",
+          "color_name": "Pearl White",
+          "color_hex": "#F5F5F4",
+          "battery_capacity_ah": 26,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": true,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-pansy-dio-matte-black",
+          "variant_name": "Matte Black",
+          "color_name": "Matte Black",
+          "color_hex": "#18181B",
+          "battery_capacity_ah": 26,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-pansy-dio-ocean-blue",
+          "variant_name": "Ocean Blue",
+          "color_name": "Ocean Blue",
+          "color_hex": "#2563EB",
+          "battery_capacity_ah": 26,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-pansy-dio-cherry-red",
+          "variant_name": "Cherry Red",
+          "color_name": "Cherry Red",
+          "color_hex": "#DC2626",
+          "battery_capacity_ah": 26,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        }
+      ],
+      "images": [
+        {
+          "variant_sku": "kinetic-pansy-dio-pearl-white",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-pansy-dio-pearl-white.jpg",
+          "alt_text": "KINETIC Pansy Dio - Pearl White",
+          "sort_order": 0,
+          "is_primary": true
+        },
+        {
+          "variant_sku": "kinetic-pansy-dio-matte-black",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-pansy-dio-matte-black.jpg",
+          "alt_text": "KINETIC Pansy Dio - Matte Black",
+          "sort_order": 1,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-pansy-dio-ocean-blue",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-pansy-dio-ocean-blue.jpg",
+          "alt_text": "KINETIC Pansy Dio - Ocean Blue",
+          "sort_order": 2,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-pansy-dio-cherry-red",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-pansy-dio-cherry-red.jpg",
+          "alt_text": "KINETIC Pansy Dio - Cherry Red",
+          "sort_order": 3,
+          "is_primary": false
+        }
+      ]
+    },
+    {
+      "source_group": "xe-máy-điện-dibao-pansy-dio-2025",
+      "category": {
+        "name": "Xe điện",
+        "slug": "xe-dien",
+        "description": "Dòng xe điện đô thị với thiết kế gọn, vận hành êm và phù hợp di chuyển hằng ngày.",
+        "vehicle_type": "E_SCOOTER"
+      },
+      "product": {
+        "name": "KINETIC Pansy Dio 2025",
+        "slug": "kinetic-pansy-dio-2025",
+        "description": "KINETIC Pansy Dio 2025 la dong xe dien thiet ke cho di chuyen hang ngay, van hanh em va de tiep can. Xe dung pin LITHIUM_ION, cong suat 1200W, toc do toi da 45 km/h va tam hoat dong den 80 km.",
+        "price": 22200000,
+        "discount_price": null,
+        "stock_quantity": 48,
+        "rating": 0,
+        "review_count": 0,
+        "is_featured": false,
+        "is_active": true
+      },
+      "specification": {
+        "model_code": "PANSY-DIO-2025",
+        "brand": "KINETIC",
+        "vehicle_type": "E_SCOOTER",
+        "battery_type": "LITHIUM_ION",
+        "battery_capacity_ah": 22,
+        "battery_voltage_v": 60,
+        "charging_time_hours": 7.0,
+        "max_speed_kmh": 45,
+        "max_range_km": 80,
+        "motor_power_watts": 1200,
+        "peak_motor_power_watts": 1620,
+        "max_load_kg": 180,
+        "product_weight_kg": 92,
+        "wheel_size_inch": 10,
+        "brake_type": "DISC",
+        "drive_type": "HUB_MOTOR",
+        "water_resistance_rating": "IPX5",
+        "frame_material": "Alloy Steel",
+        "suspension_type": "Front Telescopic",
+        "display_type": "LED Digital Display",
+        "smart_features": "Digital dashboard, anti-theft lock and USB charging port.",
+        "warranty_months": 24,
+        "dimensions_mm": "1850 x 700 x 1120"
+      },
+      "variants": [
+        {
+          "sku": "kinetic-pansy-dio-2025-pearl-white",
+          "variant_name": "Pearl White",
+          "color_name": "Pearl White",
+          "color_hex": "#F5F5F4",
+          "battery_capacity_ah": 22,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": true,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-pansy-dio-2025-matte-black",
+          "variant_name": "Matte Black",
+          "color_name": "Matte Black",
+          "color_hex": "#18181B",
+          "battery_capacity_ah": 22,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-pansy-dio-2025-ocean-blue",
+          "variant_name": "Ocean Blue",
+          "color_name": "Ocean Blue",
+          "color_hex": "#2563EB",
+          "battery_capacity_ah": 22,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-pansy-dio-2025-cherry-red",
+          "variant_name": "Cherry Red",
+          "color_name": "Cherry Red",
+          "color_hex": "#DC2626",
+          "battery_capacity_ah": 22,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        }
+      ],
+      "images": [
+        {
+          "variant_sku": "kinetic-pansy-dio-2025-pearl-white",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-pansy-dio-2025-pearl-white.jpg",
+          "alt_text": "KINETIC Pansy Dio 2025 - Pearl White",
+          "sort_order": 0,
+          "is_primary": true
+        },
+        {
+          "variant_sku": "kinetic-pansy-dio-2025-matte-black",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-pansy-dio-2025-matte-black.jpg",
+          "alt_text": "KINETIC Pansy Dio 2025 - Matte Black",
+          "sort_order": 1,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-pansy-dio-2025-ocean-blue",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-pansy-dio-2025-ocean-blue.jpg",
+          "alt_text": "KINETIC Pansy Dio 2025 - Ocean Blue",
+          "sort_order": 2,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-pansy-dio-2025-cherry-red",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-pansy-dio-2025-cherry-red.jpg",
+          "alt_text": "KINETIC Pansy Dio 2025 - Cherry Red",
+          "sort_order": 3,
+          "is_primary": false
+        }
+      ]
+    },
+    {
+      "source_group": "xe-máy-điện-dibao-pansy-s2-càng-nhôm",
+      "category": {
+        "name": "Xe điện",
+        "slug": "xe-dien",
+        "description": "Dòng xe điện đô thị với thiết kế gọn, vận hành êm và phù hợp di chuyển hằng ngày.",
+        "vehicle_type": "E_SCOOTER"
+      },
+      "product": {
+        "name": "KINETIC Pansy S2 Càng Nhôm",
+        "slug": "kinetic-pansy-s2-cang-nhom",
+        "description": "KINETIC Pansy S2 Càng Nhôm la dong xe dien thiet ke cho di chuyen hang ngay, van hanh em va de tiep can. Xe dung pin LITHIUM_ION, cong suat 1200W, toc do toi da 55 km/h va tam hoat dong den 80 km.",
+        "price": 24400000,
+        "discount_price": null,
+        "stock_quantity": 48,
+        "rating": 0,
+        "review_count": 0,
+        "is_featured": false,
+        "is_active": true
+      },
+      "specification": {
+        "model_code": "PANSY-S2-CANG-NHOM",
+        "brand": "KINETIC",
+        "vehicle_type": "E_SCOOTER",
+        "battery_type": "LITHIUM_ION",
+        "battery_capacity_ah": 26,
+        "battery_voltage_v": 60,
+        "charging_time_hours": 7.0,
+        "max_speed_kmh": 55,
+        "max_range_km": 80,
+        "motor_power_watts": 1200,
+        "peak_motor_power_watts": 1620,
+        "max_load_kg": 180,
+        "product_weight_kg": 92,
+        "wheel_size_inch": 10,
+        "brake_type": "DISC",
+        "drive_type": "HUB_MOTOR",
+        "water_resistance_rating": "IPX5",
+        "frame_material": "Alloy Steel",
+        "suspension_type": "Front Telescopic",
+        "display_type": "LED Digital Display",
+        "smart_features": "Digital dashboard, anti-theft lock and USB charging port.",
+        "warranty_months": 24,
+        "dimensions_mm": "1850 x 700 x 1120"
+      },
+      "variants": [
+        {
+          "sku": "kinetic-pansy-s2-cang-nhom-pearl-white",
+          "variant_name": "Pearl White",
+          "color_name": "Pearl White",
+          "color_hex": "#F5F5F4",
+          "battery_capacity_ah": 26,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": true,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-pansy-s2-cang-nhom-matte-black",
+          "variant_name": "Matte Black",
+          "color_name": "Matte Black",
+          "color_hex": "#18181B",
+          "battery_capacity_ah": 26,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-pansy-s2-cang-nhom-ocean-blue",
+          "variant_name": "Ocean Blue",
+          "color_name": "Ocean Blue",
+          "color_hex": "#2563EB",
+          "battery_capacity_ah": 26,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-pansy-s2-cang-nhom-cherry-red",
+          "variant_name": "Cherry Red",
+          "color_name": "Cherry Red",
+          "color_hex": "#DC2626",
+          "battery_capacity_ah": 26,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        }
+      ],
+      "images": [
+        {
+          "variant_sku": "kinetic-pansy-s2-cang-nhom-pearl-white",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-pansy-s2-cang-nhom-pearl-white.jpg",
+          "alt_text": "KINETIC Pansy S2 Càng Nhôm - Pearl White",
+          "sort_order": 0,
+          "is_primary": true
+        },
+        {
+          "variant_sku": "kinetic-pansy-s2-cang-nhom-matte-black",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-pansy-s2-cang-nhom-matte-black.jpg",
+          "alt_text": "KINETIC Pansy S2 Càng Nhôm - Matte Black",
+          "sort_order": 1,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-pansy-s2-cang-nhom-ocean-blue",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-pansy-s2-cang-nhom-ocean-blue.jpg",
+          "alt_text": "KINETIC Pansy S2 Càng Nhôm - Ocean Blue",
+          "sort_order": 2,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-pansy-s2-cang-nhom-cherry-red",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-pansy-s2-cang-nhom-cherry-red.jpg",
+          "alt_text": "KINETIC Pansy S2 Càng Nhôm - Cherry Red",
+          "sort_order": 3,
+          "is_primary": false
+        }
+      ]
+    },
+    {
+      "source_group": "xe-máy-điện-dibao-pansy-s3",
+      "category": {
+        "name": "Xe điện",
+        "slug": "xe-dien",
+        "description": "Dòng xe điện đô thị với thiết kế gọn, vận hành êm và phù hợp di chuyển hằng ngày.",
+        "vehicle_type": "E_SCOOTER"
+      },
+      "product": {
+        "name": "KINETIC Pansy S3",
+        "slug": "kinetic-pansy-s3",
+        "description": "KINETIC Pansy S3 la dong xe dien thiet ke cho di chuyen hang ngay, van hanh em va de tiep can. Xe dung pin LITHIUM_ION, cong suat 800W, toc do toi da 45 km/h va tam hoat dong den 100 km.",
+        "price": 25500000,
+        "discount_price": null,
+        "stock_quantity": 48,
+        "rating": 0,
+        "review_count": 0,
+        "is_featured": true,
+        "is_active": true
+      },
+      "specification": {
+        "model_code": "PANSY-S3",
+        "brand": "KINETIC",
+        "vehicle_type": "E_SCOOTER",
+        "battery_type": "LITHIUM_ION",
+        "battery_capacity_ah": 22,
+        "battery_voltage_v": 60,
+        "charging_time_hours": 7.0,
+        "max_speed_kmh": 45,
+        "max_range_km": 100,
+        "motor_power_watts": 800,
+        "peak_motor_power_watts": 1080,
+        "max_load_kg": 180,
+        "product_weight_kg": 92,
+        "wheel_size_inch": 10,
+        "brake_type": "DISC",
+        "drive_type": "HUB_MOTOR",
+        "water_resistance_rating": "IPX5",
+        "frame_material": "Alloy Steel",
+        "suspension_type": "Front Telescopic",
+        "display_type": "LED Digital Display",
+        "smart_features": "Digital dashboard, anti-theft lock and USB charging port.",
+        "warranty_months": 24,
+        "dimensions_mm": "1850 x 700 x 1120"
+      },
+      "variants": [
+        {
+          "sku": "kinetic-pansy-s3-pearl-white",
+          "variant_name": "Pearl White",
+          "color_name": "Pearl White",
+          "color_hex": "#F5F5F4",
+          "battery_capacity_ah": 22,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": true,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-pansy-s3-matte-black",
+          "variant_name": "Matte Black",
+          "color_name": "Matte Black",
+          "color_hex": "#18181B",
+          "battery_capacity_ah": 22,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-pansy-s3-ocean-blue",
+          "variant_name": "Ocean Blue",
+          "color_name": "Ocean Blue",
+          "color_hex": "#2563EB",
+          "battery_capacity_ah": 22,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-pansy-s3-cherry-red",
+          "variant_name": "Cherry Red",
+          "color_name": "Cherry Red",
+          "color_hex": "#DC2626",
+          "battery_capacity_ah": 22,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        }
+      ],
+      "images": [
+        {
+          "variant_sku": "kinetic-pansy-s3-pearl-white",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-pansy-s3-pearl-white.jpg",
+          "alt_text": "KINETIC Pansy S3 - Pearl White",
+          "sort_order": 0,
+          "is_primary": true
+        },
+        {
+          "variant_sku": "kinetic-pansy-s3-matte-black",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-pansy-s3-matte-black.jpg",
+          "alt_text": "KINETIC Pansy S3 - Matte Black",
+          "sort_order": 1,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-pansy-s3-ocean-blue",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-pansy-s3-ocean-blue.jpg",
+          "alt_text": "KINETIC Pansy S3 - Ocean Blue",
+          "sort_order": 2,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-pansy-s3-cherry-red",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-pansy-s3-cherry-red.jpg",
+          "alt_text": "KINETIC Pansy S3 - Cherry Red",
+          "sort_order": 3,
+          "is_primary": false
+        }
+      ]
+    },
+    {
+      "source_group": "xe-máy-điện-dibao-pansy-s4",
+      "category": {
+        "name": "Xe điện",
+        "slug": "xe-dien",
+        "description": "Dòng xe điện đô thị với thiết kế gọn, vận hành êm và phù hợp di chuyển hằng ngày.",
+        "vehicle_type": "E_SCOOTER"
+      },
+      "product": {
+        "name": "KINETIC Pansy S4",
+        "slug": "kinetic-pansy-s4",
+        "description": "KINETIC Pansy S4 la dong xe dien thiet ke cho di chuyen hang ngay, van hanh em va de tiep can. Xe dung pin LITHIUM_ION, cong suat 1000W, toc do toi da 45 km/h va tam hoat dong den 100 km.",
+        "price": 18900000,
+        "discount_price": null,
+        "stock_quantity": 48,
+        "rating": 0,
+        "review_count": 0,
+        "is_featured": false,
+        "is_active": true
+      },
+      "specification": {
+        "model_code": "PANSY-S4",
+        "brand": "KINETIC",
+        "vehicle_type": "E_SCOOTER",
+        "battery_type": "LITHIUM_ION",
+        "battery_capacity_ah": 22,
+        "battery_voltage_v": 60,
+        "charging_time_hours": 7.0,
+        "max_speed_kmh": 45,
+        "max_range_km": 100,
+        "motor_power_watts": 1000,
+        "peak_motor_power_watts": 1350,
+        "max_load_kg": 180,
+        "product_weight_kg": 92,
+        "wheel_size_inch": 10,
+        "brake_type": "DISC",
+        "drive_type": "HUB_MOTOR",
+        "water_resistance_rating": "IPX5",
+        "frame_material": "Alloy Steel",
+        "suspension_type": "Front Telescopic",
+        "display_type": "LED Digital Display",
+        "smart_features": "Digital dashboard, anti-theft lock and USB charging port.",
+        "warranty_months": 24,
+        "dimensions_mm": "1850 x 700 x 1120"
+      },
+      "variants": [
+        {
+          "sku": "kinetic-pansy-s4-pearl-white",
+          "variant_name": "Pearl White",
+          "color_name": "Pearl White",
+          "color_hex": "#F5F5F4",
+          "battery_capacity_ah": 22,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": true,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-pansy-s4-matte-black",
+          "variant_name": "Matte Black",
+          "color_name": "Matte Black",
+          "color_hex": "#18181B",
+          "battery_capacity_ah": 22,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-pansy-s4-ocean-blue",
+          "variant_name": "Ocean Blue",
+          "color_name": "Ocean Blue",
+          "color_hex": "#2563EB",
+          "battery_capacity_ah": 22,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-pansy-s4-cherry-red",
+          "variant_name": "Cherry Red",
+          "color_name": "Cherry Red",
+          "color_hex": "#DC2626",
+          "battery_capacity_ah": 22,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        }
+      ],
+      "images": [
+        {
+          "variant_sku": "kinetic-pansy-s4-pearl-white",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-pansy-s4-pearl-white.jpg",
+          "alt_text": "KINETIC Pansy S4 - Pearl White",
+          "sort_order": 0,
+          "is_primary": true
+        },
+        {
+          "variant_sku": "kinetic-pansy-s4-matte-black",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-pansy-s4-matte-black.jpg",
+          "alt_text": "KINETIC Pansy S4 - Matte Black",
+          "sort_order": 1,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-pansy-s4-ocean-blue",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-pansy-s4-ocean-blue.jpg",
+          "alt_text": "KINETIC Pansy S4 - Ocean Blue",
+          "sort_order": 2,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-pansy-s4-cherry-red",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-pansy-s4-cherry-red.jpg",
+          "alt_text": "KINETIC Pansy S4 - Cherry Red",
+          "sort_order": 3,
+          "is_primary": false
+        }
+      ]
+    },
+    {
+      "source_group": "xe-máy-điện-dibao-pansy-sq2",
+      "category": {
+        "name": "Xe điện",
+        "slug": "xe-dien",
+        "description": "Dòng xe điện đô thị với thiết kế gọn, vận hành êm và phù hợp di chuyển hằng ngày.",
+        "vehicle_type": "E_SCOOTER"
+      },
+      "product": {
+        "name": "KINETIC Pansy Sq2",
+        "slug": "kinetic-pansy-sq2",
+        "description": "KINETIC Pansy Sq2 la dong xe dien thiet ke cho di chuyen hang ngay, van hanh em va de tiep can. Xe dung pin LITHIUM_ION, cong suat 1400W, toc do toi da 50 km/h va tam hoat dong den 100 km.",
+        "price": 23300000,
+        "discount_price": null,
+        "stock_quantity": 48,
+        "rating": 0,
+        "review_count": 0,
+        "is_featured": false,
+        "is_active": true
+      },
+      "specification": {
+        "model_code": "PANSY-SQ2",
+        "brand": "KINETIC",
+        "vehicle_type": "E_SCOOTER",
+        "battery_type": "LITHIUM_ION",
+        "battery_capacity_ah": 30,
+        "battery_voltage_v": 60,
+        "charging_time_hours": 7.0,
+        "max_speed_kmh": 50,
+        "max_range_km": 100,
+        "motor_power_watts": 1400,
+        "peak_motor_power_watts": 1890,
+        "max_load_kg": 180,
+        "product_weight_kg": 92,
+        "wheel_size_inch": 10,
+        "brake_type": "DISC",
+        "drive_type": "HUB_MOTOR",
+        "water_resistance_rating": "IPX5",
+        "frame_material": "Alloy Steel",
+        "suspension_type": "Front Telescopic",
+        "display_type": "LED Digital Display",
+        "smart_features": "Digital dashboard, anti-theft lock and USB charging port.",
+        "warranty_months": 24,
+        "dimensions_mm": "1850 x 700 x 1120"
+      },
+      "variants": [
+        {
+          "sku": "kinetic-pansy-sq2-pearl-white",
+          "variant_name": "Pearl White",
+          "color_name": "Pearl White",
+          "color_hex": "#F5F5F4",
+          "battery_capacity_ah": 30,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": true,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-pansy-sq2-matte-black",
+          "variant_name": "Matte Black",
+          "color_name": "Matte Black",
+          "color_hex": "#18181B",
+          "battery_capacity_ah": 30,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-pansy-sq2-ocean-blue",
+          "variant_name": "Ocean Blue",
+          "color_name": "Ocean Blue",
+          "color_hex": "#2563EB",
+          "battery_capacity_ah": 30,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-pansy-sq2-cherry-red",
+          "variant_name": "Cherry Red",
+          "color_name": "Cherry Red",
+          "color_hex": "#DC2626",
+          "battery_capacity_ah": 30,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        }
+      ],
+      "images": [
+        {
+          "variant_sku": "kinetic-pansy-sq2-pearl-white",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-pansy-sq2-pearl-white.jpg",
+          "alt_text": "KINETIC Pansy Sq2 - Pearl White",
+          "sort_order": 0,
+          "is_primary": true
+        },
+        {
+          "variant_sku": "kinetic-pansy-sq2-matte-black",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-pansy-sq2-matte-black.jpg",
+          "alt_text": "KINETIC Pansy Sq2 - Matte Black",
+          "sort_order": 1,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-pansy-sq2-ocean-blue",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-pansy-sq2-ocean-blue.jpg",
+          "alt_text": "KINETIC Pansy Sq2 - Ocean Blue",
+          "sort_order": 2,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-pansy-sq2-cherry-red",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-pansy-sq2-cherry-red.jpg",
+          "alt_text": "KINETIC Pansy Sq2 - Cherry Red",
+          "sort_order": 3,
+          "is_primary": false
+        }
+      ]
+    },
+    {
+      "source_group": "xe-máy-điện-dibao-rosa",
+      "category": {
+        "name": "Xe điện",
+        "slug": "xe-dien",
+        "description": "Dòng xe điện đô thị với thiết kế gọn, vận hành êm và phù hợp di chuyển hằng ngày.",
+        "vehicle_type": "E_SCOOTER"
+      },
+      "product": {
+        "name": "KINETIC Rosa",
+        "slug": "kinetic-rosa",
+        "description": "KINETIC Rosa la dong xe dien thiet ke cho di chuyen hang ngay, van hanh em va de tiep can. Xe dung pin LITHIUM_ION, cong suat 800W, toc do toi da 45 km/h va tam hoat dong den 80 km.",
+        "price": 25500000,
+        "discount_price": null,
+        "stock_quantity": 48,
+        "rating": 0,
+        "review_count": 0,
+        "is_featured": true,
+        "is_active": true
+      },
+      "specification": {
+        "model_code": "ROSA",
+        "brand": "KINETIC",
+        "vehicle_type": "E_SCOOTER",
+        "battery_type": "LITHIUM_ION",
+        "battery_capacity_ah": 22,
+        "battery_voltage_v": 60,
+        "charging_time_hours": 7.0,
+        "max_speed_kmh": 45,
+        "max_range_km": 80,
+        "motor_power_watts": 800,
+        "peak_motor_power_watts": 1080,
+        "max_load_kg": 180,
+        "product_weight_kg": 92,
+        "wheel_size_inch": 10,
+        "brake_type": "DISC",
+        "drive_type": "HUB_MOTOR",
+        "water_resistance_rating": "IPX5",
+        "frame_material": "Alloy Steel",
+        "suspension_type": "Front Telescopic",
+        "display_type": "LED Digital Display",
+        "smart_features": "Digital dashboard, anti-theft lock and USB charging port.",
+        "warranty_months": 24,
+        "dimensions_mm": "1850 x 700 x 1120"
+      },
+      "variants": [
+        {
+          "sku": "kinetic-rosa-pearl-white",
+          "variant_name": "Pearl White",
+          "color_name": "Pearl White",
+          "color_hex": "#F5F5F4",
+          "battery_capacity_ah": 22,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": true,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-rosa-matte-black",
+          "variant_name": "Matte Black",
+          "color_name": "Matte Black",
+          "color_hex": "#18181B",
+          "battery_capacity_ah": 22,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-rosa-ocean-blue",
+          "variant_name": "Ocean Blue",
+          "color_name": "Ocean Blue",
+          "color_hex": "#2563EB",
+          "battery_capacity_ah": 22,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-rosa-cherry-red",
+          "variant_name": "Cherry Red",
+          "color_name": "Cherry Red",
+          "color_hex": "#DC2626",
+          "battery_capacity_ah": 22,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        }
+      ],
+      "images": [
+        {
+          "variant_sku": "kinetic-rosa-pearl-white",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-rosa-pearl-white.jpg",
+          "alt_text": "KINETIC Rosa - Pearl White",
+          "sort_order": 0,
+          "is_primary": true
+        },
+        {
+          "variant_sku": "kinetic-rosa-matte-black",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-rosa-matte-black.jpg",
+          "alt_text": "KINETIC Rosa - Matte Black",
+          "sort_order": 1,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-rosa-ocean-blue",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-rosa-ocean-blue.jpg",
+          "alt_text": "KINETIC Rosa - Ocean Blue",
+          "sort_order": 2,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-rosa-cherry-red",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-rosa-cherry-red.jpg",
+          "alt_text": "KINETIC Rosa - Cherry Red",
+          "sort_order": 3,
+          "is_primary": false
+        }
+      ]
+    },
+    {
+      "source_group": "xe-máy-điện-dibao-rs-50cc",
+      "category": {
+        "name": "Xe điện",
+        "slug": "xe-dien",
+        "description": "Dòng xe điện đô thị với thiết kế gọn, vận hành êm và phù hợp di chuyển hằng ngày.",
+        "vehicle_type": "E_SCOOTER"
+      },
+      "product": {
+        "name": "KINETIC Rs 50CC",
+        "slug": "kinetic-rs-50cc",
+        "description": "KINETIC Rs 50CC la dong xe dien thiet ke cho di chuyen hang ngay, van hanh em va de tiep can. Xe dung pin LEAD_ACID, cong suat 800W, toc do toi da 50 km/h va tam hoat dong den 80 km.",
+        "price": 17900000,
+        "discount_price": null,
+        "stock_quantity": 48,
+        "rating": 0,
+        "review_count": 0,
+        "is_featured": true,
+        "is_active": true
+      },
+      "specification": {
+        "model_code": "RS-50CC",
+        "brand": "KINETIC",
+        "vehicle_type": "E_SCOOTER",
+        "battery_type": "LEAD_ACID",
+        "battery_capacity_ah": 30,
+        "battery_voltage_v": 60,
+        "charging_time_hours": 7.0,
+        "max_speed_kmh": 50,
+        "max_range_km": 80,
+        "motor_power_watts": 800,
+        "peak_motor_power_watts": 1080,
+        "max_load_kg": 180,
+        "product_weight_kg": 92,
+        "wheel_size_inch": 10,
+        "brake_type": "DISC",
+        "drive_type": "HUB_MOTOR",
+        "water_resistance_rating": "IPX5",
+        "frame_material": "Alloy Steel",
+        "suspension_type": "Front Telescopic",
+        "display_type": "LED Digital Display",
+        "smart_features": "Digital dashboard, anti-theft lock and USB charging port.",
+        "warranty_months": 24,
+        "dimensions_mm": "1850 x 700 x 1120"
+      },
+      "variants": [
+        {
+          "sku": "kinetic-rs-50cc-pearl-white",
+          "variant_name": "Pearl White",
+          "color_name": "Pearl White",
+          "color_hex": "#F5F5F4",
+          "battery_capacity_ah": 30,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": true,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-rs-50cc-matte-black",
+          "variant_name": "Matte Black",
+          "color_name": "Matte Black",
+          "color_hex": "#18181B",
+          "battery_capacity_ah": 30,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-rs-50cc-ocean-blue",
+          "variant_name": "Ocean Blue",
+          "color_name": "Ocean Blue",
+          "color_hex": "#2563EB",
+          "battery_capacity_ah": 30,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-rs-50cc-cherry-red",
+          "variant_name": "Cherry Red",
+          "color_name": "Cherry Red",
+          "color_hex": "#DC2626",
+          "battery_capacity_ah": 30,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        }
+      ],
+      "images": [
+        {
+          "variant_sku": "kinetic-rs-50cc-pearl-white",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-rs-50cc-pearl-white.jpg",
+          "alt_text": "KINETIC Rs 50CC - Pearl White",
+          "sort_order": 0,
+          "is_primary": true
+        },
+        {
+          "variant_sku": "kinetic-rs-50cc-matte-black",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-rs-50cc-matte-black.jpg",
+          "alt_text": "KINETIC Rs 50CC - Matte Black",
+          "sort_order": 1,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-rs-50cc-ocean-blue",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-rs-50cc-ocean-blue.jpg",
+          "alt_text": "KINETIC Rs 50CC - Ocean Blue",
+          "sort_order": 2,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-rs-50cc-cherry-red",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-rs-50cc-cherry-red.jpg",
+          "alt_text": "KINETIC Rs 50CC - Cherry Red",
+          "sort_order": 3,
+          "is_primary": false
+        }
+      ]
+    },
+    {
+      "source_group": "xe-máy-điện-dibao-tesla-chic",
+      "category": {
+        "name": "Xe điện",
+        "slug": "xe-dien",
+        "description": "Dòng xe điện đô thị với thiết kế gọn, vận hành êm và phù hợp di chuyển hằng ngày.",
+        "vehicle_type": "E_SCOOTER"
+      },
+      "product": {
+        "name": "KINETIC Tesla Chic",
+        "slug": "kinetic-tesla-chic",
+        "description": "KINETIC Tesla Chic la dong xe dien thiet ke cho di chuyen hang ngay, van hanh em va de tiep can. Xe dung pin LITHIUM_ION, cong suat 1400W, toc do toi da 50 km/h va tam hoat dong den 90 km.",
+        "price": 22600000,
+        "discount_price": null,
+        "stock_quantity": 48,
+        "rating": 0,
+        "review_count": 0,
+        "is_featured": false,
+        "is_active": true
+      },
+      "specification": {
+        "model_code": "TESLA-CHIC",
+        "brand": "KINETIC",
+        "vehicle_type": "E_SCOOTER",
+        "battery_type": "LITHIUM_ION",
+        "battery_capacity_ah": 24,
+        "battery_voltage_v": 60,
+        "charging_time_hours": 7.0,
+        "max_speed_kmh": 50,
+        "max_range_km": 90,
+        "motor_power_watts": 1400,
+        "peak_motor_power_watts": 1890,
+        "max_load_kg": 180,
+        "product_weight_kg": 92,
+        "wheel_size_inch": 10,
+        "brake_type": "DRUM",
+        "drive_type": "HUB_MOTOR",
+        "water_resistance_rating": "IPX5",
+        "frame_material": "Alloy Steel",
+        "suspension_type": "Front Telescopic",
+        "display_type": "LED Digital Display",
+        "smart_features": "Digital dashboard, anti-theft lock and USB charging port.",
+        "warranty_months": 24,
+        "dimensions_mm": "1850 x 700 x 1120"
+      },
+      "variants": [
+        {
+          "sku": "kinetic-tesla-chic-pearl-white",
+          "variant_name": "Pearl White",
+          "color_name": "Pearl White",
+          "color_hex": "#F5F5F4",
+          "battery_capacity_ah": 24,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": true,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-tesla-chic-matte-black",
+          "variant_name": "Matte Black",
+          "color_name": "Matte Black",
+          "color_hex": "#18181B",
+          "battery_capacity_ah": 24,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-tesla-chic-ocean-blue",
+          "variant_name": "Ocean Blue",
+          "color_name": "Ocean Blue",
+          "color_hex": "#2563EB",
+          "battery_capacity_ah": 24,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-tesla-chic-cherry-red",
+          "variant_name": "Cherry Red",
+          "color_name": "Cherry Red",
+          "color_hex": "#DC2626",
+          "battery_capacity_ah": 24,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        }
+      ],
+      "images": [
+        {
+          "variant_sku": "kinetic-tesla-chic-pearl-white",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-tesla-chic-pearl-white.jpg",
+          "alt_text": "KINETIC Tesla Chic - Pearl White",
+          "sort_order": 0,
+          "is_primary": true
+        },
+        {
+          "variant_sku": "kinetic-tesla-chic-matte-black",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-tesla-chic-matte-black.jpg",
+          "alt_text": "KINETIC Tesla Chic - Matte Black",
+          "sort_order": 1,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-tesla-chic-ocean-blue",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-tesla-chic-ocean-blue.jpg",
+          "alt_text": "KINETIC Tesla Chic - Ocean Blue",
+          "sort_order": 2,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-tesla-chic-cherry-red",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-tesla-chic-cherry-red.jpg",
+          "alt_text": "KINETIC Tesla Chic - Cherry Red",
+          "sort_order": 3,
+          "is_primary": false
+        }
+      ]
+    },
+    {
+      "source_group": "xe-máy-điện-dibao-tesla-chic-q",
+      "category": {
+        "name": "Xe điện",
+        "slug": "xe-dien",
+        "description": "Dòng xe điện đô thị với thiết kế gọn, vận hành êm và phù hợp di chuyển hằng ngày.",
+        "vehicle_type": "E_SCOOTER"
+      },
+      "product": {
+        "name": "KINETIC Tesla Chic Q",
+        "slug": "kinetic-tesla-chic-q",
+        "description": "KINETIC Tesla Chic Q la dong xe dien thiet ke cho di chuyen hang ngay, van hanh em va de tiep can. Xe dung pin LITHIUM_ION, cong suat 1200W, toc do toi da 45 km/h va tam hoat dong den 100 km.",
+        "price": 21500000,
+        "discount_price": null,
+        "stock_quantity": 48,
+        "rating": 0,
+        "review_count": 0,
+        "is_featured": false,
+        "is_active": true
+      },
+      "specification": {
+        "model_code": "TESLA-CHIC-Q",
+        "brand": "KINETIC",
+        "vehicle_type": "E_SCOOTER",
+        "battery_type": "LITHIUM_ION",
+        "battery_capacity_ah": 22,
+        "battery_voltage_v": 60,
+        "charging_time_hours": 7.0,
+        "max_speed_kmh": 45,
+        "max_range_km": 100,
+        "motor_power_watts": 1200,
+        "peak_motor_power_watts": 1620,
+        "max_load_kg": 180,
+        "product_weight_kg": 92,
+        "wheel_size_inch": 10,
+        "brake_type": "DISC",
+        "drive_type": "HUB_MOTOR",
+        "water_resistance_rating": "IPX5",
+        "frame_material": "Alloy Steel",
+        "suspension_type": "Front Telescopic",
+        "display_type": "LED Digital Display",
+        "smart_features": "Digital dashboard, anti-theft lock and USB charging port.",
+        "warranty_months": 24,
+        "dimensions_mm": "1850 x 700 x 1120"
+      },
+      "variants": [
+        {
+          "sku": "kinetic-tesla-chic-q-pearl-white",
+          "variant_name": "Pearl White",
+          "color_name": "Pearl White",
+          "color_hex": "#F5F5F4",
+          "battery_capacity_ah": 22,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": true,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-tesla-chic-q-matte-black",
+          "variant_name": "Matte Black",
+          "color_name": "Matte Black",
+          "color_hex": "#18181B",
+          "battery_capacity_ah": 22,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-tesla-chic-q-ocean-blue",
+          "variant_name": "Ocean Blue",
+          "color_name": "Ocean Blue",
+          "color_hex": "#2563EB",
+          "battery_capacity_ah": 22,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-tesla-chic-q-cherry-red",
+          "variant_name": "Cherry Red",
+          "color_name": "Cherry Red",
+          "color_hex": "#DC2626",
+          "battery_capacity_ah": 22,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        }
+      ],
+      "images": [
+        {
+          "variant_sku": "kinetic-tesla-chic-q-pearl-white",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-tesla-chic-q-pearl-white.jpg",
+          "alt_text": "KINETIC Tesla Chic Q - Pearl White",
+          "sort_order": 0,
+          "is_primary": true
+        },
+        {
+          "variant_sku": "kinetic-tesla-chic-q-matte-black",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-tesla-chic-q-matte-black.jpg",
+          "alt_text": "KINETIC Tesla Chic Q - Matte Black",
+          "sort_order": 1,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-tesla-chic-q-ocean-blue",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-tesla-chic-q-ocean-blue.jpg",
+          "alt_text": "KINETIC Tesla Chic Q - Ocean Blue",
+          "sort_order": 2,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-tesla-chic-q-cherry-red",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-tesla-chic-q-cherry-red.jpg",
+          "alt_text": "KINETIC Tesla Chic Q - Cherry Red",
+          "sort_order": 3,
+          "is_primary": false
+        }
+      ]
+    },
+    {
+      "source_group": "xe-máy-điện-dibao-tesla-dio",
+      "category": {
+        "name": "Xe điện",
+        "slug": "xe-dien",
+        "description": "Dòng xe điện đô thị với thiết kế gọn, vận hành êm và phù hợp di chuyển hằng ngày.",
+        "vehicle_type": "E_SCOOTER"
+      },
+      "product": {
+        "name": "KINETIC Tesla Dio",
+        "slug": "kinetic-tesla-dio",
+        "description": "KINETIC Tesla Dio la dong xe dien thiet ke cho di chuyen hang ngay, van hanh em va de tiep can. Xe dung pin LITHIUM_ION, cong suat 800W, toc do toi da 45 km/h va tam hoat dong den 100 km.",
+        "price": 25900000,
+        "discount_price": null,
+        "stock_quantity": 48,
+        "rating": 0,
+        "review_count": 0,
+        "is_featured": true,
+        "is_active": true
+      },
+      "specification": {
+        "model_code": "TESLA-DIO",
+        "brand": "KINETIC",
+        "vehicle_type": "E_SCOOTER",
+        "battery_type": "LITHIUM_ION",
+        "battery_capacity_ah": 22,
+        "battery_voltage_v": 60,
+        "charging_time_hours": 7.0,
+        "max_speed_kmh": 45,
+        "max_range_km": 100,
+        "motor_power_watts": 800,
+        "peak_motor_power_watts": 1080,
+        "max_load_kg": 180,
+        "product_weight_kg": 92,
+        "wheel_size_inch": 10,
+        "brake_type": "DISC",
+        "drive_type": "HUB_MOTOR",
+        "water_resistance_rating": "IPX5",
+        "frame_material": "Alloy Steel",
+        "suspension_type": "Front Telescopic",
+        "display_type": "LED Digital Display",
+        "smart_features": "Digital dashboard, anti-theft lock and USB charging port.",
+        "warranty_months": 24,
+        "dimensions_mm": "1850 x 700 x 1120"
+      },
+      "variants": [
+        {
+          "sku": "kinetic-tesla-dio-pearl-white",
+          "variant_name": "Pearl White",
+          "color_name": "Pearl White",
+          "color_hex": "#F5F5F4",
+          "battery_capacity_ah": 22,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": true,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-tesla-dio-matte-black",
+          "variant_name": "Matte Black",
+          "color_name": "Matte Black",
+          "color_hex": "#18181B",
+          "battery_capacity_ah": 22,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-tesla-dio-ocean-blue",
+          "variant_name": "Ocean Blue",
+          "color_name": "Ocean Blue",
+          "color_hex": "#2563EB",
+          "battery_capacity_ah": 22,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-tesla-dio-cherry-red",
+          "variant_name": "Cherry Red",
+          "color_name": "Cherry Red",
+          "color_hex": "#DC2626",
+          "battery_capacity_ah": 22,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        }
+      ],
+      "images": [
+        {
+          "variant_sku": "kinetic-tesla-dio-pearl-white",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-tesla-dio-pearl-white.jpg",
+          "alt_text": "KINETIC Tesla Dio - Pearl White",
+          "sort_order": 0,
+          "is_primary": true
+        },
+        {
+          "variant_sku": "kinetic-tesla-dio-matte-black",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-tesla-dio-matte-black.jpg",
+          "alt_text": "KINETIC Tesla Dio - Matte Black",
+          "sort_order": 1,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-tesla-dio-ocean-blue",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-tesla-dio-ocean-blue.jpg",
+          "alt_text": "KINETIC Tesla Dio - Ocean Blue",
+          "sort_order": 2,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-tesla-dio-cherry-red",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-tesla-dio-cherry-red.jpg",
+          "alt_text": "KINETIC Tesla Dio - Cherry Red",
+          "sort_order": 3,
+          "is_primary": false
+        }
+      ]
+    },
+    {
+      "source_group": "xe-máy-điện-dibao-tesla-dio-e",
+      "category": {
+        "name": "Xe điện",
+        "slug": "xe-dien",
+        "description": "Dòng xe điện đô thị với thiết kế gọn, vận hành êm và phù hợp di chuyển hằng ngày.",
+        "vehicle_type": "E_SCOOTER"
+      },
+      "product": {
+        "name": "KINETIC Tesla Dio E",
+        "slug": "kinetic-tesla-dio-e",
+        "description": "KINETIC Tesla Dio E la dong xe dien thiet ke cho di chuyen hang ngay, van hanh em va de tiep can. Xe dung pin LITHIUM_ION, cong suat 1600W, toc do toi da 50 km/h va tam hoat dong den 80 km.",
+        "price": 25900000,
+        "discount_price": null,
+        "stock_quantity": 48,
+        "rating": 0,
+        "review_count": 0,
+        "is_featured": false,
+        "is_active": true
+      },
+      "specification": {
+        "model_code": "TESLA-DIO-E",
+        "brand": "KINETIC",
+        "vehicle_type": "E_SCOOTER",
+        "battery_type": "LITHIUM_ION",
+        "battery_capacity_ah": 30,
+        "battery_voltage_v": 60,
+        "charging_time_hours": 7.0,
+        "max_speed_kmh": 50,
+        "max_range_km": 80,
+        "motor_power_watts": 1600,
+        "peak_motor_power_watts": 2160,
+        "max_load_kg": 180,
+        "product_weight_kg": 92,
+        "wheel_size_inch": 10,
+        "brake_type": "DISC",
+        "drive_type": "HUB_MOTOR",
+        "water_resistance_rating": "IPX5",
+        "frame_material": "Alloy Steel",
+        "suspension_type": "Front Telescopic",
+        "display_type": "LED Digital Display",
+        "smart_features": "Digital dashboard, anti-theft lock and USB charging port.",
+        "warranty_months": 24,
+        "dimensions_mm": "1850 x 700 x 1120"
+      },
+      "variants": [
+        {
+          "sku": "kinetic-tesla-dio-e-pearl-white",
+          "variant_name": "Pearl White",
+          "color_name": "Pearl White",
+          "color_hex": "#F5F5F4",
+          "battery_capacity_ah": 30,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": true,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-tesla-dio-e-matte-black",
+          "variant_name": "Matte Black",
+          "color_name": "Matte Black",
+          "color_hex": "#18181B",
+          "battery_capacity_ah": 30,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-tesla-dio-e-ocean-blue",
+          "variant_name": "Ocean Blue",
+          "color_name": "Ocean Blue",
+          "color_hex": "#2563EB",
+          "battery_capacity_ah": 30,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-tesla-dio-e-cherry-red",
+          "variant_name": "Cherry Red",
+          "color_name": "Cherry Red",
+          "color_hex": "#DC2626",
+          "battery_capacity_ah": 30,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        }
+      ],
+      "images": [
+        {
+          "variant_sku": "kinetic-tesla-dio-e-pearl-white",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-tesla-dio-e-pearl-white.jpg",
+          "alt_text": "KINETIC Tesla Dio E - Pearl White",
+          "sort_order": 0,
+          "is_primary": true
+        },
+        {
+          "variant_sku": "kinetic-tesla-dio-e-matte-black",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-tesla-dio-e-matte-black.jpg",
+          "alt_text": "KINETIC Tesla Dio E - Matte Black",
+          "sort_order": 1,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-tesla-dio-e-ocean-blue",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-tesla-dio-e-ocean-blue.jpg",
+          "alt_text": "KINETIC Tesla Dio E - Ocean Blue",
+          "sort_order": 2,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-tesla-dio-e-cherry-red",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-tesla-dio-e-cherry-red.jpg",
+          "alt_text": "KINETIC Tesla Dio E - Cherry Red",
+          "sort_order": 3,
+          "is_primary": false
+        }
+      ]
+    },
+    {
+      "source_group": "xe-máy-điện-dibao-tesla-e",
+      "category": {
+        "name": "Xe điện",
+        "slug": "xe-dien",
+        "description": "Dòng xe điện đô thị với thiết kế gọn, vận hành êm và phù hợp di chuyển hằng ngày.",
+        "vehicle_type": "E_SCOOTER"
+      },
+      "product": {
+        "name": "KINETIC Tesla E",
+        "slug": "kinetic-tesla-e",
+        "description": "KINETIC Tesla E la dong xe dien thiet ke cho di chuyen hang ngay, van hanh em va de tiep can. Xe dung pin LITHIUM_ION, cong suat 1400W, toc do toi da 45 km/h va tam hoat dong den 90 km.",
+        "price": 20400000,
+        "discount_price": null,
+        "stock_quantity": 48,
+        "rating": 0,
+        "review_count": 0,
+        "is_featured": false,
+        "is_active": true
+      },
+      "specification": {
+        "model_code": "TESLA-E",
+        "brand": "KINETIC",
+        "vehicle_type": "E_SCOOTER",
+        "battery_type": "LITHIUM_ION",
+        "battery_capacity_ah": 28,
+        "battery_voltage_v": 60,
+        "charging_time_hours": 7.0,
+        "max_speed_kmh": 45,
+        "max_range_km": 90,
+        "motor_power_watts": 1400,
+        "peak_motor_power_watts": 1890,
+        "max_load_kg": 180,
+        "product_weight_kg": 92,
+        "wheel_size_inch": 10,
+        "brake_type": "DRUM",
+        "drive_type": "HUB_MOTOR",
+        "water_resistance_rating": "IPX5",
+        "frame_material": "Alloy Steel",
+        "suspension_type": "Front Telescopic",
+        "display_type": "LED Digital Display",
+        "smart_features": "Digital dashboard, anti-theft lock and USB charging port.",
+        "warranty_months": 24,
+        "dimensions_mm": "1850 x 700 x 1120"
+      },
+      "variants": [
+        {
+          "sku": "kinetic-tesla-e-pearl-white",
+          "variant_name": "Pearl White",
+          "color_name": "Pearl White",
+          "color_hex": "#F5F5F4",
+          "battery_capacity_ah": 28,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": true,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-tesla-e-matte-black",
+          "variant_name": "Matte Black",
+          "color_name": "Matte Black",
+          "color_hex": "#18181B",
+          "battery_capacity_ah": 28,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-tesla-e-ocean-blue",
+          "variant_name": "Ocean Blue",
+          "color_name": "Ocean Blue",
+          "color_hex": "#2563EB",
+          "battery_capacity_ah": 28,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-tesla-e-cherry-red",
+          "variant_name": "Cherry Red",
+          "color_name": "Cherry Red",
+          "color_hex": "#DC2626",
+          "battery_capacity_ah": 28,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        }
+      ],
+      "images": [
+        {
+          "variant_sku": "kinetic-tesla-e-pearl-white",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-tesla-e-pearl-white.jpg",
+          "alt_text": "KINETIC Tesla E - Pearl White",
+          "sort_order": 0,
+          "is_primary": true
+        },
+        {
+          "variant_sku": "kinetic-tesla-e-matte-black",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-tesla-e-matte-black.jpg",
+          "alt_text": "KINETIC Tesla E - Matte Black",
+          "sort_order": 1,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-tesla-e-ocean-blue",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-tesla-e-ocean-blue.jpg",
+          "alt_text": "KINETIC Tesla E - Ocean Blue",
+          "sort_order": 2,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-tesla-e-cherry-red",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-tesla-e-cherry-red.jpg",
+          "alt_text": "KINETIC Tesla E - Cherry Red",
+          "sort_order": 3,
+          "is_primary": false
+        }
+      ]
+    },
+    {
+      "source_group": "xe-máy-điện-dibao-tesla-sd",
+      "category": {
+        "name": "Xe điện",
+        "slug": "xe-dien",
+        "description": "Dòng xe điện đô thị với thiết kế gọn, vận hành êm và phù hợp di chuyển hằng ngày.",
+        "vehicle_type": "E_SCOOTER"
+      },
+      "product": {
+        "name": "KINETIC Tesla Sd",
+        "slug": "kinetic-tesla-sd",
+        "description": "KINETIC Tesla Sd la dong xe dien thiet ke cho di chuyen hang ngay, van hanh em va de tiep can. Xe dung pin LITHIUM_ION, cong suat 1600W, toc do toi da 50 km/h va tam hoat dong den 110 km.",
+        "price": 20400000,
+        "discount_price": null,
+        "stock_quantity": 48,
+        "rating": 0,
+        "review_count": 0,
+        "is_featured": false,
+        "is_active": true
+      },
+      "specification": {
+        "model_code": "TESLA-SD",
+        "brand": "KINETIC",
+        "vehicle_type": "E_SCOOTER",
+        "battery_type": "LITHIUM_ION",
+        "battery_capacity_ah": 24,
+        "battery_voltage_v": 60,
+        "charging_time_hours": 7.0,
+        "max_speed_kmh": 50,
+        "max_range_km": 110,
+        "motor_power_watts": 1600,
+        "peak_motor_power_watts": 2160,
+        "max_load_kg": 180,
+        "product_weight_kg": 92,
+        "wheel_size_inch": 10,
+        "brake_type": "DRUM",
+        "drive_type": "HUB_MOTOR",
+        "water_resistance_rating": "IPX5",
+        "frame_material": "Alloy Steel",
+        "suspension_type": "Front Telescopic",
+        "display_type": "LED Digital Display",
+        "smart_features": "Digital dashboard, anti-theft lock and USB charging port.",
+        "warranty_months": 24,
+        "dimensions_mm": "1850 x 700 x 1120"
+      },
+      "variants": [
+        {
+          "sku": "kinetic-tesla-sd-pearl-white",
+          "variant_name": "Pearl White",
+          "color_name": "Pearl White",
+          "color_hex": "#F5F5F4",
+          "battery_capacity_ah": 24,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": true,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-tesla-sd-matte-black",
+          "variant_name": "Matte Black",
+          "color_name": "Matte Black",
+          "color_hex": "#18181B",
+          "battery_capacity_ah": 24,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-tesla-sd-ocean-blue",
+          "variant_name": "Ocean Blue",
+          "color_name": "Ocean Blue",
+          "color_hex": "#2563EB",
+          "battery_capacity_ah": 24,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-tesla-sd-cherry-red",
+          "variant_name": "Cherry Red",
+          "color_name": "Cherry Red",
+          "color_hex": "#DC2626",
+          "battery_capacity_ah": 24,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        }
+      ],
+      "images": [
+        {
+          "variant_sku": "kinetic-tesla-sd-pearl-white",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-tesla-sd-pearl-white.jpg",
+          "alt_text": "KINETIC Tesla Sd - Pearl White",
+          "sort_order": 0,
+          "is_primary": true
+        },
+        {
+          "variant_sku": "kinetic-tesla-sd-matte-black",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-tesla-sd-matte-black.jpg",
+          "alt_text": "KINETIC Tesla Sd - Matte Black",
+          "sort_order": 1,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-tesla-sd-ocean-blue",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-tesla-sd-ocean-blue.jpg",
+          "alt_text": "KINETIC Tesla Sd - Ocean Blue",
+          "sort_order": 2,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-tesla-sd-cherry-red",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-tesla-sd-cherry-red.jpg",
+          "alt_text": "KINETIC Tesla Sd - Cherry Red",
+          "sort_order": 3,
+          "is_primary": false
+        }
+      ]
+    },
+    {
+      "source_group": "xe-máy-điện-dibao-xman-leo",
+      "category": {
+        "name": "Xe điện",
+        "slug": "xe-dien",
+        "description": "Dòng xe điện đô thị với thiết kế gọn, vận hành êm và phù hợp di chuyển hằng ngày.",
+        "vehicle_type": "E_SCOOTER"
+      },
+      "product": {
+        "name": "KINETIC Xman Leo",
+        "slug": "kinetic-xman-leo",
+        "description": "KINETIC Xman Leo la dong xe dien thiet ke cho di chuyen hang ngay, van hanh em va de tiep can. Xe dung pin LITHIUM_ION, cong suat 1600W, toc do toi da 50 km/h va tam hoat dong den 110 km.",
+        "price": 27000000,
+        "discount_price": null,
+        "stock_quantity": 48,
+        "rating": 0,
+        "review_count": 0,
+        "is_featured": false,
+        "is_active": true
+      },
+      "specification": {
+        "model_code": "XMAN-LEO",
+        "brand": "KINETIC",
+        "vehicle_type": "E_SCOOTER",
+        "battery_type": "LITHIUM_ION",
+        "battery_capacity_ah": 24,
+        "battery_voltage_v": 60,
+        "charging_time_hours": 7.0,
+        "max_speed_kmh": 50,
+        "max_range_km": 110,
+        "motor_power_watts": 1600,
+        "peak_motor_power_watts": 2160,
+        "max_load_kg": 180,
+        "product_weight_kg": 92,
+        "wheel_size_inch": 10,
+        "brake_type": "DRUM",
+        "drive_type": "HUB_MOTOR",
+        "water_resistance_rating": "IPX5",
+        "frame_material": "Alloy Steel",
+        "suspension_type": "Front Telescopic",
+        "display_type": "LED Digital Display",
+        "smart_features": "Digital dashboard, anti-theft lock and USB charging port.",
+        "warranty_months": 24,
+        "dimensions_mm": "1850 x 700 x 1120"
+      },
+      "variants": [
+        {
+          "sku": "kinetic-xman-leo-pearl-white",
+          "variant_name": "Pearl White",
+          "color_name": "Pearl White",
+          "color_hex": "#F5F5F4",
+          "battery_capacity_ah": 24,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": true,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-xman-leo-matte-black",
+          "variant_name": "Matte Black",
+          "color_name": "Matte Black",
+          "color_hex": "#18181B",
+          "battery_capacity_ah": 24,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-xman-leo-ocean-blue",
+          "variant_name": "Ocean Blue",
+          "color_name": "Ocean Blue",
+          "color_hex": "#2563EB",
+          "battery_capacity_ah": 24,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-xman-leo-cherry-red",
+          "variant_name": "Cherry Red",
+          "color_name": "Cherry Red",
+          "color_hex": "#DC2626",
+          "battery_capacity_ah": 24,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        }
+      ],
+      "images": [
+        {
+          "variant_sku": "kinetic-xman-leo-pearl-white",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-xman-leo-pearl-white.jpg",
+          "alt_text": "KINETIC Xman Leo - Pearl White",
+          "sort_order": 0,
+          "is_primary": true
+        },
+        {
+          "variant_sku": "kinetic-xman-leo-matte-black",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-xman-leo-matte-black.jpg",
+          "alt_text": "KINETIC Xman Leo - Matte Black",
+          "sort_order": 1,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-xman-leo-ocean-blue",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-xman-leo-ocean-blue.jpg",
+          "alt_text": "KINETIC Xman Leo - Ocean Blue",
+          "sort_order": 2,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-xman-leo-cherry-red",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-xman-leo-cherry-red.jpg",
+          "alt_text": "KINETIC Xman Leo - Cherry Red",
+          "sort_order": 3,
+          "is_primary": false
+        }
+      ]
+    },
+    {
+      "source_group": "xe-tay-ga-50cc-dibao-tesla-x",
+      "category": {
+        "name": "Xe điện",
+        "slug": "xe-dien",
+        "description": "Dòng xe điện đô thị với thiết kế gọn, vận hành êm và phù hợp di chuyển hằng ngày.",
+        "vehicle_type": "E_SCOOTER"
+      },
+      "product": {
+        "name": "KINETIC Tesla X",
+        "slug": "kinetic-tesla-x",
+        "description": "KINETIC Tesla X la dong xe dien thiet ke cho di chuyen hang ngay, van hanh em va de tiep can. Xe dung pin LEAD_ACID, cong suat 800W, toc do toi da 50 km/h va tam hoat dong den 80 km.",
+        "price": 19400000,
+        "discount_price": null,
+        "stock_quantity": 48,
+        "rating": 0,
+        "review_count": 0,
+        "is_featured": true,
+        "is_active": true
+      },
+      "specification": {
+        "model_code": "TESLA-X",
+        "brand": "KINETIC",
+        "vehicle_type": "E_SCOOTER",
+        "battery_type": "LEAD_ACID",
+        "battery_capacity_ah": 30,
+        "battery_voltage_v": 60,
+        "charging_time_hours": 7.0,
+        "max_speed_kmh": 50,
+        "max_range_km": 80,
+        "motor_power_watts": 800,
+        "peak_motor_power_watts": 1080,
+        "max_load_kg": 180,
+        "product_weight_kg": 92,
+        "wheel_size_inch": 10,
+        "brake_type": "DISC",
+        "drive_type": "HUB_MOTOR",
+        "water_resistance_rating": "IPX5",
+        "frame_material": "Alloy Steel",
+        "suspension_type": "Front Telescopic",
+        "display_type": "LED Digital Display",
+        "smart_features": "Digital dashboard, anti-theft lock and USB charging port.",
+        "warranty_months": 24,
+        "dimensions_mm": "1850 x 700 x 1120"
+      },
+      "variants": [
+        {
+          "sku": "kinetic-tesla-x-pearl-white",
+          "variant_name": "Pearl White",
+          "color_name": "Pearl White",
+          "color_hex": "#F5F5F4",
+          "battery_capacity_ah": 30,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": true,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-tesla-x-matte-black",
+          "variant_name": "Matte Black",
+          "color_name": "Matte Black",
+          "color_hex": "#18181B",
+          "battery_capacity_ah": 30,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-tesla-x-ocean-blue",
+          "variant_name": "Ocean Blue",
+          "color_name": "Ocean Blue",
+          "color_hex": "#2563EB",
+          "battery_capacity_ah": 30,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-tesla-x-cherry-red",
+          "variant_name": "Cherry Red",
+          "color_name": "Cherry Red",
+          "color_hex": "#DC2626",
+          "battery_capacity_ah": 30,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        }
+      ],
+      "images": [
+        {
+          "variant_sku": "kinetic-tesla-x-pearl-white",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-tesla-x-pearl-white.jpg",
+          "alt_text": "KINETIC Tesla X - Pearl White",
+          "sort_order": 0,
+          "is_primary": true
+        },
+        {
+          "variant_sku": "kinetic-tesla-x-matte-black",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-tesla-x-matte-black.jpg",
+          "alt_text": "KINETIC Tesla X - Matte Black",
+          "sort_order": 1,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-tesla-x-ocean-blue",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-tesla-x-ocean-blue.jpg",
+          "alt_text": "KINETIC Tesla X - Ocean Blue",
+          "sort_order": 2,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-tesla-x-cherry-red",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-tesla-x-cherry-red.jpg",
+          "alt_text": "KINETIC Tesla X - Cherry Red",
+          "sort_order": 3,
+          "is_primary": false
+        }
+      ]
+    },
+    {
+      "source_group": "xe-điện-dibao-butterfly",
+      "category": {
+        "name": "Xe điện",
+        "slug": "xe-dien",
+        "description": "Dòng xe điện đô thị với thiết kế gọn, vận hành êm và phù hợp di chuyển hằng ngày.",
+        "vehicle_type": "E_SCOOTER"
+      },
+      "product": {
+        "name": "KINETIC Butterfly",
+        "slug": "kinetic-butterfly",
+        "description": "KINETIC Butterfly la dong xe dien thiet ke cho di chuyen hang ngay, van hanh em va de tiep can. Xe dung pin LITHIUM_ION, cong suat 800W, toc do toi da 55 km/h va tam hoat dong den 90 km.",
+        "price": 23300000,
+        "discount_price": null,
+        "stock_quantity": 48,
+        "rating": 0,
+        "review_count": 0,
+        "is_featured": true,
+        "is_active": true
+      },
+      "specification": {
+        "model_code": "BUTTERFLY",
+        "brand": "KINETIC",
+        "vehicle_type": "E_SCOOTER",
+        "battery_type": "LITHIUM_ION",
+        "battery_capacity_ah": 32,
+        "battery_voltage_v": 60,
+        "charging_time_hours": 7.0,
+        "max_speed_kmh": 55,
+        "max_range_km": 90,
+        "motor_power_watts": 800,
+        "peak_motor_power_watts": 1080,
+        "max_load_kg": 180,
+        "product_weight_kg": 92,
+        "wheel_size_inch": 10,
+        "brake_type": "DRUM",
+        "drive_type": "HUB_MOTOR",
+        "water_resistance_rating": "IPX5",
+        "frame_material": "Alloy Steel",
+        "suspension_type": "Front Telescopic",
+        "display_type": "LED Digital Display",
+        "smart_features": "Digital dashboard, anti-theft lock and USB charging port.",
+        "warranty_months": 24,
+        "dimensions_mm": "1850 x 700 x 1120"
+      },
+      "variants": [
+        {
+          "sku": "kinetic-butterfly-pearl-white",
+          "variant_name": "Pearl White",
+          "color_name": "Pearl White",
+          "color_hex": "#F5F5F4",
+          "battery_capacity_ah": 32,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": true,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-butterfly-matte-black",
+          "variant_name": "Matte Black",
+          "color_name": "Matte Black",
+          "color_hex": "#18181B",
+          "battery_capacity_ah": 32,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-butterfly-ocean-blue",
+          "variant_name": "Ocean Blue",
+          "color_name": "Ocean Blue",
+          "color_hex": "#2563EB",
+          "battery_capacity_ah": 32,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-butterfly-cherry-red",
+          "variant_name": "Cherry Red",
+          "color_name": "Cherry Red",
+          "color_hex": "#DC2626",
+          "battery_capacity_ah": 32,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        }
+      ],
+      "images": [
+        {
+          "variant_sku": "kinetic-butterfly-pearl-white",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-butterfly-pearl-white.jpg",
+          "alt_text": "KINETIC Butterfly - Pearl White",
+          "sort_order": 0,
+          "is_primary": true
+        },
+        {
+          "variant_sku": "kinetic-butterfly-matte-black",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-butterfly-matte-black.jpg",
+          "alt_text": "KINETIC Butterfly - Matte Black",
+          "sort_order": 1,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-butterfly-ocean-blue",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-butterfly-ocean-blue.jpg",
+          "alt_text": "KINETIC Butterfly - Ocean Blue",
+          "sort_order": 2,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-butterfly-cherry-red",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-butterfly-cherry-red.jpg",
+          "alt_text": "KINETIC Butterfly - Cherry Red",
+          "sort_order": 3,
+          "is_primary": false
+        }
+      ]
+    },
+    {
+      "source_group": "xe-điện-dibao-gogo-s4",
+      "category": {
+        "name": "Xe điện",
+        "slug": "xe-dien",
+        "description": "Dòng xe điện đô thị với thiết kế gọn, vận hành êm và phù hợp di chuyển hằng ngày.",
+        "vehicle_type": "E_SCOOTER"
+      },
+      "product": {
+        "name": "KINETIC Gogo S4",
+        "slug": "kinetic-gogo-s4",
+        "description": "KINETIC Gogo S4 la dong xe dien thiet ke cho di chuyen hang ngay, van hanh em va de tiep can. Xe dung pin LITHIUM_ION, cong suat 800W, toc do toi da 45 km/h va tam hoat dong den 90 km.",
+        "price": 22600000,
+        "discount_price": null,
+        "stock_quantity": 48,
+        "rating": 0,
+        "review_count": 0,
+        "is_featured": true,
+        "is_active": true
+      },
+      "specification": {
+        "model_code": "GOGO-S4",
+        "brand": "KINETIC",
+        "vehicle_type": "E_SCOOTER",
+        "battery_type": "LITHIUM_ION",
+        "battery_capacity_ah": 28,
+        "battery_voltage_v": 60,
+        "charging_time_hours": 7.0,
+        "max_speed_kmh": 45,
+        "max_range_km": 90,
+        "motor_power_watts": 800,
+        "peak_motor_power_watts": 1080,
+        "max_load_kg": 180,
+        "product_weight_kg": 92,
+        "wheel_size_inch": 10,
+        "brake_type": "DRUM",
+        "drive_type": "HUB_MOTOR",
+        "water_resistance_rating": "IPX5",
+        "frame_material": "Alloy Steel",
+        "suspension_type": "Front Telescopic",
+        "display_type": "LED Digital Display",
+        "smart_features": "Digital dashboard, anti-theft lock and USB charging port.",
+        "warranty_months": 24,
+        "dimensions_mm": "1850 x 700 x 1120"
+      },
+      "variants": [
+        {
+          "sku": "kinetic-gogo-s4-pearl-white",
+          "variant_name": "Pearl White",
+          "color_name": "Pearl White",
+          "color_hex": "#F5F5F4",
+          "battery_capacity_ah": 28,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": true,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-gogo-s4-matte-black",
+          "variant_name": "Matte Black",
+          "color_name": "Matte Black",
+          "color_hex": "#18181B",
+          "battery_capacity_ah": 28,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-gogo-s4-ocean-blue",
+          "variant_name": "Ocean Blue",
+          "color_name": "Ocean Blue",
+          "color_hex": "#2563EB",
+          "battery_capacity_ah": 28,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-gogo-s4-cherry-red",
+          "variant_name": "Cherry Red",
+          "color_name": "Cherry Red",
+          "color_hex": "#DC2626",
+          "battery_capacity_ah": 28,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        }
+      ],
+      "images": [
+        {
+          "variant_sku": "kinetic-gogo-s4-pearl-white",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-gogo-s4-pearl-white.jpg",
+          "alt_text": "KINETIC Gogo S4 - Pearl White",
+          "sort_order": 0,
+          "is_primary": true
+        },
+        {
+          "variant_sku": "kinetic-gogo-s4-matte-black",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-gogo-s4-matte-black.jpg",
+          "alt_text": "KINETIC Gogo S4 - Matte Black",
+          "sort_order": 1,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-gogo-s4-ocean-blue",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-gogo-s4-ocean-blue.jpg",
+          "alt_text": "KINETIC Gogo S4 - Ocean Blue",
+          "sort_order": 2,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-gogo-s4-cherry-red",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-gogo-s4-cherry-red.jpg",
+          "alt_text": "KINETIC Gogo S4 - Cherry Red",
+          "sort_order": 3,
+          "is_primary": false
+        }
+      ]
+    },
+    {
+      "source_group": "xe-điện-dibao-gogo-s5",
+      "category": {
+        "name": "Xe điện",
+        "slug": "xe-dien",
+        "description": "Dòng xe điện đô thị với thiết kế gọn, vận hành êm và phù hợp di chuyển hằng ngày.",
+        "vehicle_type": "E_SCOOTER"
+      },
+      "product": {
+        "name": "KINETIC Gogo S5",
+        "slug": "kinetic-gogo-s5",
+        "description": "KINETIC Gogo S5 la dong xe dien thiet ke cho di chuyen hang ngay, van hanh em va de tiep can. Xe dung pin LITHIUM_ION, cong suat 1000W, toc do toi da 55 km/h va tam hoat dong den 90 km.",
+        "price": 27000000,
+        "discount_price": null,
+        "stock_quantity": 48,
+        "rating": 0,
+        "review_count": 0,
+        "is_featured": false,
+        "is_active": true
+      },
+      "specification": {
+        "model_code": "GOGO-S5",
+        "brand": "KINETIC",
+        "vehicle_type": "E_SCOOTER",
+        "battery_type": "LITHIUM_ION",
+        "battery_capacity_ah": 32,
+        "battery_voltage_v": 60,
+        "charging_time_hours": 7.0,
+        "max_speed_kmh": 55,
+        "max_range_km": 90,
+        "motor_power_watts": 1000,
+        "peak_motor_power_watts": 1350,
+        "max_load_kg": 180,
+        "product_weight_kg": 92,
+        "wheel_size_inch": 10,
+        "brake_type": "DRUM",
+        "drive_type": "HUB_MOTOR",
+        "water_resistance_rating": "IPX5",
+        "frame_material": "Alloy Steel",
+        "suspension_type": "Front Telescopic",
+        "display_type": "LED Digital Display",
+        "smart_features": "Digital dashboard, anti-theft lock and USB charging port.",
+        "warranty_months": 24,
+        "dimensions_mm": "1850 x 700 x 1120"
+      },
+      "variants": [
+        {
+          "sku": "kinetic-gogo-s5-pearl-white",
+          "variant_name": "Pearl White",
+          "color_name": "Pearl White",
+          "color_hex": "#F5F5F4",
+          "battery_capacity_ah": 32,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": true,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-gogo-s5-matte-black",
+          "variant_name": "Matte Black",
+          "color_name": "Matte Black",
+          "color_hex": "#18181B",
+          "battery_capacity_ah": 32,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-gogo-s5-ocean-blue",
+          "variant_name": "Ocean Blue",
+          "color_name": "Ocean Blue",
+          "color_hex": "#2563EB",
+          "battery_capacity_ah": 32,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-gogo-s5-cherry-red",
+          "variant_name": "Cherry Red",
+          "color_name": "Cherry Red",
+          "color_hex": "#DC2626",
+          "battery_capacity_ah": 32,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        }
+      ],
+      "images": [
+        {
+          "variant_sku": "kinetic-gogo-s5-pearl-white",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-gogo-s5-pearl-white.jpg",
+          "alt_text": "KINETIC Gogo S5 - Pearl White",
+          "sort_order": 0,
+          "is_primary": true
+        },
+        {
+          "variant_sku": "kinetic-gogo-s5-matte-black",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-gogo-s5-matte-black.jpg",
+          "alt_text": "KINETIC Gogo S5 - Matte Black",
+          "sort_order": 1,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-gogo-s5-ocean-blue",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-gogo-s5-ocean-blue.jpg",
+          "alt_text": "KINETIC Gogo S5 - Ocean Blue",
+          "sort_order": 2,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-gogo-s5-cherry-red",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-gogo-s5-cherry-red.jpg",
+          "alt_text": "KINETIC Gogo S5 - Cherry Red",
+          "sort_order": 3,
+          "is_primary": false
+        }
+      ]
+    },
+    {
+      "source_group": "xe-điện-dibao-jeek-one",
+      "category": {
+        "name": "Xe điện",
+        "slug": "xe-dien",
+        "description": "Dòng xe điện đô thị với thiết kế gọn, vận hành êm và phù hợp di chuyển hằng ngày.",
+        "vehicle_type": "E_SCOOTER"
+      },
+      "product": {
+        "name": "KINETIC Jeek One",
+        "slug": "kinetic-jeek-one",
+        "description": "KINETIC Jeek One la dong xe dien thiet ke cho di chuyen hang ngay, van hanh em va de tiep can. Xe dung pin LITHIUM_ION, cong suat 800W, toc do toi da 55 km/h va tam hoat dong den 80 km.",
+        "price": 21100000,
+        "discount_price": null,
+        "stock_quantity": 48,
+        "rating": 0,
+        "review_count": 0,
+        "is_featured": true,
+        "is_active": true
+      },
+      "specification": {
+        "model_code": "JEEK-ONE",
+        "brand": "KINETIC",
+        "vehicle_type": "E_SCOOTER",
+        "battery_type": "LITHIUM_ION",
+        "battery_capacity_ah": 26,
+        "battery_voltage_v": 60,
+        "charging_time_hours": 7.0,
+        "max_speed_kmh": 55,
+        "max_range_km": 80,
+        "motor_power_watts": 800,
+        "peak_motor_power_watts": 1080,
+        "max_load_kg": 180,
+        "product_weight_kg": 92,
+        "wheel_size_inch": 10,
+        "brake_type": "DISC",
+        "drive_type": "HUB_MOTOR",
+        "water_resistance_rating": "IPX5",
+        "frame_material": "Alloy Steel",
+        "suspension_type": "Front Telescopic",
+        "display_type": "LED Digital Display",
+        "smart_features": "Digital dashboard, anti-theft lock and USB charging port.",
+        "warranty_months": 24,
+        "dimensions_mm": "1850 x 700 x 1120"
+      },
+      "variants": [
+        {
+          "sku": "kinetic-jeek-one-pearl-white",
+          "variant_name": "Pearl White",
+          "color_name": "Pearl White",
+          "color_hex": "#F5F5F4",
+          "battery_capacity_ah": 26,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": true,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-jeek-one-matte-black",
+          "variant_name": "Matte Black",
+          "color_name": "Matte Black",
+          "color_hex": "#18181B",
+          "battery_capacity_ah": 26,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-jeek-one-ocean-blue",
+          "variant_name": "Ocean Blue",
+          "color_name": "Ocean Blue",
+          "color_hex": "#2563EB",
+          "battery_capacity_ah": 26,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-jeek-one-cherry-red",
+          "variant_name": "Cherry Red",
+          "color_name": "Cherry Red",
+          "color_hex": "#DC2626",
+          "battery_capacity_ah": 26,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        }
+      ],
+      "images": [
+        {
+          "variant_sku": "kinetic-jeek-one-pearl-white",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-jeek-one-pearl-white.jpg",
+          "alt_text": "KINETIC Jeek One - Pearl White",
+          "sort_order": 0,
+          "is_primary": true
+        },
+        {
+          "variant_sku": "kinetic-jeek-one-matte-black",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-jeek-one-matte-black.jpg",
+          "alt_text": "KINETIC Jeek One - Matte Black",
+          "sort_order": 1,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-jeek-one-ocean-blue",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-jeek-one-ocean-blue.jpg",
+          "alt_text": "KINETIC Jeek One - Ocean Blue",
+          "sort_order": 2,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-jeek-one-cherry-red",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-jeek-one-cherry-red.jpg",
+          "alt_text": "KINETIC Jeek One - Cherry Red",
+          "sort_order": 3,
+          "is_primary": false
+        }
+      ]
+    },
+    {
+      "source_group": "xe-điện-dibao-r1",
+      "category": {
+        "name": "Xe điện",
+        "slug": "xe-dien",
+        "description": "Dòng xe điện đô thị với thiết kế gọn, vận hành êm và phù hợp di chuyển hằng ngày.",
+        "vehicle_type": "E_SCOOTER"
+      },
+      "product": {
+        "name": "KINETIC R1",
+        "slug": "kinetic-r1",
+        "description": "KINETIC R1 la dong xe dien thiet ke cho di chuyen hang ngay, van hanh em va de tiep can. Xe dung pin LITHIUM_ION, cong suat 1400W, toc do toi da 55 km/h va tam hoat dong den 100 km.",
+        "price": 18900000,
+        "discount_price": null,
+        "stock_quantity": 48,
+        "rating": 0,
+        "review_count": 0,
+        "is_featured": false,
+        "is_active": true
+      },
+      "specification": {
+        "model_code": "R1",
+        "brand": "KINETIC",
+        "vehicle_type": "E_SCOOTER",
+        "battery_type": "LITHIUM_ION",
+        "battery_capacity_ah": 26,
+        "battery_voltage_v": 60,
+        "charging_time_hours": 7.0,
+        "max_speed_kmh": 55,
+        "max_range_km": 100,
+        "motor_power_watts": 1400,
+        "peak_motor_power_watts": 1890,
+        "max_load_kg": 180,
+        "product_weight_kg": 92,
+        "wheel_size_inch": 10,
+        "brake_type": "DISC",
+        "drive_type": "HUB_MOTOR",
+        "water_resistance_rating": "IPX5",
+        "frame_material": "Alloy Steel",
+        "suspension_type": "Front Telescopic",
+        "display_type": "LED Digital Display",
+        "smart_features": "Digital dashboard, anti-theft lock and USB charging port.",
+        "warranty_months": 24,
+        "dimensions_mm": "1850 x 700 x 1120"
+      },
+      "variants": [
+        {
+          "sku": "kinetic-r1-pearl-white",
+          "variant_name": "Pearl White",
+          "color_name": "Pearl White",
+          "color_hex": "#F5F5F4",
+          "battery_capacity_ah": 26,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": true,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-r1-matte-black",
+          "variant_name": "Matte Black",
+          "color_name": "Matte Black",
+          "color_hex": "#18181B",
+          "battery_capacity_ah": 26,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-r1-ocean-blue",
+          "variant_name": "Ocean Blue",
+          "color_name": "Ocean Blue",
+          "color_hex": "#2563EB",
+          "battery_capacity_ah": 26,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-r1-cherry-red",
+          "variant_name": "Cherry Red",
+          "color_name": "Cherry Red",
+          "color_hex": "#DC2626",
+          "battery_capacity_ah": 26,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        }
+      ],
+      "images": [
+        {
+          "variant_sku": "kinetic-r1-pearl-white",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-r1-pearl-white.jpg",
+          "alt_text": "KINETIC R1 - Pearl White",
+          "sort_order": 0,
+          "is_primary": true
+        },
+        {
+          "variant_sku": "kinetic-r1-matte-black",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-r1-matte-black.jpg",
+          "alt_text": "KINETIC R1 - Matte Black",
+          "sort_order": 1,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-r1-ocean-blue",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-r1-ocean-blue.jpg",
+          "alt_text": "KINETIC R1 - Ocean Blue",
+          "sort_order": 2,
+          "is_primary": false
+        },
+        {
+          "variant_sku": "kinetic-r1-cherry-red",
+          "image_url": "https://kinetic-s3-bucket.s3.ap-southeast-1.amazonaws.com/products/md-kinetic-r1-cherry-red.jpg",
+          "alt_text": "KINETIC R1 - Cherry Red",
+          "sort_order": 3,
+          "is_primary": false
+        }
+      ]
+    }
+  ]
+}

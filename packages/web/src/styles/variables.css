@@ -1,0 +1,17 @@
+:root {
+  --font-display: "Bahnschrift", "Arial Narrow", sans-serif;
+  --font-body: "Segoe UI", "Helvetica Neue", sans-serif;
+
+  --color-ink: #111111;
+  --color-text: #202020;
+  --color-muted: #6a6a6a;
+  --color-surface: #f5f2eb;
+  --color-surface-strong: #ffffff;
+  --color-border: rgba(17, 17, 17, 0.08);
+  --color-brand: #d71920;
+  --color-brand-deep: #8f1015;
+  --color-brand-soft: #ffd6d8;
+  --color-night: #151515;
+  --color-highlight: #f7c948;
+  --shadow-soft: 0 24px 60px rgba(17, 17, 17, 0.12);
+}

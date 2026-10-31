@@ -1,0 +1,14 @@
+.git
+.github
+.vscode
+node_modules
+packages/*/node_modules
+packages/web/dist
+packages/desktop/dist
+backend/target
+backend/data-backup
+backend/images
+*.log
+*.pem
+*_key
+*_key.pub

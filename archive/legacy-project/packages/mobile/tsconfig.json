@@ -1,0 +1,9 @@
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true,
+    "moduleResolution": "Bundler",
+    "baseUrl": "."
+  },
+  "include": ["src", "App.tsx", "Navigation.tsx", "main.ts"]
+}

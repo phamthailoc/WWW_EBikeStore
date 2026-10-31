@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title th:text="${title} + ' | KINETIC'">KINETIC</title>
+  <link rel="stylesheet" th:href="@{/css/store.css(v=20261031)}"><link rel="stylesheet" th:href="@{/css/workspace.css(v=20261031)}"><link rel="stylesheet" th:href="@{/css/workspace-overrides.css(v=20261031)}">
+</head>
+<body class="workspace" th:attr="data-api=${api},data-mode=${mode},data-role=${workspaceRole},data-page=${activePath},data-secondary-api=${secondaryApi}">
+<header class="top"><a class="brand" th:href="@{/}"><span>K</span> KINETIC</a><nav><a th:href="@{/products}">Cửa hàng</a><a th:href="@{/support}">Hỗ trợ</a><a th:href="@{/chatbot}">Tư vấn</a></nav><div class="actions"><a th:href="@{/favorites}">Đã lưu</a><span class="role-chip" th:text="${workspaceRole}">customer</span><button id="logout" class="link-button">Đăng xuất</button></div></header>
+<div class="work-shell">
+  <aside class="work-sidebar"><div class="workspace-brand"><strong>KINETIC</strong><small th:text="${workspaceRole == 'manager' ? 'TRANG QUẢN LÝ' : workspaceRole == 'admin' ? 'QUẢN TRỊ HỆ THỐNG' : 'TÀI KHOẢN KHÁCH HÀNG'}">WORKSPACE</small><a th:href="@{/}">← Trang chủ</a></div><p class="eyebrow">KINETIC / <span th:text="${workspaceRole}">WORKSPACE</span></p><a th:each="link : ${links}" th:href="${link.href}" th:text="${link.label}" th:classappend="${activePath == link.href ? ' active' : ''}">Điều hướng</a><a class="side-back" th:href="@{/}">← Về cửa hàng</a></aside>
+  <main class="work-main"><div class="work-heading"><div><p class="eyebrow">BẢNG ĐIỀU KHIỂN / <span th:text="${workspaceRole}">KINETIC</span></p><h1 th:text="${title}">Tổng quan</h1><p th:text="${description}">Thông tin hệ thống</p></div><a class="button compact" th:href="@{/products}">Mở cửa hàng <b>↗</b></a></div>
+    <div id="notice" class="notice" hidden></div><section id="metrics" class="metrics"></section><section id="profile" class="profile-form" hidden></section>
+    <section id="data-panel" class="data-panel"><div class="panel-heading"><div><p class="eyebrow">DỮ LIỆU TRỰC TIẾP</p><h2 id="panel-title">Đang tải thông tin…</h2></div><div class="product-action"><button id="create-account" class="button compact" hidden>+ Tạo tài khoản</button><button id="refresh" class="button compact ghost">Làm mới ↻</button></div></div><div id="loading" class="loading">Đang tải dữ liệu…</div><div id="empty" class="empty" hidden>Chưa có dữ liệu để hiển thị.</div><div class="table-scroll"><table id="data-table"><thead></thead><tbody></tbody></table></div></section>
+    <section id="promo-panel" class="data-panel" hidden><div class="panel-heading"><div><p class="eyebrow">KINETIC / ƯU ĐÃI</p><h2>Chương trình khuyến mãi</h2></div><button id="addPromotion" class="button compact">+ Tạo ưu đãi</button></div><div class="table-scroll"><table id="promo-table"><thead></thead><tbody></tbody></table></div></section>
+    <input id="productImageFile" type="file" accept="image/*" hidden>
+  </main>
+</div>
+<script th:src="@{/js/workspace.js(v=20261031)}"></script>
+</body></html>

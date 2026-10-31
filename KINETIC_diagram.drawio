@@ -1,0 +1,380 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="Trang-1" id="-CzPnMIf-4afA4c1V7S_">
+    <mxGraphModel dx="2778" dy="1748" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=18;" value="E-Bike KINETIC&lt;br&gt;System" vertex="1">
+          <mxGeometry height="150" width="300" x="-950" y="-620" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-3" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fontSize=13;" value="Guest&#xa;Người dùng chưa đăng nhập" vertex="1">
+          <mxGeometry height="130" width="80" x="-1270" y="-780" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-4" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fontSize=13;" value="Customer&#xa;Khách hàng" vertex="1">
+          <mxGeometry height="130" width="80" x="-1270" y="-420" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-5" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fontSize=13;" value="Manager&#xa;Nhân sự vận hành" vertex="1">
+          <mxGeometry height="130" width="80" x="-470" y="-780" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-6" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fontSize=13;" value="Admin&#xa;Quản trị viên" vertex="1">
+          <mxGeometry height="130" width="80" x="-470" y="-420" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-7" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=14;" value="VNPay&#xa;Cổng thanh toán" vertex="1">
+          <mxGeometry height="80" width="270" x="-935" y="-830" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-8" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=14;" value="Chatbot Engine&#xa;FAQ, tư vấn, gợi ý sản phẩm" vertex="1">
+          <mxGeometry height="80" width="270" x="-935" y="-320" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-9" edge="1" parent="1" source="Fx-VQc-FioCtc-Z6FgQd-3" style="endArrow=block;startArrow=block;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;fontSize=12;" target="Fx-VQc-FioCtc-Z6FgQd-2" value="Đăng ký / Đăng nhập&#xa;Tìm kiếm sản phẩm&#xa;Tạo đơn nhanh / Thanh toán">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-10" edge="1" parent="1" source="Fx-VQc-FioCtc-Z6FgQd-4" style="endArrow=block;startArrow=block;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;fontSize=12;" target="Fx-VQc-FioCtc-Z6FgQd-2" value="Quản lý hồ sơ&#xa;Yêu thích sản phẩm&#xa;Đặt hàng / Theo dõi / Hủy đơn">
+          <mxGeometry relative="1" x="-0.3267" y="45" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-11" edge="1" parent="1" source="Fx-VQc-FioCtc-Z6FgQd-5" style="endArrow=block;startArrow=block;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;fontSize=12;" target="Fx-VQc-FioCtc-Z6FgQd-2" value="Dashboard vận hành&#xa;Quản lý đơn hàng, thanh toán&#xa;Khách hàng, sản phẩm, chatbot">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-12" edge="1" parent="1" source="Fx-VQc-FioCtc-Z6FgQd-6" style="endArrow=block;startArrow=block;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;fontSize=12;" target="Fx-VQc-FioCtc-Z6FgQd-2" value="Quản lý người dùng&#xa;Role / Permission&#xa;Cấu hình hệ thống, báo cáo, audit log">
+          <mxGeometry relative="1" x="-0.3258" y="-55" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-13" edge="1" parent="1" source="Fx-VQc-FioCtc-Z6FgQd-2" style="endArrow=block;startArrow=block;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;fontSize=12;" target="Fx-VQc-FioCtc-Z6FgQd-7" value="Yêu cầu thanh toán&#xa;Kết quả giao dịch">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-14" edge="1" parent="1" source="Fx-VQc-FioCtc-Z6FgQd-2" style="endArrow=block;startArrow=block;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;fontSize=12;" target="Fx-VQc-FioCtc-Z6FgQd-8" value="Câu hỏi / FAQ&#xa;Gợi ý sản phẩm&#xa;Cấu hình tri thức chatbot">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-15" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=22;fontStyle=1;" value="Context Diagram - E-Bike KINETIC" vertex="1">
+          <mxGeometry height="30" width="450" x="-1025" y="-880" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-16" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=24;fontStyle=1;" value="System Design - E-Bike KINETIC" vertex="1">
+          <mxGeometry height="40" width="530" x="-1115" y="130" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-17" parent="1" style="swimlane;whiteSpace=wrap;html=1;rounded=1;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1;fontSize=16;" value="Client Applications" vertex="1">
+          <mxGeometry height="360" width="270" x="-1490" y="220" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-18" parent="Fx-VQc-FioCtc-Z6FgQd-17" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=13;" value="Web App&#xa;React + Vite&#xa;Customer / Manager / Admin UI" vertex="1">
+          <mxGeometry height="75" width="200" x="35" y="55" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-19" parent="Fx-VQc-FioCtc-Z6FgQd-17" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=13;" value="Mobile App&#xa;React Native + Expo" vertex="1">
+          <mxGeometry height="65" width="200" x="35" y="155" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-20" parent="Fx-VQc-FioCtc-Z6FgQd-17" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=13;" value="Desktop App&#xa;Electron + React" vertex="1">
+          <mxGeometry height="65" width="200" x="35" y="245" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-21" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=13;" value="Shared Frontend Package&#xa;TypeScript types, API clients, services, validators" vertex="1">
+          <mxGeometry height="75" width="250" x="-1480" y="630" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-22" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=15;fontStyle=1;" value="REST API Layer&#xa;Spring Boot 3.1.5&#xa;/api/v1" vertex="1">
+          <mxGeometry height="85" width="250" x="-1100" y="245" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-23" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=13;" value="Security Layer&#xa;Spring Security + JWT&#xa;PBAC permissions" vertex="1">
+          <mxGeometry height="80" width="250" x="-1100" y="365" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-24" parent="1" style="swimlane;whiteSpace=wrap;html=1;rounded=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=16;" value="Backend Business Modules" vertex="1">
+          <mxGeometry height="355" width="390" x="-1170" y="490" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-25" parent="Fx-VQc-FioCtc-Z6FgQd-24" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;fontSize=12;" value="Auth Module&#xa;Users, roles, permissions, auth logs" vertex="1">
+          <mxGeometry height="70" width="160" x="25" y="55" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-26" parent="Fx-VQc-FioCtc-Z6FgQd-24" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;fontSize=12;" value="Product Module&#xa;Catalog, categories, variants, images, reviews" vertex="1">
+          <mxGeometry height="70" width="160" x="205" y="55" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-27" parent="Fx-VQc-FioCtc-Z6FgQd-24" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;fontSize=12;" value="Order Module&#xa;Orders, order items, shipment, checkout quote" vertex="1">
+          <mxGeometry height="70" width="160" x="25" y="145" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-28" parent="Fx-VQc-FioCtc-Z6FgQd-24" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;fontSize=12;" value="Payment Service&#xa;VNPay create, return, IPN&#xa;Pay-later confirmation" vertex="1">
+          <mxGeometry height="70" width="160" x="205" y="145" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-29" parent="Fx-VQc-FioCtc-Z6FgQd-24" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;fontSize=12;" value="User Module&#xa;Profile, addresses, preferences, favorites" vertex="1">
+          <mxGeometry height="70" width="160" x="25" y="235" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-30" parent="Fx-VQc-FioCtc-Z6FgQd-24" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;fontSize=12;" value="Manager Module&#xa;Dashboard, orders, payments, customers" vertex="1">
+          <mxGeometry height="70" width="160" x="205" y="235" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-31" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=13;" value="Chatbot Module&#xa;FAQ, product recommendation, PDF knowledge base" vertex="1">
+          <mxGeometry height="90" width="230" x="-715" y="555" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-32" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=13;" value="Media Proxy / Image Service&#xa;Product image metadata + S3 access" vertex="1">
+          <mxGeometry height="80" width="230" x="-715" y="695" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-33" parent="1" style="swimlane;whiteSpace=wrap;html=1;rounded=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=16;" value="Data &amp; Infrastructure" vertex="1">
+          <mxGeometry height="290" width="300" x="-680" y="220" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-34" edge="1" parent="Fx-VQc-FioCtc-Z6FgQd-33" source="Fx-VQc-FioCtc-Z6FgQd-35" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.75;exitDx=0;exitDy=0;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="290" y="140" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-35" parent="Fx-VQc-FioCtc-Z6FgQd-33" style="shape=cylinder3d;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#ffffff;strokeColor=#82b366;fontSize=12;" value="PostgreSQL 16&#xa;Main relational database&#xa;Flyway migrations" vertex="1">
+          <mxGeometry height="80" width="230" x="35" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-36" parent="Fx-VQc-FioCtc-Z6FgQd-33" style="shape=cylinder3d;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#ffffff;strokeColor=#82b366;fontSize=12;" value="Redis 7&#xa;Cache / session-ready infrastructure" vertex="1">
+          <mxGeometry height="70" width="230" x="35" y="175" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-37" parent="1" style="swimlane;whiteSpace=wrap;html=1;rounded=1;fillColor=#f5f5f5;strokeColor=#666666;fontStyle=1;fontSize=16;" value="External Services" vertex="1">
+          <mxGeometry height="220" width="245" x="-450" y="555" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-38" parent="Fx-VQc-FioCtc-Z6FgQd-37" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;" value="VNPay&#xa;Online payment gateway" vertex="1">
+          <mxGeometry height="60" width="185" x="30" y="55" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-39" parent="Fx-VQc-FioCtc-Z6FgQd-37" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=13;" value="Gemini API&#xa;LLM chatbot response" vertex="1">
+          <mxGeometry height="60" width="185" x="30" y="135" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-40" parent="1" style="shape=cylinder3d;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#f8cecc;strokeColor=#b85450;fontSize=13;" value="Object Storage / S3&#xa;Product images" vertex="1">
+          <mxGeometry height="85" width="195" x="-425" y="815" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-41" edge="1" parent="1" source="Fx-VQc-FioCtc-Z6FgQd-17" style="endArrow=block;html=1;rounded=0;strokeWidth=2;fontSize=12;" target="Fx-VQc-FioCtc-Z6FgQd-22" value="HTTPS / JSON REST">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-42" edge="1" parent="1" source="Fx-VQc-FioCtc-Z6FgQd-21" style="endArrow=block;html=1;rounded=0;dashed=1;fontSize=12;" target="Fx-VQc-FioCtc-Z6FgQd-17" value="shared contracts">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-43" edge="1" parent="1" source="Fx-VQc-FioCtc-Z6FgQd-22" style="endArrow=block;html=1;rounded=0;strokeWidth=2;fontSize=12;" target="Fx-VQc-FioCtc-Z6FgQd-23" value="authenticate / authorize">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-44" edge="1" parent="1" source="Fx-VQc-FioCtc-Z6FgQd-23" style="endArrow=block;html=1;rounded=0;strokeWidth=2;fontSize=12;" target="Fx-VQc-FioCtc-Z6FgQd-24" value="controller calls">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-45" edge="1" parent="1" source="Fx-VQc-FioCtc-Z6FgQd-24" style="endArrow=block;html=1;rounded=0;fontSize=12;" target="Fx-VQc-FioCtc-Z6FgQd-35" value="JPA repositories">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-46" edge="1" parent="1" source="Fx-VQc-FioCtc-Z6FgQd-24" style="endArrow=block;html=1;rounded=0;dashed=1;fontSize=12;" target="Fx-VQc-FioCtc-Z6FgQd-36" value="cache">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-47" edge="1" parent="1" source="Fx-VQc-FioCtc-Z6FgQd-24" style="endArrow=block;html=1;rounded=0;fontSize=12;" target="Fx-VQc-FioCtc-Z6FgQd-31" value="ask / recommend">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-48" edge="1" parent="1" source="Fx-VQc-FioCtc-Z6FgQd-24" style="endArrow=block;html=1;rounded=0;fontSize=12;" target="Fx-VQc-FioCtc-Z6FgQd-32" value="image upload / proxy">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-49" edge="1" parent="1" source="Fx-VQc-FioCtc-Z6FgQd-28" style="endArrow=block;startArrow=block;html=1;rounded=0;fontSize=12;" target="Fx-VQc-FioCtc-Z6FgQd-38" value="payment request / callback / IPN">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-50" edge="1" parent="1" source="Fx-VQc-FioCtc-Z6FgQd-31" style="endArrow=block;startArrow=block;html=1;rounded=0;fontSize=12;" target="Fx-VQc-FioCtc-Z6FgQd-39" value="prompt / response">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-51" edge="1" parent="1" source="Fx-VQc-FioCtc-Z6FgQd-32" style="endArrow=block;startArrow=block;html=1;rounded=0;fontSize=12;" target="Fx-VQc-FioCtc-Z6FgQd-40" value="images">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-52" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=12;" value="Local / Docker deployment&#xa;backend: 8080, postgres: 5432, redis: 6379" vertex="1">
+          <mxGeometry height="65" width="450" x="-1100" y="890" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-55" parent="1" style="text;html=1;strokeColor=none;fillColor=none;fontSize=26;fontStyle=1;fontColor=#1F2937;align=center;verticalAlign=middle;" value="E-Bike KINETIC- System Architecture" vertex="1">
+          <mxGeometry height="40" width="740" x="330" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-56" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F8FAFC;strokeColor=#64748B;strokeWidth=2;fontSize=16;fontStyle=1;dashed=1;" value="Monorepo: e-bike-multiplatform" vertex="1">
+          <mxGeometry height="920" width="1150" x="80" y="70" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-57" parent="1" style="swimlane;whiteSpace=wrap;html=1;fillColor=#ECFEFF;strokeColor=#0891B2;fontSize=16;fontStyle=1;startSize=34;" value="Client Applications" vertex="1">
+          <mxGeometry height="360" width="300" x="150" y="130" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-58" parent="Fx-VQc-FioCtc-Z6FgQd-57" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#CFFAFE;strokeColor=#0891B2;fontSize=13;" value="packages/web&#xa;React + Vite&#xa;Customer, Manager, Admin UI" vertex="1">
+          <mxGeometry height="80" width="240" x="30" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-59" parent="Fx-VQc-FioCtc-Z6FgQd-57" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E0F2FE;strokeColor=#0284C7;fontSize=13;" value="packages/mobile&#xa;React Native + Expo&#xa;Mobile client" vertex="1">
+          <mxGeometry height="70" width="240" x="30" y="160" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-60" parent="Fx-VQc-FioCtc-Z6FgQd-57" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DBEAFE;strokeColor=#2563EB;fontSize=13;" value="packages/desktop&#xa;Electron + React&#xa;Desktop client" vertex="1">
+          <mxGeometry height="70" width="240" x="30" y="250" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-61" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FEF3C7;strokeColor=#D97706;fontSize=13;fontStyle=1;" value="packages/shared-code&#xa;TypeScript shared layer&#xa;- API clients&#xa;- Types / DTO contracts&#xa;- Hooks / Redux slices&#xa;- Services / utils" vertex="1">
+          <mxGeometry height="170" width="220" x="480" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-62" parent="1" style="swimlane;whiteSpace=wrap;html=1;fillColor=#F0FDF4;strokeColor=#16A34A;fontSize=16;fontStyle=1;startSize=44;" value="backend - Spring Boot API&#xa;Java 17 / Spring Security / JWT / JPA / Flyway" vertex="1">
+          <mxGeometry height="620" width="420" x="770" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-63" parent="Fx-VQc-FioCtc-Z6FgQd-62" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DCFCE7;strokeColor=#16A34A;fontSize=13;fontStyle=1;" value="Security Layer&#xa;JWT Authentication&#xa;PBAC Authorization&#xa;CORS / Filters" vertex="1">
+          <mxGeometry height="75" width="360" x="30" y="65" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-64" parent="Fx-VQc-FioCtc-Z6FgQd-62" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BBF7D0;strokeColor=#15803D;fontSize=12;" value="authModule&#xa;Register / Login / Logout&#xa;Users, Roles, Permissions&#xa;Authentication logs" vertex="1">
+          <mxGeometry height="95" width="170" x="30" y="165" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-65" parent="Fx-VQc-FioCtc-Z6FgQd-62" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BBF7D0;strokeColor=#15803D;fontSize=12;" value="productModule&#xa;Products / Categories&#xa;Specifications / Variants&#xa;Images / Reviews" vertex="1">
+          <mxGeometry height="95" width="170" x="220" y="165" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-66" parent="Fx-VQc-FioCtc-Z6FgQd-62" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BBF7D0;strokeColor=#15803D;fontSize=12;" value="orderModule&#xa;Orders / Order items&#xa;Payments / Shipments&#xa;VNPay / Showroom pickup" vertex="1">
+          <mxGeometry height="95" width="170" x="30" y="285" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-67" parent="Fx-VQc-FioCtc-Z6FgQd-62" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BBF7D0;strokeColor=#15803D;fontSize=12;" value="userModule&#xa;Profile&#xa;Addresses&#xa;Preferences&#xa;Favorites" vertex="1">
+          <mxGeometry height="95" width="170" x="220" y="285" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-68" parent="Fx-VQc-FioCtc-Z6FgQd-62" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BBF7D0;strokeColor=#15803D;fontSize=12;" value="chatbotModule&#xa;FAQ matching&#xa;Product recommendation&#xa;Gemini + PDF knowledge&#xa;Conversation history" vertex="1">
+          <mxGeometry height="105" width="170" x="30" y="405" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-69" parent="Fx-VQc-FioCtc-Z6FgQd-62" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BBF7D0;strokeColor=#15803D;fontSize=12;" value="managerModule&#xa;Dashboard&#xa;Orders / Payments&#xa;Customers&#xa;Operations" vertex="1">
+          <mxGeometry height="105" width="170" x="220" y="405" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-70" parent="Fx-VQc-FioCtc-Z6FgQd-62" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DCFCE7;strokeColor=#16A34A;fontSize=12;" value="shared / config&#xa;Constants&#xa;Exception handling&#xa;Media proxy&#xa;Application config" vertex="1">
+          <mxGeometry height="75" width="360" x="30" y="535" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-71" edge="1" parent="Fx-VQc-FioCtc-Z6FgQd-62" source="Fx-VQc-FioCtc-Z6FgQd-65" style="endArrow=block;html=1;rounded=0;strokeColor=#15803D;fontSize=12;dashed=1;" target="Fx-VQc-FioCtc-Z6FgQd-68" value="product data for recommendation">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-72" edge="1" parent="Fx-VQc-FioCtc-Z6FgQd-62" source="Fx-VQc-FioCtc-Z6FgQd-69" style="endArrow=block;html=1;rounded=0;strokeColor=#15803D;fontSize=11;dashed=1;" target="Fx-VQc-FioCtc-Z6FgQd-66" value="operates">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-73" edge="1" parent="Fx-VQc-FioCtc-Z6FgQd-62" source="Fx-VQc-FioCtc-Z6FgQd-69" style="endArrow=block;html=1;rounded=0;strokeColor=#15803D;fontSize=11;dashed=1;" target="Fx-VQc-FioCtc-Z6FgQd-65" value="operates">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-74" parent="1" style="swimlane;whiteSpace=wrap;html=1;fillColor=#EEF2FF;strokeColor=#4F46E5;fontSize=16;fontStyle=1;startSize=40;" value="PostgreSQL Database&#xa;Flyway-managed schemas" vertex="1">
+          <mxGeometry height="170" width="420" x="770" y="780" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-75" parent="Fx-VQc-FioCtc-Z6FgQd-74" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E0E7FF;strokeColor=#4F46E5;fontSize=12;" value="ebike_auth&#xa;users, roles, permissions" vertex="1">
+          <mxGeometry height="45" width="120" x="20" y="55" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-76" parent="Fx-VQc-FioCtc-Z6FgQd-74" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E0E7FF;strokeColor=#4F46E5;fontSize=12;" value="ebike_product&#xa;products, specs, images" vertex="1">
+          <mxGeometry height="45" width="120" x="150" y="55" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-77" parent="Fx-VQc-FioCtc-Z6FgQd-74" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E0E7FF;strokeColor=#4F46E5;fontSize=12;" value="ebike_order&#xa;orders, payments, shipments" vertex="1">
+          <mxGeometry height="45" width="120" x="280" y="55" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-78" parent="Fx-VQc-FioCtc-Z6FgQd-74" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E0E7FF;strokeColor=#4F46E5;fontSize=12;" value="ebike_user&#xa;addresses, preferences" vertex="1">
+          <mxGeometry height="40" width="120" x="85" y="115" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-79" parent="Fx-VQc-FioCtc-Z6FgQd-74" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E0E7FF;strokeColor=#4F46E5;fontSize=12;" value="ebike_chatbot&#xa;chatbot data/history" vertex="1">
+          <mxGeometry height="40" width="120" x="215" y="115" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-80" parent="1" style="swimlane;whiteSpace=wrap;html=1;fillColor=#FFF7ED;strokeColor=#EA580C;fontSize=16;fontStyle=1;startSize=40;" value="External Services" vertex="1">
+          <mxGeometry height="430" width="300" x="1290" y="170" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-81" parent="Fx-VQc-FioCtc-Z6FgQd-80" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FED7AA;strokeColor=#EA580C;fontSize=13;fontStyle=1;" value="VNPay&#xa;Online payment gateway&#xa;create / return / ipn" vertex="1">
+          <mxGeometry height="80" width="220" x="30" y="180" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-82" parent="Fx-VQc-FioCtc-Z6FgQd-80" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFEDD5;strokeColor=#EA580C;fontSize=13;" value="AWS S3&#xa;Product image storage&#xa;Image metadata managed in DB" vertex="1">
+          <mxGeometry height="80" width="220" x="30" y="70" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-83" parent="Fx-VQc-FioCtc-Z6FgQd-80" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFEDD5;strokeColor=#EA580C;fontSize=13;" value="Gemini API&#xa;AI response generation&#xa;Used by chatbot" vertex="1">
+          <mxGeometry height="80" width="220" x="30" y="310" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-84" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FDF2F8;strokeColor=#DB2777;fontSize=13;" value="Backend resources&#xa;docs/*.pdf&#xa;faq-data/faq.csv&#xa;Product seed data" vertex="1">
+          <mxGeometry height="105" width="300" x="300" y="735" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-85" parent="1" style="swimlane;whiteSpace=wrap;html=1;fillColor=#FEE2E2;strokeColor=#DC2626;fontSize=15;fontStyle=1;startSize=40;" value="Redis 7 Cache Layer&#xa;Port 6379 - cache namespaces / session-ready" vertex="1">
+          <mxGeometry height="225" width="390" x="300" y="505" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-100" parent="Fx-VQc-FioCtc-Z6FgQd-85" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#DC2626;fontSize=11;" value="auth-cache&#xa;session-ready&#xa;JWT blacklist / rate limit" vertex="1">
+          <mxGeometry height="56" width="165" x="20" y="55" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-101" parent="Fx-VQc-FioCtc-Z6FgQd-85" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#DC2626;fontSize=11;" value="product-cache&#xa;catalog list/detail&#xa;categories / specs" vertex="1">
+          <mxGeometry height="56" width="165" x="205" y="55" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-102" parent="Fx-VQc-FioCtc-Z6FgQd-85" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#DC2626;fontSize=11;" value="order-payment-cache&#xa;VNPay pending status&#xa;IPN idempotency" vertex="1">
+          <mxGeometry height="56" width="165" x="20" y="125" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-103" parent="Fx-VQc-FioCtc-Z6FgQd-85" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#DC2626;fontSize=11;" value="chatbot-cache&#xa;FAQ / PDF chunks&#xa;recommendation context" vertex="1">
+          <mxGeometry height="56" width="165" x="205" y="125" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-104" parent="Fx-VQc-FioCtc-Z6FgQd-85" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FEF2F2;strokeColor=#DC2626;fontSize=11;dashed=1;" value="manager-dashboard-cache&#xa;dashboard aggregates / reports" vertex="1">
+          <mxGeometry height="36" width="350" x="20" y="180" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-86" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FCE7C8;strokeColor=#D97706;fontSize=13;fontStyle=1;dashed=1;" value="Message Queue - Future&#xa;RabbitMQ / Kafka&#xa;Payment async events&#xa;Notification events" vertex="1">
+          <mxGeometry height="105" width="300" x="300" y="855" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-87" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F1F5F9;strokeColor=#64748B;fontSize=14;fontStyle=1;" value="Main runtime flow: Client Apps -&gt; shared-code -&gt; Spring Boot REST API -&gt; PostgreSQL / module-specific Redis cache namespaces / External Services. Future async flow: payment and notification events -&gt; RabbitMQ / Kafka." vertex="1">
+          <mxGeometry height="50" width="1040" x="150" y="1010" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-88" edge="1" parent="1" source="Fx-VQc-FioCtc-Z6FgQd-58" style="endArrow=block;html=1;rounded=0;strokeColor=#D97706;fontSize=11;" target="Fx-VQc-FioCtc-Z6FgQd-61" value="uses">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-89" edge="1" parent="1" source="Fx-VQc-FioCtc-Z6FgQd-59" style="endArrow=block;html=1;rounded=0;strokeColor=#D97706;fontSize=11;" target="Fx-VQc-FioCtc-Z6FgQd-61" value="uses">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-90" edge="1" parent="1" source="Fx-VQc-FioCtc-Z6FgQd-60" style="endArrow=block;html=1;rounded=0;strokeColor=#D97706;fontSize=11;" target="Fx-VQc-FioCtc-Z6FgQd-61" value="uses">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-91" edge="1" parent="1" source="Fx-VQc-FioCtc-Z6FgQd-61" style="endArrow=block;html=1;rounded=0;strokeColor=#16A34A;fontSize=12;fontStyle=1;" target="Fx-VQc-FioCtc-Z6FgQd-63" value="REST / JSON&#xa;/api/v1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-92" edge="1" parent="1" source="Fx-VQc-FioCtc-Z6FgQd-62" style="endArrow=block;html=1;rounded=0;strokeColor=#4F46E5;fontSize=12;fontStyle=1;" target="Fx-VQc-FioCtc-Z6FgQd-74" value="JPA repositories&#xa;Flyway migrations">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-93" edge="1" parent="1" source="Fx-VQc-FioCtc-Z6FgQd-63" style="endArrow=block;html=1;rounded=0;strokeColor=#DC2626;fontSize=11;fontStyle=1;dashed=1;" target="Fx-VQc-FioCtc-Z6FgQd-100" value="auth session-ready">
+          <mxGeometry relative="1" x="0.1238" y="10" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="680" y="580" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-105" edge="1" parent="1" source="Fx-VQc-FioCtc-Z6FgQd-65" style="endArrow=block;html=1;rounded=0;strokeColor=#DC2626;fontSize=11;fontStyle=1;dashed=1;" target="Fx-VQc-FioCtc-Z6FgQd-101" value="catalog cache">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="720" y="250" />
+              <mxPoint x="720" y="585" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-106" edge="1" parent="1" source="Fx-VQc-FioCtc-Z6FgQd-66" style="endArrow=block;html=1;rounded=0;strokeColor=#DC2626;fontSize=11;fontStyle=1;dashed=1;" target="Fx-VQc-FioCtc-Z6FgQd-102" value="payment status cache">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="725" y="330" />
+              <mxPoint x="725" y="655" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-107" edge="1" parent="1" source="Fx-VQc-FioCtc-Z6FgQd-68" style="endArrow=block;html=1;rounded=0;strokeColor=#DC2626;fontSize=11;fontStyle=1;dashed=1;" target="Fx-VQc-FioCtc-Z6FgQd-103" value="knowledge cache">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="735" y="455" />
+              <mxPoint x="735" y="655" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-108" edge="1" parent="1" source="Fx-VQc-FioCtc-Z6FgQd-69" style="endArrow=block;html=1;rounded=0;strokeColor=#DC2626;fontSize=11;fontStyle=1;dashed=1;" target="Fx-VQc-FioCtc-Z6FgQd-104" value="dashboard aggregates">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="740" y="455" />
+              <mxPoint x="740" y="705" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-94" edge="1" parent="1" source="Fx-VQc-FioCtc-Z6FgQd-66" style="endArrow=block;html=1;rounded=0;strokeColor=#D97706;fontSize=12;dashed=1;" target="Fx-VQc-FioCtc-Z6FgQd-86" value="future async payment events">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="710" y="770" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-95" edge="1" parent="1" source="Fx-VQc-FioCtc-Z6FgQd-62" style="endArrow=block;html=1;rounded=0;strokeColor=#D97706;fontSize=12;dashed=1;" target="Fx-VQc-FioCtc-Z6FgQd-86" value="future notification events">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="690" y="850" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-96" edge="1" parent="1" style="endArrow=block;html=1;rounded=0;strokeColor=#EA580C;fontSize=12;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="Fx-VQc-FioCtc-Z6FgQd-81" value="payment create / return / ipn">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="890" y="390" />
+              <mxPoint x="1260" y="390" />
+            </Array>
+            <mxPoint x="883.5999999999999" y="404.9999999999998" as="sourcePoint" />
+            <mxPoint x="1340" y="301.2280701754387" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-97" edge="1" parent="1" source="Fx-VQc-FioCtc-Z6FgQd-65" style="endArrow=block;html=1;rounded=0;strokeColor=#EA580C;fontSize=12;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="Fx-VQc-FioCtc-Z6FgQd-82" value="image upload / URL metadata">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-98" edge="1" parent="1" source="Fx-VQc-FioCtc-Z6FgQd-68" style="endArrow=block;html=1;rounded=0;strokeColor=#EA580C;fontSize=12;" target="Fx-VQc-FioCtc-Z6FgQd-83" value="AI answer generation">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="890" y="640" />
+              <mxPoint x="1430" y="640" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Fx-VQc-FioCtc-Z6FgQd-99" edge="1" parent="1" source="Fx-VQc-FioCtc-Z6FgQd-84" style="endArrow=block;html=1;rounded=0;strokeColor=#DB2777;fontSize=12;" target="Fx-VQc-FioCtc-Z6FgQd-68" value="FAQ / PDF knowledge / seed data">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="640" y="680" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

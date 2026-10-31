@@ -1,0 +1,36 @@
+{
+  "name": "e-bike-multiplatform",
+  "version": "1.0.0",
+  "description": "Multi-platform E-Bike e-commerce system",
+  "private": true,
+  "workspaces": [
+    "packages/shared-code",
+    "packages/web",
+    "packages/mobile",
+    "packages/desktop"
+  ],
+  "scripts": {
+    "install:all": "npm install",
+    "dev": "concurrently \"npm -w @ebike/web dev\" \"npm -w @ebike/mobile start\" \"npm -w @ebike/desktop dev\"",
+    "dev:backend": "cd backend && mvn spring-boot:run",
+    "dev:web": "npm -w @ebike/web dev",
+    "dev:mobile": "npm -w @ebike/mobile start",
+    "dev:desktop": "npm -w @ebike/desktop dev",
+    "build": "npm run build -ws",
+    "build:backend": "cd backend && mvn clean package",
+    "build:web": "npm -w @ebike/web run build",
+    "build:mobile": "npm -w @ebike/mobile run build",
+    "build:desktop": "npm -w @ebike/desktop run build",
+    "test": "npm run test -ws --if-present",
+    "lint": "npm run lint -ws --if-present",
+    "clean": "npm run clean -ws --if-present && rm -rf node_modules",
+    "list": "npm workspaces list"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.0"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=7.0.0"
+  }
+}

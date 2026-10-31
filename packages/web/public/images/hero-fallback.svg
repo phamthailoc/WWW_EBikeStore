@@ -1,0 +1,95 @@
+<svg width="1600" height="900" viewBox="0 0 1600 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1600" y2="900" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#EEF3F8"/>
+      <stop offset="0.6" stop-color="#D7E4ED"/>
+      <stop offset="1" stop-color="#B6CBD7"/>
+    </linearGradient>
+    <linearGradient id="overlay" x1="0" y1="450" x2="700" y2="450" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFFFFF" stop-opacity="0.95"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.12"/>
+    </linearGradient>
+    <linearGradient id="bikeBody" x1="876" y1="349" x2="1220" y2="592" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#E59B67"/>
+      <stop offset="1" stop-color="#BE683F"/>
+    </linearGradient>
+    <linearGradient id="metal" x1="741" y1="439" x2="1145" y2="718" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#9AA6B2"/>
+      <stop offset="1" stop-color="#59636E"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1600" height="900" fill="url(#bg)"/>
+
+  <g opacity="0.45">
+    <rect x="780" y="104" width="770" height="670" rx="10" fill="#58707D"/>
+    <g stroke="#C9D5DD" stroke-width="2">
+      <path d="M780 146H1550"/>
+      <path d="M780 188H1550"/>
+      <path d="M780 230H1550"/>
+      <path d="M780 272H1550"/>
+      <path d="M780 314H1550"/>
+      <path d="M780 356H1550"/>
+      <path d="M780 398H1550"/>
+      <path d="M780 440H1550"/>
+      <path d="M780 482H1550"/>
+      <path d="M780 524H1550"/>
+      <path d="M780 566H1550"/>
+      <path d="M780 608H1550"/>
+      <path d="M780 650H1550"/>
+      <path d="M780 692H1550"/>
+      <path d="M820 104V774"/>
+      <path d="M862 104V774"/>
+      <path d="M904 104V774"/>
+      <path d="M946 104V774"/>
+      <path d="M988 104V774"/>
+      <path d="M1030 104V774"/>
+      <path d="M1072 104V774"/>
+      <path d="M1114 104V774"/>
+      <path d="M1156 104V774"/>
+      <path d="M1198 104V774"/>
+      <path d="M1240 104V774"/>
+      <path d="M1282 104V774"/>
+      <path d="M1324 104V774"/>
+      <path d="M1366 104V774"/>
+      <path d="M1408 104V774"/>
+      <path d="M1450 104V774"/>
+      <path d="M1492 104V774"/>
+    </g>
+  </g>
+
+  <rect width="810" height="900" fill="url(#overlay)"/>
+
+  <g transform="translate(630 180)">
+    <circle cx="180" cy="500" r="112" fill="#20262C"/>
+    <circle cx="180" cy="500" r="68" fill="#D6DDE3"/>
+    <circle cx="180" cy="500" r="38" fill="#8D98A2"/>
+
+    <circle cx="690" cy="470" r="138" fill="#20262C"/>
+    <circle cx="690" cy="470" r="84" fill="#D6DDE3"/>
+    <circle cx="690" cy="470" r="46" fill="#8D98A2"/>
+
+    <path d="M253 365L432 305L585 346L686 348L720 392L630 416L486 408L322 454L225 441L210 396L253 365Z" fill="url(#metal)"/>
+    <path d="M450 284L554 248L658 270L730 324L658 364L508 356L410 334L450 284Z" fill="url(#bikeBody)"/>
+    <path d="M590 300L693 278L746 318L704 356L624 352L590 300Z" fill="#D78657"/>
+    <circle cx="735" cy="336" r="36" fill="#F2F6F8"/>
+    <circle cx="735" cy="336" r="22" fill="#B5C0C8"/>
+
+    <path d="M326 281L413 281L476 325L410 336L348 320L326 281Z" fill="#9CA7B0"/>
+    <path d="M374 232L511 232L536 248L424 257L374 232Z" fill="#7E8A93"/>
+    <rect x="358" y="205" width="112" height="24" rx="12" fill="#3C4349"/>
+
+    <path d="M608 166L627 168L644 234L620 236L608 166Z" fill="#2B3136"/>
+    <path d="M607 168L569 205" stroke="#2B3136" stroke-width="10" stroke-linecap="round"/>
+    <path d="M648 174L688 212" stroke="#2B3136" stroke-width="10" stroke-linecap="round"/>
+    <rect x="560" y="186" width="54" height="34" rx="10" fill="#2F363C"/>
+    <rect x="672" y="198" width="42" height="26" rx="8" fill="#2F363C"/>
+
+    <path d="M243 371L175 500" stroke="#4F5962" stroke-width="16" stroke-linecap="round"/>
+    <path d="M534 364L665 470" stroke="#4F5962" stroke-width="18" stroke-linecap="round"/>
+    <path d="M427 308L286 500" stroke="#66717B" stroke-width="14" stroke-linecap="round"/>
+    <path d="M470 331L610 468" stroke="#66717B" stroke-width="14" stroke-linecap="round"/>
+    <path d="M489 406L572 406L623 492L509 492L489 406Z" fill="#47515A"/>
+    <ellipse cx="523" cy="575" rx="122" ry="26" fill="#AEBCC7" opacity="0.35"/>
+  </g>
+</svg>

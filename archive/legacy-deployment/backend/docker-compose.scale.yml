@@ -1,0 +1,109 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ebike_user
+      POSTGRES_PASSWORD: ebike_password_123
+      POSTGRES_DB: ebike_db
+    volumes:
+      - postgres_scale_data:/var/lib/postgresql/data
+    networks:
+      - ebike-scale-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ebike_user -d ebike_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server --requirepass redis_password_123
+    volumes:
+      - redis_scale_data:/data
+    networks:
+      - ebike-scale-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "redis_password_123", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  backend-1:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment: &backend_environment
+      SPRING_PROFILES_ACTIVE: prod
+      APP_INSTANCE_ID: backend-1
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/ebike_db
+      SPRING_DATASOURCE_USERNAME: ebike_user
+      SPRING_DATASOURCE_PASSWORD: ebike_password_123
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+      SPRING_DATA_REDIS_PASSWORD: redis_password_123
+      SPRING_CACHE_TYPE: redis
+      APP_RATE_LIMIT_ENABLED: "true"
+      SERVER_TOMCAT_THREADS_MAX: 200
+      SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE: 20
+      APP_JWT_SECRET: change-this-to-a-shared-256-bit-production-secret
+    networks:
+      - ebike-scale-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/v1/health/ready"]
+      interval: 15s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+
+  backend-2:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      <<: *backend_environment
+      APP_INSTANCE_ID: backend-2
+    networks:
+      - ebike-scale-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/v1/health/ready"]
+      interval: 15s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:1.27-alpine
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx.scale.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      - ebike-scale-network
+    depends_on:
+      backend-1:
+        condition: service_healthy
+      backend-2:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  postgres_scale_data:
+  redis_scale_data:
+
+networks:
+  ebike-scale-network:
+    driver: bridge

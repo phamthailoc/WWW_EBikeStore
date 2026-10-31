@@ -1,0 +1,115 @@
+name: Deploy Frontend to EC2
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "packages/web/**"
+      - "packages/shared-code/**"
+      - "Dockerfile"
+      - ".dockerignore"
+      - "nginx.conf"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/deploy-frontend-ec2.yml"
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Build and deploy frontend
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      EC2_HOST: ${{ secrets.EC2_HOST }}
+      EC2_USER: ${{ secrets.EC2_USER }}
+      EC2_SSH_PORT: ${{ secrets.EC2_SSH_PORT || 22 }}
+      APP_DIR: e-bike-multiplatform
+      FRONTEND_CONTAINER: ebike-web
+      FRONTEND_IMAGE: kinetic-frontend
+      FRONTEND_PUBLIC_PORT: 3000
+      VITE_API_BASE_URL: https://kineticstore.online/api/v1
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate deployment secrets
+        run: |
+          test -n "$EC2_HOST" || (echo "Missing EC2_HOST" && exit 1)
+          test -n "$EC2_USER" || (echo "Missing EC2_USER" && exit 1)
+          test -n "${{ secrets.EC2_SSH_KEY }}" || (echo "Missing EC2_SSH_KEY" && exit 1)
+
+      - name: Create frontend archive
+        run: |
+          tar -czf /tmp/ebike-frontend.tar.gz \
+            .dockerignore \
+            package.json \
+            package-lock.json \
+            Dockerfile \
+            nginx.conf \
+            packages/shared-code \
+            packages/web \
+            packages/mobile/package.json \
+            packages/desktop/package.json
+
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+          printf "%s" "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/ec2_key
+          chmod 600 ~/.ssh/ec2_key
+          ssh-keyscan -p "$EC2_SSH_PORT" -H "$EC2_HOST" >> ~/.ssh/known_hosts
+
+      - name: Upload frontend archive
+        run: |
+          scp -i ~/.ssh/ec2_key -P "$EC2_SSH_PORT" /tmp/ebike-frontend.tar.gz "$EC2_USER@$EC2_HOST:/tmp/ebike-frontend.tar.gz"
+
+      - name: Build and restart frontend on EC2
+        run: |
+          ssh -i ~/.ssh/ec2_key -p "$EC2_SSH_PORT" "$EC2_USER@$EC2_HOST" <<EOF
+          set -e
+          APP_DIR="\$HOME/$APP_DIR"
+          mkdir -p "\$APP_DIR"
+
+          echo "Removing stale frontend build artifacts..."
+          rm -rf \
+            "\$APP_DIR/node_modules" \
+            "\$APP_DIR/packages/shared-code/node_modules" \
+            "\$APP_DIR/packages/web/node_modules" \
+            "\$APP_DIR/packages/mobile/node_modules" \
+            "\$APP_DIR/packages/desktop/node_modules" \
+            "\$APP_DIR/packages/web/dist"
+
+          echo "Extracting frontend source..."
+          tar -xzf /tmp/ebike-frontend.tar.gz -C "\$APP_DIR"
+          rm -f /tmp/ebike-frontend.tar.gz
+
+          cd "\$APP_DIR"
+          test -f .dockerignore
+
+          echo "Cleaning Docker build cache..."
+          docker builder prune -af || true
+
+          echo "Building frontend Docker image..."
+          docker build \
+            --no-cache \
+            --build-arg VITE_API_BASE_URL="$VITE_API_BASE_URL" \
+            -t "$FRONTEND_IMAGE" \
+            -f Dockerfile \
+            .
+
+          echo "Replacing frontend container..."
+          docker stop "$FRONTEND_CONTAINER" >/dev/null 2>&1 || true
+          docker rm "$FRONTEND_CONTAINER" >/dev/null 2>&1 || true
+          docker run -d \
+            --name "$FRONTEND_CONTAINER" \
+            --restart unless-stopped \
+            -p "$FRONTEND_PUBLIC_PORT":80 \
+            "$FRONTEND_IMAGE"
+
+          echo "Checking frontend container..."
+          sleep 3
+          curl -f "http://localhost:$FRONTEND_PUBLIC_PORT/" >/dev/null
+
+          docker image prune -f
+          EOF

@@ -1,0 +1,1 @@
+export const createTray = () => undefined;

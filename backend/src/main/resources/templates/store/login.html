@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Đăng nhập | KINETIC</title><link rel="stylesheet" th:href="@{/css/store.css(v=20261031)}">
+  <link rel="stylesheet" th:href="@{/css/workspace.css(v=20261031)}">
+<link rel="stylesheet" th:href="@{/css/workspace-overrides.css(v=20261031)}"></head>
+<body>
+<header class="top"><a class="brand" th:href="@{/}"><span>K</span> KINETIC</a><div class="auth-links"><span>Chưa có tài khoản?</span><a class="register-link" th:href="@{/signup}">Đăng ký ngay ↗</a><a th:href="@{/shop}">Quay lại cửa hàng</a></div></header>
+<main class="auth"><p class="eyebrow">WELCOME BACK</p><h1>Đăng nhập.</h1><p>Tiếp tục hành trình cùng KINETIC.</p>
+  <form id="loginForm"><label>Email hoặc tên đăng nhập<input name="usernameOrEmail" type="text" autocomplete="username" required></label><label>Mật khẩu<input name="password" type="password" autocomplete="current-password" required></label><button class="button">Đăng nhập <b>↗</b></button><p id="error" class="error"></p></form>
+  <p class="auth-register">Chưa có tài khoản? <a th:href="@{/signup}">Tạo tài khoản KINETIC</a></p>
+</main>
+<script>
+document.getElementById('loginForm').addEventListener('submit', async e => { e.preventDefault(); const data=Object.fromEntries(new FormData(e.currentTarget)); try { const r=await fetch('/api/v1/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}); if(!r.ok) throw new Error('Tên đăng nhập hoặc mật khẩu chưa chính xác.'); const user=await r.json(); const roles=user.roles||[]; const wanted=new URLSearchParams(location.search).get('returnTo'); location.href=wanted&&wanted.startsWith('/')&&!wanted.startsWith('//')?wanted:roles.includes('ADMIN')?'/admin':roles.includes('MANAGER')?'/manager':roles.includes('CUSTOMER')?'/customer':'/'; } catch(err) { document.getElementById('error').textContent=err.message; } });
+</script>
+</body></html>
