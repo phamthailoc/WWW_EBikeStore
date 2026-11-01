@@ -12,6 +12,8 @@ import com.ebike.orderModule.dto.response.OrderQuoteResponse;
 import com.ebike.orderModule.dto.response.OrderResponse;
 import com.ebike.orderModule.dto.response.ShipmentResponse;
 import com.ebike.orderModule.dto.response.ShowroomResponse;
+import com.ebike.adminModule.entity.Promotion;
+import com.ebike.adminModule.repository.PromotionRepository;
 import com.ebike.orderModule.entity.Order;
 import com.ebike.orderModule.entity.OrderItem;
 import com.ebike.orderModule.entity.OrderStatus;
@@ -30,12 +32,13 @@ import com.ebike.productModule.entity.ProductVariant;
 import com.ebike.productModule.repository.ProductRepository;
 import com.ebike.shared.constants.PermissionConstants;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Pattern;
 import org.springframework.http.HttpStatus;
@@ -63,14 +66,11 @@ public class OrderServiceImpl implements OrderService {
     private static final int MAX_CANCELLATION_REASON_LENGTH = 1000;
     private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}$", Pattern.CASE_INSENSITIVE);
     private static final Pattern VIETNAM_PHONE_PATTERN = Pattern.compile("^0\\d{9,10}$");
-    private static final Map<String, BigDecimal> PROMO_CODE_DISCOUNTS = Map.of(
-        "EBIKE100", new BigDecimal("100000"),
-        "EBIKE200", new BigDecimal("200000")
-    );
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
     private final ShowroomRepository showroomRepository;
+    private final PromotionRepository promotionRepository;
     private final OrderEmailVerificationService orderEmailVerificationService;
 
     public OrderServiceImpl(
@@ -78,12 +78,14 @@ public class OrderServiceImpl implements OrderService {
         UserRepository userRepository,
         ProductRepository productRepository,
         ShowroomRepository showroomRepository,
+        PromotionRepository promotionRepository,
         OrderEmailVerificationService orderEmailVerificationService
     ) {
         this.orderRepository = orderRepository;
         this.userRepository = userRepository;
         this.productRepository = productRepository;
         this.showroomRepository = showroomRepository;
+        this.promotionRepository = promotionRepository;
         this.orderEmailVerificationService = orderEmailVerificationService;
     }
 
@@ -172,7 +174,11 @@ public class OrderServiceImpl implements OrderService {
 
         BigDecimal subtotal = addItems(order, validateQuoteItems(request.items()));
         order.setSubtotal(subtotal);
-        BigDecimal promoDiscountAmount = resolvePromoDiscount(request.discountCode(), subtotal);
+        Promotion promotion = findValidPromotion(request.discountCode());
+        BigDecimal promoDiscountAmount = promotion == null ? ZERO : calculatePromoDiscount(promotion, subtotal);
+        if (promotion != null && promotionRepository.tryIncrementUsage(promotion.getId()) == 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mã giảm giá không hợp lệ hoặc đã hết hạn.");
+        }
         order.setDiscountAmount(SHOWROOM_INCENTIVE_AMOUNT.add(promoDiscountAmount));
         order.setTotalAmount(calculateTotalAmount(subtotal, order.getShippingFee(), order.getDiscountAmount(), order.getRegistrationFee()));
         order.setShipment(buildShipment(order, showroom, request));
@@ -202,16 +208,16 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
+    @CacheEvict(cacheNames = {
+        com.ebike.config.RedisCacheConfiguration.PRODUCT_LIST_CACHE,
+        com.ebike.config.RedisCacheConfiguration.PRODUCT_DETAIL_CACHE
+    }, allEntries = true)
     public OrderResponse requestCancellation(Long id, OrderCancellationRequest request, Authentication authentication) {
         User currentUser = getAuthenticatedUser(authentication);
         Order order = orderRepository.findById(id)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
 
         if (order.getUser() == null || !order.getUser().getId().equals(currentUser.getId())) {
-    @CacheEvict(cacheNames = {
-        com.ebike.config.RedisCacheConfiguration.PRODUCT_LIST_CACHE,
-        com.ebike.config.RedisCacheConfiguration.PRODUCT_DETAIL_CACHE
-    }, allEntries = true)
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can only cancel your own orders");
         }
 
@@ -247,17 +253,11 @@ public class OrderServiceImpl implements OrderService {
         order.setCancellationReviewNote(null);
         order.setCancellationReviewedAt(null);
         cancelPendingPayment(order.getPayment());
+        restoreStock(order);
 
         return toResponse(orderRepository.save(order));
     }
 
-    private void cancelPendingPayment(Payment payment) {
-        if (payment == null) {
-        restoreStock(order);
-            return;
-        }
-        if (payment.getPaymentStatus() == PaymentStatus.PENDING) {
-            payment.setPaymentStatus(PaymentStatus.CANCELLED);
     private void restoreStock(Order order) {
         for (OrderItem item : order.getItems()) {
             Product product = item.getProduct();
@@ -275,6 +275,12 @@ public class OrderServiceImpl implements OrderService {
         return stock == null ? 0 : stock;
     }
 
+    private void cancelPendingPayment(Payment payment) {
+        if (payment == null) {
+            return;
+        }
+        if (payment.getPaymentStatus() == PaymentStatus.PENDING) {
+            payment.setPaymentStatus(PaymentStatus.CANCELLED);
             payment.setProviderResponse("Cancelled by customer");
         }
     }
@@ -496,17 +502,39 @@ public class OrderServiceImpl implements OrderService {
     }
 
     private BigDecimal resolvePromoDiscount(String discountCode, BigDecimal subtotal) {
+        Promotion promotion = findValidPromotion(discountCode);
+        return promotion == null ? ZERO : calculatePromoDiscount(promotion, subtotal);
+    }
+
+    /** Returns the usable promotion for the code, null when no code was given; throws 400 when the code is not usable. */
+    private Promotion findValidPromotion(String discountCode) {
         if (discountCode == null || discountCode.isBlank()) {
-            return ZERO;
+            return null;
         }
 
-        String normalizedCode = discountCode.trim().toUpperCase(Locale.ROOT);
-        BigDecimal promoDiscount = PROMO_CODE_DISCOUNTS.get(normalizedCode);
-        if (promoDiscount == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mã giảm giá không hợp lệ hoặc đã hết hạn.");
-        }
+        LocalDateTime now = LocalDateTime.now();
+        return promotionRepository.findByCodeIgnoreCase(discountCode.trim())
+            .filter(promotion -> "LIVE".equals(promotion.getStatus()))
+            .filter(promotion -> promotion.getStartsAt() == null || !promotion.getStartsAt().isAfter(now))
+            .filter(promotion -> promotion.getEndsAt() == null || !promotion.getEndsAt().isBefore(now))
+            .filter(promotion -> promotion.getUsageLimit() == null
+                || promotion.getUsageLimit() == 0
+                || promotion.getUsageCount() < promotion.getUsageLimit())
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mã giảm giá không hợp lệ hoặc đã hết hạn."));
+    }
 
-        return promoDiscount.min(defaultValue(subtotal));
+    private BigDecimal calculatePromoDiscount(Promotion promotion, BigDecimal subtotal) {
+        BigDecimal base = defaultValue(subtotal);
+        BigDecimal discount;
+        if ("PERCENTAGE".equals(promotion.getDiscountType())) {
+            discount = base.multiply(promotion.getDiscountValue()).divide(BigDecimal.valueOf(100), 0, RoundingMode.HALF_UP);
+            if (promotion.getMaxDiscountAmount() != null) {
+                discount = discount.min(promotion.getMaxDiscountAmount());
+            }
+        } else {
+            discount = promotion.getDiscountValue();
+        }
+        return discount.min(base);
     }
 
     private void attachInitialPayment(Order order, String rawPaymentMethod) {
