@@ -19,9 +19,11 @@ com.ebike
 
 ## Data and resources
 
-- `../setup_ebike_database.sql` (project root) is the MariaDB setup script used for `ebike_db`.
-- `database/legacy-postgresql/` stores unused PostgreSQL/Flyway migrations and schema notes outside the runtime classpath.
-- `data-backup/` stores imported product data, image sources, and conversion scripts.
+- `database/setup_ebike_database.sql` is the MariaDB setup script used for `ebike_db`.
+- `database/generate_mariadb_setup.py` regenerates the setup SQL from `database/schema-source/` and the product JSON catalog.
+- `database/schema-source/` contains PostgreSQL schema history used only as input to that converter; it is not loaded at application startup.
+- Earlier PostgreSQL migration history and generated product SQL outputs are kept in the top-level `archive/legacy-project/backend/`.
+- `data-backup/` stores product JSON data, image sources, and conversion scripts.
 - `images/` stores the storefront banner assets.
 - `src/main/resources/templates/` contains Thymeleaf pages.
 - `src/main/resources/static/` contains CSS, JavaScript, and browser images.

@@ -6,15 +6,15 @@
 
 - `backend/src/main/java/com/ebike/`: mã Java được tổ chức theo các lớp MVC; xem `backend/ARCHITECTURE.md`.
 - `backend/src/main/resources/`: templates Thymeleaf, CSS/JavaScript, ảnh, tài liệu chatbot và cấu hình.
-- `backend/database/`: ghi chú về database và các migration PostgreSQL cũ đã lưu trữ.
+- `backend/database/`: SQL MariaDB dùng để nạp database, script sinh SQL và schema nguồn.
 - `backend/data-backup/` và `backend/images/`: dữ liệu sản phẩm, ảnh nguồn và banner.
-- `setup_ebike_database.sql`: tạo và nạp dữ liệu mẫu cho schema MariaDB `ebike_db`.
+- `backend/database/setup_ebike_database.sql`: tạo và nạp dữ liệu mẫu cho schema MariaDB `ebike_db`.
 - `packages/web/`: bản giao diện React cũ, giữ làm tham chiếu thiết kế/chức năng.
 - `archive/`: các client, cấu hình triển khai và build cũ không dùng để chạy Spring Boot.
 
 ## Chạy ứng dụng
 
-1. Khởi động MariaDB và nạp `setup_ebike_database.sql` vào `ebike_db` nếu chưa có database.
+1. Khởi động MariaDB và nạp `backend/database/setup_ebike_database.sql` vào `ebike_db` nếu chưa có database.
 2. Từ PowerShell, vào `backend` và chạy `mvn spring-boot:run` (Java 17+ và Maven cần có trong PATH).
 3. Mở <http://localhost:8080>.
 

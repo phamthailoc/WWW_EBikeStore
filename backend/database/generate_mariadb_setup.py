@@ -3,11 +3,11 @@ import json
 import re
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 BACKEND = ROOT / "backend"
-DB = BACKEND / "src/main/resources/db"
+DB = BACKEND / "database/schema-source"
 BASELINE = (DB / "migration/V2_0_0__baseline.sql").read_text(encoding="utf-8")
-OUT = ["-- KINETIC E-Bike Store: MariaDB single-database setup\n-- Source: backend/src/main/resources/db/migration and data-backup/dataCawl/data\n-- Run this file in HeidiSQL. Images are referenced by relative local paths.\n",
+OUT = ["-- KINETIC E-Bike Store: MariaDB single-database setup\n-- Source: backend/database/schema-source and backend/data-backup/dataCawl/data\n-- Run this file in HeidiSQL. Images are referenced by relative local paths.\n",
        "CREATE DATABASE IF NOT EXISTS ebike_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;\nUSE ebike_db;\nSET NAMES utf8mb4;\nSET FOREIGN_KEY_CHECKS=0;\n"]
 
 def flat_names(sql: str) -> str:
@@ -140,5 +140,5 @@ INSERT INTO promotions(code,campaign_name,discount_type,discount_value,max_disco
 INSERT INTO admin_audit_logs(actor,action,target,ip_address) VALUES ('System','Khởi tạo dữ liệu mẫu','pricing rules và promotions','127.0.0.1');
 """)
 OUT.append("\nSET FOREIGN_KEY_CHECKS=1;\n")
-(ROOT / "setup_ebike_database.sql").write_text("".join(OUT), encoding="utf-8-sig")
-print(f"generated {ROOT / 'setup_ebike_database.sql'} with {len(tables)} baseline tables and {len(seed['products'])} products")
+(BACKEND / "database/setup_ebike_database.sql").write_text("".join(OUT), encoding="utf-8-sig")
+print(f"generated {BACKEND / 'database/setup_ebike_database.sql'} with {len(tables)} baseline tables and {len(seed['products'])} products")
