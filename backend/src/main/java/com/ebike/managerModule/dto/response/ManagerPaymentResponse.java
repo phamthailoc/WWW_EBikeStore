@@ -17,6 +17,7 @@ public record ManagerPaymentResponse(
     String providerTxnId,
     String note,
     LocalDateTime paidAt,
-    LocalDateTime orderCreatedAt
+    LocalDateTime orderCreatedAt,
+    String orderStatus
 ) {
 }

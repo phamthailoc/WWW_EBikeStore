@@ -20,6 +20,8 @@ public interface ManagerService {
 
     ManagerPaymentResponse confirmPayLaterPayment(Long paymentId, ManagerPaymentConfirmationRequest request);
 
+    ManagerPaymentResponse refundPayment(Long paymentId, ManagerPaymentConfirmationRequest request);
+
     OrderResponse approveOrderCancellation(Long orderId, OrderCancellationRequest request);
 
     OrderResponse rejectOrderCancellation(Long orderId, OrderCancellationRequest request);

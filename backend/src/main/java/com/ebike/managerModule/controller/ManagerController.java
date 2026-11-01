@@ -57,6 +57,15 @@ public class ManagerController {
         return managerService.confirmPayLaterPayment(paymentId, request);
     }
 
+    @PatchMapping("/payments/{paymentId}/refund")
+    @PreAuthorize("hasAuthority('" + PermissionConstants.OrderManagement.PAYMENT_REFUND + "')")
+    public ManagerPaymentResponse refundPayment(
+        @PathVariable Long paymentId,
+        @RequestBody(required = false) ManagerPaymentConfirmationRequest request
+    ) {
+        return managerService.refundPayment(paymentId, request);
+    }
+
     @PatchMapping("/orders/{orderId}/cancellation/approve")
     @PreAuthorize("hasAuthority('" + PermissionConstants.OrderManagement.ORDER_UPDATE_STATUS + "')")
     public OrderResponse approveOrderCancellation(
