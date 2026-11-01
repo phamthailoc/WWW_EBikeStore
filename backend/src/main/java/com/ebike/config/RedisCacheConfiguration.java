@@ -1,7 +1,7 @@
 package com.ebike.config;
 
-import com.ebike.productModule.dto.response.ProductDetailDto;
-import com.ebike.productModule.dto.response.ProductSummaryDto;
+import com.ebike.dto.product.response.ProductDetailDto;
+import com.ebike.dto.product.response.ProductSummaryDto;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Duration;
