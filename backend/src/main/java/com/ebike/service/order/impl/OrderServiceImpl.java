@@ -53,7 +53,6 @@ public class OrderServiceImpl implements OrderService {
     private boolean emailOtpRequired;
 
     private static final BigDecimal ZERO = BigDecimal.ZERO;
-    private static final BigDecimal SHOWROOM_INCENTIVE_AMOUNT = new BigDecimal("1200000");
     private static final BigDecimal REGISTRATION_FEE_AMOUNT = new BigDecimal("2500000");
     private static final int MAX_ORDER_ITEMS = 20;
     private static final int MAX_ITEM_QUANTITY = 10;
@@ -173,7 +172,7 @@ public class OrderServiceImpl implements OrderService {
         BigDecimal subtotal = addItems(order, validateQuoteItems(request.items()));
         order.setSubtotal(subtotal);
         BigDecimal promoDiscountAmount = resolvePromoDiscount(request.discountCode(), subtotal);
-        order.setDiscountAmount(SHOWROOM_INCENTIVE_AMOUNT.add(promoDiscountAmount));
+        order.setDiscountAmount(promoDiscountAmount);
         order.setTotalAmount(calculateTotalAmount(subtotal, order.getShippingFee(), order.getDiscountAmount(), order.getRegistrationFee()));
         order.setShipment(buildShipment(order, showroom, request));
         attachInitialPayment(order, request.paymentMethod());
@@ -444,7 +443,7 @@ public class OrderServiceImpl implements OrderService {
 
         BigDecimal promoDiscountAmount = resolvePromoDiscount(discountCode, subtotal);
         BigDecimal registrationFee = includeRegistrationService ? REGISTRATION_FEE_AMOUNT : ZERO;
-        BigDecimal totalDiscountAmount = SHOWROOM_INCENTIVE_AMOUNT.add(promoDiscountAmount);
+        BigDecimal totalDiscountAmount = promoDiscountAmount;
 
         return new OrderQuoteResponse(
             subtotal,
@@ -481,7 +480,7 @@ public class OrderServiceImpl implements OrderService {
         String normalizedCode = discountCode.trim().toUpperCase(Locale.ROOT);
         BigDecimal promoDiscount = PROMO_CODE_DISCOUNTS.get(normalizedCode);
         if (promoDiscount == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mã giảm giá không hợp lệ hoặc đã hết hạn.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "M\u00e3 gi\u1ea3m gi\u00e1 kh\u00f4ng h\u1ee3p l\u1ec7 ho\u1eb7c \u0111\u00e3 h\u1ebft h\u1ea1n.");
         }
 
         return promoDiscount.min(defaultValue(subtotal));
