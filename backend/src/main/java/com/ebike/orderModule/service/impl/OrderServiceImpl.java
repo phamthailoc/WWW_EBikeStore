@@ -208,6 +208,10 @@ public class OrderServiceImpl implements OrderService {
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
 
         if (order.getUser() == null || !order.getUser().getId().equals(currentUser.getId())) {
+    @CacheEvict(cacheNames = {
+        com.ebike.config.RedisCacheConfiguration.PRODUCT_LIST_CACHE,
+        com.ebike.config.RedisCacheConfiguration.PRODUCT_DETAIL_CACHE
+    }, allEntries = true)
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can only cancel your own orders");
         }
 
@@ -249,10 +253,28 @@ public class OrderServiceImpl implements OrderService {
 
     private void cancelPendingPayment(Payment payment) {
         if (payment == null) {
+        restoreStock(order);
             return;
         }
         if (payment.getPaymentStatus() == PaymentStatus.PENDING) {
             payment.setPaymentStatus(PaymentStatus.CANCELLED);
+    private void restoreStock(Order order) {
+        for (OrderItem item : order.getItems()) {
+            Product product = item.getProduct();
+            if (product != null) {
+                product.setStockQuantity(defaultStock(product.getStockQuantity()) + item.getQuantity());
+            }
+            ProductVariant variant = item.getProductVariant();
+            if (variant != null) {
+                variant.setStockQuantity(defaultStock(variant.getStockQuantity()) + item.getQuantity());
+            }
+        }
+    }
+
+    private int defaultStock(Integer stock) {
+        return stock == null ? 0 : stock;
+    }
+
             payment.setProviderResponse("Cancelled by customer");
         }
     }
