@@ -30,3 +30,11 @@ com.ebike
 - `src/main/resources/docs/` and `faq-data/` are used by the chatbot knowledge service.
 
 The archived `chatbot-model-scaffold` contains empty planning directories and metadata that had no runtime references.
+
+## Cart and delivery
+
+The browser cart is saved in `kinetic_cart` localStorage. Lines are keyed by product and color. Buy-now uses a separate session entry, so it does not replace the customer's cart. Server quotes and order creation always read current prices and stock from MariaDB.
+
+For home delivery, `shipments.pickup_showroom_id` is null, `pickup_district` holds the selected province, and the delivery address is stored in `detailed_address`/`shipping_address`. For store pickup, the selected showroom supplies the address. The response exposes `deliveryMethod` and `province`; existing schema and historical orders remain compatible.
+
+UI test instructions: `tests/ui/README.md`.

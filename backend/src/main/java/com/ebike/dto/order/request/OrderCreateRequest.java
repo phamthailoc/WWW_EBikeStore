@@ -18,6 +18,8 @@ public record OrderCreateRequest(
     BigDecimal discountAmount,
     Boolean includeRegistrationService,
     String notes,
-    List<OrderCreateItemRequest> items
+    List<OrderCreateItemRequest> items,
+    String deliveryMethod,
+    String province
 ) {
 }

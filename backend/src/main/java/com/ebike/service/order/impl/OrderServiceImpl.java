@@ -33,6 +33,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -165,9 +166,9 @@ public class OrderServiceImpl implements OrderService {
         order.setNotes(normalizeOptional(request.notes()));
         order.setCustomerEmail(normalizeEmail(request.customerEmail()));
 
-        Showroom showroom = showroomRepository.findById(request.pickupShowroomId())
+        Showroom showroom = isHomeDelivery(request) ? null : showroomRepository.findById(request.pickupShowroomId())
             .filter(candidate -> Boolean.TRUE.equals(candidate.getActive()))
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Pickup showroom not found"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cửa hàng nhận xe không còn hoạt động."));
 
         BigDecimal subtotal = addItems(order, validateQuoteItems(request.items()));
         order.setSubtotal(subtotal);
@@ -300,24 +301,39 @@ public class OrderServiceImpl implements OrderService {
         if (!EMAIL_PATTERN.matcher(customerEmail).matches()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email chưa hợp lệ. Ví dụ đúng: khachhang@example.com.");
         }
-        if (isBlank(detailedAddress)) {
+        boolean homeDelivery = isHomeDelivery(request);
+        if (homeDelivery && isBlank(detailedAddress)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vui lòng nhập địa chỉ cụ thể.");
         }
-        if (detailedAddress.length() < 10) {
+        if (homeDelivery && detailedAddress.length() < 10) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Địa chỉ cụ thể quá ngắn. Vui lòng nhập số nhà, tên đường và phường/xã.");
         }
-        if (detailedAddress.length() > MAX_DETAILED_ADDRESS_LENGTH) {
+        if (detailedAddress != null && detailedAddress.length() > MAX_DETAILED_ADDRESS_LENGTH) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Địa chỉ cụ thể không được vượt quá " + MAX_DETAILED_ADDRESS_LENGTH + " ký tự.");
         }
         if (notes != null && notes.length() > MAX_NOTES_LENGTH) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ghi chú không được vượt quá " + MAX_NOTES_LENGTH + " ký tự.");
         }
-        if (request.pickupShowroomId() == null) {
+        if (homeDelivery && (isBlank(request.province()) || request.province().trim().length() > 100)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vui lòng chọn tỉnh/thành phố nhận hàng hợp lệ.");
+        }
+        if (!homeDelivery && request.pickupShowroomId() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vui lòng chọn showroom nhận xe.");
         }
-        if (request.pickupShowroomId() <= 0) {
+        if (!homeDelivery && request.pickupShowroomId() <= 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Showroom nhận xe không hợp lệ. Vui lòng chọn lại.");
         }
+    }
+
+    private boolean isHomeDelivery(OrderCreateRequest request) {
+        String method = request.deliveryMethod();
+        if (method == null || method.isBlank() || "STORE_PICKUP".equals(method)) {
+            return false;
+        }
+        if ("HOME_DELIVERY".equals(method)) {
+            return true;
+        }
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Hình thức nhận hàng không hợp lệ.");
     }
 
     private BigDecimal addItems(Order order, List<OrderCreateItemRequest> items) {
@@ -382,10 +398,12 @@ public class OrderServiceImpl implements OrderService {
         shipment.setRecipientName(normalize(request.customerName()));
         shipment.setPhoneNumber(normalizeDigits(request.phoneNumber()));
         shipment.setRecipientEmail(normalizeEmail(request.customerEmail()));
-        shipment.setPickupDistrict(showroom.getDistrict());
-        shipment.setDetailedAddress(normalize(request.detailedAddress()));
+        shipment.setPickupDistrict(showroom == null ? normalize(request.province()) : showroom.getDistrict());
+        shipment.setDetailedAddress(showroom == null ? normalize(request.detailedAddress()) : showroom.getAddress());
         shipment.setPickupShowroom(showroom);
-        shipment.setShippingAddress(buildShippingAddress(showroom, request.detailedAddress()));
+        shipment.setShippingAddress(showroom == null
+            ? normalize(request.detailedAddress()) + ", " + normalize(request.province())
+            : showroom.getName() + " - " + showroom.getAddress());
         return shipment;
     }
 
@@ -430,10 +448,18 @@ public class OrderServiceImpl implements OrderService {
 
     private OrderQuoteResponse buildQuote(List<OrderCreateItemRequest> items, boolean includeRegistrationService, String discountCode) {
         BigDecimal subtotal = ZERO;
+        Map<Long, Integer> productQuantities = new HashMap<>();
+        Map<Long, Integer> variantQuantities = new HashMap<>();
 
         for (OrderCreateItemRequest itemRequest : items) {
             Product product = getActiveProduct(itemRequest.productId());
             ProductVariant variant = getActiveVariant(product, itemRequest.productVariantId());
+            int productQuantity = productQuantities.merge(product.getId(), itemRequest.quantity(), Integer::sum);
+            int variantQuantity = variant == null ? 0 : variantQuantities.merge(variant.getId(), itemRequest.quantity(), Integer::sum);
+            if (product.getStockQuantity() == null || product.getStockQuantity() < productQuantity
+                || (variant != null && (variant.getStockQuantity() == null || variant.getStockQuantity() < variantQuantity))) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Số lượng xe vượt quá tồn kho hiện tại: " + product.getName());
+            }
             BigDecimal unitPrice = product.getDiscountPrice() != null ? product.getDiscountPrice() : product.getPrice();
             if (variant != null) {
                 unitPrice = unitPrice.add(defaultValue(variant.getAdditionalPrice()));
@@ -628,10 +654,6 @@ public class OrderServiceImpl implements OrderService {
         return userRepository.findByUsername(authentication.getName())
             .or(() -> userRepository.findByEmail(authentication.getName()))
             .orElse(null);
-    }
-
-    private String buildShippingAddress(Showroom showroom, String detailedAddress) {
-        return showroom.getName() + " - " + showroom.getAddress() + " | Dia chi cu the: " + normalize(detailedAddress);
     }
 
     private OrderResponse toResponse(Order order) {

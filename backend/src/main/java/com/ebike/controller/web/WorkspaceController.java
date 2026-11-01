@@ -58,10 +58,11 @@ public class WorkspaceController {
         return "store/workspace";
     }
 
-    @GetMapping({"/favorites", "/checkout", "/checkout/success", "/payment/return", "/support", "/compare", "/chatbot"})
+    @GetMapping({"/cart", "/favorites", "/checkout", "/checkout/success", "/payment/return", "/support", "/compare", "/chatbot"})
     public String customerFlow(HttpServletRequest request, Model model) {
         String path = request.getRequestURI();
         String title = switch (path) {
+            case "/cart" -> "Giỏ hàng của bạn";
             case "/favorites" -> "Sản phẩm yêu thích";
             case "/checkout" -> "Thanh toán đơn hàng";
             case "/checkout/success" -> "Đặt hàng thành công";

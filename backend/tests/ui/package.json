@@ -1,0 +1,6 @@
+{
+  "name": "kinetic-ui-checks",
+  "private": true,
+  "scripts": {"test": "node checkout-smoke.cjs"},
+  "devDependencies": {"playwright": "1.51.1"}
+}

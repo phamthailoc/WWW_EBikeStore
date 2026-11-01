@@ -16,4 +16,11 @@ public record ShipmentResponse(
     LocalDateTime deliveredAt,
     ShowroomResponse pickupShowroom
 ) {
+    public String getDeliveryMethod() {
+        return pickupShowroom == null ? "HOME_DELIVERY" : "STORE_PICKUP";
+    }
+
+    public String getProvince() {
+        return pickupShowroom == null ? pickupDistrict : pickupShowroom.city();
+    }
 }

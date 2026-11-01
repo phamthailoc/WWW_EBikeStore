@@ -4,7 +4,7 @@
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <title th:text="${title} + ' | KINETIC'">KINETIC</title>
   <link rel="stylesheet" th:href="@{/css/store.css(v=20261031)}"><link rel="stylesheet" th:href="@{/css/workspace.css(v=20261031)}"><link rel="stylesheet" th:href="@{/css/workspace-overrides.css(v=20261031)}">
-</head>
+<link rel="stylesheet" href="/css/commerce.css?v=20261102-cart1"><script src="/js/cart.js?v=20261102-cart1"></script></head>
 <body class="workspace" th:attr="data-api=${api},data-mode=${mode},data-role=${workspaceRole},data-page=${activePath},data-secondary-api=${secondaryApi}">
 <header class="top"><a class="brand" th:href="@{/}"><span>K</span> KINETIC</a><nav><a th:href="@{/products}">Cửa hàng</a><a th:href="@{/support}">Hỗ trợ</a><a th:href="@{/chatbot}">Tư vấn</a></nav><div class="actions"><a th:href="@{/favorites}">Đã lưu</a><span class="role-chip" th:text="${workspaceRole}">customer</span><button id="logout" class="link-button">Đăng xuất</button></div></header>
 <div class="work-shell">
