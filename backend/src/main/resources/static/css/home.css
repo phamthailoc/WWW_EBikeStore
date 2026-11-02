@@ -1,0 +1,89 @@
+/* Homepage sections share the same content edges as the product collection. */
+.storefront-home .principles,
+.storefront-home .newsletter {
+  padding: 100px 10%;
+  scroll-margin-top: 100px;
+}
+
+.storefront-home .principles .section-head {
+  align-items: end;
+  gap: 48px;
+  margin-bottom: 56px;
+}
+
+.storefront-home .principles .section-head > div { flex: 1; min-width: 0; }
+.storefront-home .principles .section-head > p {
+  flex: 1;
+  max-width: 440px;
+  margin: 0 0 20px;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1.8;
+}
+
+.principle-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 32px;
+}
+
+.principle-grid article { padding: 30px 0 0; border-top: 1px solid var(--line); }
+.principle-grid article > span { color: #58713a; font-size: 11px; font-weight: 600; letter-spacing: .12em; }
+.principle-grid h3 { font-size: 22px; line-height: 1.4; letter-spacing: -.025em; margin: 24px 0 14px; }
+.principle-grid p { color: var(--muted); font-size: 15px; line-height: 1.8; margin: 0; }
+
+.storefront-home .newsletter {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 10%;
+  background: #fff;
+}
+
+.newsletter h2 {
+  font: 600 clamp(32px, 3.3vw, 48px)/1.15 'Space Grotesk', 'DM Sans', sans-serif;
+  letter-spacing: -.045em;
+  margin: 20px 0 0;
+}
+
+.newsletter form { min-width: 0; }
+.newsletter label { display: block; color: var(--muted); font-size: 15px; line-height: 1.6; margin-bottom: 20px; }
+.newsletter form > div { display: flex; border-bottom: 1px solid #aeb5ad; gap: 12px; padding-bottom: 12px; }
+.newsletter input { flex: 1; min-width: 0; width: 100%; border: 0; padding: 14px 0; background: transparent; color: var(--ink); font: inherit; }
+.newsletter input::placeholder { color: var(--muted); }
+.newsletter button { flex-shrink: 0; }
+#newsletterMessage { min-height: 24px; font-size: 13px; line-height: 1.6; color: #506a2f; margin: 12px 0 0; }
+.storefront-home :is(#featured, #contact) { scroll-margin-top: 100px; }
+.storefront-home .product-image img { object-fit: contain; background: white; }
+.storefront-home .product-info { gap: 16px; flex-wrap: wrap; }
+.storefront-home .price { white-space: nowrap; }
+.storefront-home .description { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; }
+
+@media (max-width: 1100px) {
+  .storefront-home .principles, .storefront-home .newsletter { padding: 80px 7%; }
+  .principle-grid { gap: 24px; }
+  .principle-grid h3 { font-size: 20px; }
+  .storefront-home .newsletter { gap: 7%; }
+}
+
+@media (max-width: 720px) {
+  .storefront-home .principles, .storefront-home .newsletter { padding: 64px 7%; }
+  .storefront-home .principles .section-head { flex-direction: column; align-items: stretch; gap: 12px; margin-bottom: 32px; }
+  .storefront-home .principles .section-head > p { margin: 0; max-width: none; }
+  .principle-grid { grid-template-columns: 1fr; gap: 28px; }
+  .principle-grid article { padding-top: 24px; }
+  .principle-grid h3 { margin: 16px 0 10px; }
+  .storefront-home .newsletter { grid-template-columns: 1fr; gap: 32px; }
+  .newsletter h2 { font-size: 36px; }
+  .newsletter form > div { gap: 8px; }
+  .newsletter button { padding: 14px 16px; gap: 14px; }
+  .storefront-home .section-head { flex-wrap: wrap; }
+  .storefront-home .hero h1 { font-size: clamp(38px, 9vw, 52px); line-height: 1.08; }
+  .storefront-home .buttons { flex-wrap: wrap; }
+  .storefront-home .hero-note { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .storefront-home .product-image img { transition: none; }
+}
