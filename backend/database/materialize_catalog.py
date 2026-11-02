@@ -1,5 +1,6 @@
 """Build the reviewed electric-only catalog and a non-destructive live DB update."""
 from pathlib import Path
+import argparse
 import copy
 import json
 import re
@@ -51,7 +52,7 @@ def specs_for(item,source,bike):
         elif 'phanh' in key:spec['brake_type']='DISC' if 'dia' in normalized else 'DRUM'
     return spec
 
-def main():
+def main(write_update=False):
     original=json.loads(SOURCE.read_text(encoding='utf-8'))
     manifest=json.loads((CATALOG/'source-manifest.json').read_text(encoding='utf-8'))
     reviews=json.loads((CATALOG/'review.json').read_text(encoding='utf-8'))['colors']
@@ -79,6 +80,9 @@ def main():
         retained.append(item)
     result={'metadata':{'source':'https://dibao.com.vn/xe-may-dien','reviewed_on':'2026-11-02','review_method':'Manufacturer photos visually grouped by actual body color; original photos are preserved. Store prices are retained as project data.','excluded_gasoline':manifest['excluded_gasoline']},'products':retained}
     (CATALOG/'products.json').write_text(json.dumps(result,ensure_ascii=False,indent=2),encoding='utf-8')
+    if not write_update:
+        print('Reviewed products:',len(retained),'colors:',sum(len(i['variants']) for i in retained),'photos:',sum(len(i['images']) for i in retained))
+        return
     sql=['-- Reviewed electric-only catalog. Preserves orders, IDs, stock and legacy variants.\nSET NAMES utf8mb4;\nSTART TRANSACTION;\n']
     excluded=','.join(q(s) for s in manifest['excluded_gasoline'])
     known=','.join(q(s) for s in all_slugs)
@@ -103,4 +107,8 @@ def main():
     (updates/'20261102_verified_electric_catalog.sql').write_text(''.join(sql),encoding='utf-8')
     print('Reviewed products:',len(retained),'colors:',sum(len(i['variants']) for i in retained),'photos:',sum(len(i['images']) for i in retained),'bicycles:',sum(i['category']['slug']=='xe-dap-dien' for i in retained))
 
-if __name__=='__main__':main()
+if __name__=='__main__':
+    parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--write-update',action='store_true',help='Explicitly generate an incremental SQL update for an existing database.')
+    args=parser.parse_args()
+    main(write_update=args.write_update)

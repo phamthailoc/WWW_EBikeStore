@@ -18,7 +18,7 @@ Removed from sale: Sir 50CC, Creer 50CC, Gofast 50CC, Pansy XS1 upgraded, Pansy 
 - Chrome catalog test: all 34 product pages, 164 color selections and 181 image checksums passed; no uncaught JavaScript errors. Each selected gallery is restricted to its selected color. The selected variant and photo remain aligned in the cart.
 - Desktop and 390px mobile layout checked, including two-tone swatches. No horizontal overflow.
 - Fresh setup SQL imported successfully into an isolated verification schema: 34 products, 164 variants, 181 photos, 0 broken image/variant foreign-key links, 0 gasoline models. The temporary verification schema was removed afterwards.
-- Live database updated with `database/updates/20261102_verified_electric_catalog.sql`; no account/order tables were reset. A pre-update snapshot is retained locally at `archive/local-database-backups/` and is ignored by Git.
+- Live database was updated with the reviewed electric catalog; no account/order tables were reset. The applied incremental SQL and pre-update SQL snapshot were subsequently removed during the requested cleanup of unused SQL files.
 
 Screenshots and machine-readable browser report are at `target/catalog-verification/`. Reproduce with `npm run test:catalog` from `tests/ui/` after starting the application. Use `npm run preview:colors` to open Chrome for manual review.
 
