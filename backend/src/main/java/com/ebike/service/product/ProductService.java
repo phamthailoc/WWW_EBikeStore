@@ -368,7 +368,10 @@ public class ProductService {
             ),
             mapSpecification(product.getSpecification()),
             product.getVariants().stream()
-                .sorted(Comparator.comparing(ProductVariant::getId))
+                .filter(variant -> Boolean.TRUE.equals(variant.getActive()))
+                .filter(variant -> mapVariantImage(variant) != null)
+                .sorted(Comparator.comparing((ProductVariant variant) -> !Boolean.TRUE.equals(variant.getDefaultVariant()))
+                    .thenComparing(ProductVariant::getId))
                 .map(this::mapVariant)
                 .toList(),
             mapImages(product)
@@ -405,7 +408,11 @@ public class ProductService {
             variant.getBatteryCapacityAh(),
             variant.getAdditionalPrice(),
             variant.getStockQuantity(),
-            variant.getDefaultVariant()
+            variant.getDefaultVariant(),
+            variant.getImages().stream()
+                .filter(this::isActiveImage)
+                .sorted(Comparator.comparing(ProductImage::getSortOrder))
+                .map(ProductImage::getImageUrl).toList()
         );
     }
 
@@ -421,6 +428,7 @@ public class ProductService {
     private List<String> mapImages(Product product) {
         return product.getImages().stream()
             .filter(this::isActiveImage)
+            .filter(image -> image.getVariant() == null || Boolean.TRUE.equals(image.getVariant().getActive()))
             .sorted(Comparator.comparing(ProductImage::getSortOrder))
             .map(ProductImage::getImageUrl)
             .toList();

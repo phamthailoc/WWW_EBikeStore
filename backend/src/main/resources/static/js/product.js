@@ -5,6 +5,7 @@
   const cart = window.KineticCart, quantity = document.querySelector('#productQuantity');
   const notice = document.querySelector('#productNotice');
   const baseImage = root.dataset.image;
+  const gallery = document.querySelector('#productGallery');
   const item = {id:Number(root.dataset.id), name:root.dataset.name, price:Number(root.dataset.price), slug:root.dataset.slug, image:baseImage, quantity:1, stock:Number(root.dataset.stock)};
   function message(text, error=false) {
     notice.hidden=false; notice.classList.toggle('error', error); notice.textContent=text;
@@ -26,13 +27,35 @@
     item.stock=Math.min(Number(root.dataset.stock), Number(button.dataset.stock));
     item.price=Number(button.dataset.price); item.image=button.dataset.image || baseImage;
     document.querySelector('#selectedColor').textContent=item.colorName;
-    document.querySelector('#productImage').src=cart.safeImage(item.image);
+    const photos=(button.dataset.images||button.dataset.image||'').split('|').filter(Boolean);
+    function showPhoto(index){
+      const image=document.querySelector('#productImage');
+      image.src=cart.safeImage(photos[index]);
+      image.alt=`${item.name} - ${item.colorName} - Ảnh ${index+1}`;
+      document.querySelector('#photoCaption').textContent=`${item.colorName} · Ảnh ${index+1}/${photos.length}`;
+      gallery.querySelectorAll('button').forEach((node,i)=>{node.classList.toggle('selected',i===index);node.setAttribute('aria-pressed',String(i===index));});
+    }
+    gallery.replaceChildren();
+    photos.forEach((photo,index)=>{
+      const thumbnail=document.createElement('button');thumbnail.type='button';
+      thumbnail.setAttribute('aria-label',`Xem ảnh ${index+1} màu ${item.colorName}`);
+      const image=document.createElement('img');image.src=cart.safeImage(photo);image.alt='';thumbnail.append(image);
+      thumbnail.onclick=()=>showPhoto(index);gallery.append(thumbnail);
+    });
+    if(photos.length)showPhoto(0);
     document.querySelector('#productPrice').textContent=cart.money(item.price);
     updateQuantity(quantity.value);
   }
-  document.querySelectorAll('.variant-option').forEach(button => button.addEventListener('click', () => pickVariant(button)));
+  document.querySelectorAll('.variant-option').forEach(button => {
+    const tones=(button.dataset.colorHex||'#d6e4d9').split('/');
+    button.querySelector('.color-dot').style.background=tones.length>1?`linear-gradient(135deg,${tones[0]} 50%,${tones[1]} 50%)`:tones[0];
+    button.addEventListener('click', () => pickVariant(button));
+  });
   const selected=document.querySelector('.variant-option.selected');
-  if(selected) pickVariant(selected); else updateQuantity(1);
+  if(selected) pickVariant(selected); else {
+    updateQuantity(1);document.querySelector('#addToCart').disabled=true;document.querySelector('#buyNow').disabled=true;
+    document.querySelector('#stockHint').textContent='Màu xe và hình ảnh đang được cập nhật.';
+  }
   document.querySelector('#quantityMinus').onclick=()=>updateQuantity(item.quantity-1);
   document.querySelector('#quantityPlus').onclick=()=>updateQuantity(item.quantity+1);
   quantity.addEventListener('change',()=>updateQuantity(quantity.value));

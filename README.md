@@ -7,7 +7,7 @@
 - `backend/src/main/java/com/ebike/`: mã Java được tổ chức theo các lớp MVC; xem `backend/ARCHITECTURE.md`.
 - `backend/src/main/resources/`: templates Thymeleaf, CSS/JavaScript, ảnh, tài liệu chatbot và cấu hình.
 - `backend/database/`: SQL MariaDB dùng để nạp database, script sinh SQL và schema nguồn.
-- `backend/data-backup/` và `backend/images/`: dữ liệu sản phẩm, ảnh nguồn và banner.
+- `backend/database/catalog/`: dữ liệu xe điện, màu và nguồn ảnh đã kiểm tra. Ảnh hiển thị ở `backend/src/main/resources/static/images/catalog/`.
 - `backend/database/setup_ebike_database.sql`: tạo và nạp dữ liệu mẫu cho schema MariaDB `ebike_db`.
 - `packages/web/`: bản giao diện React cũ, giữ làm tham chiếu thiết kế/chức năng.
 - `archive/`: các client, cấu hình triển khai và build cũ không dùng để chạy Spring Boot.

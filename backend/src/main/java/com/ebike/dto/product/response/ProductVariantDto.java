@@ -1,6 +1,7 @@
 package com.ebike.dto.product.response;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 public record ProductVariantDto(
     Long id,
@@ -12,6 +13,7 @@ public record ProductVariantDto(
     BigDecimal batteryCapacityAh,
     BigDecimal additionalPrice,
     Integer stockQuantity,
-    Boolean defaultVariant
+    Boolean defaultVariant,
+    List<String> images
 ) {
 }

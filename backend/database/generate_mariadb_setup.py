@@ -7,7 +7,7 @@ ROOT = Path(__file__).resolve().parents[2]
 BACKEND = ROOT / "backend"
 DB = BACKEND / "database/schema-source"
 BASELINE = (DB / "migration/V2_0_0__baseline.sql").read_text(encoding="utf-8")
-OUT = ["-- KINETIC E-Bike Store: MariaDB single-database setup\n-- Source: backend/database/schema-source and backend/data-backup/dataCawl/data\n-- Run this file in HeidiSQL. Images are referenced by relative local paths.\n",
+OUT = ["-- KINETIC E-Bike Store: MariaDB single-database setup\n-- Source: backend/database/schema-source and backend/database/catalog/products.json\n-- Run this file in HeidiSQL. Images are referenced by relative local paths.\n",
        "CREATE DATABASE IF NOT EXISTS ebike_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;\nUSE ebike_db;\nSET NAMES utf8mb4;\nSET FOREIGN_KEY_CHECKS=0;\n"]
 
 def flat_names(sql: str) -> str:
@@ -91,7 +91,7 @@ if role_permissions:
     query = flat_names(role_permissions.group(1)).strip().rstrip(";")
     OUT.append("INSERT IGNORE INTO role_permissions(role_id,permission_id) " + query + ";\n")
 
-seed = json.loads((BACKEND / "data-backup/dataCawl/data/products_db_ready_clean.json").read_text(encoding="utf-8"))
+seed = json.loads((BACKEND / "database/catalog/products.json").read_text(encoding="utf-8"))
 categories = {}
 for item in seed["products"]:
     c = item["category"]
@@ -100,14 +100,7 @@ OUT.append("\nINSERT INTO categories(name,slug,description,is_active) VALUES\n" 
     "(" + ",".join(q(x) for x in (c["name"], c["slug"], c["description"], True)) + ")" for c in categories.values()) + ";\n")
 for item in seed["products"]:
     p, c, spec = item["product"], item["category"], item.get("specification", {})
-    battery = {"LEAD_ACID": "ắc quy chì kín khí", "LITHIUM_ION": "pin lithium-ion"}.get(spec.get("battery_type"), "pin điện")
-    speed = spec.get("max_speed_kmh")
-    distance = spec.get("max_range_km")
-    power = spec.get("motor_power_watts")
-    description = (f"{p['name']} là mẫu xe điện dành cho di chuyển hằng ngày, vận hành êm ái và dễ tiếp cận. "
-                   f"Xe sử dụng {battery}, công suất {power} W, tốc độ tối đa {speed} km/h "
-                   f"và quãng đường di chuyển tối đa {distance} km sau mỗi lần sạc.")
-    product_values = (p["name"], p["slug"], description, p.get("price"), p.get("discount_price"),
+    product_values = (p["name"], p["slug"], p["description"], p.get("price"), p.get("discount_price"),
                       p.get("stock_quantity"), p.get("rating"), p.get("review_count"), p.get("is_featured"), p.get("is_active"))
     OUT.append("\nINSERT INTO products(category_id,name,slug,description,price,discount_price,stock_quantity,rating,review_count,is_featured,is_active) VALUES ((SELECT id FROM categories WHERE slug=" + q(c["slug"]) + ")," + ",".join(q(value) for value in product_values) + ");\n")
     OUT.append("INSERT INTO product_specifications(product_id," + ",".join(spec.keys()) + ") SELECT id," + ",".join(q(v) for v in spec.values()) + " FROM products WHERE slug=" + q(p["slug"]) + ";\n")
@@ -115,7 +108,7 @@ for item in seed["products"]:
         OUT.append("INSERT INTO product_variants(product_id,sku,variant_name,color_name,color_hex,battery_capacity_ah,additional_price,stock_quantity,is_default,is_active) SELECT id," + ",".join(q(v.get(k)) for k in ("sku","variant_name","color_name","color_hex","battery_capacity_ah","additional_price","stock_quantity","is_default","is_active")) + " FROM products WHERE slug=" + q(p["slug"]) + ";\n")
     for im in item.get("images", []):
         # Static resources are copied from the reviewed local image folders into Spring Boot.
-        rel = "/images/products/" + Path(im["image_url"]).name
+        rel = im["image_url"]
         OUT.append("INSERT INTO product_images(product_id,variant_id,image_url,alt_text,sort_order,is_primary,storage_provider,status) SELECT p.id,v.id," + ",".join(q(x) for x in (rel,im.get("alt_text"),im.get("sort_order"),im.get("is_primary"),"LOCAL","ACTIVE")) + " FROM products p LEFT JOIN product_variants v ON v.sku=" + q(im.get("variant_sku")) + " WHERE p.slug=" + q(p["slug"]) + ";\n")
 
 for row in [

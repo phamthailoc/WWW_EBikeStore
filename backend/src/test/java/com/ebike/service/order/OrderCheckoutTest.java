@@ -95,4 +95,12 @@ class OrderCheckoutTest {
         assertThrows(ResponseStatusException.class,()->service.quoteOrder(new OrderQuoteRequest(false,List.of(new OrderCreateItemRequest(1L,1),new OrderCreateItemRequest(1L,1)),null)));
         assertThrows(ResponseStatusException.class,()->service.quoteOrder(new OrderQuoteRequest(false,List.of(new OrderCreateItemRequest(1L,1)),"INVALID")));
     }
+
+    @Test void aProductWithColorsRequiresAnActiveSelectedColor() {
+        stock();
+        var variant=new com.ebike.model.entity.product.ProductVariant();variant.setId(2L);variant.setActive(true);product.getVariants().add(variant);
+        assertThrows(ResponseStatusException.class,()->service.quoteOrder(new OrderQuoteRequest(false,List.of(new OrderCreateItemRequest(1L,1)),null)));
+        variant.setActive(false);
+        assertThrows(ResponseStatusException.class,()->service.quoteOrder(new OrderQuoteRequest(false,List.of(new OrderCreateItemRequest(1L,1,2L)),null)));
+    }
 }

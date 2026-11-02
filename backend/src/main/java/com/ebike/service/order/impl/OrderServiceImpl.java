@@ -383,6 +383,9 @@ public class OrderServiceImpl implements OrderService {
 
     private ProductVariant getActiveVariant(Product product, Long variantId) {
         if (variantId == null) {
+            if (product.getVariants().stream().anyMatch(variant -> Boolean.TRUE.equals(variant.getActive()))) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vui lòng chọn màu xe trước khi đặt hàng.");
+            }
             return null;
         }
         return product.getVariants().stream()

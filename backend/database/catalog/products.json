@@ -1,0 +1,5220 @@
+{
+  "metadata": {
+    "source": "https://dibao.com.vn/xe-may-dien",
+    "reviewed_on": "2026-11-02",
+    "review_method": "Manufacturer photos visually grouped by actual body color; original photos are preserved. Store prices are retained as project data.",
+    "excluded_gasoline": [
+      "kinetic-creer",
+      "kinetic-gofast",
+      "kinetic-pansy-xs",
+      "kinetic-pansy-xs1",
+      "kinetic-pansy-xs1-ban-nang-cap",
+      "kinetic-rs-50cc",
+      "kinetic-sir-50cc",
+      "kinetic-tesla-x"
+    ]
+  },
+  "products": [
+    {
+      "source_group": "xe-máy-điện-có-bàn-đạp-dibao-amy",
+      "category": {
+        "name": "Xe đạp điện",
+        "slug": "xe-dap-dien",
+        "description": "Xe đạp điện có bàn đạp.",
+        "vehicle_type": "E_BIKE"
+      },
+      "product": {
+        "name": "DIBAO Amy",
+        "slug": "kinetic-amy",
+        "description": "DIBAO Amy là mẫu xe đạp điện có bàn đạp của DIBAO, phù hợp cho di chuyển hằng ngày. Chọn màu để xem đúng ảnh và tình trạng của phiên bản.",
+        "price": 17700000,
+        "discount_price": null,
+        "stock_quantity": 48,
+        "rating": 0,
+        "review_count": 0,
+        "is_featured": false,
+        "is_active": true
+      },
+      "specification": {
+        "model_code": "AMY",
+        "brand": "DIBAO",
+        "vehicle_type": "E_BIKE",
+        "battery_type": "LEAD_ACID",
+        "battery_capacity_ah": 22.0,
+        "battery_voltage_v": 48,
+        "charging_time_hours": 12.0,
+        "max_speed_kmh": 35.0,
+        "max_range_km": 70.0,
+        "motor_power_watts": 1000,
+        "peak_motor_power_watts": 1000,
+        "max_load_kg": 75.0,
+        "product_weight_kg": 67.0,
+        "wheel_size_inch": null,
+        "brake_type": "DRUM",
+        "drive_type": null,
+        "water_resistance_rating": null,
+        "frame_material": null,
+        "suspension_type": null,
+        "display_type": null,
+        "smart_features": null,
+        "warranty_months": 24,
+        "dimensions_mm": "1.510mm x 680mm x 1.095mm"
+      },
+      "variants": [
+        {
+          "sku": "kinetic-amy-verified-c01",
+          "variant_name": "Xanh lam",
+          "color_name": "Xanh lam",
+          "color_hex": "#607f91",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 10,
+          "is_default": true,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-amy-verified-c02",
+          "variant_name": "Trắng",
+          "color_name": "Trắng",
+          "color_hex": "#eeeeda",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 10,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-amy-verified-c03",
+          "variant_name": "Nâu",
+          "color_name": "Nâu",
+          "color_hex": "#a38478",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 10,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-amy-verified-c04",
+          "variant_name": "Xanh bạc hà",
+          "color_name": "Xanh bạc hà",
+          "color_hex": "#88aaa0",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 9,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-amy-verified-c05",
+          "variant_name": "Xám",
+          "color_name": "Xám",
+          "color_hex": "#858c8a",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 9,
+          "is_default": false,
+          "is_active": true
+        }
+      ],
+      "images": [
+        {
+          "variant_sku": "kinetic-amy-verified-c01",
+          "image_url": "/images/catalog/kinetic-amy/source-01.png",
+          "alt_text": "DIBAO Amy - Xanh lam",
+          "sort_order": 0,
+          "is_primary": true,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-amy/dibao-amy-1.png",
+          "sha256": "e9cc016ddc0982f41541a7c16ed25bc122399e64151cf2dfe5fda9f828acf9b6"
+        },
+        {
+          "variant_sku": "kinetic-amy-verified-c02",
+          "image_url": "/images/catalog/kinetic-amy/source-02.png",
+          "alt_text": "DIBAO Amy - Trắng",
+          "sort_order": 20,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-amy/dibao-amy-2.png",
+          "sha256": "75f057c1b137704943cab8e1b46a0e5f020bdde20d12b8eee5578ddc4ba8d19d"
+        },
+        {
+          "variant_sku": "kinetic-amy-verified-c03",
+          "image_url": "/images/catalog/kinetic-amy/source-03.png",
+          "alt_text": "DIBAO Amy - Nâu",
+          "sort_order": 40,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-amy/dibao-amy-3.png",
+          "sha256": "ed9d2885a14b6ffc917c3d4ec7d23669e040c6186530eb9a0a76ee85da1ae9cf"
+        },
+        {
+          "variant_sku": "kinetic-amy-verified-c04",
+          "image_url": "/images/catalog/kinetic-amy/source-04.png",
+          "alt_text": "DIBAO Amy - Xanh bạc hà",
+          "sort_order": 60,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-amy/dibao-amy-4.png",
+          "sha256": "20e69231447bba84590ff40cf8a66eb7a3fc3721284abaa8f94d59f3f1738b2d"
+        },
+        {
+          "variant_sku": "kinetic-amy-verified-c05",
+          "image_url": "/images/catalog/kinetic-amy/source-05.png",
+          "alt_text": "DIBAO Amy - Xám",
+          "sort_order": 80,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-amy/dibao-amy.png",
+          "sha256": "be39eb2050fd3f8a37d7b7cffaff5b730ba1a0ddf71ae16b017c402baa562e58"
+        }
+      ],
+      "source_url": "https://dibao.com.vn/xe-dien-co-ban-dap-dibao-amy.html",
+      "source_title": "XE ĐIỆN CÓ BÀN ĐẠP DIBAO AMY"
+    },
+    {
+      "source_group": "xe-máy-điện-có-bàn-đạp-dibao-ella",
+      "category": {
+        "name": "Xe đạp điện",
+        "slug": "xe-dap-dien",
+        "description": "Xe đạp điện có bàn đạp.",
+        "vehicle_type": "E_BIKE"
+      },
+      "product": {
+        "name": "DIBAO Ella",
+        "slug": "kinetic-ella",
+        "description": "DIBAO Ella là mẫu xe đạp điện có bàn đạp của DIBAO, phù hợp cho di chuyển hằng ngày. Chọn màu để xem đúng ảnh và tình trạng của phiên bản.",
+        "price": 19500000,
+        "discount_price": null,
+        "stock_quantity": 48,
+        "rating": 0,
+        "review_count": 0,
+        "is_featured": false,
+        "is_active": true
+      },
+      "specification": {
+        "model_code": "ELLA",
+        "brand": "DIBAO",
+        "vehicle_type": "E_BIKE",
+        "battery_type": "LEAD_ACID",
+        "battery_capacity_ah": 22.0,
+        "battery_voltage_v": 60,
+        "charging_time_hours": 12.0,
+        "max_speed_kmh": 45.0,
+        "max_range_km": 70.0,
+        "motor_power_watts": 1400,
+        "peak_motor_power_watts": 1400,
+        "max_load_kg": 75.0,
+        "product_weight_kg": 84.0,
+        "wheel_size_inch": null,
+        "brake_type": "DISC",
+        "drive_type": null,
+        "water_resistance_rating": null,
+        "frame_material": null,
+        "suspension_type": null,
+        "display_type": null,
+        "smart_features": null,
+        "warranty_months": 24,
+        "dimensions_mm": "1.690mm x 675mm x 1.075mm"
+      },
+      "variants": [
+        {
+          "sku": "kinetic-ella-verified-c01",
+          "variant_name": "Hồng",
+          "color_name": "Hồng",
+          "color_hex": "#d9bacb",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 10,
+          "is_default": true,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-ella-verified-c02",
+          "variant_name": "Xanh ngọc nhạt",
+          "color_name": "Xanh ngọc nhạt",
+          "color_hex": "#9cafa7",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 10,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-ella-verified-c03",
+          "variant_name": "Trắng",
+          "color_name": "Trắng",
+          "color_hex": "#eceff1",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 10,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-ella-verified-c04",
+          "variant_name": "Kem",
+          "color_name": "Kem",
+          "color_hex": "#e9dfc3",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 9,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-ella-verified-c05",
+          "variant_name": "Đen",
+          "color_name": "Đen",
+          "color_hex": "#202524",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 9,
+          "is_default": false,
+          "is_active": true
+        }
+      ],
+      "images": [
+        {
+          "variant_sku": "kinetic-ella-verified-c01",
+          "image_url": "/images/catalog/kinetic-ella/source-01.png",
+          "alt_text": "DIBAO Ella - Hồng",
+          "sort_order": 0,
+          "is_primary": true,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/ella/qgo08945.png",
+          "sha256": "f478b5f12baca1a569f2a3e5a140bc47a3f698e01824b0baf3a014140155c5bf"
+        },
+        {
+          "variant_sku": "kinetic-ella-verified-c02",
+          "image_url": "/images/catalog/kinetic-ella/source-02.png",
+          "alt_text": "DIBAO Ella - Xanh ngọc nhạt",
+          "sort_order": 20,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/ella/dibao-ella.png",
+          "sha256": "56581cf845f3a843311cdc1a4aa3a424a7b76b60d03734a51fd3cb484212f572"
+        },
+        {
+          "variant_sku": "kinetic-ella-verified-c03",
+          "image_url": "/images/catalog/kinetic-ella/source-03.png",
+          "alt_text": "DIBAO Ella - Trắng",
+          "sort_order": 40,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/ella/qgo08954.png",
+          "sha256": "a30bcc2938af979a4a7f414a473f597d8f2f2aeb8553fea66d5d6b8f9c3e05fd"
+        },
+        {
+          "variant_sku": "kinetic-ella-verified-c04",
+          "image_url": "/images/catalog/kinetic-ella/source-04.png",
+          "alt_text": "DIBAO Ella - Kem",
+          "sort_order": 60,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/ella/qgo08971.png",
+          "sha256": "b5257ac47116851d7e4f0f2a4cadb7d26ed9090b71c07c43262711c124305238"
+        },
+        {
+          "variant_sku": "kinetic-ella-verified-c05",
+          "image_url": "/images/catalog/kinetic-ella/source-06.png",
+          "alt_text": "DIBAO Ella - Đen",
+          "sort_order": 80,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/ella/qgo08948.png",
+          "sha256": "275c32e4154456db9dc668217c0909e724f74b0472f6adf6d71f70b10c37d901"
+        }
+      ],
+      "source_url": "https://dibao.com.vn/xe-dien-co-ban-dap-dibao-ella.html",
+      "source_title": "XE ĐIỆN CÓ BÀN ĐẠP DIBAO ELLA"
+    },
+    {
+      "source_group": "xe-máy-điện-có-bàn-đạp-dibao-queen",
+      "category": {
+        "name": "Xe đạp điện",
+        "slug": "xe-dap-dien",
+        "description": "Xe đạp điện có bàn đạp.",
+        "vehicle_type": "E_BIKE"
+      },
+      "product": {
+        "name": "DIBAO Queen",
+        "slug": "kinetic-queen",
+        "description": "DIBAO Queen là mẫu xe đạp điện có bàn đạp của DIBAO, phù hợp cho di chuyển hằng ngày. Chọn màu để xem đúng ảnh và tình trạng của phiên bản.",
+        "price": 16800000,
+        "discount_price": null,
+        "stock_quantity": 48,
+        "rating": 0,
+        "review_count": 0,
+        "is_featured": false,
+        "is_active": true
+      },
+      "specification": {
+        "model_code": "QUEEN",
+        "brand": "DIBAO",
+        "vehicle_type": "E_BIKE",
+        "battery_type": "LEAD_ACID",
+        "battery_capacity_ah": 22.0,
+        "battery_voltage_v": 60,
+        "charging_time_hours": 12.0,
+        "max_speed_kmh": 45.0,
+        "max_range_km": 80.0,
+        "motor_power_watts": 1550,
+        "peak_motor_power_watts": 1550,
+        "max_load_kg": 130.0,
+        "product_weight_kg": 86.0,
+        "wheel_size_inch": null,
+        "brake_type": "DISC",
+        "drive_type": null,
+        "water_resistance_rating": null,
+        "frame_material": null,
+        "suspension_type": null,
+        "display_type": null,
+        "smart_features": null,
+        "warranty_months": 24,
+        "dimensions_mm": "1.590mm x 690mm x 1.100mm"
+      },
+      "variants": [
+        {
+          "sku": "kinetic-queen-verified-c01",
+          "variant_name": "Xanh lam",
+          "color_name": "Xanh lam",
+          "color_hex": "#657f8f/#ede5cf",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 8,
+          "is_default": true,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-queen-verified-c02",
+          "variant_name": "Xanh nhạt",
+          "color_name": "Xanh nhạt",
+          "color_hex": "#b5d4d9/#ede5cf",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 8,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-queen-verified-c03",
+          "variant_name": "Xanh ngọc",
+          "color_name": "Xanh ngọc",
+          "color_hex": "#83b3ad/#ede5cf",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 8,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-queen-verified-c04",
+          "variant_name": "Xanh đậm",
+          "color_name": "Xanh đậm",
+          "color_hex": "#354d63/#ede5cf",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 8,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-queen-verified-c05",
+          "variant_name": "Xám",
+          "color_name": "Xám",
+          "color_hex": "#9a9b8e/#ede5cf",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 8,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-queen-verified-c06",
+          "variant_name": "Trắng xanh",
+          "color_name": "Trắng xanh",
+          "color_hex": "#d1e4e9/#ede5cf",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 8,
+          "is_default": false,
+          "is_active": true
+        }
+      ],
+      "images": [
+        {
+          "variant_sku": "kinetic-queen-verified-c01",
+          "image_url": "/images/catalog/kinetic-queen/source-01.png",
+          "alt_text": "DIBAO Queen - Xanh lam",
+          "sort_order": 0,
+          "is_primary": true,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-queen/dibao-queen-2.png",
+          "sha256": "345a191b8d4eb17bbf250e4f4a17d3986578a885a160050020f216774f95fe4d"
+        },
+        {
+          "variant_sku": "kinetic-queen-verified-c02",
+          "image_url": "/images/catalog/kinetic-queen/source-02.png",
+          "alt_text": "DIBAO Queen - Xanh nhạt",
+          "sort_order": 20,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-queen/dibao-queen-3.png",
+          "sha256": "4bb5564c1395876629433e36a34d7c8b936b187d6e16e3b649624cef6543c1e0"
+        },
+        {
+          "variant_sku": "kinetic-queen-verified-c03",
+          "image_url": "/images/catalog/kinetic-queen/source-03.png",
+          "alt_text": "DIBAO Queen - Xanh ngọc",
+          "sort_order": 40,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-queen/dibao-queen-4.png",
+          "sha256": "60a785fe3318575b3508f63a06928dd901b5f8341b2937adafc9757ef434fef5"
+        },
+        {
+          "variant_sku": "kinetic-queen-verified-c04",
+          "image_url": "/images/catalog/kinetic-queen/source-04.png",
+          "alt_text": "DIBAO Queen - Xanh đậm",
+          "sort_order": 60,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-queen/dibao-queen-5.png",
+          "sha256": "a1687d69dfc82bf4e117cad5a8baf16d0bd3a2ac1847bdc906577ff8de7c1e4e"
+        },
+        {
+          "variant_sku": "kinetic-queen-verified-c05",
+          "image_url": "/images/catalog/kinetic-queen/source-05.png",
+          "alt_text": "DIBAO Queen - Xám",
+          "sort_order": 80,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-queen/dibao-queen.png",
+          "sha256": "a1331f0a8d20ac25aeafe11cb62c0192df3373e1c20c64f227da3510311ca43b"
+        },
+        {
+          "variant_sku": "kinetic-queen-verified-c06",
+          "image_url": "/images/catalog/kinetic-queen/source-06.png",
+          "alt_text": "DIBAO Queen - Trắng xanh",
+          "sort_order": 100,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-queen/dibao-queen-1.png",
+          "sha256": "2b65af90a0bef3e99fcdd44f860a7821ba0238f5bef09b8f6659b824a3b44007"
+        }
+      ],
+      "source_url": "https://dibao.com.vn/xe-may-dien-dibao-queen.html",
+      "source_title": "XE MÁY ĐIỆN DIBAO QUEEN"
+    },
+    {
+      "source_group": "xe-máy-điện-có-bàn-đạp-dibao-ryan",
+      "category": {
+        "name": "Xe đạp điện",
+        "slug": "xe-dap-dien",
+        "description": "Xe đạp điện có bàn đạp.",
+        "vehicle_type": "E_BIKE"
+      },
+      "product": {
+        "name": "DIBAO Ryan",
+        "slug": "kinetic-ryan",
+        "description": "DIBAO Ryan là mẫu xe đạp điện có bàn đạp của DIBAO, phù hợp cho di chuyển hằng ngày. Chọn màu để xem đúng ảnh và tình trạng của phiên bản.",
+        "price": 17700000,
+        "discount_price": null,
+        "stock_quantity": 48,
+        "rating": 0,
+        "review_count": 0,
+        "is_featured": false,
+        "is_active": true
+      },
+      "specification": {
+        "model_code": "RYAN",
+        "brand": "DIBAO",
+        "vehicle_type": "E_BIKE",
+        "battery_type": "LEAD_ACID",
+        "battery_capacity_ah": 22.0,
+        "battery_voltage_v": 60,
+        "charging_time_hours": 12.0,
+        "max_speed_kmh": 45.0,
+        "max_range_km": 70.0,
+        "motor_power_watts": 1550,
+        "peak_motor_power_watts": 1550,
+        "max_load_kg": 130.0,
+        "product_weight_kg": 88.0,
+        "wheel_size_inch": null,
+        "brake_type": "DISC",
+        "drive_type": null,
+        "water_resistance_rating": null,
+        "frame_material": null,
+        "suspension_type": null,
+        "display_type": null,
+        "smart_features": null,
+        "warranty_months": 24,
+        "dimensions_mm": "1.650mm x 660mm x 1.055mm"
+      },
+      "variants": [
+        {
+          "sku": "kinetic-ryan-verified-c01",
+          "variant_name": "Đen",
+          "color_name": "Đen",
+          "color_hex": "#27353b",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 10,
+          "is_default": true,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-ryan-verified-c02",
+          "variant_name": "Xanh bạc hà",
+          "color_name": "Xanh bạc hà",
+          "color_hex": "#a9c9c6",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 10,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-ryan-verified-c03",
+          "variant_name": "Trắng",
+          "color_name": "Trắng",
+          "color_hex": "#dce6e9",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 10,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-ryan-verified-c04",
+          "variant_name": "Xám",
+          "color_name": "Xám",
+          "color_hex": "#8a9191",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 9,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-ryan-verified-c05",
+          "variant_name": "Xanh lam",
+          "color_name": "Xanh lam",
+          "color_hex": "#547e98",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 9,
+          "is_default": false,
+          "is_active": true
+        }
+      ],
+      "images": [
+        {
+          "variant_sku": "kinetic-ryan-verified-c01",
+          "image_url": "/images/catalog/kinetic-ryan/source-01.png",
+          "alt_text": "DIBAO Ryan - Đen",
+          "sort_order": 0,
+          "is_primary": true,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/bai-viet/dibao-ryan.png",
+          "sha256": "74c8f5dd41ff35e31e4f9d6d4496ed9ac604e914c4f82be55701f8cb0a6878c7"
+        },
+        {
+          "variant_sku": "kinetic-ryan-verified-c02",
+          "image_url": "/images/catalog/kinetic-ryan/source-02.png",
+          "alt_text": "DIBAO Ryan - Xanh bạc hà",
+          "sort_order": 20,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/bai-viet/dibao-ryan-2.png",
+          "sha256": "507a116032be1230cc76273fc44bbeee9f443103045c35cd1f006b21dc0a640b"
+        },
+        {
+          "variant_sku": "kinetic-ryan-verified-c03",
+          "image_url": "/images/catalog/kinetic-ryan/source-03.png",
+          "alt_text": "DIBAO Ryan - Trắng",
+          "sort_order": 40,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/bai-viet/dibao-ryan-3.png",
+          "sha256": "8263e72fe2c091960c3f2d7b9263c6c8eb19723afe15f276ae99f5e0824c55d0"
+        },
+        {
+          "variant_sku": "kinetic-ryan-verified-c03",
+          "image_url": "/images/catalog/kinetic-ryan/source-04.png",
+          "alt_text": "DIBAO Ryan - Trắng",
+          "sort_order": 41,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/bai-viet/dibao-ryan-4.png",
+          "sha256": "c92a2744c6979c5f043f540a1469b8581bdbb61694f65f25250311791eb3d61b"
+        },
+        {
+          "variant_sku": "kinetic-ryan-verified-c04",
+          "image_url": "/images/catalog/kinetic-ryan/source-05.png",
+          "alt_text": "DIBAO Ryan - Xám",
+          "sort_order": 60,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/bai-viet/dibao-ryan-5.png",
+          "sha256": "27a60541e21d61e8c31141445fffe027f8bbca9cf97aacabad1f3567d5437b3b"
+        },
+        {
+          "variant_sku": "kinetic-ryan-verified-c05",
+          "image_url": "/images/catalog/kinetic-ryan/source-06.png",
+          "alt_text": "DIBAO Ryan - Xanh lam",
+          "sort_order": 80,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/bai-viet/dibao-ryan-6.png",
+          "sha256": "00110cd0e5f9be3af52f9b7da60f4dbcace86840a12d39658bf11d6b9deae9cb"
+        }
+      ],
+      "source_url": "https://dibao.com.vn/xe-dien-co-ban-dap-dibao-ryan.html",
+      "source_title": "XE ĐIỆN CÓ BÀN ĐẠP DIBAO RYAN"
+    },
+    {
+      "source_group": "xe-máy-điện-có-bàn-đạp-dibao-s-one",
+      "category": {
+        "name": "Xe đạp điện",
+        "slug": "xe-dap-dien",
+        "description": "Xe đạp điện có bàn đạp.",
+        "vehicle_type": "E_BIKE"
+      },
+      "product": {
+        "name": "DIBAO S One",
+        "slug": "kinetic-s-one",
+        "description": "DIBAO S One là mẫu xe đạp điện có bàn đạp của DIBAO, phù hợp cho di chuyển hằng ngày. Chọn màu để xem đúng ảnh và tình trạng của phiên bản.",
+        "price": 15900000,
+        "discount_price": null,
+        "stock_quantity": 48,
+        "rating": 0,
+        "review_count": 0,
+        "is_featured": true,
+        "is_active": true
+      },
+      "specification": {
+        "model_code": "S-ONE",
+        "brand": "DIBAO",
+        "vehicle_type": "E_BIKE",
+        "battery_type": "LEAD_ACID",
+        "battery_capacity_ah": 22.0,
+        "battery_voltage_v": 60,
+        "charging_time_hours": 12.0,
+        "max_speed_kmh": 45.0,
+        "max_range_km": 70.0,
+        "motor_power_watts": 1550,
+        "peak_motor_power_watts": 1550,
+        "max_load_kg": 75.0,
+        "product_weight_kg": 89.0,
+        "wheel_size_inch": null,
+        "brake_type": "DISC",
+        "drive_type": null,
+        "water_resistance_rating": null,
+        "frame_material": null,
+        "suspension_type": null,
+        "display_type": null,
+        "smart_features": null,
+        "warranty_months": 24,
+        "dimensions_mm": "1.645mm x 710mm x 1.060mm"
+      },
+      "variants": [
+        {
+          "sku": "kinetic-s-one-verified-c01",
+          "variant_name": "Hồng",
+          "color_name": "Hồng",
+          "color_hex": "#d794a5",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 8,
+          "is_default": true,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-s-one-verified-c02",
+          "variant_name": "Be",
+          "color_name": "Be",
+          "color_hex": "#bdb0a0",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 8,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-s-one-verified-c03",
+          "variant_name": "Đen",
+          "color_name": "Đen",
+          "color_hex": "#16191b",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 8,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-s-one-verified-c04",
+          "variant_name": "Xanh đậm",
+          "color_name": "Xanh đậm",
+          "color_hex": "#384951",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 8,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-s-one-verified-c05",
+          "variant_name": "Xanh xám",
+          "color_name": "Xanh xám",
+          "color_hex": "#95aaa0",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 8,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-s-one-verified-c06",
+          "variant_name": "Trắng kem",
+          "color_name": "Trắng kem",
+          "color_hex": "#ded5c6",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 8,
+          "is_default": false,
+          "is_active": true
+        }
+      ],
+      "images": [
+        {
+          "variant_sku": "kinetic-s-one-verified-c01",
+          "image_url": "/images/catalog/kinetic-s-one/source-01.png",
+          "alt_text": "DIBAO S One - Hồng",
+          "sort_order": 0,
+          "is_primary": true,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/s-one/s1-0032.png",
+          "sha256": "e7f05afb396cc5ce6e02b4bf9118a92b69cdf08475fe9b21f0db4a0c1cd60aab"
+        },
+        {
+          "variant_sku": "kinetic-s-one-verified-c02",
+          "image_url": "/images/catalog/kinetic-s-one/source-02.png",
+          "alt_text": "DIBAO S One - Be",
+          "sort_order": 20,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/s-one/s1-0033-0122.png",
+          "sha256": "3691acd68ef4c966ff6ecac672e9b81c53fdc789f82882be7070a85f2f1d4f11"
+        },
+        {
+          "variant_sku": "kinetic-s-one-verified-c03",
+          "image_url": "/images/catalog/kinetic-s-one/source-03.png",
+          "alt_text": "DIBAO S One - Đen",
+          "sort_order": 40,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/s-one/s1-0033-1.png",
+          "sha256": "c3b650d5efdfc7ffc793a30150d02ec38856271f33efca02dd5dcefb01a33afb"
+        },
+        {
+          "variant_sku": "kinetic-s-one-verified-c04",
+          "image_url": "/images/catalog/kinetic-s-one/source-04.png",
+          "alt_text": "DIBAO S One - Xanh đậm",
+          "sort_order": 60,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/s-one/s1-0033.png",
+          "sha256": "653686f8da6debc87d6a6410ad61b52e875366d1b7509151d0df64945c1b319d"
+        },
+        {
+          "variant_sku": "kinetic-s-one-verified-c05",
+          "image_url": "/images/catalog/kinetic-s-one/source-05.png",
+          "alt_text": "DIBAO S One - Xanh xám",
+          "sort_order": 80,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/s-one/s1-0105.png",
+          "sha256": "4de77ef39d7f07fb3de318d366012e01c6a80727ed55c980023c5b1168c7faed"
+        },
+        {
+          "variant_sku": "kinetic-s-one-verified-c06",
+          "image_url": "/images/catalog/kinetic-s-one/source-06.png",
+          "alt_text": "DIBAO S One - Trắng kem",
+          "sort_order": 100,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/s-one/s1-0133-0116.png",
+          "sha256": "38f1d1572658e5736539717a01ed49b5af5399ccd25b3d2511a8730f8cac905d"
+        }
+      ],
+      "source_url": "https://dibao.com.vn/xe-dien-co-ban-dap-dibao-s-one.html",
+      "source_title": "Xe điện có bàn đạp DIBAO S-ONE"
+    },
+    {
+      "source_group": "xe-máy-điện-dibao-creer-e",
+      "category": {
+        "name": "Xe điện",
+        "slug": "xe-dien",
+        "description": "Xe sử dụng động cơ điện.",
+        "vehicle_type": "E_SCOOTER"
+      },
+      "product": {
+        "name": "DIBAO Creer E",
+        "slug": "kinetic-creer-e",
+        "description": "DIBAO Creer E là mẫu xe sử dụng động cơ điện của DIBAO, phù hợp cho di chuyển hằng ngày. Chọn màu để xem đúng ảnh và tình trạng của phiên bản.",
+        "price": 21500000,
+        "discount_price": null,
+        "stock_quantity": 48,
+        "rating": 0,
+        "review_count": 0,
+        "is_featured": true,
+        "is_active": true
+      },
+      "specification": {
+        "model_code": "CREER-E",
+        "brand": "DIBAO",
+        "vehicle_type": "E_SCOOTER",
+        "battery_type": "LEAD_ACID",
+        "battery_capacity_ah": 23.0,
+        "battery_voltage_v": 60,
+        "charging_time_hours": 13.0,
+        "max_speed_kmh": 50.0,
+        "max_range_km": 90.0,
+        "motor_power_watts": 1400,
+        "peak_motor_power_watts": 1400,
+        "max_load_kg": 150.0,
+        "product_weight_kg": 93.0,
+        "wheel_size_inch": null,
+        "brake_type": "DISC",
+        "drive_type": null,
+        "water_resistance_rating": null,
+        "frame_material": null,
+        "suspension_type": null,
+        "display_type": null,
+        "smart_features": null,
+        "warranty_months": 24,
+        "dimensions_mm": "1.720mm x 660mm x 1.160mm"
+      },
+      "variants": [
+        {
+          "sku": "kinetic-creer-e-verified-c01",
+          "variant_name": "Đen kem",
+          "color_name": "Đen kem",
+          "color_hex": "#252c26/#e5e4c8",
+          "battery_capacity_ah": 23.0,
+          "additional_price": 0,
+          "stock_quantity": 8,
+          "is_default": true,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-creer-e-verified-c02",
+          "variant_name": "Cam trắng",
+          "color_name": "Cam trắng",
+          "color_hex": "#d66c29/#f2f2e9",
+          "battery_capacity_ah": 23.0,
+          "additional_price": 0,
+          "stock_quantity": 8,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-creer-e-verified-c03",
+          "variant_name": "Trắng",
+          "color_name": "Trắng",
+          "color_hex": "#e7ebe5",
+          "battery_capacity_ah": 23.0,
+          "additional_price": 0,
+          "stock_quantity": 8,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-creer-e-verified-c04",
+          "variant_name": "Đỏ trắng",
+          "color_name": "Đỏ trắng",
+          "color_hex": "#a92232/#f2f2e9",
+          "battery_capacity_ah": 23.0,
+          "additional_price": 0,
+          "stock_quantity": 8,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-creer-e-verified-c05",
+          "variant_name": "Vàng trắng",
+          "color_name": "Vàng trắng",
+          "color_hex": "#e4c326/#f2f2e9",
+          "battery_capacity_ah": 23.0,
+          "additional_price": 0,
+          "stock_quantity": 8,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-creer-e-verified-c06",
+          "variant_name": "Kem",
+          "color_name": "Kem",
+          "color_hex": "#d8d5ae",
+          "battery_capacity_ah": 23.0,
+          "additional_price": 0,
+          "stock_quantity": 8,
+          "is_default": false,
+          "is_active": true
+        }
+      ],
+      "images": [
+        {
+          "variant_sku": "kinetic-creer-e-verified-c01",
+          "image_url": "/images/catalog/kinetic-creer-e/source-01.jpg",
+          "alt_text": "DIBAO Creer E - Đen kem",
+          "sort_order": 0,
+          "is_primary": true,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/creer-e/10.jpg",
+          "sha256": "f26925bd212e3f436956afc9e05c78b004850738a51a012889109e9bfcf4488f"
+        },
+        {
+          "variant_sku": "kinetic-creer-e-verified-c02",
+          "image_url": "/images/catalog/kinetic-creer-e/source-02.jpg",
+          "alt_text": "DIBAO Creer E - Cam trắng",
+          "sort_order": 20,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/creer-e/2.jpg",
+          "sha256": "e4942f50144e7d2b99b8828af7fbc5e896b387678d70bd86bfe6d594a1e321d6"
+        },
+        {
+          "variant_sku": "kinetic-creer-e-verified-c03",
+          "image_url": "/images/catalog/kinetic-creer-e/source-03.jpg",
+          "alt_text": "DIBAO Creer E - Trắng",
+          "sort_order": 40,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/creer-e/5.jpg",
+          "sha256": "3cc93396234a85b04ea68b06ddf7f4bf785befb68140fd8aac0d5788c28bcc43"
+        },
+        {
+          "variant_sku": "kinetic-creer-e-verified-c04",
+          "image_url": "/images/catalog/kinetic-creer-e/source-04.jpg",
+          "alt_text": "DIBAO Creer E - Đỏ trắng",
+          "sort_order": 60,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/creer-e/7.jpg",
+          "sha256": "13bc99271dfa315a8b59b0821ebf80b58f5c54a5a841252b59660b1f755e0aa2"
+        },
+        {
+          "variant_sku": "kinetic-creer-e-verified-c05",
+          "image_url": "/images/catalog/kinetic-creer-e/source-05.jpg",
+          "alt_text": "DIBAO Creer E - Vàng trắng",
+          "sort_order": 80,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/creer-e/8.jpg",
+          "sha256": "fa636b9b0947b67923285a1e29de72ca5b27cd50ec73b757ba1f67d2157fbe9c"
+        },
+        {
+          "variant_sku": "kinetic-creer-e-verified-c06",
+          "image_url": "/images/catalog/kinetic-creer-e/source-06.jpg",
+          "alt_text": "DIBAO Creer E - Kem",
+          "sort_order": 100,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/creer-e/9.jpg",
+          "sha256": "1398cbbfdda47036bd1419610af7006a5789632fbbbfdafe7407ee18b6af7a4a"
+        }
+      ],
+      "source_url": "https://dibao.com.vn/xe-may-dien-dibao-creer-e.html",
+      "source_title": "XE MÁY ĐIỆN DIBAO CREER E"
+    },
+    {
+      "source_group": "xe-máy-điện-dibao-creer-nile",
+      "category": {
+        "name": "Xe điện",
+        "slug": "xe-dien",
+        "description": "Xe sử dụng động cơ điện.",
+        "vehicle_type": "E_SCOOTER"
+      },
+      "product": {
+        "name": "DIBAO Creer Nile",
+        "slug": "kinetic-creer-nile",
+        "description": "DIBAO Creer Nile là mẫu xe sử dụng động cơ điện của DIBAO, phù hợp cho di chuyển hằng ngày. Chọn màu để xem đúng ảnh và tình trạng của phiên bản.",
+        "price": 27000000,
+        "discount_price": null,
+        "stock_quantity": 48,
+        "rating": 0,
+        "review_count": 0,
+        "is_featured": false,
+        "is_active": true
+      },
+      "specification": {
+        "model_code": "CREER-NILE",
+        "brand": "DIBAO",
+        "vehicle_type": "E_SCOOTER",
+        "battery_type": "LEAD_ACID",
+        "battery_capacity_ah": 23.0,
+        "battery_voltage_v": 60,
+        "charging_time_hours": 13.0,
+        "max_speed_kmh": 50.0,
+        "max_range_km": 90.0,
+        "motor_power_watts": 1400,
+        "peak_motor_power_watts": 1400,
+        "max_load_kg": 150.0,
+        "product_weight_kg": 96.0,
+        "wheel_size_inch": null,
+        "brake_type": "DISC",
+        "drive_type": null,
+        "water_resistance_rating": null,
+        "frame_material": null,
+        "suspension_type": null,
+        "display_type": null,
+        "smart_features": null,
+        "warranty_months": 24,
+        "dimensions_mm": "1.700mm x 660mm x 1.070mm"
+      },
+      "variants": [
+        {
+          "sku": "kinetic-creer-nile-verified-c01",
+          "variant_name": "Xanh lam trắng",
+          "color_name": "Xanh lam trắng",
+          "color_hex": "#48748a/#f4f4e5",
+          "battery_capacity_ah": 23.0,
+          "additional_price": 0,
+          "stock_quantity": 8,
+          "is_default": true,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-creer-nile-verified-c02",
+          "variant_name": "Cam trắng",
+          "color_name": "Cam trắng",
+          "color_hex": "#ee9417/#f4f4e5",
+          "battery_capacity_ah": 23.0,
+          "additional_price": 0,
+          "stock_quantity": 8,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-creer-nile-verified-c03",
+          "variant_name": "Xanh ngọc trắng",
+          "color_name": "Xanh ngọc trắng",
+          "color_hex": "#48a4bc/#f4f4e5",
+          "battery_capacity_ah": 23.0,
+          "additional_price": 0,
+          "stock_quantity": 8,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-creer-nile-verified-c04",
+          "variant_name": "Vàng trắng",
+          "color_name": "Vàng trắng",
+          "color_hex": "#e6db17/#f4f4e5",
+          "battery_capacity_ah": 23.0,
+          "additional_price": 0,
+          "stock_quantity": 8,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-creer-nile-verified-c05",
+          "variant_name": "Đen trắng",
+          "color_name": "Đen trắng",
+          "color_hex": "#1d3442/#f4f4e5",
+          "battery_capacity_ah": 23.0,
+          "additional_price": 0,
+          "stock_quantity": 8,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-creer-nile-verified-c06",
+          "variant_name": "Xanh lục trắng",
+          "color_name": "Xanh lục trắng",
+          "color_hex": "#298c8e/#f4f4e5",
+          "battery_capacity_ah": 23.0,
+          "additional_price": 0,
+          "stock_quantity": 8,
+          "is_default": false,
+          "is_active": true
+        }
+      ],
+      "images": [
+        {
+          "variant_sku": "kinetic-creer-nile-verified-c01",
+          "image_url": "/images/catalog/kinetic-creer-nile/source-01.png",
+          "alt_text": "DIBAO Creer Nile - Xanh lam trắng",
+          "sort_order": 0,
+          "is_primary": true,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/creer-nile/creer-nine-017-1.png",
+          "sha256": "07e7bf0d16040b255022644fb8b3406b54f0defe1b34da2fa60da24526427b18"
+        },
+        {
+          "variant_sku": "kinetic-creer-nile-verified-c02",
+          "image_url": "/images/catalog/kinetic-creer-nile/source-02.png",
+          "alt_text": "DIBAO Creer Nile - Cam trắng",
+          "sort_order": 20,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/creer-nile/1-27.png",
+          "sha256": "4011031e40cd45388f377ffcde8bd1a3e5b7158c3740cfb5468ed47d346e4952"
+        },
+        {
+          "variant_sku": "kinetic-creer-nile-verified-c03",
+          "image_url": "/images/catalog/kinetic-creer-nile/source-03.png",
+          "alt_text": "DIBAO Creer Nile - Xanh ngọc trắng",
+          "sort_order": 40,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/creer-nile/creer-nine-013.png",
+          "sha256": "510aa7b018760672ec3320b09e8971911520e1dcfda6ab877d87142b4a1f383a"
+        },
+        {
+          "variant_sku": "kinetic-creer-nile-verified-c04",
+          "image_url": "/images/catalog/kinetic-creer-nile/source-04.png",
+          "alt_text": "DIBAO Creer Nile - Vàng trắng",
+          "sort_order": 60,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/creer-nile/creer-nine-022.png",
+          "sha256": "69f1a388748245bc0619b346ebe1ba98789ea0bb305df96267c4eed2495ea5c8"
+        },
+        {
+          "variant_sku": "kinetic-creer-nile-verified-c05",
+          "image_url": "/images/catalog/kinetic-creer-nile/source-05.png",
+          "alt_text": "DIBAO Creer Nile - Đen trắng",
+          "sort_order": 80,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/creer-nile/creer-nine-033.png",
+          "sha256": "2b02a9ffa687b07f75cbb5e851962eebc2b1c82ea6fdb942f954c8b7bcc27bfa"
+        },
+        {
+          "variant_sku": "kinetic-creer-nile-verified-c06",
+          "image_url": "/images/catalog/kinetic-creer-nile/source-06.png",
+          "alt_text": "DIBAO Creer Nile - Xanh lục trắng",
+          "sort_order": 100,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/creer-nile/creer-nine-046.png",
+          "sha256": "af99659a24bd44c76b17f476a558daebff5d68e76955dfb4b29d4493d7921edf"
+        }
+      ],
+      "source_url": "https://dibao.com.vn/xe-may-dien-dibao-creer-nile.html",
+      "source_title": "XE MÁY ĐIỆN DIBAO CREER NILE"
+    },
+    {
+      "source_group": "xe-máy-điện-dibao-gogo-cross",
+      "category": {
+        "name": "Xe điện",
+        "slug": "xe-dien",
+        "description": "Xe sử dụng động cơ điện.",
+        "vehicle_type": "E_SCOOTER"
+      },
+      "product": {
+        "name": "DIBAO Gogo Cross",
+        "slug": "kinetic-gogo-cross",
+        "description": "DIBAO Gogo Cross là mẫu xe sử dụng động cơ điện của DIBAO, phù hợp cho di chuyển hằng ngày. Chọn màu để xem đúng ảnh và tình trạng của phiên bản.",
+        "price": 23700000,
+        "discount_price": null,
+        "stock_quantity": 48,
+        "rating": 0,
+        "review_count": 0,
+        "is_featured": false,
+        "is_active": true
+      },
+      "specification": {
+        "model_code": "GOGO-CROSS",
+        "brand": "DIBAO",
+        "vehicle_type": "E_SCOOTER",
+        "battery_type": "LEAD_ACID",
+        "battery_capacity_ah": 23.0,
+        "battery_voltage_v": 60,
+        "charging_time_hours": 12.0,
+        "max_speed_kmh": 50.0,
+        "max_range_km": 90.0,
+        "motor_power_watts": 1450,
+        "peak_motor_power_watts": 1450,
+        "max_load_kg": 150.0,
+        "product_weight_kg": 93.0,
+        "wheel_size_inch": null,
+        "brake_type": "DISC",
+        "drive_type": null,
+        "water_resistance_rating": null,
+        "frame_material": null,
+        "suspension_type": null,
+        "display_type": null,
+        "smart_features": null,
+        "warranty_months": 24,
+        "dimensions_mm": "1.730mm x 730mm x 1.040mm"
+      },
+      "variants": [
+        {
+          "sku": "kinetic-gogo-cross-verified-c01",
+          "variant_name": "Đen",
+          "color_name": "Đen",
+          "color_hex": "#252b31",
+          "battery_capacity_ah": 23.0,
+          "additional_price": 0,
+          "stock_quantity": 10,
+          "is_default": true,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-gogo-cross-verified-c02",
+          "variant_name": "Đỏ",
+          "color_name": "Đỏ",
+          "color_hex": "#a82f40",
+          "battery_capacity_ah": 23.0,
+          "additional_price": 0,
+          "stock_quantity": 10,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-gogo-cross-verified-c03",
+          "variant_name": "Xanh ngọc",
+          "color_name": "Xanh ngọc",
+          "color_hex": "#85a9b0",
+          "battery_capacity_ah": 23.0,
+          "additional_price": 0,
+          "stock_quantity": 10,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-gogo-cross-verified-c04",
+          "variant_name": "Trắng",
+          "color_name": "Trắng",
+          "color_hex": "#e4ebee",
+          "battery_capacity_ah": 23.0,
+          "additional_price": 0,
+          "stock_quantity": 9,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-gogo-cross-verified-c05",
+          "variant_name": "Xanh đậm",
+          "color_name": "Xanh đậm",
+          "color_hex": "#435a6d",
+          "battery_capacity_ah": 23.0,
+          "additional_price": 0,
+          "stock_quantity": 9,
+          "is_default": false,
+          "is_active": true
+        }
+      ],
+      "images": [
+        {
+          "variant_sku": "kinetic-gogo-cross-verified-c01",
+          "image_url": "/images/catalog/kinetic-gogo-cross/source-01.png",
+          "alt_text": "DIBAO Gogo Cross - Đen",
+          "sort_order": 0,
+          "is_primary": true,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/gogo-cross/cross-0331.png",
+          "sha256": "8f68e1d6fbfb46b7d14be0a8439294393c0195af87c66eb67e3efef5cc38d22f"
+        },
+        {
+          "variant_sku": "kinetic-gogo-cross-verified-c02",
+          "image_url": "/images/catalog/kinetic-gogo-cross/source-02.png",
+          "alt_text": "DIBAO Gogo Cross - Đỏ",
+          "sort_order": 20,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/gogo-cross/cross-056.png",
+          "sha256": "9bb2b2c8c494f35be1e996055adc20c0e2144c370d7380d52eadc8d455b41a00"
+        },
+        {
+          "variant_sku": "kinetic-gogo-cross-verified-c02",
+          "image_url": "/images/catalog/kinetic-gogo-cross/source-03.png",
+          "alt_text": "DIBAO Gogo Cross - Đỏ",
+          "sort_order": 21,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/gogo-cross/cross-0561.png",
+          "sha256": "0ad952462931810f0b2da0e39043a3213482380060fedb8518f15b4e59292cf9"
+        },
+        {
+          "variant_sku": "kinetic-gogo-cross-verified-c03",
+          "image_url": "/images/catalog/kinetic-gogo-cross/source-04.png",
+          "alt_text": "DIBAO Gogo Cross - Xanh ngọc",
+          "sort_order": 40,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/gogo-cross/cross-013.png",
+          "sha256": "b3416d126c10aa24bd83ce166170df0030a837d846eb1080ebd0f6931b3908fa"
+        },
+        {
+          "variant_sku": "kinetic-gogo-cross-verified-c04",
+          "image_url": "/images/catalog/kinetic-gogo-cross/source-05.png",
+          "alt_text": "DIBAO Gogo Cross - Trắng",
+          "sort_order": 60,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/gogo-cross/cross-035.png",
+          "sha256": "92be18c7c11a27799941294e0ba55528941686ce87fc73a9980f4a1ff758530a"
+        },
+        {
+          "variant_sku": "kinetic-gogo-cross-verified-c05",
+          "image_url": "/images/catalog/kinetic-gogo-cross/source-06.png",
+          "alt_text": "DIBAO Gogo Cross - Xanh đậm",
+          "sort_order": 80,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/gogo-cross/cross-059.png",
+          "sha256": "dc35ec34a33f1d0a05f9a37f87a9b2f4258f578e6f24c349f8e1e25748216432"
+        }
+      ],
+      "source_url": "https://dibao.com.vn/xe-may-dien-dibao-gogo-cross.html",
+      "source_title": "XE MÁY ĐIỆN DIBAO GOGO CROSS"
+    },
+    {
+      "source_group": "xe-máy-điện-dibao-gogo-cross-g",
+      "category": {
+        "name": "Xe điện",
+        "slug": "xe-dien",
+        "description": "Xe sử dụng động cơ điện.",
+        "vehicle_type": "E_SCOOTER"
+      },
+      "product": {
+        "name": "DIBAO Gogo Cross G",
+        "slug": "kinetic-gogo-cross-g",
+        "description": "DIBAO Gogo Cross G là mẫu xe sử dụng động cơ điện của DIBAO, phù hợp cho di chuyển hằng ngày. Chọn màu để xem đúng ảnh và tình trạng của phiên bản.",
+        "price": 22600000,
+        "discount_price": null,
+        "stock_quantity": 48,
+        "rating": 0,
+        "review_count": 0,
+        "is_featured": false,
+        "is_active": true
+      },
+      "specification": {
+        "model_code": "GOGO-CROSS-G",
+        "brand": "DIBAO",
+        "vehicle_type": "E_SCOOTER",
+        "battery_type": "LEAD_ACID",
+        "battery_capacity_ah": 22.0,
+        "battery_voltage_v": 60,
+        "charging_time_hours": 12.0,
+        "max_speed_kmh": 50.0,
+        "max_range_km": 90.0,
+        "motor_power_watts": 1350,
+        "peak_motor_power_watts": 1350,
+        "max_load_kg": 130.0,
+        "product_weight_kg": 97.0,
+        "wheel_size_inch": null,
+        "brake_type": "DISC",
+        "drive_type": null,
+        "water_resistance_rating": null,
+        "frame_material": null,
+        "suspension_type": null,
+        "display_type": null,
+        "smart_features": null,
+        "warranty_months": 24,
+        "dimensions_mm": "1.720mm x 735mm x 1.040mm"
+      },
+      "variants": [
+        {
+          "sku": "kinetic-gogo-cross-g-verified-c01",
+          "variant_name": "Cam",
+          "color_name": "Cam",
+          "color_hex": "#d87722",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 8,
+          "is_default": true,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-gogo-cross-g-verified-c02",
+          "variant_name": "Đen",
+          "color_name": "Đen",
+          "color_hex": "#29343b",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 8,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-gogo-cross-g-verified-c03",
+          "variant_name": "Đỏ",
+          "color_name": "Đỏ",
+          "color_hex": "#af3347",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 8,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-gogo-cross-g-verified-c04",
+          "variant_name": "Trắng",
+          "color_name": "Trắng",
+          "color_hex": "#e1e6e4",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 8,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-gogo-cross-g-verified-c05",
+          "variant_name": "Xanh ngọc",
+          "color_name": "Xanh ngọc",
+          "color_hex": "#85a7a9",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 8,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-gogo-cross-g-verified-c06",
+          "variant_name": "Xanh đậm",
+          "color_name": "Xanh đậm",
+          "color_hex": "#43596a",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 8,
+          "is_default": false,
+          "is_active": true
+        }
+      ],
+      "images": [
+        {
+          "variant_sku": "kinetic-gogo-cross-g-verified-c01",
+          "image_url": "/images/catalog/kinetic-gogo-cross-g/source-01.png",
+          "alt_text": "DIBAO Gogo Cross G - Cam",
+          "sort_order": 0,
+          "is_primary": true,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/gogo-cross/cross-024-1.png",
+          "sha256": "dfac2b00d3005e9bf883a13a60adddf46268251ff14b4e8506133a32628099d6"
+        },
+        {
+          "variant_sku": "kinetic-gogo-cross-g-verified-c02",
+          "image_url": "/images/catalog/kinetic-gogo-cross-g/source-02.png",
+          "alt_text": "DIBAO Gogo Cross G - Đen",
+          "sort_order": 20,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/gogo-cross/cross-033.png",
+          "sha256": "fc53bc25da93c43737f8861ff38aac5ef8a4135aead10ceddbe81f7948862586"
+        },
+        {
+          "variant_sku": "kinetic-gogo-cross-g-verified-c03",
+          "image_url": "/images/catalog/kinetic-gogo-cross-g/source-03.png",
+          "alt_text": "DIBAO Gogo Cross G - Đỏ",
+          "sort_order": 40,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/gogo-cross/cross-056.png",
+          "sha256": "9bb2b2c8c494f35be1e996055adc20c0e2144c370d7380d52eadc8d455b41a00"
+        },
+        {
+          "variant_sku": "kinetic-gogo-cross-g-verified-c04",
+          "image_url": "/images/catalog/kinetic-gogo-cross-g/source-04.png",
+          "alt_text": "DIBAO Gogo Cross G - Trắng",
+          "sort_order": 60,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/gogo-cross/cross-035.png",
+          "sha256": "92be18c7c11a27799941294e0ba55528941686ce87fc73a9980f4a1ff758530a"
+        },
+        {
+          "variant_sku": "kinetic-gogo-cross-g-verified-c05",
+          "image_url": "/images/catalog/kinetic-gogo-cross-g/source-05.png",
+          "alt_text": "DIBAO Gogo Cross G - Xanh ngọc",
+          "sort_order": 80,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/gogo-cross/cross-013.png",
+          "sha256": "b3416d126c10aa24bd83ce166170df0030a837d846eb1080ebd0f6931b3908fa"
+        },
+        {
+          "variant_sku": "kinetic-gogo-cross-g-verified-c06",
+          "image_url": "/images/catalog/kinetic-gogo-cross-g/source-06.png",
+          "alt_text": "DIBAO Gogo Cross G - Xanh đậm",
+          "sort_order": 100,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/gogo-cross/cross-059.png",
+          "sha256": "dc35ec34a33f1d0a05f9a37f87a9b2f4258f578e6f24c349f8e1e25748216432"
+        }
+      ],
+      "source_url": "https://dibao.com.vn/xe-may-dien-dibao-gogo-cross-g.html",
+      "source_title": "XE MÁY ĐIỆN DIBAO GOGO CROSS G"
+    },
+    {
+      "source_group": "xe-máy-điện-dibao-gogo-crown",
+      "category": {
+        "name": "Xe điện",
+        "slug": "xe-dien",
+        "description": "Xe sử dụng động cơ điện.",
+        "vehicle_type": "E_SCOOTER"
+      },
+      "product": {
+        "name": "DIBAO Gogo Crown",
+        "slug": "kinetic-gogo-crown",
+        "description": "DIBAO Gogo Crown là mẫu xe sử dụng động cơ điện của DIBAO, phù hợp cho di chuyển hằng ngày. Chọn màu để xem đúng ảnh và tình trạng của phiên bản.",
+        "price": 20400000,
+        "discount_price": null,
+        "stock_quantity": 48,
+        "rating": 0,
+        "review_count": 0,
+        "is_featured": false,
+        "is_active": true
+      },
+      "specification": {
+        "model_code": "GOGO-CROWN",
+        "brand": "DIBAO",
+        "vehicle_type": "E_SCOOTER",
+        "battery_type": "LEAD_ACID",
+        "battery_capacity_ah": 22.0,
+        "battery_voltage_v": 60,
+        "charging_time_hours": 12.0,
+        "max_speed_kmh": 54.0,
+        "max_range_km": 60.0,
+        "motor_power_watts": 1600,
+        "peak_motor_power_watts": 1600,
+        "max_load_kg": 130.0,
+        "product_weight_kg": 97.0,
+        "wheel_size_inch": null,
+        "brake_type": "DISC",
+        "drive_type": null,
+        "water_resistance_rating": null,
+        "frame_material": null,
+        "suspension_type": null,
+        "display_type": null,
+        "smart_features": null,
+        "warranty_months": 24,
+        "dimensions_mm": "1.725mm x 740mm x 1.040mm"
+      },
+      "variants": [
+        {
+          "sku": "kinetic-gogo-crown-verified-c01",
+          "variant_name": "Xanh cốm",
+          "color_name": "Xanh cốm",
+          "color_hex": "#9aab58",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 8,
+          "is_default": true,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-gogo-crown-verified-c02",
+          "variant_name": "Xám trắng",
+          "color_name": "Xám trắng",
+          "color_hex": "#879394/#d5c7ae",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 8,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-gogo-crown-verified-c03",
+          "variant_name": "Xám nâu",
+          "color_name": "Xám nâu",
+          "color_hex": "#a39887",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 8,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-gogo-crown-verified-c04",
+          "variant_name": "Đỏ tươi",
+          "color_name": "Đỏ tươi",
+          "color_hex": "#cf283e",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 8,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-gogo-crown-verified-c05",
+          "variant_name": "Trắng ngọc hồng",
+          "color_name": "Trắng ngọc hồng",
+          "color_hex": "#ecebd3/#b83c70",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 8,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-gogo-crown-verified-c06",
+          "variant_name": "Đen",
+          "color_name": "Đen",
+          "color_hex": "#252c29",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 8,
+          "is_default": false,
+          "is_active": true
+        }
+      ],
+      "images": [
+        {
+          "variant_sku": "kinetic-gogo-crown-verified-c01",
+          "image_url": "/images/catalog/kinetic-gogo-crown/source-01.png",
+          "alt_text": "DIBAO Gogo Crown - Xanh cốm",
+          "sort_order": 0,
+          "is_primary": true,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/gogo-crown/gogo-rown-bl0108.png",
+          "sha256": "2ccc22fb013a4bee1f461774625969684613253eea110648e8b68aa666f12512"
+        },
+        {
+          "variant_sku": "kinetic-gogo-crown-verified-c02",
+          "image_url": "/images/catalog/kinetic-gogo-crown/source-02.png",
+          "alt_text": "DIBAO Gogo Crown - Xám trắng",
+          "sort_order": 20,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/gogo-crown/gogo-rown-0059.png",
+          "sha256": "fef47151df9e5045257e8445a31efa86565dc790d28b07ac7027d746ebf70c5d"
+        },
+        {
+          "variant_sku": "kinetic-gogo-crown-verified-c03",
+          "image_url": "/images/catalog/kinetic-gogo-crown/source-03.png",
+          "alt_text": "DIBAO Gogo Crown - Xám nâu",
+          "sort_order": 40,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/gogo-crown/gogo-rown-bl0116.png",
+          "sha256": "7def129518b7542f2ff910db646a7b218e7da78bbcd5ca32d1d20b040e817735"
+        },
+        {
+          "variant_sku": "kinetic-gogo-crown-verified-c04",
+          "image_url": "/images/catalog/kinetic-gogo-crown/source-04.png",
+          "alt_text": "DIBAO Gogo Crown - Đỏ tươi",
+          "sort_order": 60,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/gogo-crown/gogo-rown-0056.png",
+          "sha256": "19e8c268bcc1b013c5f8976f3020369e603ff61bedde443ea5d3c5a1226166b6"
+        },
+        {
+          "variant_sku": "kinetic-gogo-crown-verified-c05",
+          "image_url": "/images/catalog/kinetic-gogo-crown/source-05.png",
+          "alt_text": "DIBAO Gogo Crown - Trắng ngọc hồng",
+          "sort_order": 80,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/gogo-crown/gogo-rown-bl0133.png",
+          "sha256": "cc27039250dc75d56adf32fddf23f9f87a786fb7522a2f5d4e8ccc8f1344f91f"
+        },
+        {
+          "variant_sku": "kinetic-gogo-crown-verified-c06",
+          "image_url": "/images/catalog/kinetic-gogo-crown/source-06.png",
+          "alt_text": "DIBAO Gogo Crown - Đen",
+          "sort_order": 100,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/gogo-crown/gogo-rown-0033.png",
+          "sha256": "e873c9a64b5e7e981ff48f8152ade5c42f43cd22b668edb856ba2fa903233396"
+        }
+      ],
+      "source_url": "https://dibao.com.vn/xe-may-dien-dibao-gogo-crown.html",
+      "source_title": "Xe máy điện DIBAO GOGO CROWN"
+    },
+    {
+      "source_group": "xe-máy-điện-dibao-gogo-moon",
+      "category": {
+        "name": "Xe điện",
+        "slug": "xe-dien",
+        "description": "Xe sử dụng động cơ điện.",
+        "vehicle_type": "E_SCOOTER"
+      },
+      "product": {
+        "name": "DIBAO Gogo Moon",
+        "slug": "kinetic-gogo-moon",
+        "description": "DIBAO Gogo Moon là mẫu xe sử dụng động cơ điện của DIBAO, phù hợp cho di chuyển hằng ngày. Chọn màu để xem đúng ảnh và tình trạng của phiên bản.",
+        "price": 21500000,
+        "discount_price": null,
+        "stock_quantity": 48,
+        "rating": 0,
+        "review_count": 0,
+        "is_featured": true,
+        "is_active": true
+      },
+      "specification": {
+        "model_code": "GOGO-MOON",
+        "brand": "DIBAO",
+        "vehicle_type": "E_SCOOTER",
+        "battery_type": "LEAD_ACID",
+        "battery_capacity_ah": 22.0,
+        "battery_voltage_v": 60,
+        "charging_time_hours": 13.0,
+        "max_speed_kmh": 50.0,
+        "max_range_km": 80.0,
+        "motor_power_watts": 1500,
+        "peak_motor_power_watts": 1500,
+        "max_load_kg": 150.0,
+        "product_weight_kg": 107.0,
+        "wheel_size_inch": null,
+        "brake_type": "DISC",
+        "drive_type": null,
+        "water_resistance_rating": null,
+        "frame_material": null,
+        "suspension_type": null,
+        "display_type": null,
+        "smart_features": null,
+        "warranty_months": 36,
+        "dimensions_mm": "1.800mm x 965mm x 1.080mm"
+      },
+      "variants": [
+        {
+          "sku": "kinetic-gogo-moon-verified-c01",
+          "variant_name": "Xanh nhạt",
+          "color_name": "Xanh nhạt",
+          "color_hex": "#a2c9c6/#eee9d3",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 16,
+          "is_default": true,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-gogo-moon-verified-c02",
+          "variant_name": "Trắng",
+          "color_name": "Trắng",
+          "color_hex": "#e1eeee",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 16,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-gogo-moon-verified-c03",
+          "variant_name": "Xanh ngọc",
+          "color_name": "Xanh ngọc",
+          "color_hex": "#5fa99d/#eee9d3",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 16,
+          "is_default": false,
+          "is_active": true
+        }
+      ],
+      "images": [
+        {
+          "variant_sku": "kinetic-gogo-moon-verified-c01",
+          "image_url": "/images/catalog/kinetic-gogo-moon/source-01.png",
+          "alt_text": "DIBAO Gogo Moon - Xanh nhạt",
+          "sort_order": 0,
+          "is_primary": true,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/gogo-moon/gogo-moon-013.png",
+          "sha256": "f191593f891f6ffcb9a52cd6dd2173459dade4725a738f56ea6406a47eb7f31d"
+        },
+        {
+          "variant_sku": "kinetic-gogo-moon-verified-c02",
+          "image_url": "/images/catalog/kinetic-gogo-moon/source-02.png",
+          "alt_text": "DIBAO Gogo Moon - Trắng",
+          "sort_order": 20,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/gogo-moon/gogo-moon-035.png",
+          "sha256": "5b6ee41a15ceb65334ada6ceea309e63c8c8699f9331a152e56f66a0e00427af"
+        },
+        {
+          "variant_sku": "kinetic-gogo-moon-verified-c03",
+          "image_url": "/images/catalog/kinetic-gogo-moon/source-03.png",
+          "alt_text": "DIBAO Gogo Moon - Xanh ngọc",
+          "sort_order": 40,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/gogo-moon/gogo-moon-046b.png",
+          "sha256": "3ccfcd2a8f1545b5cabfb5ff118d76c29afe4797d053f54ec4e51123af37cc7a"
+        }
+      ],
+      "source_url": "https://dibao.com.vn/xe-may-dien-dibao-gogo-moon.html",
+      "source_title": "XE MÁY ĐIỆN DIBAO GOGO MOON"
+    },
+    {
+      "source_group": "xe-máy-điện-dibao-keva",
+      "category": {
+        "name": "Xe đạp điện",
+        "slug": "xe-dap-dien",
+        "description": "Xe đạp điện có bàn đạp.",
+        "vehicle_type": "E_BIKE"
+      },
+      "product": {
+        "name": "DIBAO Keva",
+        "slug": "kinetic-keva",
+        "description": "DIBAO Keva là mẫu xe đạp điện có bàn đạp của DIBAO, phù hợp cho di chuyển hằng ngày. Chọn màu để xem đúng ảnh và tình trạng của phiên bản.",
+        "price": 25500000,
+        "discount_price": null,
+        "stock_quantity": 48,
+        "rating": 0,
+        "review_count": 0,
+        "is_featured": true,
+        "is_active": true
+      },
+      "specification": {
+        "model_code": "KEVA",
+        "brand": "DIBAO",
+        "vehicle_type": "E_BIKE",
+        "battery_type": "LEAD_ACID",
+        "battery_capacity_ah": 22.0,
+        "battery_voltage_v": 60,
+        "charging_time_hours": 12.0,
+        "max_speed_kmh": 45.0,
+        "max_range_km": 70.0,
+        "motor_power_watts": 1400,
+        "peak_motor_power_watts": 1400,
+        "max_load_kg": 75.0,
+        "product_weight_kg": 83.0,
+        "wheel_size_inch": null,
+        "brake_type": "DISC",
+        "drive_type": null,
+        "water_resistance_rating": null,
+        "frame_material": null,
+        "suspension_type": null,
+        "display_type": null,
+        "smart_features": null,
+        "warranty_months": 24,
+        "dimensions_mm": "1.670mm x 665mm x 1.040mm"
+      },
+      "variants": [
+        {
+          "sku": "kinetic-keva-verified-c01",
+          "variant_name": "Đen",
+          "color_name": "Đen",
+          "color_hex": "#29373e",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 10,
+          "is_default": true,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-keva-verified-c02",
+          "variant_name": "Trắng",
+          "color_name": "Trắng",
+          "color_hex": "#e4ebdf",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 10,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-keva-verified-c03",
+          "variant_name": "Kem",
+          "color_name": "Kem",
+          "color_hex": "#dfd6a7",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 10,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-keva-verified-c04",
+          "variant_name": "Xanh nhạt",
+          "color_name": "Xanh nhạt",
+          "color_hex": "#a1beb2",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 9,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-keva-verified-c05",
+          "variant_name": "Vàng xanh",
+          "color_name": "Vàng xanh",
+          "color_hex": "#f2c323/#30bbb9",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 9,
+          "is_default": false,
+          "is_active": true
+        }
+      ],
+      "images": [
+        {
+          "variant_sku": "kinetic-keva-verified-c01",
+          "image_url": "/images/catalog/kinetic-keva/source-01.png",
+          "alt_text": "DIBAO Keva - Đen",
+          "sort_order": 0,
+          "is_primary": true,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/keva/keva-0033.png",
+          "sha256": "93bc1357aec02487c66cef54f7d3b6409fc10e75f50a999e9ced8f4be119ebc1"
+        },
+        {
+          "variant_sku": "kinetic-keva-verified-c01",
+          "image_url": "/images/catalog/kinetic-keva/source-05.png",
+          "alt_text": "DIBAO Keva - Đen",
+          "sort_order": 1,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/keva/keva-0017.png",
+          "sha256": "28316088e26d17922b8d2e749f68a07c23b8d3269904288e487a3ee4917786f4"
+        },
+        {
+          "variant_sku": "kinetic-keva-verified-c02",
+          "image_url": "/images/catalog/kinetic-keva/source-02.png",
+          "alt_text": "DIBAO Keva - Trắng",
+          "sort_order": 20,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/keva/keva-0035.png",
+          "sha256": "a1c0f4ca30d125d9de5f0cc5c1c7d26928c9b481eed8b54ffc472e0fce417cf4"
+        },
+        {
+          "variant_sku": "kinetic-keva-verified-c03",
+          "image_url": "/images/catalog/kinetic-keva/source-03.png",
+          "alt_text": "DIBAO Keva - Kem",
+          "sort_order": 40,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/keva/keva-bl0133.png",
+          "sha256": "550a248e0a78d4f1bbb83e74643bdbdc6dfa6b74b70eb7360a6e0758ddbf6527"
+        },
+        {
+          "variant_sku": "kinetic-keva-verified-c04",
+          "image_url": "/images/catalog/kinetic-keva/source-04.png",
+          "alt_text": "DIBAO Keva - Xanh nhạt",
+          "sort_order": 60,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/keva/keva-bl0105.png",
+          "sha256": "ea485ec81e04e6f1d6169845667ba8c74cbdf1a66d761337c77c44c0b9db5891"
+        },
+        {
+          "variant_sku": "kinetic-keva-verified-c05",
+          "image_url": "/images/catalog/kinetic-keva/source-06.png",
+          "alt_text": "DIBAO Keva - Vàng xanh",
+          "sort_order": 80,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/keva/keva-0022-1.png",
+          "sha256": "8a82b874b84a279e26bbb0ff888c197d7c9214af2bf96403cc7942bf0ef2d51c"
+        }
+      ],
+      "source_url": "https://dibao.com.vn/xe-dien-co-ban-dap-dibao-keva.html",
+      "source_title": "Xe điện có bàn đạp DIBAO KEVA"
+    },
+    {
+      "source_group": "xe-máy-điện-dibao-ls007",
+      "category": {
+        "name": "Xe điện",
+        "slug": "xe-dien",
+        "description": "Xe sử dụng động cơ điện.",
+        "vehicle_type": "E_SCOOTER"
+      },
+      "product": {
+        "name": "DIBAO Ls007",
+        "slug": "kinetic-ls007",
+        "description": "DIBAO Ls007 là mẫu xe sử dụng động cơ điện của DIBAO, phù hợp cho di chuyển hằng ngày. Chọn màu để xem đúng ảnh và tình trạng của phiên bản.",
+        "price": 23300000,
+        "discount_price": null,
+        "stock_quantity": 48,
+        "rating": 0,
+        "review_count": 0,
+        "is_featured": false,
+        "is_active": true
+      },
+      "specification": {
+        "model_code": "LS007",
+        "brand": "DIBAO",
+        "vehicle_type": "E_SCOOTER",
+        "battery_type": "LEAD_ACID",
+        "battery_capacity_ah": 22.0,
+        "battery_voltage_v": 72,
+        "charging_time_hours": 14.0,
+        "max_speed_kmh": 54.0,
+        "max_range_km": 60.0,
+        "motor_power_watts": 2800,
+        "peak_motor_power_watts": 2800,
+        "max_load_kg": 130.0,
+        "product_weight_kg": null,
+        "wheel_size_inch": null,
+        "brake_type": "DISC",
+        "drive_type": null,
+        "water_resistance_rating": null,
+        "frame_material": null,
+        "suspension_type": null,
+        "display_type": null,
+        "smart_features": null,
+        "warranty_months": 36,
+        "dimensions_mm": "1.920mm x 700mm x 1.110mm"
+      },
+      "variants": [
+        {
+          "sku": "kinetic-ls007-verified-c01",
+          "variant_name": "Trắng",
+          "color_name": "Trắng",
+          "color_hex": "#dce6e4",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 10,
+          "is_default": true,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-ls007-verified-c02",
+          "variant_name": "Xám xanh",
+          "color_name": "Xám xanh",
+          "color_hex": "#849a9e",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 10,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-ls007-verified-c03",
+          "variant_name": "Đen",
+          "color_name": "Đen",
+          "color_hex": "#222a29",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 10,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-ls007-verified-c04",
+          "variant_name": "Ghi bóng",
+          "color_name": "Ghi bóng",
+          "color_hex": "#93a4a8",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 9,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-ls007-verified-c05",
+          "variant_name": "Xanh lam",
+          "color_name": "Xanh lam",
+          "color_hex": "#227ba8",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 9,
+          "is_default": false,
+          "is_active": true
+        }
+      ],
+      "images": [
+        {
+          "variant_sku": "kinetic-ls007-verified-c01",
+          "image_url": "/images/catalog/kinetic-ls007/source-01.png",
+          "alt_text": "DIBAO Ls007 - Trắng",
+          "sort_order": 0,
+          "is_primary": true,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/ls007/ls007-0035-2.png",
+          "sha256": "c56f15d8b4f9517b6b6108a0c1f4775aaa8d166e2c0f55c014dba866cdce0529"
+        },
+        {
+          "variant_sku": "kinetic-ls007-verified-c02",
+          "image_url": "/images/catalog/kinetic-ls007/source-02.png",
+          "alt_text": "DIBAO Ls007 - Xám xanh",
+          "sort_order": 20,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/ls007/ls007-bl0098.png",
+          "sha256": "eef82fcefe6aba403c807ba76a9a9762aedc2d2226604d06f28421d2f8db2fba"
+        },
+        {
+          "variant_sku": "kinetic-ls007-verified-c03",
+          "image_url": "/images/catalog/kinetic-ls007/source-03.png",
+          "alt_text": "DIBAO Ls007 - Đen",
+          "sort_order": 40,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/ls007/ls007-bl0099-2.png",
+          "sha256": "30190edf0daddeade32bffb77d64421fba84bb795a7b06453776c000370d6463"
+        },
+        {
+          "variant_sku": "kinetic-ls007-verified-c04",
+          "image_url": "/images/catalog/kinetic-ls007/source-04.png",
+          "alt_text": "DIBAO Ls007 - Ghi bóng",
+          "sort_order": 60,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/ls007/ls007-bl0117.png",
+          "sha256": "1783531ad01a0fa88bceaf08c437b4720c99a695900fb8504ce24b2ed818f227"
+        },
+        {
+          "variant_sku": "kinetic-ls007-verified-c05",
+          "image_url": "/images/catalog/kinetic-ls007/source-05.png",
+          "alt_text": "DIBAO Ls007 - Xanh lam",
+          "sort_order": 80,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/ls007/ls007-bl0118.png",
+          "sha256": "a4e32f05538bb0e9ab4cace38022388d451b7b5b1d72d0cf1f36896527d4fe2d"
+        }
+      ],
+      "source_url": "https://dibao.com.vn/xe-may-dien-dibao-ls007.html",
+      "source_title": "XE MÁY ĐIỆN DIBAO LS007"
+    },
+    {
+      "source_group": "xe-máy-điện-dibao-m-one",
+      "category": {
+        "name": "Xe điện",
+        "slug": "xe-dien",
+        "description": "Xe sử dụng động cơ điện.",
+        "vehicle_type": "E_SCOOTER"
+      },
+      "product": {
+        "name": "DIBAO M One",
+        "slug": "kinetic-m-one",
+        "description": "DIBAO M One là mẫu xe sử dụng động cơ điện của DIBAO, phù hợp cho di chuyển hằng ngày. Chọn màu để xem đúng ảnh và tình trạng của phiên bản.",
+        "price": 25500000,
+        "discount_price": null,
+        "stock_quantity": 48,
+        "rating": 0,
+        "review_count": 0,
+        "is_featured": false,
+        "is_active": true
+      },
+      "specification": {
+        "model_code": "M-ONE",
+        "brand": "DIBAO",
+        "vehicle_type": "E_SCOOTER",
+        "battery_type": "LEAD_ACID",
+        "battery_capacity_ah": 20.0,
+        "battery_voltage_v": 48,
+        "charging_time_hours": 8.0,
+        "max_speed_kmh": 40.0,
+        "max_range_km": 110.0,
+        "motor_power_watts": 980,
+        "peak_motor_power_watts": 980,
+        "max_load_kg": 130.0,
+        "product_weight_kg": 83.0,
+        "wheel_size_inch": null,
+        "brake_type": "DISC",
+        "drive_type": null,
+        "water_resistance_rating": null,
+        "frame_material": null,
+        "suspension_type": null,
+        "display_type": null,
+        "smart_features": null,
+        "warranty_months": 24,
+        "dimensions_mm": "1.630mm x 720mm x 1.250mm"
+      },
+      "variants": [
+        {
+          "sku": "kinetic-m-one-verified-c01",
+          "variant_name": "Trắng đen",
+          "color_name": "Trắng đen",
+          "color_hex": "#dbe6e0/#1d2924",
+          "battery_capacity_ah": 20.0,
+          "additional_price": 0,
+          "stock_quantity": 48,
+          "is_default": true,
+          "is_active": true
+        }
+      ],
+      "images": [
+        {
+          "variant_sku": "kinetic-m-one-verified-c01",
+          "image_url": "/images/catalog/kinetic-m-one/source-01.webp",
+          "alt_text": "DIBAO M One - Trắng đen",
+          "sort_order": 0,
+          "is_primary": true,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/m-one/mone-035.webp",
+          "sha256": "1473a3851f23d8540e11c435172283e91601de189c99c0dc5a90a7151e3ac54f"
+        }
+      ],
+      "source_url": "https://dibao.com.vn/xe-may-dien-dibao-m-one.html",
+      "source_title": "XE MÁY ĐIỆN DIBAO M-ONE"
+    },
+    {
+      "source_group": "xe-máy-điện-dibao-mxs",
+      "category": {
+        "name": "Xe đạp điện",
+        "slug": "xe-dap-dien",
+        "description": "Xe đạp điện có bàn đạp.",
+        "vehicle_type": "E_BIKE"
+      },
+      "product": {
+        "name": "DIBAO Mxs",
+        "slug": "kinetic-mxs",
+        "description": "DIBAO Mxs là mẫu xe đạp điện có bàn đạp của DIBAO, phù hợp cho di chuyển hằng ngày. Chọn màu để xem đúng ảnh và tình trạng của phiên bản.",
+        "price": 20000000,
+        "discount_price": null,
+        "stock_quantity": 48,
+        "rating": 0,
+        "review_count": 0,
+        "is_featured": false,
+        "is_active": true
+      },
+      "specification": {
+        "model_code": "MXS",
+        "brand": "DIBAO",
+        "vehicle_type": "E_BIKE",
+        "battery_type": "LEAD_ACID",
+        "battery_capacity_ah": 23.0,
+        "battery_voltage_v": 60,
+        "charging_time_hours": 12.0,
+        "max_speed_kmh": 45.0,
+        "max_range_km": 70.0,
+        "motor_power_watts": 1400,
+        "peak_motor_power_watts": 1400,
+        "max_load_kg": 75.0,
+        "product_weight_kg": 90.0,
+        "wheel_size_inch": null,
+        "brake_type": "DISC",
+        "drive_type": null,
+        "water_resistance_rating": null,
+        "frame_material": null,
+        "suspension_type": null,
+        "display_type": null,
+        "smart_features": null,
+        "warranty_months": 24,
+        "dimensions_mm": "1.700mm x 700mm x 1.055mm"
+      },
+      "variants": [
+        {
+          "sku": "kinetic-mxs-verified-c01",
+          "variant_name": "Xám hồng",
+          "color_name": "Xám hồng",
+          "color_hex": "#b1a6a6/#24272b",
+          "battery_capacity_ah": 23.0,
+          "additional_price": 0,
+          "stock_quantity": 10,
+          "is_default": true,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-mxs-verified-c02",
+          "variant_name": "Xanh cam",
+          "color_name": "Xanh cam",
+          "color_hex": "#abc0a9/#eb7222",
+          "battery_capacity_ah": 23.0,
+          "additional_price": 0,
+          "stock_quantity": 10,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-mxs-verified-c03",
+          "variant_name": "Đen cam",
+          "color_name": "Đen cam",
+          "color_hex": "#24272b/#eb7222",
+          "battery_capacity_ah": 23.0,
+          "additional_price": 0,
+          "stock_quantity": 10,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-mxs-verified-c04",
+          "variant_name": "Xanh lam cam",
+          "color_name": "Xanh lam cam",
+          "color_hex": "#8399ac/#eb7222",
+          "battery_capacity_ah": 23.0,
+          "additional_price": 0,
+          "stock_quantity": 9,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-mxs-verified-c05",
+          "variant_name": "Trắng cam",
+          "color_name": "Trắng cam",
+          "color_hex": "#e3e5d3/#eb7222",
+          "battery_capacity_ah": 23.0,
+          "additional_price": 0,
+          "stock_quantity": 9,
+          "is_default": false,
+          "is_active": true
+        }
+      ],
+      "images": [
+        {
+          "variant_sku": "kinetic-mxs-verified-c01",
+          "image_url": "/images/catalog/kinetic-mxs/source-01.png",
+          "alt_text": "DIBAO Mxs - Xám hồng",
+          "sort_order": 0,
+          "is_primary": true,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-mxs/dibao-mxs-1.png",
+          "sha256": "97843b9415f168ddb080f5b494c83d94bea6f88f47072ef459cda340fa379a93"
+        },
+        {
+          "variant_sku": "kinetic-mxs-verified-c02",
+          "image_url": "/images/catalog/kinetic-mxs/source-02.png",
+          "alt_text": "DIBAO Mxs - Xanh cam",
+          "sort_order": 20,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-mxs/dibao-mxs-2.png",
+          "sha256": "08aead33a00fb870c86a36ef4b46e73bb75e92081d492f95cd8aafaab965191a"
+        },
+        {
+          "variant_sku": "kinetic-mxs-verified-c03",
+          "image_url": "/images/catalog/kinetic-mxs/source-03.png",
+          "alt_text": "DIBAO Mxs - Đen cam",
+          "sort_order": 40,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-mxs/dibao-mxs-4.png",
+          "sha256": "44311c1bb5f79562c0420b5b589bbd967f02a7ee9258434ef1fdd4938aaf02f2"
+        },
+        {
+          "variant_sku": "kinetic-mxs-verified-c04",
+          "image_url": "/images/catalog/kinetic-mxs/source-04.png",
+          "alt_text": "DIBAO Mxs - Xanh lam cam",
+          "sort_order": 60,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-mxs/dibao-mxs-3.png",
+          "sha256": "1c1a9994d6cefe5dd6416d988cbd5db96ba490fc156c7d673534c1abf03ad565"
+        },
+        {
+          "variant_sku": "kinetic-mxs-verified-c05",
+          "image_url": "/images/catalog/kinetic-mxs/source-05.png",
+          "alt_text": "DIBAO Mxs - Trắng cam",
+          "sort_order": 80,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-mxs/dibao-mxs.png",
+          "sha256": "dfaa9bdf719d62d12dffaa800796ef80dfea5112904e4ce7dea708416a781815"
+        }
+      ],
+      "source_url": "https://dibao.com.vn/xe-dien-co-ban-dap-dibao-mxs.html",
+      "source_title": "XE ĐIỆN có bán đạp DIBAO MXS"
+    },
+    {
+      "source_group": "xe-máy-điện-dibao-pansy-dio",
+      "category": {
+        "name": "Xe điện",
+        "slug": "xe-dien",
+        "description": "Xe sử dụng động cơ điện.",
+        "vehicle_type": "E_SCOOTER"
+      },
+      "product": {
+        "name": "DIBAO Pansy Dio",
+        "slug": "kinetic-pansy-dio",
+        "description": "DIBAO Pansy Dio là mẫu xe sử dụng động cơ điện của DIBAO, phù hợp cho di chuyển hằng ngày. Chọn màu để xem đúng ảnh và tình trạng của phiên bản.",
+        "price": 18900000,
+        "discount_price": null,
+        "stock_quantity": 48,
+        "rating": 0,
+        "review_count": 0,
+        "is_featured": false,
+        "is_active": true
+      },
+      "specification": {
+        "model_code": "PANSY-DIO",
+        "brand": "DIBAO",
+        "vehicle_type": "E_SCOOTER",
+        "battery_type": "LEAD_ACID",
+        "battery_capacity_ah": 22.0,
+        "battery_voltage_v": 60,
+        "charging_time_hours": 12.0,
+        "max_speed_kmh": 55.0,
+        "max_range_km": 60.0,
+        "motor_power_watts": 1450,
+        "peak_motor_power_watts": 1450,
+        "max_load_kg": 130.0,
+        "product_weight_kg": 97.0,
+        "wheel_size_inch": null,
+        "brake_type": "DISC",
+        "drive_type": null,
+        "water_resistance_rating": null,
+        "frame_material": null,
+        "suspension_type": null,
+        "display_type": null,
+        "smart_features": null,
+        "warranty_months": 24,
+        "dimensions_mm": "1.720mm x 710mm x 1.120mm"
+      },
+      "variants": [
+        {
+          "sku": "kinetic-pansy-dio-verified-c01",
+          "variant_name": "Đen",
+          "color_name": "Đen",
+          "color_hex": "#253b3a",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 10,
+          "is_default": true,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-pansy-dio-verified-c02",
+          "variant_name": "Đỏ",
+          "color_name": "Đỏ",
+          "color_hex": "#b51d30",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 10,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-pansy-dio-verified-c03",
+          "variant_name": "Xám xanh",
+          "color_name": "Xám xanh",
+          "color_hex": "#7c9096",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 10,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-pansy-dio-verified-c04",
+          "variant_name": "Tím",
+          "color_name": "Tím",
+          "color_hex": "#77617f",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 9,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-pansy-dio-verified-c05",
+          "variant_name": "Xanh lục",
+          "color_name": "Xanh lục",
+          "color_hex": "#428b77",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 9,
+          "is_default": false,
+          "is_active": true
+        }
+      ],
+      "images": [
+        {
+          "variant_sku": "kinetic-pansy-dio-verified-c01",
+          "image_url": "/images/catalog/kinetic-pansy-dio/source-01.webp",
+          "alt_text": "DIBAO Pansy Dio - Đen",
+          "sort_order": 0,
+          "is_primary": true,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-pansy-dio/xe-may-dien-pansy-dio-den.webp",
+          "sha256": "a0687ef60a1b595685383dc384198e76a492ec062f77e2ee9a0c9d4564012af9"
+        },
+        {
+          "variant_sku": "kinetic-pansy-dio-verified-c02",
+          "image_url": "/images/catalog/kinetic-pansy-dio/source-02.jpg",
+          "alt_text": "DIBAO Pansy Dio - Đỏ",
+          "sort_order": 20,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-pansy-dio/xe-may-dien-pansy-dio-do.jpg",
+          "sha256": "578bd998e255a2746da395d3ebb69f26adffcd14984cf5a6cc727e79fad325a4"
+        },
+        {
+          "variant_sku": "kinetic-pansy-dio-verified-c03",
+          "image_url": "/images/catalog/kinetic-pansy-dio/source-03.jpg",
+          "alt_text": "DIBAO Pansy Dio - Xám xanh",
+          "sort_order": 40,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-pansy-dio/xe-may-dien-dibao-pansy-dio-xam.jpg",
+          "sha256": "ea44e06720c1a5694d4661a2f6c840bf1eb84cdd105221f36f36d056eda81d29"
+        },
+        {
+          "variant_sku": "kinetic-pansy-dio-verified-c04",
+          "image_url": "/images/catalog/kinetic-pansy-dio/source-04.jpg",
+          "alt_text": "DIBAO Pansy Dio - Tím",
+          "sort_order": 60,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-pansy-dio/xe-may-dien-pansy-dio-tim.jpg",
+          "sha256": "ab9f4815808af5927a438e7009ca03554b9b50ecd6340cd67b1cd5955543220a"
+        },
+        {
+          "variant_sku": "kinetic-pansy-dio-verified-c05",
+          "image_url": "/images/catalog/kinetic-pansy-dio/source-05.jpg",
+          "alt_text": "DIBAO Pansy Dio - Xanh lục",
+          "sort_order": 80,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-pansy-dio/xe-may-dien-pansy-dio-xanh-ngoc.jpg",
+          "sha256": "68bca578143128a4163f5b462260ca7b8744e53ebeff3a5a331a407d7c339ea7"
+        }
+      ],
+      "source_url": "https://dibao.com.vn/xe-may-dien-dibao-pansy-dio.html",
+      "source_title": "XE MÁY ĐIỆN DIBAO PANSY DIO"
+    },
+    {
+      "source_group": "xe-máy-điện-dibao-pansy-dio-2025",
+      "category": {
+        "name": "Xe điện",
+        "slug": "xe-dien",
+        "description": "Xe sử dụng động cơ điện.",
+        "vehicle_type": "E_SCOOTER"
+      },
+      "product": {
+        "name": "DIBAO Pansy Dio 2025",
+        "slug": "kinetic-pansy-dio-2025",
+        "description": "DIBAO Pansy Dio 2025 là mẫu xe sử dụng động cơ điện của DIBAO, phù hợp cho di chuyển hằng ngày. Chọn màu để xem đúng ảnh và tình trạng của phiên bản.",
+        "price": 22200000,
+        "discount_price": null,
+        "stock_quantity": 48,
+        "rating": 0,
+        "review_count": 0,
+        "is_featured": false,
+        "is_active": true
+      },
+      "specification": {
+        "model_code": "PANSY-DIO-2025",
+        "brand": "DIBAO",
+        "vehicle_type": "E_SCOOTER",
+        "battery_type": "LEAD_ACID",
+        "battery_capacity_ah": 22.0,
+        "battery_voltage_v": 60,
+        "charging_time_hours": 12.0,
+        "max_speed_kmh": 50.0,
+        "max_range_km": 60.0,
+        "motor_power_watts": 1350,
+        "peak_motor_power_watts": 1350,
+        "max_load_kg": 130.0,
+        "product_weight_kg": 97.0,
+        "wheel_size_inch": null,
+        "brake_type": "DISC",
+        "drive_type": null,
+        "water_resistance_rating": null,
+        "frame_material": null,
+        "suspension_type": null,
+        "display_type": null,
+        "smart_features": null,
+        "warranty_months": 24,
+        "dimensions_mm": "1.740mm x 710mm x 1.120mm"
+      },
+      "variants": [
+        {
+          "sku": "kinetic-pansy-dio-2025-verified-c01",
+          "variant_name": "Đen",
+          "color_name": "Đen",
+          "color_hex": "#323c42",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 8,
+          "is_default": true,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-pansy-dio-2025-verified-c02",
+          "variant_name": "Xanh cốm nhạt",
+          "color_name": "Xanh cốm nhạt",
+          "color_hex": "#c1cfb6",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 8,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-pansy-dio-2025-verified-c03",
+          "variant_name": "Xám bạc",
+          "color_name": "Xám bạc",
+          "color_hex": "#a6b6bc",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 8,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-pansy-dio-2025-verified-c04",
+          "variant_name": "Kem",
+          "color_name": "Kem",
+          "color_hex": "#d8cdb1",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 8,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-pansy-dio-2025-verified-c05",
+          "variant_name": "Đỏ",
+          "color_name": "Đỏ",
+          "color_hex": "#c22431",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 8,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-pansy-dio-2025-verified-c06",
+          "variant_name": "Xanh ô liu",
+          "color_name": "Xanh ô liu",
+          "color_hex": "#8b9d49",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 8,
+          "is_default": false,
+          "is_active": true
+        }
+      ],
+      "images": [
+        {
+          "variant_sku": "kinetic-pansy-dio-2025-verified-c01",
+          "image_url": "/images/catalog/kinetic-pansy-dio-2025/source-01.png",
+          "alt_text": "DIBAO Pansy Dio 2025 - Đen",
+          "sort_order": 0,
+          "is_primary": true,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-pansy-dio-2025/dibao-pansy-dio-2025-1.png",
+          "sha256": "9dce6b94c1c4502ae09b8ab177ba45b88a84e92d9c5fbdd2d6df34ea9bb61ebf"
+        },
+        {
+          "variant_sku": "kinetic-pansy-dio-2025-verified-c02",
+          "image_url": "/images/catalog/kinetic-pansy-dio-2025/source-02.png",
+          "alt_text": "DIBAO Pansy Dio 2025 - Xanh cốm nhạt",
+          "sort_order": 20,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-pansy-dio-2025/dibao-pansy-dio-2025-2.png",
+          "sha256": "69a2e447fcfabd4dc8524a799d9c3f53cda6811c44b5f4d271ba92b1688fd4f3"
+        },
+        {
+          "variant_sku": "kinetic-pansy-dio-2025-verified-c03",
+          "image_url": "/images/catalog/kinetic-pansy-dio-2025/source-03.png",
+          "alt_text": "DIBAO Pansy Dio 2025 - Xám bạc",
+          "sort_order": 40,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-pansy-dio-2025/dibao-pansy-dio-2025-3.png",
+          "sha256": "c5c933e61e4674051db04543135a1b4bacd6951758653c25e58fd197d202372a"
+        },
+        {
+          "variant_sku": "kinetic-pansy-dio-2025-verified-c04",
+          "image_url": "/images/catalog/kinetic-pansy-dio-2025/source-04.png",
+          "alt_text": "DIBAO Pansy Dio 2025 - Kem",
+          "sort_order": 60,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-pansy-dio-2025/dibao-pansy-dio-2025-4.png",
+          "sha256": "771cd4b4a61d6e6b385f8af6a6fd20ccaace75cc09ba33c97f92073a99c2e5cd"
+        },
+        {
+          "variant_sku": "kinetic-pansy-dio-2025-verified-c05",
+          "image_url": "/images/catalog/kinetic-pansy-dio-2025/source-05.png",
+          "alt_text": "DIBAO Pansy Dio 2025 - Đỏ",
+          "sort_order": 80,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-pansy-dio-2025/dibao-pansy-dio-2025-5.png",
+          "sha256": "614a1d422bf309614731455d86b49f99812b7d259d7e4d0cac0608cf6ff2d9dc"
+        },
+        {
+          "variant_sku": "kinetic-pansy-dio-2025-verified-c06",
+          "image_url": "/images/catalog/kinetic-pansy-dio-2025/source-06.png",
+          "alt_text": "DIBAO Pansy Dio 2025 - Xanh ô liu",
+          "sort_order": 100,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-pansy-dio-2025/dibao-pansy-dio-2025-6.png",
+          "sha256": "73c8c0784d3a6048caa3d3694adb4c634222c592f6f4bc0d26d695a90dd8857d"
+        }
+      ],
+      "source_url": "https://dibao.com.vn/xe-may-dien-dibao-pansy-dio-2025.html",
+      "source_title": "XE MÁY ĐIỆN DIBAO PANSY DIO + 2025"
+    },
+    {
+      "source_group": "xe-máy-điện-dibao-pansy-s2-càng-nhôm",
+      "category": {
+        "name": "Xe điện",
+        "slug": "xe-dien",
+        "description": "Xe sử dụng động cơ điện.",
+        "vehicle_type": "E_SCOOTER"
+      },
+      "product": {
+        "name": "DIBAO Pansy S2 Càng Nhôm",
+        "slug": "kinetic-pansy-s2-cang-nhom",
+        "description": "DIBAO Pansy S2 Càng Nhôm là mẫu xe sử dụng động cơ điện của DIBAO, phù hợp cho di chuyển hằng ngày. Chọn màu để xem đúng ảnh và tình trạng của phiên bản.",
+        "price": 24400000,
+        "discount_price": null,
+        "stock_quantity": 48,
+        "rating": 0,
+        "review_count": 0,
+        "is_featured": false,
+        "is_active": true
+      },
+      "specification": {
+        "model_code": "PANSY-S2-CANG-NHOM",
+        "brand": "DIBAO",
+        "vehicle_type": "E_SCOOTER",
+        "battery_type": "LEAD_ACID",
+        "battery_capacity_ah": 22.0,
+        "battery_voltage_v": 60,
+        "charging_time_hours": 12.0,
+        "max_speed_kmh": 50.0,
+        "max_range_km": 100.0,
+        "motor_power_watts": 1450,
+        "peak_motor_power_watts": 1450,
+        "max_load_kg": 150.0,
+        "product_weight_kg": 93.0,
+        "wheel_size_inch": null,
+        "brake_type": "DISC",
+        "drive_type": null,
+        "water_resistance_rating": null,
+        "frame_material": null,
+        "suspension_type": null,
+        "display_type": null,
+        "smart_features": null,
+        "warranty_months": 24,
+        "dimensions_mm": "1.750mm x 710mm x 1.110mm"
+      },
+      "variants": [
+        {
+          "sku": "kinetic-pansy-s2-cang-nhom-verified-c01",
+          "variant_name": "Xám xanh",
+          "color_name": "Xám xanh",
+          "color_hex": "#8cabb4",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 48,
+          "is_default": true,
+          "is_active": true
+        }
+      ],
+      "images": [
+        {
+          "variant_sku": "kinetic-pansy-s2-cang-nhom-verified-c01",
+          "image_url": "/images/catalog/kinetic-pansy-s2-cang-nhom/source-01.png",
+          "alt_text": "DIBAO Pansy S2 Càng Nhôm - Xám xanh",
+          "sort_order": 0,
+          "is_primary": true,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/pansy-s2n/1pansy-s2n-017-ghep.png",
+          "sha256": "20e6c9a66e5e443fa1ac3e4f6076653f1fae6cebc4c6d0af052690a8f253092e"
+        }
+      ],
+      "source_url": "https://dibao.com.vn/xe-may-dien-dibao-pansy-s2-cang-nhom.html",
+      "source_title": "XE MÁY ĐIỆN DIBAO PANSY S2 (CÀNG NHÔM)"
+    },
+    {
+      "source_group": "xe-máy-điện-dibao-pansy-s3",
+      "category": {
+        "name": "Xe điện",
+        "slug": "xe-dien",
+        "description": "Xe sử dụng động cơ điện.",
+        "vehicle_type": "E_SCOOTER"
+      },
+      "product": {
+        "name": "DIBAO Pansy S3",
+        "slug": "kinetic-pansy-s3",
+        "description": "DIBAO Pansy S3 là mẫu xe sử dụng động cơ điện của DIBAO, phù hợp cho di chuyển hằng ngày. Chọn màu để xem đúng ảnh và tình trạng của phiên bản.",
+        "price": 25500000,
+        "discount_price": null,
+        "stock_quantity": 48,
+        "rating": 0,
+        "review_count": 0,
+        "is_featured": true,
+        "is_active": true
+      },
+      "specification": {
+        "model_code": "PANSY-S3",
+        "brand": "DIBAO",
+        "vehicle_type": "E_SCOOTER",
+        "battery_type": "LEAD_ACID",
+        "battery_capacity_ah": 22.0,
+        "battery_voltage_v": 60,
+        "charging_time_hours": 13.0,
+        "max_speed_kmh": 50.0,
+        "max_range_km": 90.0,
+        "motor_power_watts": 1350,
+        "peak_motor_power_watts": 1350,
+        "max_load_kg": 150.0,
+        "product_weight_kg": 98.0,
+        "wheel_size_inch": null,
+        "brake_type": "DISC",
+        "drive_type": null,
+        "water_resistance_rating": null,
+        "frame_material": null,
+        "suspension_type": null,
+        "display_type": null,
+        "smart_features": null,
+        "warranty_months": 24,
+        "dimensions_mm": "1.760mm x 710mm x 1.140mm"
+      },
+      "variants": [
+        {
+          "sku": "kinetic-pansy-s3-verified-c01",
+          "variant_name": "Xanh nhạt",
+          "color_name": "Xanh nhạt",
+          "color_hex": "#a3c9c7",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 10,
+          "is_default": true,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-pansy-s3-verified-c02",
+          "variant_name": "Xanh lam",
+          "color_name": "Xanh lam",
+          "color_hex": "#254c8e",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 10,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-pansy-s3-verified-c03",
+          "variant_name": "Xám xanh",
+          "color_name": "Xám xanh",
+          "color_hex": "#829ca8",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 10,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-pansy-s3-verified-c04",
+          "variant_name": "Đen",
+          "color_name": "Đen",
+          "color_hex": "#232f30",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 9,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-pansy-s3-verified-c05",
+          "variant_name": "Đỏ",
+          "color_name": "Đỏ",
+          "color_hex": "#c42e43",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 9,
+          "is_default": false,
+          "is_active": true
+        }
+      ],
+      "images": [
+        {
+          "variant_sku": "kinetic-pansy-s3-verified-c01",
+          "image_url": "/images/catalog/kinetic-pansy-s3/source-01.png",
+          "alt_text": "DIBAO Pansy S3 - Xanh nhạt",
+          "sort_order": 0,
+          "is_primary": true,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/pansy-s3/3pansy-s3-013-1.png",
+          "sha256": "ed73ccc75c7f596fa00747632f7934b937551ea4f5a9c676111b3e1227029eb3"
+        },
+        {
+          "variant_sku": "kinetic-pansy-s3-verified-c01",
+          "image_url": "/images/catalog/kinetic-pansy-s3/source-04.png",
+          "alt_text": "DIBAO Pansy S3 - Xanh nhạt",
+          "sort_order": 1,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/pansy-s3/3pansy-s3-013-2.png",
+          "sha256": "b729b2ad61e640ecf01ad34c1a495f36f8e157a53c5187f18c708cb751bbcdc2"
+        },
+        {
+          "variant_sku": "kinetic-pansy-s3-verified-c02",
+          "image_url": "/images/catalog/kinetic-pansy-s3/source-02.png",
+          "alt_text": "DIBAO Pansy S3 - Xanh lam",
+          "sort_order": 20,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/pansy-s3/3pansy-s3-015-2-960.png",
+          "sha256": "fd4a9fc5916e45f9ea8a582acb4927bf3f7c8bd05c05391ea646375edf1a51e7"
+        },
+        {
+          "variant_sku": "kinetic-pansy-s3-verified-c03",
+          "image_url": "/images/catalog/kinetic-pansy-s3/source-03.png",
+          "alt_text": "DIBAO Pansy S3 - Xám xanh",
+          "sort_order": 40,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/pansy-s3/3pansy-s3-017-ghep-2.png",
+          "sha256": "2b83d215f7eaf840fb5557ddbbf4451f225e81026c1c14190016ae0762d28806"
+        },
+        {
+          "variant_sku": "kinetic-pansy-s3-verified-c04",
+          "image_url": "/images/catalog/kinetic-pansy-s3/source-05.png",
+          "alt_text": "DIBAO Pansy S3 - Đen",
+          "sort_order": 60,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/pansy-s3/pansy-0033.png",
+          "sha256": "52051a2c3743c9f6b98a108503dc12baeb3236453c76b9e34d3fffc6e3efef9c"
+        },
+        {
+          "variant_sku": "kinetic-pansy-s3-verified-c05",
+          "image_url": "/images/catalog/kinetic-pansy-s3/source-06.png",
+          "alt_text": "DIBAO Pansy S3 - Đỏ",
+          "sort_order": 80,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/pansy-s3/pansy-0056.png",
+          "sha256": "3cbcdbfd7a23bb2823531eec05c7bb596062d786af3cfc8e8577787a43b2dc4c"
+        }
+      ],
+      "source_url": "https://dibao.com.vn/xe-may-dien-dibao-pansy-s3.html",
+      "source_title": "XE MÁY ĐIỆN DIBAO PANSY S3"
+    },
+    {
+      "source_group": "xe-máy-điện-dibao-pansy-s4",
+      "category": {
+        "name": "Xe điện",
+        "slug": "xe-dien",
+        "description": "Xe sử dụng động cơ điện.",
+        "vehicle_type": "E_SCOOTER"
+      },
+      "product": {
+        "name": "DIBAO Pansy S4",
+        "slug": "kinetic-pansy-s4",
+        "description": "DIBAO Pansy S4 là mẫu xe sử dụng động cơ điện của DIBAO, phù hợp cho di chuyển hằng ngày. Chọn màu để xem đúng ảnh và tình trạng của phiên bản.",
+        "price": 18900000,
+        "discount_price": null,
+        "stock_quantity": 48,
+        "rating": 0,
+        "review_count": 0,
+        "is_featured": false,
+        "is_active": true
+      },
+      "specification": {
+        "model_code": "PANSY-S4",
+        "brand": "DIBAO",
+        "vehicle_type": "E_SCOOTER",
+        "battery_type": "LEAD_ACID",
+        "battery_capacity_ah": 22.0,
+        "battery_voltage_v": 60,
+        "charging_time_hours": 13.0,
+        "max_speed_kmh": 50.0,
+        "max_range_km": 90.0,
+        "motor_power_watts": 1350,
+        "peak_motor_power_watts": 1350,
+        "max_load_kg": 150.0,
+        "product_weight_kg": 98.0,
+        "wheel_size_inch": null,
+        "brake_type": "DISC",
+        "drive_type": null,
+        "water_resistance_rating": null,
+        "frame_material": null,
+        "suspension_type": null,
+        "display_type": null,
+        "smart_features": null,
+        "warranty_months": 24,
+        "dimensions_mm": "1.770mm x 710mm x 1.140mm"
+      },
+      "variants": [
+        {
+          "sku": "kinetic-pansy-s4-verified-c01",
+          "variant_name": "Xanh nhạt",
+          "color_name": "Xanh nhạt",
+          "color_hex": "#98beb3",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 8,
+          "is_default": true,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-pansy-s4-verified-c02",
+          "variant_name": "Xanh lam",
+          "color_name": "Xanh lam",
+          "color_hex": "#2b4d91",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 8,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-pansy-s4-verified-c03",
+          "variant_name": "Xám",
+          "color_name": "Xám",
+          "color_hex": "#8b9da0",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 8,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-pansy-s4-verified-c04",
+          "variant_name": "Đen",
+          "color_name": "Đen",
+          "color_hex": "#272c2c",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 8,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-pansy-s4-verified-c05",
+          "variant_name": "Xám nhũ",
+          "color_name": "Xám nhũ",
+          "color_hex": "#969e91",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 8,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-pansy-s4-verified-c06",
+          "variant_name": "Xanh cốm",
+          "color_name": "Xanh cốm",
+          "color_hex": "#cad8b9",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 8,
+          "is_default": false,
+          "is_active": true
+        }
+      ],
+      "images": [
+        {
+          "variant_sku": "kinetic-pansy-s4-verified-c01",
+          "image_url": "/images/catalog/kinetic-pansy-s4/source-01.png",
+          "alt_text": "DIBAO Pansy S4 - Xanh nhạt",
+          "sort_order": 0,
+          "is_primary": true,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/pansy-s4/pansy-s4-013-1-2.png",
+          "sha256": "29cdecc1747ebb75884bd2d1b2e7a4ab3892ce227ef74db5552e29e4128e9801"
+        },
+        {
+          "variant_sku": "kinetic-pansy-s4-verified-c02",
+          "image_url": "/images/catalog/kinetic-pansy-s4/source-02.png",
+          "alt_text": "DIBAO Pansy S4 - Xanh lam",
+          "sort_order": 20,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/pansy-s4/pansy-s4-ghep-015.png",
+          "sha256": "c628f9728029df68d25057d37940b67e6f2110f22bba009f6edda9266cbcd495"
+        },
+        {
+          "variant_sku": "kinetic-pansy-s4-verified-c03",
+          "image_url": "/images/catalog/kinetic-pansy-s4/source-03.png",
+          "alt_text": "DIBAO Pansy S4 - Xám",
+          "sort_order": 40,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/pansy-s4/pansy-s4-017-2.png",
+          "sha256": "d1aaea895745a09a3e8c0cd4da85e47cc631b2f58881039b5a4a5779da0b86b9"
+        },
+        {
+          "variant_sku": "kinetic-pansy-s4-verified-c04",
+          "image_url": "/images/catalog/kinetic-pansy-s4/source-04.png",
+          "alt_text": "DIBAO Pansy S4 - Đen",
+          "sort_order": 60,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/pansy-s4/pansy-s4-033-1.png",
+          "sha256": "78bca16ce5c29262b12efdef69d1c84a81642df120a3ff3ab9a9426ffb441abf"
+        },
+        {
+          "variant_sku": "kinetic-pansy-s4-verified-c05",
+          "image_url": "/images/catalog/kinetic-pansy-s4/source-05.png",
+          "alt_text": "DIBAO Pansy S4 - Xám nhũ",
+          "sort_order": 80,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/pansy-s4/pansy-s4-bl0116.png",
+          "sha256": "3c5d0d6618b188f5ee84160bc5b7d6553b793f0856994d44d7f1296b4b3204e2"
+        },
+        {
+          "variant_sku": "kinetic-pansy-s4-verified-c06",
+          "image_url": "/images/catalog/kinetic-pansy-s4/source-06.png",
+          "alt_text": "DIBAO Pansy S4 - Xanh cốm",
+          "sort_order": 100,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/pansy-s4/pansy-s4-0101-1ok-1.png",
+          "sha256": "3fbe2a7859dbe24ca68e5bfa70b70ca2ccdd0dd957ec024ac005da24559e3a51"
+        }
+      ],
+      "source_url": "https://dibao.com.vn/xe-may-dien-dibao-pansy-s4-sv.html",
+      "source_title": "XE MÁY ĐIỆN DIBAO PANSY S4-(SV)"
+    },
+    {
+      "source_group": "xe-máy-điện-dibao-pansy-sq2",
+      "category": {
+        "name": "Xe điện",
+        "slug": "xe-dien",
+        "description": "Xe sử dụng động cơ điện.",
+        "vehicle_type": "E_SCOOTER"
+      },
+      "product": {
+        "name": "DIBAO Pansy Sq2",
+        "slug": "kinetic-pansy-sq2",
+        "description": "DIBAO Pansy Sq2 là mẫu xe sử dụng động cơ điện của DIBAO, phù hợp cho di chuyển hằng ngày. Chọn màu để xem đúng ảnh và tình trạng của phiên bản.",
+        "price": 23300000,
+        "discount_price": null,
+        "stock_quantity": 48,
+        "rating": 0,
+        "review_count": 0,
+        "is_featured": false,
+        "is_active": true
+      },
+      "specification": {
+        "model_code": "PANSY-SQ2",
+        "brand": "DIBAO",
+        "vehicle_type": "E_SCOOTER",
+        "battery_type": "LEAD_ACID",
+        "battery_capacity_ah": 23.0,
+        "battery_voltage_v": 60,
+        "charging_time_hours": 13.0,
+        "max_speed_kmh": 50.0,
+        "max_range_km": 90.0,
+        "motor_power_watts": 1450,
+        "peak_motor_power_watts": 1450,
+        "max_load_kg": 150.0,
+        "product_weight_kg": 93.0,
+        "wheel_size_inch": null,
+        "brake_type": "DISC",
+        "drive_type": null,
+        "water_resistance_rating": null,
+        "frame_material": null,
+        "suspension_type": null,
+        "display_type": null,
+        "smart_features": null,
+        "warranty_months": 36,
+        "dimensions_mm": "1.750mm x 710mm x 1.110mm"
+      },
+      "variants": [
+        {
+          "sku": "kinetic-pansy-sq2-verified-c01",
+          "variant_name": "Xanh lam",
+          "color_name": "Xanh lam",
+          "color_hex": "#274b92",
+          "battery_capacity_ah": 23.0,
+          "additional_price": 0,
+          "stock_quantity": 10,
+          "is_default": true,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-pansy-sq2-verified-c02",
+          "variant_name": "Xanh ngọc",
+          "color_name": "Xanh ngọc",
+          "color_hex": "#3e9b9d",
+          "battery_capacity_ah": 23.0,
+          "additional_price": 0,
+          "stock_quantity": 10,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-pansy-sq2-verified-c03",
+          "variant_name": "Xám xanh",
+          "color_name": "Xám xanh",
+          "color_hex": "#738c9e",
+          "battery_capacity_ah": 23.0,
+          "additional_price": 0,
+          "stock_quantity": 10,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-pansy-sq2-verified-c04",
+          "variant_name": "Xanh nhạt",
+          "color_name": "Xanh nhạt",
+          "color_hex": "#a3c9d6",
+          "battery_capacity_ah": 23.0,
+          "additional_price": 0,
+          "stock_quantity": 9,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-pansy-sq2-verified-c05",
+          "variant_name": "Đen",
+          "color_name": "Đen",
+          "color_hex": "#20282c",
+          "battery_capacity_ah": 23.0,
+          "additional_price": 0,
+          "stock_quantity": 9,
+          "is_default": false,
+          "is_active": true
+        }
+      ],
+      "images": [
+        {
+          "variant_sku": "kinetic-pansy-sq2-verified-c01",
+          "image_url": "/images/catalog/kinetic-pansy-sq2/source-01.png",
+          "alt_text": "DIBAO Pansy Sq2 - Xanh lam",
+          "sort_order": 0,
+          "is_primary": true,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/pansy-sq2/pansysq2-015-1-1.png",
+          "sha256": "9b2d4c11e1f959af41b14ba8637dc3890576098700ab3d093dc5c389e0f06fb6"
+        },
+        {
+          "variant_sku": "kinetic-pansy-sq2-verified-c02",
+          "image_url": "/images/catalog/kinetic-pansy-sq2/source-02.png",
+          "alt_text": "DIBAO Pansy Sq2 - Xanh ngọc",
+          "sort_order": 20,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/pansy-sq2/pansysq2-046b-1.png",
+          "sha256": "70426f8f176cadea6455e4b88338f92ee27148a0020dd2a0eff83457f5b4e96a"
+        },
+        {
+          "variant_sku": "kinetic-pansy-sq2-verified-c03",
+          "image_url": "/images/catalog/kinetic-pansy-sq2/source-03.png",
+          "alt_text": "DIBAO Pansy Sq2 - Xám xanh",
+          "sort_order": 40,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/pansy-sq2/pansysq2-017.png",
+          "sha256": "255a17be171939a05ed0a54876b746e5cc6ed10c58ba02c3aeecb5ad68c95ff3"
+        },
+        {
+          "variant_sku": "kinetic-pansy-sq2-verified-c04",
+          "image_url": "/images/catalog/kinetic-pansy-sq2/source-04.png",
+          "alt_text": "DIBAO Pansy Sq2 - Xanh nhạt",
+          "sort_order": 60,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/pansy-sq2/pansysq2-013-1.png",
+          "sha256": "cc8a2d17d3bc3e8dde2385bd5ff8a18228ad3522cc4a3d28b347e7ef384da52f"
+        },
+        {
+          "variant_sku": "kinetic-pansy-sq2-verified-c04",
+          "image_url": "/images/catalog/kinetic-pansy-sq2/source-06.png",
+          "alt_text": "DIBAO Pansy Sq2 - Xanh nhạt",
+          "sort_order": 61,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/pansy-sq2/pansysq2-013-4.png",
+          "sha256": "f5c605e7dd5a68a2cfe8eb1253af1243501fb00105d989410559e2999e74b717"
+        },
+        {
+          "variant_sku": "kinetic-pansy-sq2-verified-c05",
+          "image_url": "/images/catalog/kinetic-pansy-sq2/source-05.png",
+          "alt_text": "DIBAO Pansy Sq2 - Đen",
+          "sort_order": 80,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/pansy-sq2/pansysq2-023-2.png",
+          "sha256": "8de338149c4ab159496a5aa39baad2b7ce2104f965ad2dc70f83fd6ca5792ae7"
+        }
+      ],
+      "source_url": "https://dibao.com.vn/xe-may-dien-dibao-pansy-sq2.html",
+      "source_title": "XE MÁY ĐIỆN DIBAO PANSY SQ2"
+    },
+    {
+      "source_group": "xe-máy-điện-dibao-rosa",
+      "category": {
+        "name": "Xe đạp điện",
+        "slug": "xe-dap-dien",
+        "description": "Xe đạp điện có bàn đạp.",
+        "vehicle_type": "E_BIKE"
+      },
+      "product": {
+        "name": "DIBAO Rosa",
+        "slug": "kinetic-rosa",
+        "description": "DIBAO Rosa là mẫu xe đạp điện có bàn đạp của DIBAO, phù hợp cho di chuyển hằng ngày. Chọn màu để xem đúng ảnh và tình trạng của phiên bản.",
+        "price": 25500000,
+        "discount_price": null,
+        "stock_quantity": 48,
+        "rating": 0,
+        "review_count": 0,
+        "is_featured": true,
+        "is_active": true
+      },
+      "specification": {
+        "model_code": "ROSA",
+        "brand": "DIBAO",
+        "vehicle_type": "E_BIKE",
+        "battery_type": "LEAD_ACID",
+        "battery_capacity_ah": 23.0,
+        "battery_voltage_v": 60,
+        "charging_time_hours": 12.0,
+        "max_speed_kmh": 45.0,
+        "max_range_km": 80.0,
+        "motor_power_watts": 1400,
+        "peak_motor_power_watts": 1400,
+        "max_load_kg": 75.0,
+        "product_weight_kg": 90.0,
+        "wheel_size_inch": null,
+        "brake_type": "DISC",
+        "drive_type": null,
+        "water_resistance_rating": null,
+        "frame_material": null,
+        "suspension_type": null,
+        "display_type": null,
+        "smart_features": null,
+        "warranty_months": 24,
+        "dimensions_mm": "1.740mm x 720mm x 1.060mm"
+      },
+      "variants": [
+        {
+          "sku": "kinetic-rosa-verified-c01",
+          "variant_name": "Kem đỏ",
+          "color_name": "Kem đỏ",
+          "color_hex": "#e6ddc7/#ac253c",
+          "battery_capacity_ah": 23.0,
+          "additional_price": 0,
+          "stock_quantity": 10,
+          "is_default": true,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-rosa-verified-c02",
+          "variant_name": "Xanh xám",
+          "color_name": "Xanh xám",
+          "color_hex": "#9caf9d/#586c66",
+          "battery_capacity_ah": 23.0,
+          "additional_price": 0,
+          "stock_quantity": 10,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-rosa-verified-c03",
+          "variant_name": "Hồng tím",
+          "color_name": "Hồng tím",
+          "color_hex": "#b9a1bc/#272b31",
+          "battery_capacity_ah": 23.0,
+          "additional_price": 0,
+          "stock_quantity": 10,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-rosa-verified-c04",
+          "variant_name": "Trắng",
+          "color_name": "Trắng",
+          "color_hex": "#dcd5d4",
+          "battery_capacity_ah": 23.0,
+          "additional_price": 0,
+          "stock_quantity": 9,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-rosa-verified-c05",
+          "variant_name": "Xanh ô liu",
+          "color_name": "Xanh ô liu",
+          "color_hex": "#a2af73/#e3ddbc",
+          "battery_capacity_ah": 23.0,
+          "additional_price": 0,
+          "stock_quantity": 9,
+          "is_default": false,
+          "is_active": true
+        }
+      ],
+      "images": [
+        {
+          "variant_sku": "kinetic-rosa-verified-c01",
+          "image_url": "/images/catalog/kinetic-rosa/source-01.png",
+          "alt_text": "DIBAO Rosa - Kem đỏ",
+          "sort_order": 0,
+          "is_primary": true,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-rosa/dibao-rosa-7.png",
+          "sha256": "e3e3ccebc42b2a9dbd1be913770d1cece5645b5a89b7bc4e7193c525f93b1e89"
+        },
+        {
+          "variant_sku": "kinetic-rosa-verified-c02",
+          "image_url": "/images/catalog/kinetic-rosa/source-02.png",
+          "alt_text": "DIBAO Rosa - Xanh xám",
+          "sort_order": 20,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-rosa/dibao-rosa-3.png",
+          "sha256": "cd71ead1a1630833fce65892f26c0b35b7be39b59438c4e1437cbb0985af8369"
+        },
+        {
+          "variant_sku": "kinetic-rosa-verified-c03",
+          "image_url": "/images/catalog/kinetic-rosa/source-03.jpg",
+          "alt_text": "DIBAO Rosa - Hồng tím",
+          "sort_order": 40,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-rosa/hong-khoai-mon-dibao-rosa.jpg",
+          "sha256": "2aab3672719ed0b07ce2c0de5afd7565219fd3879a0fe0bf0b797ed361193813"
+        },
+        {
+          "variant_sku": "kinetic-rosa-verified-c04",
+          "image_url": "/images/catalog/kinetic-rosa/source-04.png",
+          "alt_text": "DIBAO Rosa - Trắng",
+          "sort_order": 60,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-rosa/dibao-rosa-6.png",
+          "sha256": "96033e011617404b315c95ee3b273ceb2781d1f3339f57813ca0124aa80570d5"
+        },
+        {
+          "variant_sku": "kinetic-rosa-verified-c05",
+          "image_url": "/images/catalog/kinetic-rosa/source-05.png",
+          "alt_text": "DIBAO Rosa - Xanh ô liu",
+          "sort_order": 80,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-rosa/dibao-rosa-5.png",
+          "sha256": "859c67eeed538911c7bd9f29887156878bba9133d39911b1660341c0da808bc8"
+        }
+      ],
+      "source_url": "https://dibao.com.vn/xe-dien-co-ban-dap-dibao-rosa.html",
+      "source_title": "XE ĐIỆN CÓ BÀN ĐẠP DIBAO ROSA"
+    },
+    {
+      "source_group": "xe-máy-điện-dibao-tesla-chic",
+      "category": {
+        "name": "Xe điện",
+        "slug": "xe-dien",
+        "description": "Xe sử dụng động cơ điện.",
+        "vehicle_type": "E_SCOOTER"
+      },
+      "product": {
+        "name": "DIBAO Tesla Chic",
+        "slug": "kinetic-tesla-chic",
+        "description": "DIBAO Tesla Chic là mẫu xe sử dụng động cơ điện của DIBAO, phù hợp cho di chuyển hằng ngày. Chọn màu để xem đúng ảnh và tình trạng của phiên bản.",
+        "price": 22600000,
+        "discount_price": null,
+        "stock_quantity": 48,
+        "rating": 0,
+        "review_count": 0,
+        "is_featured": false,
+        "is_active": true
+      },
+      "specification": {
+        "model_code": "TESLA-CHIC",
+        "brand": "DIBAO",
+        "vehicle_type": "E_SCOOTER",
+        "battery_type": "LEAD_ACID",
+        "battery_capacity_ah": 23.0,
+        "battery_voltage_v": 60,
+        "charging_time_hours": 13.0,
+        "max_speed_kmh": 50.0,
+        "max_range_km": 80.0,
+        "motor_power_watts": 1500,
+        "peak_motor_power_watts": 1500,
+        "max_load_kg": 150.0,
+        "product_weight_kg": 98.0,
+        "wheel_size_inch": null,
+        "brake_type": "DISC",
+        "drive_type": null,
+        "water_resistance_rating": null,
+        "frame_material": null,
+        "suspension_type": null,
+        "display_type": null,
+        "smart_features": null,
+        "warranty_months": 36,
+        "dimensions_mm": "1.775mm x 715mm x 1.120mm"
+      },
+      "variants": [
+        {
+          "sku": "kinetic-tesla-chic-verified-c01",
+          "variant_name": "Xanh ngọc",
+          "color_name": "Xanh ngọc",
+          "color_hex": "#69a793",
+          "battery_capacity_ah": 23.0,
+          "additional_price": 0,
+          "stock_quantity": 8,
+          "is_default": true,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-tesla-chic-verified-c02",
+          "variant_name": "Đen",
+          "color_name": "Đen",
+          "color_hex": "#1e2426",
+          "battery_capacity_ah": 23.0,
+          "additional_price": 0,
+          "stock_quantity": 8,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-tesla-chic-verified-c03",
+          "variant_name": "Xám xanh",
+          "color_name": "Xám xanh",
+          "color_hex": "#70848d",
+          "battery_capacity_ah": 23.0,
+          "additional_price": 0,
+          "stock_quantity": 8,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-tesla-chic-verified-c04",
+          "variant_name": "Trắng",
+          "color_name": "Trắng",
+          "color_hex": "#ececee",
+          "battery_capacity_ah": 23.0,
+          "additional_price": 0,
+          "stock_quantity": 8,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-tesla-chic-verified-c05",
+          "variant_name": "Bạc",
+          "color_name": "Bạc",
+          "color_hex": "#adb8c1",
+          "battery_capacity_ah": 23.0,
+          "additional_price": 0,
+          "stock_quantity": 8,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-tesla-chic-verified-c06",
+          "variant_name": "Xanh nhạt",
+          "color_name": "Xanh nhạt",
+          "color_hex": "#bdd3c6",
+          "battery_capacity_ah": 23.0,
+          "additional_price": 0,
+          "stock_quantity": 8,
+          "is_default": false,
+          "is_active": true
+        }
+      ],
+      "images": [
+        {
+          "variant_sku": "kinetic-tesla-chic-verified-c01",
+          "image_url": "/images/catalog/kinetic-tesla-chic/source-01.png",
+          "alt_text": "DIBAO Tesla Chic - Xanh ngọc",
+          "sort_order": 0,
+          "is_primary": true,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/tesla-chic/dibao-tesla-chic-1.png",
+          "sha256": "2c61a4046b8f4c59d20a75112cb54528f575299f13fc1741840fa0a8820dd916"
+        },
+        {
+          "variant_sku": "kinetic-tesla-chic-verified-c02",
+          "image_url": "/images/catalog/kinetic-tesla-chic/source-02.png",
+          "alt_text": "DIBAO Tesla Chic - Đen",
+          "sort_order": 20,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/tesla-chic/dibao-tesla-chic-2.png",
+          "sha256": "f21e84e873ae31886334b8bfeaa76b2ac04c35c5e09b194704ee5e96f7f546be"
+        },
+        {
+          "variant_sku": "kinetic-tesla-chic-verified-c03",
+          "image_url": "/images/catalog/kinetic-tesla-chic/source-03.png",
+          "alt_text": "DIBAO Tesla Chic - Xám xanh",
+          "sort_order": 40,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/tesla-chic/dibao-tesla-chic-3.png",
+          "sha256": "c1baea45669f7bea03a60fd3f5427b827c5e4fb8bc772219a94d579031499970"
+        },
+        {
+          "variant_sku": "kinetic-tesla-chic-verified-c04",
+          "image_url": "/images/catalog/kinetic-tesla-chic/source-04.png",
+          "alt_text": "DIBAO Tesla Chic - Trắng",
+          "sort_order": 60,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/tesla-chic/dibao-tesla-chic-4.png",
+          "sha256": "3f2dfdac0acb1dd00b93c9b08a8905f4a0febaac8bf760716c30d0304007e001"
+        },
+        {
+          "variant_sku": "kinetic-tesla-chic-verified-c05",
+          "image_url": "/images/catalog/kinetic-tesla-chic/source-05.png",
+          "alt_text": "DIBAO Tesla Chic - Bạc",
+          "sort_order": 80,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/tesla-chic/dibao-tesla-chic-5.png",
+          "sha256": "0bf63a8163134101caa970c9118e93c0b68bc45b031be65b29aeb41e00988bf6"
+        },
+        {
+          "variant_sku": "kinetic-tesla-chic-verified-c06",
+          "image_url": "/images/catalog/kinetic-tesla-chic/source-06.png",
+          "alt_text": "DIBAO Tesla Chic - Xanh nhạt",
+          "sort_order": 100,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/tesla-chic/dibao-tesla-chic-6.png",
+          "sha256": "9d8589185c184e167657b4d8421d2ea9c9d841d5254c97374c745a277f8efd20"
+        }
+      ],
+      "source_url": "https://dibao.com.vn/xe-may-dien-dibao-tesla-chic.html",
+      "source_title": "XE MÁY ĐIỆN DIBAO TESLA CHIC"
+    },
+    {
+      "source_group": "xe-máy-điện-dibao-tesla-chic-q",
+      "category": {
+        "name": "Xe điện",
+        "slug": "xe-dien",
+        "description": "Xe sử dụng động cơ điện.",
+        "vehicle_type": "E_SCOOTER"
+      },
+      "product": {
+        "name": "DIBAO Tesla Chic Q",
+        "slug": "kinetic-tesla-chic-q",
+        "description": "DIBAO Tesla Chic Q là mẫu xe sử dụng động cơ điện của DIBAO, phù hợp cho di chuyển hằng ngày. Chọn màu để xem đúng ảnh và tình trạng của phiên bản.",
+        "price": 21500000,
+        "discount_price": null,
+        "stock_quantity": 48,
+        "rating": 0,
+        "review_count": 0,
+        "is_featured": false,
+        "is_active": true
+      },
+      "specification": {
+        "model_code": "TESLA-CHIC-Q",
+        "brand": "DIBAO",
+        "vehicle_type": "E_SCOOTER",
+        "battery_type": "LEAD_ACID",
+        "battery_capacity_ah": 22.0,
+        "battery_voltage_v": 60,
+        "charging_time_hours": 13.0,
+        "max_speed_kmh": 50.0,
+        "max_range_km": 80.0,
+        "motor_power_watts": 1500,
+        "peak_motor_power_watts": 1500,
+        "max_load_kg": 150.0,
+        "product_weight_kg": 102.0,
+        "wheel_size_inch": null,
+        "brake_type": "DISC",
+        "drive_type": null,
+        "water_resistance_rating": null,
+        "frame_material": null,
+        "suspension_type": null,
+        "display_type": null,
+        "smart_features": null,
+        "warranty_months": 36,
+        "dimensions_mm": "1.780mm x 705mm x 1.110mm"
+      },
+      "variants": [
+        {
+          "sku": "kinetic-tesla-chic-q-verified-c01",
+          "variant_name": "Xanh nhạt",
+          "color_name": "Xanh nhạt",
+          "color_hex": "#b5d9ec",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 8,
+          "is_default": true,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-tesla-chic-q-verified-c02",
+          "variant_name": "Trắng",
+          "color_name": "Trắng",
+          "color_hex": "#e6ece3",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 8,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-tesla-chic-q-verified-c03",
+          "variant_name": "Xanh ngọc",
+          "color_name": "Xanh ngọc",
+          "color_hex": "#78c9c8",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 8,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-tesla-chic-q-verified-c04",
+          "variant_name": "Xanh cốm",
+          "color_name": "Xanh cốm",
+          "color_hex": "#bccf9f",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 8,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-tesla-chic-q-verified-c05",
+          "variant_name": "Vàng",
+          "color_name": "Vàng",
+          "color_hex": "#e5c527",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 8,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-tesla-chic-q-verified-c06",
+          "variant_name": "Cam",
+          "color_name": "Cam",
+          "color_hex": "#e4711d",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 8,
+          "is_default": false,
+          "is_active": true
+        }
+      ],
+      "images": [
+        {
+          "variant_sku": "kinetic-tesla-chic-q-verified-c01",
+          "image_url": "/images/catalog/kinetic-tesla-chic-q/source-01.png",
+          "alt_text": "DIBAO Tesla Chic Q - Xanh nhạt",
+          "sort_order": 0,
+          "is_primary": true,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/tesla-chic-q/tesla-chic-q-bl0100.png",
+          "sha256": "49843801b8606524580170c3115eb31ad25a4fcab38e4e932af315ceb12e87bd"
+        },
+        {
+          "variant_sku": "kinetic-tesla-chic-q-verified-c02",
+          "image_url": "/images/catalog/kinetic-tesla-chic-q/source-02.png",
+          "alt_text": "DIBAO Tesla Chic Q - Trắng",
+          "sort_order": 20,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/tesla-chic-q/tesla-chic-q-0035.png",
+          "sha256": "c0771224bb4abf34cf6c2761dd592f22f57e307b4cf81da8e7d128957036be72"
+        },
+        {
+          "variant_sku": "kinetic-tesla-chic-q-verified-c03",
+          "image_url": "/images/catalog/kinetic-tesla-chic-q/source-03.png",
+          "alt_text": "DIBAO Tesla Chic Q - Xanh ngọc",
+          "sort_order": 40,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/tesla-chic-q/tesla-chic-q-0046.png",
+          "sha256": "315520245e79c23e409ac3a66d7bee77ae92a4d42bf2a564a151c3b2c324396f"
+        },
+        {
+          "variant_sku": "kinetic-tesla-chic-q-verified-c04",
+          "image_url": "/images/catalog/kinetic-tesla-chic-q/source-04.png",
+          "alt_text": "DIBAO Tesla Chic Q - Xanh cốm",
+          "sort_order": 60,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/tesla-chic-q/tesla-chic-q-bl0103.png",
+          "sha256": "5e9868f9f4ebff7819792f06fe733ffc2936cfcbe6818a147b349dfd2ae0524a"
+        },
+        {
+          "variant_sku": "kinetic-tesla-chic-q-verified-c05",
+          "image_url": "/images/catalog/kinetic-tesla-chic-q/source-05.png",
+          "alt_text": "DIBAO Tesla Chic Q - Vàng",
+          "sort_order": 80,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/tesla-chic-q/tesla-chic-q-0022.png",
+          "sha256": "01f65885f1d12fddf575440920bf9d64d2cd03db24aabddff9ff9941b3cf1993"
+        },
+        {
+          "variant_sku": "kinetic-tesla-chic-q-verified-c06",
+          "image_url": "/images/catalog/kinetic-tesla-chic-q/source-06.png",
+          "alt_text": "DIBAO Tesla Chic Q - Cam",
+          "sort_order": 100,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/tesla-chic-q/tesla-chic-q-0024.png",
+          "sha256": "bd10b69bf56f6b8655e38e2070dd211313711ccb630378f74032eec0c1a90d9a"
+        }
+      ],
+      "source_url": "https://dibao.com.vn/xe-may-dien-dibao-tesla-chic-q.html",
+      "source_title": "XE MÁY ĐIỆN DIBAO TESLA CHIC Q"
+    },
+    {
+      "source_group": "xe-máy-điện-dibao-tesla-dio",
+      "category": {
+        "name": "Xe điện",
+        "slug": "xe-dien",
+        "description": "Xe sử dụng động cơ điện.",
+        "vehicle_type": "E_SCOOTER"
+      },
+      "product": {
+        "name": "DIBAO Tesla Dio",
+        "slug": "kinetic-tesla-dio",
+        "description": "DIBAO Tesla Dio là mẫu xe sử dụng động cơ điện của DIBAO, phù hợp cho di chuyển hằng ngày. Chọn màu để xem đúng ảnh và tình trạng của phiên bản.",
+        "price": 25900000,
+        "discount_price": null,
+        "stock_quantity": 48,
+        "rating": 0,
+        "review_count": 0,
+        "is_featured": true,
+        "is_active": true
+      },
+      "specification": {
+        "model_code": "TESLA-DIO",
+        "brand": "DIBAO",
+        "vehicle_type": "E_SCOOTER",
+        "battery_type": "LEAD_ACID",
+        "battery_capacity_ah": 22.0,
+        "battery_voltage_v": 60,
+        "charging_time_hours": 12.0,
+        "max_speed_kmh": 50.0,
+        "max_range_km": 60.0,
+        "motor_power_watts": 1450,
+        "peak_motor_power_watts": 1450,
+        "max_load_kg": 130.0,
+        "product_weight_kg": 97.0,
+        "wheel_size_inch": null,
+        "brake_type": "DISC",
+        "drive_type": null,
+        "water_resistance_rating": null,
+        "frame_material": null,
+        "suspension_type": null,
+        "display_type": null,
+        "smart_features": null,
+        "warranty_months": 24,
+        "dimensions_mm": "1.735mm x 720mm x 1.120mm"
+      },
+      "variants": [
+        {
+          "sku": "kinetic-tesla-dio-verified-c01",
+          "variant_name": "Kem",
+          "color_name": "Kem",
+          "color_hex": "#e9c99b",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 10,
+          "is_default": true,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-tesla-dio-verified-c02",
+          "variant_name": "Vàng",
+          "color_name": "Vàng",
+          "color_hex": "#e9cc17",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 10,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-tesla-dio-verified-c03",
+          "variant_name": "Xanh lục",
+          "color_name": "Xanh lục",
+          "color_hex": "#367964",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 10,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-tesla-dio-verified-c04",
+          "variant_name": "Xám xanh",
+          "color_name": "Xám xanh",
+          "color_hex": "#596d70",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 9,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-tesla-dio-verified-c05",
+          "variant_name": "Đỏ",
+          "color_name": "Đỏ",
+          "color_hex": "#a92335",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 9,
+          "is_default": false,
+          "is_active": true
+        }
+      ],
+      "images": [
+        {
+          "variant_sku": "kinetic-tesla-dio-verified-c01",
+          "image_url": "/images/catalog/kinetic-tesla-dio/source-01.jpg",
+          "alt_text": "DIBAO Tesla Dio - Kem",
+          "sort_order": 0,
+          "is_primary": true,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-tesla-dio/xe-may-dien-tesla-dio-mau-be.jpg",
+          "sha256": "80354dbf0672fb90562318f4ba0bce1ec50e87ece0898821609f8e3421cd7d5d"
+        },
+        {
+          "variant_sku": "kinetic-tesla-dio-verified-c02",
+          "image_url": "/images/catalog/kinetic-tesla-dio/source-02.jpg",
+          "alt_text": "DIBAO Tesla Dio - Vàng",
+          "sort_order": 20,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-tesla-dio/xe-may-dien-tesla-dio-mau-vang.jpg",
+          "sha256": "143084d36b4b0a228eed1b4a7aa7bb0d0ea1a2de10d6f2711546ed8624396408"
+        },
+        {
+          "variant_sku": "kinetic-tesla-dio-verified-c03",
+          "image_url": "/images/catalog/kinetic-tesla-dio/source-03.jpg",
+          "alt_text": "DIBAO Tesla Dio - Xanh lục",
+          "sort_order": 40,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-tesla-dio/xe-may-dien-tesla-dio-mau-xanh.jpg",
+          "sha256": "63bd474180196244810b47ca08943773cac79c3761fb0f0b035f1db9d8434d80"
+        },
+        {
+          "variant_sku": "kinetic-tesla-dio-verified-c04",
+          "image_url": "/images/catalog/kinetic-tesla-dio/source-04.jpg",
+          "alt_text": "DIBAO Tesla Dio - Xám xanh",
+          "sort_order": 60,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-tesla-dio/xe-may-dien-tesla-dio-mau-xam.jpg",
+          "sha256": "5c7496b5ed3d07c958d060980a0bef1c783828ba758fc1ad92781ac27f004e63"
+        },
+        {
+          "variant_sku": "kinetic-tesla-dio-verified-c05",
+          "image_url": "/images/catalog/kinetic-tesla-dio/source-05.jpg",
+          "alt_text": "DIBAO Tesla Dio - Đỏ",
+          "sort_order": 80,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-tesla-dio/xe-may-dien-tesla-dio-mau-do.jpg",
+          "sha256": "af0f0866c253b59eae096c586e37d490ba4458ac37bffedf1d3c73b6c71e0e49"
+        }
+      ],
+      "source_url": "https://dibao.com.vn/xe-may-dien-dibao-tesla-dio.html",
+      "source_title": "XE MÁY ĐIỆN DIBAO TESLA DIO"
+    },
+    {
+      "source_group": "xe-máy-điện-dibao-tesla-dio-e",
+      "category": {
+        "name": "Xe điện",
+        "slug": "xe-dien",
+        "description": "Xe sử dụng động cơ điện.",
+        "vehicle_type": "E_SCOOTER"
+      },
+      "product": {
+        "name": "DIBAO Tesla Dio E",
+        "slug": "kinetic-tesla-dio-e",
+        "description": "DIBAO Tesla Dio E là mẫu xe sử dụng động cơ điện của DIBAO, phù hợp cho di chuyển hằng ngày. Chọn màu để xem đúng ảnh và tình trạng của phiên bản.",
+        "price": 25900000,
+        "discount_price": null,
+        "stock_quantity": 48,
+        "rating": 0,
+        "review_count": 0,
+        "is_featured": false,
+        "is_active": true
+      },
+      "specification": {
+        "model_code": "TESLA-DIO-E",
+        "brand": "DIBAO",
+        "vehicle_type": "E_SCOOTER",
+        "battery_type": "LEAD_ACID",
+        "battery_capacity_ah": 22.0,
+        "battery_voltage_v": 60,
+        "charging_time_hours": 12.0,
+        "max_speed_kmh": 55.0,
+        "max_range_km": 60.0,
+        "motor_power_watts": 1350,
+        "peak_motor_power_watts": 1350,
+        "max_load_kg": 130.0,
+        "product_weight_kg": null,
+        "wheel_size_inch": null,
+        "brake_type": "DISC",
+        "drive_type": null,
+        "water_resistance_rating": null,
+        "frame_material": null,
+        "suspension_type": null,
+        "display_type": null,
+        "smart_features": null,
+        "warranty_months": 36,
+        "dimensions_mm": "1.750mm x 685mm x 1.120mm"
+      },
+      "variants": [
+        {
+          "sku": "kinetic-tesla-dio-e-verified-c01",
+          "variant_name": "Đen bóng",
+          "color_name": "Đen bóng",
+          "color_hex": "#23313a",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 10,
+          "is_default": true,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-tesla-dio-e-verified-c02",
+          "variant_name": "Đen sần",
+          "color_name": "Đen sần",
+          "color_hex": "#343f44",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 10,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-tesla-dio-e-verified-c03",
+          "variant_name": "Trắng",
+          "color_name": "Trắng",
+          "color_hex": "#dce6d5",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 10,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-tesla-dio-e-verified-c04",
+          "variant_name": "Ghi bóng",
+          "color_name": "Ghi bóng",
+          "color_hex": "#899faa",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 9,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-tesla-dio-e-verified-c05",
+          "variant_name": "Xám xanh",
+          "color_name": "Xám xanh",
+          "color_hex": "#667c7f",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 9,
+          "is_default": false,
+          "is_active": true
+        }
+      ],
+      "images": [
+        {
+          "variant_sku": "kinetic-tesla-dio-e-verified-c01",
+          "image_url": "/images/catalog/kinetic-tesla-dio-e/source-01.png",
+          "alt_text": "DIBAO Tesla Dio E - Đen bóng",
+          "sort_order": 0,
+          "is_primary": true,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/tesla-dio-e/tesla-dio-e-0033-1-2.png",
+          "sha256": "cbaf9a5f217cc70d672c3d9bd450a87b7f71c4430ec88606060264d3c70dfc6d"
+        },
+        {
+          "variant_sku": "kinetic-tesla-dio-e-verified-c02",
+          "image_url": "/images/catalog/kinetic-tesla-dio-e/source-02.png",
+          "alt_text": "DIBAO Tesla Dio E - Đen sần",
+          "sort_order": 20,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/tesla-dio-e/tesla-dio-e-0033-1.png",
+          "sha256": "27584e8c878db9bd771d75f8d070566630259ae3b2a50e7550b60b36c5736bd7"
+        },
+        {
+          "variant_sku": "kinetic-tesla-dio-e-verified-c02",
+          "image_url": "/images/catalog/kinetic-tesla-dio-e/source-03.png",
+          "alt_text": "DIBAO Tesla Dio E - Đen sần",
+          "sort_order": 21,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/tesla-dio-e/tesla-dio-e-0033.png",
+          "sha256": "54267f6b571e6e523963bc5c315692d1e87691dd630d8cf65dd59fc88be36c37"
+        },
+        {
+          "variant_sku": "kinetic-tesla-dio-e-verified-c03",
+          "image_url": "/images/catalog/kinetic-tesla-dio-e/source-04.png",
+          "alt_text": "DIBAO Tesla Dio E - Trắng",
+          "sort_order": 40,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/tesla-dio-e/tesla-dio-e-0035.png",
+          "sha256": "cbe5f72c53b7e723cc319c26c982ab6d59c00ff9f7bf4e7b4d3fc12209cb177c"
+        },
+        {
+          "variant_sku": "kinetic-tesla-dio-e-verified-c04",
+          "image_url": "/images/catalog/kinetic-tesla-dio-e/source-05.png",
+          "alt_text": "DIBAO Tesla Dio E - Ghi bóng",
+          "sort_order": 60,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/tesla-dio-e/tesla-dio-e-0059-2.png",
+          "sha256": "e59aa67a0a01bb8bdcebb502b68ec38c284416cdd486f134cc79a95b0d1771c6"
+        },
+        {
+          "variant_sku": "kinetic-tesla-dio-e-verified-c05",
+          "image_url": "/images/catalog/kinetic-tesla-dio-e/source-06.png",
+          "alt_text": "DIBAO Tesla Dio E - Xám xanh",
+          "sort_order": 80,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/tesla-dio-e/tesla-dio-e-0098.png",
+          "sha256": "5e2f063ed051d8123902367907ac58ea69ef602e271fe0c96f069e3577417cda"
+        }
+      ],
+      "source_url": "https://dibao.com.vn/xe-may-dien-dibao-tesla-dio-e.html",
+      "source_title": "XE MÁY ĐIỆN DIBAO TESLA DIO E"
+    },
+    {
+      "source_group": "xe-máy-điện-dibao-tesla-e",
+      "category": {
+        "name": "Xe điện",
+        "slug": "xe-dien",
+        "description": "Xe sử dụng động cơ điện.",
+        "vehicle_type": "E_SCOOTER"
+      },
+      "product": {
+        "name": "DIBAO Tesla E",
+        "slug": "kinetic-tesla-e",
+        "description": "DIBAO Tesla E là mẫu xe sử dụng động cơ điện của DIBAO, phù hợp cho di chuyển hằng ngày. Chọn màu để xem đúng ảnh và tình trạng của phiên bản.",
+        "price": 20400000,
+        "discount_price": null,
+        "stock_quantity": 48,
+        "rating": 0,
+        "review_count": 0,
+        "is_featured": false,
+        "is_active": true
+      },
+      "specification": {
+        "model_code": "TESLA-E",
+        "brand": "DIBAO",
+        "vehicle_type": "E_SCOOTER",
+        "battery_type": "LEAD_ACID",
+        "battery_capacity_ah": 22.3,
+        "battery_voltage_v": 12,
+        "charging_time_hours": 12.0,
+        "max_speed_kmh": 45.0,
+        "max_range_km": 70.0,
+        "motor_power_watts": 1550,
+        "peak_motor_power_watts": 1550,
+        "max_load_kg": 75.0,
+        "product_weight_kg": 94.0,
+        "wheel_size_inch": null,
+        "brake_type": "DISC",
+        "drive_type": null,
+        "water_resistance_rating": null,
+        "frame_material": null,
+        "suspension_type": null,
+        "display_type": null,
+        "smart_features": null,
+        "warranty_months": 24,
+        "dimensions_mm": "1740 × 700 × 1110 mm"
+      },
+      "variants": [
+        {
+          "sku": "kinetic-tesla-e-verified-c01",
+          "variant_name": "Đen",
+          "color_name": "Đen",
+          "color_hex": "#303d3d",
+          "battery_capacity_ah": 22.3,
+          "additional_price": 0,
+          "stock_quantity": 10,
+          "is_default": true,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-tesla-e-verified-c02",
+          "variant_name": "Xám nâu",
+          "color_name": "Xám nâu",
+          "color_hex": "#716c5b",
+          "battery_capacity_ah": 22.3,
+          "additional_price": 0,
+          "stock_quantity": 10,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-tesla-e-verified-c03",
+          "variant_name": "Đỏ",
+          "color_name": "Đỏ",
+          "color_hex": "#bf1e38",
+          "battery_capacity_ah": 22.3,
+          "additional_price": 0,
+          "stock_quantity": 10,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-tesla-e-verified-c04",
+          "variant_name": "Xám nhạt",
+          "color_name": "Xám nhạt",
+          "color_hex": "#b3bdb0",
+          "battery_capacity_ah": 22.3,
+          "additional_price": 0,
+          "stock_quantity": 9,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-tesla-e-verified-c05",
+          "variant_name": "Trắng kem",
+          "color_name": "Trắng kem",
+          "color_hex": "#e1dfcb",
+          "battery_capacity_ah": 22.3,
+          "additional_price": 0,
+          "stock_quantity": 9,
+          "is_default": false,
+          "is_active": true
+        }
+      ],
+      "images": [
+        {
+          "variant_sku": "kinetic-tesla-e-verified-c01",
+          "image_url": "/images/catalog/kinetic-tesla-e/source-01.png",
+          "alt_text": "DIBAO Tesla E - Đen",
+          "sort_order": 0,
+          "is_primary": true,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/tesla-e/dibao-tesla-e-1.png",
+          "sha256": "d44d3ff5f37d98905bc635b30385932229d11da015c752c4902400908bd02594"
+        },
+        {
+          "variant_sku": "kinetic-tesla-e-verified-c01",
+          "image_url": "/images/catalog/kinetic-tesla-e/source-04.png",
+          "alt_text": "DIBAO Tesla E - Đen",
+          "sort_order": 1,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/tesla-e/dibao-tesla-e-4.png",
+          "sha256": "ea3bb9420ab86cc34306a81dbe9dc4881151be0bd4ba59507a6ec3ddc923d564"
+        },
+        {
+          "variant_sku": "kinetic-tesla-e-verified-c02",
+          "image_url": "/images/catalog/kinetic-tesla-e/source-02.png",
+          "alt_text": "DIBAO Tesla E - Xám nâu",
+          "sort_order": 20,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/tesla-e/dibao-tesla-e-2.png",
+          "sha256": "6f7cfa45bf7abcbdb6628cee67f9c3fcc2a5dabd893870d46d823f1859be1e8b"
+        },
+        {
+          "variant_sku": "kinetic-tesla-e-verified-c03",
+          "image_url": "/images/catalog/kinetic-tesla-e/source-03.png",
+          "alt_text": "DIBAO Tesla E - Đỏ",
+          "sort_order": 40,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/tesla-e/dibao-tesla-e-3.png",
+          "sha256": "dde9f7bd68f898f2fed8c75c3129145c68968fea6b816158d0d4910b6e408889"
+        },
+        {
+          "variant_sku": "kinetic-tesla-e-verified-c04",
+          "image_url": "/images/catalog/kinetic-tesla-e/source-05.png",
+          "alt_text": "DIBAO Tesla E - Xám nhạt",
+          "sort_order": 60,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/tesla-e/dibao-tesla-e-5.png",
+          "sha256": "56cbdfbc5feccc456af8e08b908a52d5de8d21f2c2cae3997be888fde71b801a"
+        },
+        {
+          "variant_sku": "kinetic-tesla-e-verified-c05",
+          "image_url": "/images/catalog/kinetic-tesla-e/source-06.png",
+          "alt_text": "DIBAO Tesla E - Trắng kem",
+          "sort_order": 80,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/tesla-e/dibao-tesla-e-6.png",
+          "sha256": "03ccc90bc9f73dbd81ba1a8c41af57361d98d865ba18b81134ade5171d7b4293"
+        }
+      ],
+      "source_url": "https://dibao.com.vn/xe-may-dien-dibao-tesla-e.html",
+      "source_title": "XE MÁY ĐIỆN DIBAO TESLA E"
+    },
+    {
+      "source_group": "xe-máy-điện-dibao-tesla-sd",
+      "category": {
+        "name": "Xe điện",
+        "slug": "xe-dien",
+        "description": "Xe sử dụng động cơ điện.",
+        "vehicle_type": "E_SCOOTER"
+      },
+      "product": {
+        "name": "DIBAO Tesla Sd",
+        "slug": "kinetic-tesla-sd",
+        "description": "DIBAO Tesla Sd là mẫu xe sử dụng động cơ điện của DIBAO, phù hợp cho di chuyển hằng ngày. Chọn màu để xem đúng ảnh và tình trạng của phiên bản.",
+        "price": 20400000,
+        "discount_price": null,
+        "stock_quantity": 48,
+        "rating": 0,
+        "review_count": 0,
+        "is_featured": false,
+        "is_active": true
+      },
+      "specification": {
+        "model_code": "TESLA-SD",
+        "brand": "DIBAO",
+        "vehicle_type": "E_SCOOTER",
+        "battery_type": "LEAD_ACID",
+        "battery_capacity_ah": 23.0,
+        "battery_voltage_v": 60,
+        "charging_time_hours": 12.0,
+        "max_speed_kmh": 50.0,
+        "max_range_km": 100.0,
+        "motor_power_watts": 1450,
+        "peak_motor_power_watts": 1450,
+        "max_load_kg": 150.0,
+        "product_weight_kg": 93.0,
+        "wheel_size_inch": null,
+        "brake_type": "DISC",
+        "drive_type": null,
+        "water_resistance_rating": null,
+        "frame_material": null,
+        "suspension_type": null,
+        "display_type": null,
+        "smart_features": null,
+        "warranty_months": 24,
+        "dimensions_mm": "1.750mm x 700mm x 1.100mm"
+      },
+      "variants": [
+        {
+          "sku": "kinetic-tesla-sd-verified-c01",
+          "variant_name": "Xanh đậm",
+          "color_name": "Xanh đậm",
+          "color_hex": "#333d61",
+          "battery_capacity_ah": 23.0,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": true,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-tesla-sd-verified-c02",
+          "variant_name": "Xám xanh",
+          "color_name": "Xám xanh",
+          "color_hex": "#657980",
+          "battery_capacity_ah": 23.0,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-tesla-sd-verified-c03",
+          "variant_name": "Đen",
+          "color_name": "Đen",
+          "color_hex": "#202827",
+          "battery_capacity_ah": 23.0,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-tesla-sd-verified-c04",
+          "variant_name": "Trắng",
+          "color_name": "Trắng",
+          "color_hex": "#e3edf1",
+          "battery_capacity_ah": 23.0,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        }
+      ],
+      "images": [
+        {
+          "variant_sku": "kinetic-tesla-sd-verified-c01",
+          "image_url": "/images/catalog/kinetic-tesla-sd/source-01.png",
+          "alt_text": "DIBAO Tesla Sd - Xanh đậm",
+          "sort_order": 0,
+          "is_primary": true,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/tesla-sd/tesla-sd-015.png",
+          "sha256": "9422c5afce9defdede995ce85ce596e2c7f02baa87acd1630d3f55b7f567caf2"
+        },
+        {
+          "variant_sku": "kinetic-tesla-sd-verified-c01",
+          "image_url": "/images/catalog/kinetic-tesla-sd/source-06.png",
+          "alt_text": "DIBAO Tesla Sd - Xanh đậm",
+          "sort_order": 1,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/tesla-sd/tesla-sd-040.png",
+          "sha256": "a49560b03ec93f00a8a551d5edce5591bf23b8efddcc1fb700a962c2016cc4e4"
+        },
+        {
+          "variant_sku": "kinetic-tesla-sd-verified-c02",
+          "image_url": "/images/catalog/kinetic-tesla-sd/source-02.png",
+          "alt_text": "DIBAO Tesla Sd - Xám xanh",
+          "sort_order": 20,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/tesla-sd/tesla-sd-017.png",
+          "sha256": "842d90d9744a422e5b1e76257fb74a91371e84b619e6ebd74a07e2438c9c95a0"
+        },
+        {
+          "variant_sku": "kinetic-tesla-sd-verified-c03",
+          "image_url": "/images/catalog/kinetic-tesla-sd/source-03.png",
+          "alt_text": "DIBAO Tesla Sd - Đen",
+          "sort_order": 40,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/tesla-sd/tesla-sd-023.png",
+          "sha256": "7bf1729c61bbe78a8071413b8888bc4678bf6f524e42a60cec5956031370870b"
+        },
+        {
+          "variant_sku": "kinetic-tesla-sd-verified-c03",
+          "image_url": "/images/catalog/kinetic-tesla-sd/source-04.png",
+          "alt_text": "DIBAO Tesla Sd - Đen",
+          "sort_order": 41,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/tesla-sd/tesla-sd-033-2.png",
+          "sha256": "9427d5aff73e87b18308aa48997f54c3f40d9c303fc5e56a8b70fbcc66364174"
+        },
+        {
+          "variant_sku": "kinetic-tesla-sd-verified-c04",
+          "image_url": "/images/catalog/kinetic-tesla-sd/source-05.png",
+          "alt_text": "DIBAO Tesla Sd - Trắng",
+          "sort_order": 60,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/tesla-sd/tesla-sd-035.png",
+          "sha256": "43472f162f710b4c779d2a87fa32333df83befd39c5763241f30f571ac36a961"
+        }
+      ],
+      "source_url": "https://dibao.com.vn/xe-may-dien-dibao-tesla-sd.html",
+      "source_title": "XE MÁY ĐIỆN DIBAO TESLA SD"
+    },
+    {
+      "source_group": "xe-máy-điện-dibao-xman-leo",
+      "category": {
+        "name": "Xe điện",
+        "slug": "xe-dien",
+        "description": "Xe sử dụng động cơ điện.",
+        "vehicle_type": "E_SCOOTER"
+      },
+      "product": {
+        "name": "DIBAO Xman Leo",
+        "slug": "kinetic-xman-leo",
+        "description": "DIBAO Xman Leo là mẫu xe sử dụng động cơ điện của DIBAO, phù hợp cho di chuyển hằng ngày. Chọn màu để xem đúng ảnh và tình trạng của phiên bản.",
+        "price": 27000000,
+        "discount_price": null,
+        "stock_quantity": 48,
+        "rating": 0,
+        "review_count": 0,
+        "is_featured": false,
+        "is_active": true
+      },
+      "specification": {
+        "model_code": "XMAN-LEO",
+        "brand": "DIBAO",
+        "vehicle_type": "E_SCOOTER",
+        "battery_type": "LEAD_ACID",
+        "battery_capacity_ah": 23.0,
+        "battery_voltage_v": 60,
+        "charging_time_hours": 12.0,
+        "max_speed_kmh": 55.0,
+        "max_range_km": 90.0,
+        "motor_power_watts": 1450,
+        "peak_motor_power_watts": 1450,
+        "max_load_kg": 150.0,
+        "product_weight_kg": 95.0,
+        "wheel_size_inch": null,
+        "brake_type": "DISC",
+        "drive_type": null,
+        "water_resistance_rating": null,
+        "frame_material": null,
+        "suspension_type": null,
+        "display_type": null,
+        "smart_features": null,
+        "warranty_months": 24,
+        "dimensions_mm": "1.770mm x 810mm x 1.080mm"
+      },
+      "variants": [
+        {
+          "sku": "kinetic-xman-leo-verified-c01",
+          "variant_name": "Xám xanh",
+          "color_name": "Xám xanh",
+          "color_hex": "#86a5b5/#272c31",
+          "battery_capacity_ah": 23.0,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": true,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-xman-leo-verified-c02",
+          "variant_name": "Xanh đậm",
+          "color_name": "Xanh đậm",
+          "color_hex": "#3c5478/#272c31",
+          "battery_capacity_ah": 23.0,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-xman-leo-verified-c03",
+          "variant_name": "Đỏ đen",
+          "color_name": "Đỏ đen",
+          "color_hex": "#b8294a/#272c31",
+          "battery_capacity_ah": 23.0,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-xman-leo-verified-c04",
+          "variant_name": "Xanh ngọc đen",
+          "color_name": "Xanh ngọc đen",
+          "color_hex": "#8fc5c8/#272c31",
+          "battery_capacity_ah": 23.0,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        }
+      ],
+      "images": [
+        {
+          "variant_sku": "kinetic-xman-leo-verified-c01",
+          "image_url": "/images/catalog/kinetic-xman-leo/source-01.png",
+          "alt_text": "DIBAO Xman Leo - Xám xanh",
+          "sort_order": 0,
+          "is_primary": true,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-xman-leo/xman-leo-017-1.png",
+          "sha256": "e9e60d0ec87c39d0b6e59a5ff0ccb2a858a5b14b922bf65aea5c6a78f184da98"
+        },
+        {
+          "variant_sku": "kinetic-xman-leo-verified-c01",
+          "image_url": "/images/catalog/kinetic-xman-leo/source-02.png",
+          "alt_text": "DIBAO Xman Leo - Xám xanh",
+          "sort_order": 1,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-xman-leo/xman-leo-017.png",
+          "sha256": "0d0d9782227eb50de580016b946db565874434cc8b6b36d1494a40c51212d03d"
+        },
+        {
+          "variant_sku": "kinetic-xman-leo-verified-c02",
+          "image_url": "/images/catalog/kinetic-xman-leo/source-03.png",
+          "alt_text": "DIBAO Xman Leo - Xanh đậm",
+          "sort_order": 20,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-xman-leo/xman-leo-023.png",
+          "sha256": "8083c6193cfd3e6295a01177053d736376f8e18ad3a1ce2ef0f0f273c9067e15"
+        },
+        {
+          "variant_sku": "kinetic-xman-leo-verified-c02",
+          "image_url": "/images/catalog/kinetic-xman-leo/source-04.png",
+          "alt_text": "DIBAO Xman Leo - Xanh đậm",
+          "sort_order": 21,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-xman-leo/xman-leo-033-2.png",
+          "sha256": "26ac2fed1b8060c40f27b5186dcd65fc0d5f89549878c963712059e3344d29af"
+        },
+        {
+          "variant_sku": "kinetic-xman-leo-verified-c03",
+          "image_url": "/images/catalog/kinetic-xman-leo/source-05.png",
+          "alt_text": "DIBAO Xman Leo - Đỏ đen",
+          "sort_order": 40,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-xman-leo/xman-leo-do.png",
+          "sha256": "b1f48f6e247d86dc49121d97ab8c83c69843f1c87a0b81281a904cb59ad4f2bd"
+        },
+        {
+          "variant_sku": "kinetic-xman-leo-verified-c04",
+          "image_url": "/images/catalog/kinetic-xman-leo/source-06.png",
+          "alt_text": "DIBAO Xman Leo - Xanh ngọc đen",
+          "sort_order": 60,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-xman-leo/xman-leo-046b-1.png",
+          "sha256": "f6ffb2b0e002357756d53f7dd38b86ddfc88bccc77c56298aa798347868abca9"
+        }
+      ],
+      "source_url": "https://dibao.com.vn/xe-may-dien-dibao-xman-leo.html",
+      "source_title": "XE MÁY ĐIỆN DIBAO XMAN-LEO"
+    },
+    {
+      "source_group": "xe-điện-dibao-butterfly",
+      "category": {
+        "name": "Xe điện",
+        "slug": "xe-dien",
+        "description": "Xe sử dụng động cơ điện.",
+        "vehicle_type": "E_SCOOTER"
+      },
+      "product": {
+        "name": "DIBAO Butterfly",
+        "slug": "kinetic-butterfly",
+        "description": "DIBAO Butterfly là mẫu xe sử dụng động cơ điện của DIBAO, phù hợp cho di chuyển hằng ngày. Chọn màu để xem đúng ảnh và tình trạng của phiên bản.",
+        "price": 23300000,
+        "discount_price": null,
+        "stock_quantity": 48,
+        "rating": 0,
+        "review_count": 0,
+        "is_featured": true,
+        "is_active": true
+      },
+      "specification": {
+        "model_code": "BUTTERFLY",
+        "brand": "DIBAO",
+        "vehicle_type": "E_SCOOTER",
+        "battery_type": "LEAD_ACID",
+        "battery_capacity_ah": 21.6,
+        "battery_voltage_v": 60,
+        "charging_time_hours": 12.0,
+        "max_speed_kmh": 50.0,
+        "max_range_km": 80.0,
+        "motor_power_watts": 1500,
+        "peak_motor_power_watts": 1500,
+        "max_load_kg": 150.0,
+        "product_weight_kg": 92.0,
+        "wheel_size_inch": null,
+        "brake_type": "DISC",
+        "drive_type": null,
+        "water_resistance_rating": null,
+        "frame_material": null,
+        "suspension_type": null,
+        "display_type": null,
+        "smart_features": null,
+        "warranty_months": 24,
+        "dimensions_mm": "1.800mm x 700mm x 1.060mm"
+      },
+      "variants": [
+        {
+          "sku": "kinetic-butterfly-verified-c01",
+          "variant_name": "Trắng",
+          "color_name": "Trắng",
+          "color_hex": "#ede9e8",
+          "battery_capacity_ah": 21.6,
+          "additional_price": 0,
+          "stock_quantity": 16,
+          "is_default": true,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-butterfly-verified-c02",
+          "variant_name": "Xanh lam",
+          "color_name": "Xanh lam",
+          "color_hex": "#4ca9d2",
+          "battery_capacity_ah": 21.6,
+          "additional_price": 0,
+          "stock_quantity": 16,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-butterfly-verified-c03",
+          "variant_name": "Hồng nhạt",
+          "color_name": "Hồng nhạt",
+          "color_hex": "#e3c6ce",
+          "battery_capacity_ah": 21.6,
+          "additional_price": 0,
+          "stock_quantity": 16,
+          "is_default": false,
+          "is_active": true
+        }
+      ],
+      "images": [
+        {
+          "variant_sku": "kinetic-butterfly-verified-c01",
+          "image_url": "/images/catalog/kinetic-butterfly/source-01.png",
+          "alt_text": "DIBAO Butterfly - Trắng",
+          "sort_order": 0,
+          "is_primary": true,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/butterfly/dibao-butterfly.png",
+          "sha256": "4ab8b27dcbc89b8e850cf624202c0fcd1b2e2ab88336773f52113dff6e2d95c0"
+        },
+        {
+          "variant_sku": "kinetic-butterfly-verified-c02",
+          "image_url": "/images/catalog/kinetic-butterfly/source-02.jpg",
+          "alt_text": "DIBAO Butterfly - Xanh lam",
+          "sort_order": 20,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/butterfly/175.jpg",
+          "sha256": "36a5aec29c1ebdd20952b4e2096597be8256786b7b78773326ae6641fda25ed8"
+        },
+        {
+          "variant_sku": "kinetic-butterfly-verified-c03",
+          "image_url": "/images/catalog/kinetic-butterfly/source-03.png",
+          "alt_text": "DIBAO Butterfly - Hồng nhạt",
+          "sort_order": 40,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/butterfly/191.png",
+          "sha256": "d497b81d856e72db6eb0c0d62cf6087f4985bd4513a9200e340cb9a102d0cb4c"
+        }
+      ],
+      "source_url": "https://dibao.com.vn/xe-dien-dibao-butterfly.html",
+      "source_title": "XE ĐIỆN DIBAO BUTTERFLY"
+    },
+    {
+      "source_group": "xe-điện-dibao-gogo-s4",
+      "category": {
+        "name": "Xe điện",
+        "slug": "xe-dien",
+        "description": "Xe sử dụng động cơ điện.",
+        "vehicle_type": "E_SCOOTER"
+      },
+      "product": {
+        "name": "DIBAO Gogo S4",
+        "slug": "kinetic-gogo-s4",
+        "description": "DIBAO Gogo S4 là mẫu xe sử dụng động cơ điện của DIBAO, phù hợp cho di chuyển hằng ngày. Chọn màu để xem đúng ảnh và tình trạng của phiên bản.",
+        "price": 22600000,
+        "discount_price": null,
+        "stock_quantity": 48,
+        "rating": 0,
+        "review_count": 0,
+        "is_featured": true,
+        "is_active": true
+      },
+      "specification": {
+        "model_code": "GOGO-S4",
+        "brand": "DIBAO",
+        "vehicle_type": "E_SCOOTER",
+        "battery_type": "LEAD_ACID",
+        "battery_capacity_ah": 22.0,
+        "battery_voltage_v": 60,
+        "charging_time_hours": 12.0,
+        "max_speed_kmh": 50.0,
+        "max_range_km": 90.0,
+        "motor_power_watts": 1450,
+        "peak_motor_power_watts": 1450,
+        "max_load_kg": 150.0,
+        "product_weight_kg": 93.0,
+        "wheel_size_inch": null,
+        "brake_type": "DISC",
+        "drive_type": null,
+        "water_resistance_rating": null,
+        "frame_material": null,
+        "suspension_type": null,
+        "display_type": null,
+        "smart_features": null,
+        "warranty_months": 24,
+        "dimensions_mm": "1.700mm x 730mm x 1.050mm"
+      },
+      "variants": [
+        {
+          "sku": "kinetic-gogo-s4-verified-c01",
+          "variant_name": "Vàng",
+          "color_name": "Vàng",
+          "color_hex": "#e4cd2b",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": true,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-gogo-s4-verified-c02",
+          "variant_name": "Đỏ",
+          "color_name": "Đỏ",
+          "color_hex": "#c33142",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-gogo-s4-verified-c03",
+          "variant_name": "Cam",
+          "color_name": "Cam",
+          "color_hex": "#dc7b26",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-gogo-s4-verified-c04",
+          "variant_name": "Đen",
+          "color_name": "Đen",
+          "color_hex": "#293834",
+          "battery_capacity_ah": 22.0,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        }
+      ],
+      "images": [
+        {
+          "variant_sku": "kinetic-gogo-s4-verified-c01",
+          "image_url": "/images/catalog/kinetic-gogo-s4/source-01.webp",
+          "alt_text": "DIBAO Gogo S4 - Vàng",
+          "sort_order": 0,
+          "is_primary": true,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/gogo-s4/gogoss-duc-vang.webp",
+          "sha256": "86e971eae14f4df60ad0945c6f03348f90c71d12fb5454b38230ac22781a14c6"
+        },
+        {
+          "variant_sku": "kinetic-gogo-s4-verified-c01",
+          "image_url": "/images/catalog/kinetic-gogo-s4/source-04.png",
+          "alt_text": "DIBAO Gogo S4 - Vàng",
+          "sort_order": 1,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/upimages/image/GOGO_SS/GOGOSS_DUC_VANG.png",
+          "sha256": "9c5a79d4c530526a429bf54617f4599592abdf419f51ea9ebef3ff2ab40aab88"
+        },
+        {
+          "variant_sku": "kinetic-gogo-s4-verified-c02",
+          "image_url": "/images/catalog/kinetic-gogo-s4/source-02.png",
+          "alt_text": "DIBAO Gogo S4 - Đỏ",
+          "sort_order": 20,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/upimages/image/GOGO_SS/GOGOSS_DUC_019.png",
+          "sha256": "be30e22816375423fca13cfa811317114d388db05cf120519944410c04190014"
+        },
+        {
+          "variant_sku": "kinetic-gogo-s4-verified-c03",
+          "image_url": "/images/catalog/kinetic-gogo-s4/source-03.png",
+          "alt_text": "DIBAO Gogo S4 - Cam",
+          "sort_order": 40,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/upimages/image/GOGO_SS/GOGOSS_DUC_024.png",
+          "sha256": "8cba4990c4f0be9b68be6218c0de0ae045f3c933efe61d36e7914dab315d0621"
+        },
+        {
+          "variant_sku": "kinetic-gogo-s4-verified-c04",
+          "image_url": "/images/catalog/kinetic-gogo-s4/source-05.png",
+          "alt_text": "DIBAO Gogo S4 - Đen",
+          "sort_order": 60,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/upimages/image/GOGO_SS/GOGOSS_DUC_023.png",
+          "sha256": "13c8c9589cc93c556d09de8aed03b69a11f7953687e9c4d09f7721694326981e"
+        },
+        {
+          "variant_sku": "kinetic-gogo-s4-verified-c04",
+          "image_url": "/images/catalog/kinetic-gogo-s4/source-06.png",
+          "alt_text": "DIBAO Gogo S4 - Đen",
+          "sort_order": 61,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/upimages/image/GOGO_SS/GOGOSS_DUC_017.png",
+          "sha256": "fa6532e133020f1ffc311c9e18e3081c7addeea740cce6d65b4ce1b9663196b5"
+        }
+      ],
+      "source_url": "https://dibao.com.vn/xe-dien-dibao-gogo-s4.html",
+      "source_title": "XE ĐIỆN DIBAO GOGO S4"
+    },
+    {
+      "source_group": "xe-điện-dibao-gogo-s5",
+      "category": {
+        "name": "Xe điện",
+        "slug": "xe-dien",
+        "description": "Xe sử dụng động cơ điện.",
+        "vehicle_type": "E_SCOOTER"
+      },
+      "product": {
+        "name": "DIBAO Gogo S5",
+        "slug": "kinetic-gogo-s5",
+        "description": "DIBAO Gogo S5 là mẫu xe sử dụng động cơ điện của DIBAO, phù hợp cho di chuyển hằng ngày. Chọn màu để xem đúng ảnh và tình trạng của phiên bản.",
+        "price": 27000000,
+        "discount_price": null,
+        "stock_quantity": 48,
+        "rating": 0,
+        "review_count": 0,
+        "is_featured": false,
+        "is_active": true
+      },
+      "specification": {
+        "model_code": "GOGO-S5",
+        "brand": "DIBAO",
+        "vehicle_type": "E_SCOOTER",
+        "battery_type": "LEAD_ACID",
+        "battery_capacity_ah": 23.0,
+        "battery_voltage_v": 60,
+        "charging_time_hours": 14.0,
+        "max_speed_kmh": 50.0,
+        "max_range_km": 70.0,
+        "motor_power_watts": 1500,
+        "peak_motor_power_watts": 1500,
+        "max_load_kg": 150.0,
+        "product_weight_kg": 93.0,
+        "wheel_size_inch": null,
+        "brake_type": "DISC",
+        "drive_type": null,
+        "water_resistance_rating": null,
+        "frame_material": null,
+        "suspension_type": null,
+        "display_type": null,
+        "smart_features": null,
+        "warranty_months": 24,
+        "dimensions_mm": "1.730mm x 730mm x 1.030mm"
+      },
+      "variants": [
+        {
+          "sku": "kinetic-gogo-s5-verified-c01",
+          "variant_name": "Xanh nhạt",
+          "color_name": "Xanh nhạt",
+          "color_hex": "#a5c8c5",
+          "battery_capacity_ah": 23.0,
+          "additional_price": 0,
+          "stock_quantity": 8,
+          "is_default": true,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-gogo-s5-verified-c02",
+          "variant_name": "Xanh xám",
+          "color_name": "Xanh xám",
+          "color_hex": "#728a76",
+          "battery_capacity_ah": 23.0,
+          "additional_price": 0,
+          "stock_quantity": 8,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-gogo-s5-verified-c03",
+          "variant_name": "Đen",
+          "color_name": "Đen",
+          "color_hex": "#2c3832",
+          "battery_capacity_ah": 23.0,
+          "additional_price": 0,
+          "stock_quantity": 8,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-gogo-s5-verified-c04",
+          "variant_name": "Cam",
+          "color_name": "Cam",
+          "color_hex": "#d18034",
+          "battery_capacity_ah": 23.0,
+          "additional_price": 0,
+          "stock_quantity": 8,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-gogo-s5-verified-c05",
+          "variant_name": "Xanh lam",
+          "color_name": "Xanh lam",
+          "color_hex": "#589bc0",
+          "battery_capacity_ah": 23.0,
+          "additional_price": 0,
+          "stock_quantity": 8,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-gogo-s5-verified-c06",
+          "variant_name": "Xám xanh",
+          "color_name": "Xám xanh",
+          "color_hex": "#a8c0cb",
+          "battery_capacity_ah": 23.0,
+          "additional_price": 0,
+          "stock_quantity": 8,
+          "is_default": false,
+          "is_active": true
+        }
+      ],
+      "images": [
+        {
+          "variant_sku": "kinetic-gogo-s5-verified-c01",
+          "image_url": "/images/catalog/kinetic-gogo-s5/source-01.jpg",
+          "alt_text": "DIBAO Gogo S5 - Xanh nhạt",
+          "sort_order": 0,
+          "is_primary": true,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/gogo-s5/f8481169-237e-42c4-922c-1cf955f6942b.jpg",
+          "sha256": "70307f39408ba3875740e37f6ab223a2a27d63fa0797b9e7f73305097cfd618c"
+        },
+        {
+          "variant_sku": "kinetic-gogo-s5-verified-c02",
+          "image_url": "/images/catalog/kinetic-gogo-s5/source-02.jpg",
+          "alt_text": "DIBAO Gogo S5 - Xanh xám",
+          "sort_order": 20,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/gogo-s5/8ed2f922-4592-49df-94f5-550701b775d5.jpg",
+          "sha256": "91b3a6cae61b78069e40bcf40f37d4eec6a7af4df0769c1d6fc46b3e46208fde"
+        },
+        {
+          "variant_sku": "kinetic-gogo-s5-verified-c03",
+          "image_url": "/images/catalog/kinetic-gogo-s5/source-03.jpg",
+          "alt_text": "DIBAO Gogo S5 - Đen",
+          "sort_order": 40,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/gogo-s5/8be70413-bae8-42d0-88c3-791249b914dc.jpg",
+          "sha256": "d11aa1f4b3a0ae75c1011c12a390ddd36687a4c6281dca00b24b70544599d81a"
+        },
+        {
+          "variant_sku": "kinetic-gogo-s5-verified-c04",
+          "image_url": "/images/catalog/kinetic-gogo-s5/source-04.jpg",
+          "alt_text": "DIBAO Gogo S5 - Cam",
+          "sort_order": 60,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/gogo-s5/453cb7bc-e1d6-4fc2-83bb-622b31a37d5d.jpg",
+          "sha256": "ac8b9f1eda55a577a0c3458ab5dcb35f957db98bbeebd40857a63726d3d96bf9"
+        },
+        {
+          "variant_sku": "kinetic-gogo-s5-verified-c05",
+          "image_url": "/images/catalog/kinetic-gogo-s5/source-05.png",
+          "alt_text": "DIBAO Gogo S5 - Xanh lam",
+          "sort_order": 80,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/gogo-s5/gogo-s5-bl098.png",
+          "sha256": "45dc7d297756d42cf7a95789942bc3023bc31cd5dc55880d7f1f68135c1bf3c0"
+        },
+        {
+          "variant_sku": "kinetic-gogo-s5-verified-c06",
+          "image_url": "/images/catalog/kinetic-gogo-s5/source-06.png",
+          "alt_text": "DIBAO Gogo S5 - Xám xanh",
+          "sort_order": 100,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/gogo-s5/gogo-s5-035.png",
+          "sha256": "7f8145a21413353322ff6a2237cbaf6b73998a56089dbbe00df4ffaab69b8b8b"
+        }
+      ],
+      "source_url": "https://dibao.com.vn/xe-dien-dibao-gogo-s5.html",
+      "source_title": "XE ĐIỆN DIBAO GOGO S5"
+    },
+    {
+      "source_group": "xe-điện-dibao-jeek-one",
+      "category": {
+        "name": "Xe điện",
+        "slug": "xe-dien",
+        "description": "Xe sử dụng động cơ điện.",
+        "vehicle_type": "E_SCOOTER"
+      },
+      "product": {
+        "name": "DIBAO Jeek One",
+        "slug": "kinetic-jeek-one",
+        "description": "DIBAO Jeek One là mẫu xe sử dụng động cơ điện của DIBAO, phù hợp cho di chuyển hằng ngày. Chọn màu để xem đúng ảnh và tình trạng của phiên bản.",
+        "price": 21100000,
+        "discount_price": null,
+        "stock_quantity": 48,
+        "rating": 0,
+        "review_count": 0,
+        "is_featured": true,
+        "is_active": true
+      },
+      "specification": {
+        "model_code": "JEEK-ONE",
+        "brand": "DIBAO",
+        "vehicle_type": "E_SCOOTER",
+        "battery_type": "LEAD_ACID",
+        "battery_capacity_ah": 21.6,
+        "battery_voltage_v": 60,
+        "charging_time_hours": 12.0,
+        "max_speed_kmh": 50.0,
+        "max_range_km": 90.0,
+        "motor_power_watts": 1500,
+        "peak_motor_power_watts": 1500,
+        "max_load_kg": 150.0,
+        "product_weight_kg": 93.0,
+        "wheel_size_inch": null,
+        "brake_type": "DISC",
+        "drive_type": null,
+        "water_resistance_rating": null,
+        "frame_material": null,
+        "suspension_type": null,
+        "display_type": null,
+        "smart_features": null,
+        "warranty_months": 24,
+        "dimensions_mm": "1.760mm x 770mm x 1.100mm"
+      },
+      "variants": [
+        {
+          "sku": "kinetic-jeek-one-verified-c01",
+          "variant_name": "Xám đen",
+          "color_name": "Xám đen",
+          "color_hex": "#667f81/#232b31",
+          "battery_capacity_ah": 21.6,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": true,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-jeek-one-verified-c02",
+          "variant_name": "Đen",
+          "color_name": "Đen",
+          "color_hex": "#273332",
+          "battery_capacity_ah": 21.6,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-jeek-one-verified-c03",
+          "variant_name": "Cam đen",
+          "color_name": "Cam đen",
+          "color_hex": "#db761d/#232b31",
+          "battery_capacity_ah": 21.6,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-jeek-one-verified-c04",
+          "variant_name": "Xanh đen",
+          "color_name": "Xanh đen",
+          "color_hex": "#394c8a/#232b31",
+          "battery_capacity_ah": 21.6,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        }
+      ],
+      "images": [
+        {
+          "variant_sku": "kinetic-jeek-one-verified-c01",
+          "image_url": "/images/catalog/kinetic-jeek-one/source-01.png",
+          "alt_text": "DIBAO Jeek One - Xám đen",
+          "sort_order": 0,
+          "is_primary": true,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/jeek-one/jo-023-1.png",
+          "sha256": "f914e07c4bc26ba4c948a2eff56841ae4e3f3170e3fe5da70c01b7a935feff43"
+        },
+        {
+          "variant_sku": "kinetic-jeek-one-verified-c01",
+          "image_url": "/images/catalog/kinetic-jeek-one/source-05.png",
+          "alt_text": "DIBAO Jeek One - Xám đen",
+          "sort_order": 1,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/jeek-one/jo-033.png",
+          "sha256": "dd0d440806378b2593ec7496401636f7e5e8c00f8df42d38c53a9c2b501d9700"
+        },
+        {
+          "variant_sku": "kinetic-jeek-one-verified-c02",
+          "image_url": "/images/catalog/kinetic-jeek-one/source-02.png",
+          "alt_text": "DIBAO Jeek One - Đen",
+          "sort_order": 20,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/jeek-one/jo-023.png",
+          "sha256": "d2c1f188ad8945c328b7959b86a3b293a769bc839936b860aea11560eba5d017"
+        },
+        {
+          "variant_sku": "kinetic-jeek-one-verified-c02",
+          "image_url": "/images/catalog/kinetic-jeek-one/source-04.png",
+          "alt_text": "DIBAO Jeek One - Đen",
+          "sort_order": 21,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/jeek-one/jo-033-1.png",
+          "sha256": "c6a4b18553a1fca61008946a0c67013b0c88d7496cbfd9a1ca4c1fb868f7b709"
+        },
+        {
+          "variant_sku": "kinetic-jeek-one-verified-c03",
+          "image_url": "/images/catalog/kinetic-jeek-one/source-03.png",
+          "alt_text": "DIBAO Jeek One - Cam đen",
+          "sort_order": 40,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/jeek-one/jo-024.png",
+          "sha256": "b0d03d32b9ef86c95a94b2a02b6c267f0ea0a75b9b05f281daff5463924c107a"
+        },
+        {
+          "variant_sku": "kinetic-jeek-one-verified-c04",
+          "image_url": "/images/catalog/kinetic-jeek-one/source-06.png",
+          "alt_text": "DIBAO Jeek One - Xanh đen",
+          "sort_order": 60,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/jeek-one/jo-040.png",
+          "sha256": "74c87a638f0b4ae67df3aa704591ae5e116af9055888d2b728dc8db7e71b5fe5"
+        }
+      ],
+      "source_url": "https://dibao.com.vn/xe-dien-dibao-jeek-one.html",
+      "source_title": "XE ĐIỆN DIBAO JEEK ONE"
+    },
+    {
+      "source_group": "xe-điện-dibao-r1",
+      "category": {
+        "name": "Xe điện",
+        "slug": "xe-dien",
+        "description": "Xe sử dụng động cơ điện.",
+        "vehicle_type": "E_SCOOTER"
+      },
+      "product": {
+        "name": "DIBAO R1",
+        "slug": "kinetic-r1",
+        "description": "DIBAO R1 là mẫu xe sử dụng động cơ điện của DIBAO, phù hợp cho di chuyển hằng ngày. Chọn màu để xem đúng ảnh và tình trạng của phiên bản.",
+        "price": 18900000,
+        "discount_price": null,
+        "stock_quantity": 48,
+        "rating": 0,
+        "review_count": 0,
+        "is_featured": false,
+        "is_active": true
+      },
+      "specification": {
+        "model_code": "R1",
+        "brand": "DIBAO",
+        "vehicle_type": "E_SCOOTER",
+        "battery_type": "LEAD_ACID",
+        "battery_capacity_ah": 23.0,
+        "battery_voltage_v": 60,
+        "charging_time_hours": 12.0,
+        "max_speed_kmh": 50.0,
+        "max_range_km": 90.0,
+        "motor_power_watts": 1500,
+        "peak_motor_power_watts": 1500,
+        "max_load_kg": 150.0,
+        "product_weight_kg": 93.0,
+        "wheel_size_inch": null,
+        "brake_type": "DISC",
+        "drive_type": null,
+        "water_resistance_rating": null,
+        "frame_material": null,
+        "suspension_type": null,
+        "display_type": null,
+        "smart_features": null,
+        "warranty_months": 24,
+        "dimensions_mm": "1.835mm x 720mm x 1.090mm"
+      },
+      "variants": [
+        {
+          "sku": "kinetic-r1-verified-c01",
+          "variant_name": "Xanh nhạt",
+          "color_name": "Xanh nhạt",
+          "color_hex": "#a6d2d1",
+          "battery_capacity_ah": 23.0,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": true,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-r1-verified-c02",
+          "variant_name": "Xám xanh",
+          "color_name": "Xám xanh",
+          "color_hex": "#7e969e",
+          "battery_capacity_ah": 23.0,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-r1-verified-c03",
+          "variant_name": "Đen",
+          "color_name": "Đen",
+          "color_hex": "#252e3a",
+          "battery_capacity_ah": 23.0,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        },
+        {
+          "sku": "kinetic-r1-verified-c04",
+          "variant_name": "Xanh đậm",
+          "color_name": "Xanh đậm",
+          "color_hex": "#485f7e",
+          "battery_capacity_ah": 23.0,
+          "additional_price": 0,
+          "stock_quantity": 12,
+          "is_default": false,
+          "is_active": true
+        }
+      ],
+      "images": [
+        {
+          "variant_sku": "kinetic-r1-verified-c01",
+          "image_url": "/images/catalog/kinetic-r1/source-01.png",
+          "alt_text": "DIBAO R1 - Xanh nhạt",
+          "sort_order": 0,
+          "is_primary": true,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/r1/r1-013.png",
+          "sha256": "a696326034540d9bfe673a46150ce4e4501d69ac823ce7a92266862c1b2d161c"
+        },
+        {
+          "variant_sku": "kinetic-r1-verified-c02",
+          "image_url": "/images/catalog/kinetic-r1/source-02.png",
+          "alt_text": "DIBAO R1 - Xám xanh",
+          "sort_order": 20,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/r1/r1-017.png",
+          "sha256": "6cfa019a7533c9883eb782a0d50fed7e7258a93238c2926f5626c716aef1a02e"
+        },
+        {
+          "variant_sku": "kinetic-r1-verified-c02",
+          "image_url": "/images/catalog/kinetic-r1/source-06.png",
+          "alt_text": "DIBAO R1 - Xám xanh",
+          "sort_order": 21,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/r1/r1-017-ghep.png",
+          "sha256": "cd15ca782ce88dd19656bc384a1ce9c14426598ad68d725fb3ea2a40634cd238"
+        },
+        {
+          "variant_sku": "kinetic-r1-verified-c03",
+          "image_url": "/images/catalog/kinetic-r1/source-03.png",
+          "alt_text": "DIBAO R1 - Đen",
+          "sort_order": 40,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/r1/r1-033.png",
+          "sha256": "8014822e9edb8c04d8eae0b9d942bae8488fda965d62e533afac196f8db96129"
+        },
+        {
+          "variant_sku": "kinetic-r1-verified-c04",
+          "image_url": "/images/catalog/kinetic-r1/source-04.png",
+          "alt_text": "DIBAO R1 - Xanh đậm",
+          "sort_order": 60,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/r1/r1-040-1.png",
+          "sha256": "abd2e8e846139cf70e5c09d0bba71a6e9fef836a26dcb92914bf0f7c44f4d0fc"
+        },
+        {
+          "variant_sku": "kinetic-r1-verified-c04",
+          "image_url": "/images/catalog/kinetic-r1/source-05.png",
+          "alt_text": "DIBAO R1 - Xanh đậm",
+          "sort_order": 61,
+          "is_primary": false,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/r1/r1-040.png",
+          "sha256": "a7e6f17ffbff24cfc107a0373f7247e38a0a44605e1e11fb54a4a304a98b558a"
+        }
+      ],
+      "source_url": "https://dibao.com.vn/xe-dien-dibao-r1.html",
+      "source_title": "XE ĐIỆN DIBAO R1"
+    }
+  ]
+}

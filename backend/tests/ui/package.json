@@ -1,6 +1,6 @@
 {
   "name": "kinetic-ui-checks",
   "private": true,
-  "scripts": {"test": "node checkout-smoke.cjs"},
+  "scripts": {"test": "node checkout-smoke.cjs", "test:catalog": "node catalog-colors.cjs", "preview:colors": "node color-preview.cjs"},
   "devDependencies": {"playwright": "1.51.1"}
 }
