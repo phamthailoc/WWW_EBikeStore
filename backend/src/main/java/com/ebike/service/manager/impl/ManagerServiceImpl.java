@@ -141,6 +141,12 @@ public class ManagerServiceImpl implements ManagerService {
         if (payment.getPaymentStatus() == PaymentStatus.REFUNDED) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Refunded payments cannot be confirmed again");
         }
+        if (payment.getPaymentStatus() != PaymentStatus.PENDING) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chỉ xác nhận được khoản trả sau đang chờ thu.");
+        }
+        if (payment.getOrder().getStatus() == OrderStatus.CANCELLED) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Đơn hàng đã hủy, không thể xác nhận thu tiền.");
+        }
 
         payment.setPaymentStatus(PaymentStatus.PAID);
         payment.setPaidAt(LocalDateTime.now());

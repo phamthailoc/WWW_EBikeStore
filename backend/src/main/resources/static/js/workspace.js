@@ -21,7 +21,7 @@
     && (row.paymentMethod == null || row.paymentMethod === 'VNPAY') && !['PAID','REFUNDED'].includes(row.paymentStatus);
   const actionFor = row => {
     const id=row.id??row.orderId??row.paymentId??row.productId, buttons=[];
-    if(page==='/manager/payments'&&id!=null)buttons.push(`<button class="table-action" data-action="confirm-payment" data-id="${id}">Xác nhận đã thu</button>`);
+    if(page==='/manager/payments'&&id!=null&&row.paymentMethod==='PAY_LATER'&&row.paymentStatus==='PENDING'&&row.orderStatus!=='CANCELLED')buttons.push(`<button class="table-action" data-action="confirm-payment" data-id="${id}">Xác nhận đã thu</button>`);
     if(page==='/manager/payments'&&id!=null&&row.paymentStatus==='PAID'&&row.orderStatus==='CANCELLED')buttons.push(`<button class="table-action" data-action="refund-payment" data-id="${id}">Ghi nhận hoàn tiền</button>`);
     if(page==='/manager/orders'&&id!=null&&(orderSteps[row.status]||[]).length)buttons.push(`<select class="table-action" data-action="order-status" data-id="${id}"><option value="">Cập nhật trạng thái…</option>${orderSteps[row.status].map(s=>`<option value="${s}">${orderStatusText[s]}</option>`).join('')}</select>`);
     if(page.startsWith('/manager')&&id!=null&&(page.includes('inventory')||page.includes('products')))buttons.push(`<button class="table-action" data-action="stock" data-id="${id}" data-stock="${row.stockQuantity??0}">Cập nhật tồn kho</button>`);
