@@ -310,6 +310,15 @@ public class ManagerServiceImpl implements ManagerService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid shipment status");
         }
 
+        // The shipment must not push the order past a step it has not reached (e.g. a PENDING order straight to DELIVERED).
+        boolean leavingWarehouse = nextStatus == ShipmentStatus.SHIPPED || nextStatus == ShipmentStatus.IN_TRANSIT;
+        if (leavingWarehouse && order.getStatus() != OrderStatus.PROCESSING && order.getStatus() != OrderStatus.SHIPPED) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Only orders being processed can be handed over for shipping");
+        }
+        if (nextStatus == ShipmentStatus.DELIVERED && order.getStatus() != OrderStatus.SHIPPED && order.getStatus() != OrderStatus.DELIVERED) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Only orders that are being shipped can be marked as delivered");
+        }
+
         shipment.setShipmentStatus(nextStatus);
         if (request.trackingNumber() != null) {
             String trackingNumber = request.trackingNumber().trim();
