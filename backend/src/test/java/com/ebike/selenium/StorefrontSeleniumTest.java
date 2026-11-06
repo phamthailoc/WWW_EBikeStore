@@ -140,10 +140,16 @@ abstract class StorefrontSeleniumTest {
 
     protected void openCheckoutWithOneBike() {
         driver.get(baseUrl + "/product/" + productSlug);
-        if (!driver.findElements(By.cssSelector(".variant-option")).isEmpty()
-            && driver.findElements(By.cssSelector(".variant-option.selected")).isEmpty()) {
-            click(By.cssSelector(".variant-option"));
-        }
+        // Pick the colour with the most bikes left. Tests that ship orders keep their stock for good,
+        // so always taking the first colour would eventually sell it out and disable "add to cart".
+        driver.findElements(By.cssSelector(".variant-option")).stream()
+            .max(java.util.Comparator.comparingInt(color -> Integer.parseInt(color.getAttribute("data-stock"))))
+            .ifPresent(color -> {
+                assumeTrue(Integer.parseInt(color.getAttribute("data-stock")) > 0, "every colour of " + productSlug + " is sold out");
+                if (!color.getAttribute("class").contains("selected")) {
+                    click(color);
+                }
+            });
         click(By.id("addToCart"));
         wait.until(d -> {
             Object cart = js("return localStorage.getItem('kinetic_cart')");
