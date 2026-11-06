@@ -33,11 +33,12 @@ class OrderCheckoutTest {
     @Mock ShowroomRepository showrooms;
     @Mock PromotionRepository promotions;
     @Mock OrderEmailVerificationService verification;
+    @Mock com.ebike.repository.admin.PricingRuleRepository pricingRules;
     OrderServiceImpl service;
     Product product;
 
     @BeforeEach void setup() {
-        service = new OrderServiceImpl(orders, users, products, showrooms, promotions, verification);
+        service = new OrderServiceImpl(orders, users, products, showrooms, promotions, verification, new com.ebike.service.admin.PricingService(pricingRules));
         product = new Product();
         product.setId(1L); product.setName("KINETIC Test");
         product.setPrice(new BigDecimal("20300000")); product.setStockQuantity(8); product.setActive(true);
@@ -60,7 +61,8 @@ class OrderCheckoutTest {
         ebike100.setDiscountType("FIXED_AMOUNT");ebike100.setDiscountValue(new BigDecimal("100000"));
         when(promotions.findByCodeIgnoreCase("EBIKE100")).thenReturn(Optional.of(ebike100));
         var withCode=service.quoteOrder(new OrderQuoteRequest(true,List.of(new OrderCreateItemRequest(1L,1)),"EBIKE100"));
-        assertEquals(0, withCode.totalAmount().compareTo(new BigDecimal("22700000")));
+        // 20.300.000 + 500.000 registration service (pricing default) - 100.000 EBIKE100
+        assertEquals(0, withCode.totalAmount().compareTo(new BigDecimal("20700000")));
     }
 
     @Test void homeDeliveryStoresProvinceAndAddressWithoutShowroom() {

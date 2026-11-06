@@ -16,6 +16,7 @@ import com.ebike.dto.order.response.ShipmentResponse;
 import com.ebike.dto.order.response.ShowroomResponse;
 import com.ebike.model.entity.admin.Promotion;
 import com.ebike.repository.admin.PromotionRepository;
+import com.ebike.service.admin.PricingService;
 import com.ebike.model.entity.order.Order;
 import com.ebike.model.entity.order.OrderItem;
 import com.ebike.model.entity.order.OrderStatus;
@@ -68,7 +69,6 @@ public class OrderServiceImpl implements OrderService {
     private java.time.Duration payLaterExpiry = java.time.Duration.ofHours(72);
 
     private static final BigDecimal ZERO = BigDecimal.ZERO;
-    private static final BigDecimal REGISTRATION_FEE_AMOUNT = new BigDecimal("2500000");
     private static final int MAX_ORDER_ITEMS = 20;
     private static final int MAX_ITEM_QUANTITY = 10;
     private static final int MAX_CUSTOMER_NAME_LENGTH = 100;
@@ -83,6 +83,7 @@ public class OrderServiceImpl implements OrderService {
     private final ShowroomRepository showroomRepository;
     private final PromotionRepository promotionRepository;
     private final OrderEmailVerificationService orderEmailVerificationService;
+    private final PricingService pricingService;
 
     public OrderServiceImpl(
         OrderRepository orderRepository,
@@ -90,7 +91,8 @@ public class OrderServiceImpl implements OrderService {
         ProductRepository productRepository,
         ShowroomRepository showroomRepository,
         PromotionRepository promotionRepository,
-        OrderEmailVerificationService orderEmailVerificationService
+        OrderEmailVerificationService orderEmailVerificationService,
+        PricingService pricingService
     ) {
         this.orderRepository = orderRepository;
         this.userRepository = userRepository;
@@ -98,6 +100,7 @@ public class OrderServiceImpl implements OrderService {
         this.showroomRepository = showroomRepository;
         this.promotionRepository = promotionRepository;
         this.orderEmailVerificationService = orderEmailVerificationService;
+        this.pricingService = pricingService;
     }
 
     @Override
@@ -171,7 +174,7 @@ public class OrderServiceImpl implements OrderService {
         order.setShippingFee(ZERO);
         boolean includeRegistrationService = shouldIncludeRegistrationService(request.includeRegistrationService());
         order.setIncludeRegistrationService(includeRegistrationService);
-        order.setRegistrationFee(includeRegistrationService ? REGISTRATION_FEE_AMOUNT : ZERO);
+        order.setRegistrationFee(includeRegistrationService ? pricingService.registrationServicePerBike() : ZERO);
         validateCheckoutDetails(request);
         if (emailOtpRequired) {
             orderEmailVerificationService.assertVerifiedForOrder(request.emailVerificationSessionId(), request.customerEmail());
@@ -587,7 +590,7 @@ public class OrderServiceImpl implements OrderService {
         }
 
         BigDecimal promoDiscountAmount = resolvePromoDiscount(discountCode, subtotal);
-        BigDecimal registrationFee = includeRegistrationService ? REGISTRATION_FEE_AMOUNT : ZERO;
+        BigDecimal registrationFee = includeRegistrationService ? pricingService.registrationServicePerBike() : ZERO;
         BigDecimal totalDiscountAmount = promoDiscountAmount;
 
         return new OrderQuoteResponse(

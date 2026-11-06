@@ -35,13 +35,14 @@ class OrderStatusUpdateTest {
     @Mock ShowroomRepository showrooms;
     @Mock PromotionRepository promotions;
     @Mock OrderEmailVerificationService verification;
+    @Mock com.ebike.repository.admin.PricingRuleRepository pricingRules;
     @Mock Authentication staff;
     OrderServiceImpl service;
     Order order;
     Product product;
 
     @BeforeEach void setup() {
-        service = new OrderServiceImpl(orders, users, products, showrooms, promotions, verification);
+        service = new OrderServiceImpl(orders, users, products, showrooms, promotions, verification, new com.ebike.service.admin.PricingService(pricingRules));
         product = new Product();
         product.setId(1L);
         product.setStockQuantity(5);

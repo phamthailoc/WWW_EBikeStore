@@ -40,6 +40,7 @@ class GuestOrderLinkTest {
     @Mock ShowroomRepository showrooms;
     @Mock PromotionRepository promotions;
     @Mock OrderEmailVerificationService verification;
+    @Mock com.ebike.repository.admin.PricingRuleRepository pricingRules;
     @Mock Authentication authentication;
     OrderServiceImpl service;
     User customer;
@@ -47,7 +48,7 @@ class GuestOrderLinkTest {
     final UUID session = UUID.randomUUID();
 
     @BeforeEach void setup() {
-        service = new OrderServiceImpl(orders, users, products, showrooms, promotions, verification);
+        service = new OrderServiceImpl(orders, users, products, showrooms, promotions, verification, new com.ebike.service.admin.PricingService(pricingRules));
         customer = new User();
         customer.setId(3L);
         customer.setUsername("an");
