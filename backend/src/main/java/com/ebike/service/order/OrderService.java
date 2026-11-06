@@ -1,9 +1,11 @@
 package com.ebike.service.order;
 
 import com.ebike.dto.order.request.OrderCreateRequest;
+import com.ebike.dto.order.request.GuestOrderLinkRequest;
 import com.ebike.dto.order.request.OrderCancellationRequest;
 import com.ebike.dto.order.request.OrderQuoteRequest;
 import com.ebike.dto.order.request.OrderStatusUpdateRequest;
+import com.ebike.dto.order.response.GuestOrderLinkResponse;
 import com.ebike.dto.order.response.OrderQuoteResponse;
 import com.ebike.dto.order.response.OrderResponse;
 import java.util.List;
@@ -29,4 +31,7 @@ public interface OrderService {
     OrderResponse updateOrderStatus(Long id, OrderStatusUpdateRequest request, Authentication authentication);
 
     OrderResponse requestCancellation(Long id, OrderCancellationRequest request, Authentication authentication);
+
+    /** Attaches guest orders placed with the signed-in customer's email, once that email is proven by OTP. */
+    GuestOrderLinkResponse linkGuestOrders(GuestOrderLinkRequest request, Authentication authentication);
 }

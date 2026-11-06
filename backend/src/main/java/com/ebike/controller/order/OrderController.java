@@ -1,9 +1,11 @@
 package com.ebike.controller.order;
 
+import com.ebike.dto.order.request.GuestOrderLinkRequest;
 import com.ebike.dto.order.request.OrderCancellationRequest;
 import com.ebike.dto.order.request.OrderCreateRequest;
 import com.ebike.dto.order.request.OrderQuoteRequest;
 import com.ebike.dto.order.request.OrderStatusUpdateRequest;
+import com.ebike.dto.order.response.GuestOrderLinkResponse;
 import com.ebike.dto.order.response.OrderQuoteResponse;
 import com.ebike.dto.order.response.OrderResponse;
 import com.ebike.service.order.OrderService;
@@ -64,6 +66,15 @@ public class OrderController {
     @PreAuthorize("hasAuthority('" + PermissionConstants.OrderManagement.ORDER_UPDATE_STATUS + "')")
     public OrderResponse updateOrderStatus(@PathVariable Long id, @RequestBody OrderStatusUpdateRequest request, Authentication authentication) {
         return orderService.updateOrderStatus(id, request, authentication);
+    }
+
+    @PostMapping("/guest-orders/link")
+    @PreAuthorize("hasAuthority('" + PermissionConstants.Customer.ORDER_VIEW_OWN + "')")
+    public GuestOrderLinkResponse linkGuestOrders(
+        @RequestBody(required = false) GuestOrderLinkRequest request,
+        Authentication authentication
+    ) {
+        return orderService.linkGuestOrders(request, authentication);
     }
 
     @PostMapping("/{id}/cancellation-request")

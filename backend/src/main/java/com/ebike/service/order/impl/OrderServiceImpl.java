@@ -2,12 +2,14 @@ package com.ebike.service.order.impl;
 
 import com.ebike.model.entity.auth.User;
 import com.ebike.repository.auth.UserRepository;
+import com.ebike.dto.order.request.GuestOrderLinkRequest;
 import com.ebike.dto.order.request.OrderCancellationRequest;
 import com.ebike.dto.order.request.OrderCreateItemRequest;
 import com.ebike.dto.order.request.OrderCreateRequest;
 import com.ebike.dto.order.request.OrderQuoteRequest;
 import com.ebike.dto.order.request.OrderStatusUpdateRequest;
 import com.ebike.dto.order.response.OrderItemResponse;
+import com.ebike.dto.order.response.GuestOrderLinkResponse;
 import com.ebike.dto.order.response.OrderQuoteResponse;
 import com.ebike.dto.order.response.OrderResponse;
 import com.ebike.dto.order.response.ShipmentResponse;
@@ -230,6 +232,22 @@ public class OrderServiceImpl implements OrderService {
         }
 
         return toResponse(orderRepository.save(order));
+    }
+
+    @Override
+    @Transactional
+    public GuestOrderLinkResponse linkGuestOrders(GuestOrderLinkRequest request, Authentication authentication) {
+        User currentUser = getAuthenticatedUser(authentication);
+        // The OTP proves the customer owns this mailbox; without it anyone could register with a stranger's email.
+        orderEmailVerificationService.assertVerifiedForOrder(
+            request == null ? null : request.emailVerificationSessionId(),
+            currentUser.getEmail()
+        );
+
+        List<Order> guestOrders = orderRepository.findByUserIsNullAndCustomerEmail(normalizeEmail(currentUser.getEmail()));
+        guestOrders.forEach(order -> order.setUser(currentUser));
+        orderRepository.saveAll(guestOrders);
+        return new GuestOrderLinkResponse(guestOrders.size());
     }
 
     @Override
