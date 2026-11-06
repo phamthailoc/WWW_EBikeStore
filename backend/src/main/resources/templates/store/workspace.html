@@ -5,7 +5,7 @@
   <title th:text="${title} + ' | KINETIC'">KINETIC</title>
   <link rel="stylesheet" th:href="@{/css/store.css(v=20261102-layout1)}"><link rel="stylesheet" th:href="@{/css/workspace.css(v=20261102-layout1)}"><link rel="stylesheet" th:href="@{/css/workspace-overrides.css(v=20261031)}">
 <link rel="stylesheet" href="/css/commerce.css?v=20261102-colors1"><script src="/js/cart.js?v=20261102-cart1"></script></head>
-<body class="workspace" th:attr="data-api=${api},data-mode=${mode},data-role=${workspaceRole},data-page=${activePath},data-secondary-api=${secondaryApi}">
+<body class="workspace" th:attr="data-api=${api},data-mode=${mode},data-role=${workspaceRole},data-page=${activePath},data-secondary-api=${secondaryApi},data-vnpay-enabled=${vnpayEnabled}">
 <header class="top"><a class="brand" th:href="@{/}"><span>K</span> KINETIC</a><nav><a th:href="@{/products}">Cửa hàng</a><a th:href="@{/support}">Hỗ trợ</a><a th:href="@{/chatbot}">Tư vấn</a></nav><div class="actions"><a th:href="@{/favorites}">Đã lưu</a><span class="role-chip" th:text="${workspaceRole}">customer</span><button id="logout" class="link-button">Đăng xuất</button></div></header>
 <div class="work-shell">
   <aside class="work-sidebar"><div class="workspace-brand"><strong>KINETIC</strong><small th:text="${workspaceRole == 'manager' ? 'TRANG QUẢN LÝ' : workspaceRole == 'admin' ? 'QUẢN TRỊ HỆ THỐNG' : 'TÀI KHOẢN KHÁCH HÀNG'}">WORKSPACE</small><a th:href="@{/}">← Trang chủ</a></div><p class="eyebrow">KINETIC / <span th:text="${workspaceRole}">WORKSPACE</span></p><a th:each="link : ${links}" th:href="${link.href}" th:text="${link.label}" th:classappend="${activePath == link.href ? ' active' : ''}">Điều hướng</a><a class="side-back" th:href="@{/}">← Về cửa hàng</a></aside>
@@ -16,5 +16,5 @@
     <input id="productImageFile" type="file" accept="image/*" hidden>
   </main>
 </div>
-<script th:src="@{/js/workspace.js(v=20261031)}"></script>
+<script th:src="@{/js/workspace.js(v=20261106-vnpay1)}"></script>
 </body></html>

@@ -164,6 +164,27 @@ public class ManagerServiceImpl implements ManagerService {
 
     @Override
     @Transactional
+    public ManagerPaymentResponse refundPayment(Long paymentId, ManagerPaymentConfirmationRequest request) {
+        Payment payment = paymentRepository.findById(paymentId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Payment not found"));
+
+        if (payment.getPaymentStatus() != PaymentStatus.PAID) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Only paid payments can be refunded");
+        }
+        if (payment.getOrder().getStatus() != OrderStatus.CANCELLED) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Only payments of cancelled orders can be refunded");
+        }
+
+        payment.setPaymentStatus(PaymentStatus.REFUNDED);
+        if (request != null && request.note() != null && !request.note().isBlank()) {
+            payment.setProviderResponse(request.note().trim());
+        }
+
+        return toPaymentResponse(paymentRepository.save(payment));
+    }
+
+    @Override
+    @Transactional
     public OrderResponse approveOrderCancellation(Long orderId, OrderCancellationRequest request) {
         Order order = getPendingCancellationOrder(orderId);
         Payment payment = order.getPayment();
@@ -456,7 +477,8 @@ public class ManagerServiceImpl implements ManagerService {
             payment.getProviderTxnId(),
             payment.getProviderResponse(),
             payment.getPaidAt(),
-            order.getCreatedAt()
+            order.getCreatedAt(),
+            order.getStatus().name()
         );
     }
 

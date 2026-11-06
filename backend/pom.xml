@@ -16,6 +16,11 @@
   <version>1.0.0</version>
   <name>E-Bike Backend API</name>
 
+  <properties>
+    <!-- Newer than Spring Boot 3.1's managed Selenium so Selenium Manager can drive current Chrome builds. -->
+    <selenium.version>4.27.0</selenium.version>
+  </properties>
+
   <dependencyManagement>
     <dependencies>
       <dependency>
@@ -92,6 +97,11 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.seleniumhq.selenium</groupId>
+      <artifactId>selenium-java</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
