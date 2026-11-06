@@ -51,3 +51,6 @@ id_ed25519*
 __pycache__/
 *.py[cod]
 
+# Local database snapshots contain development account/order data
+/archive/local-database-backups/
+

@@ -1,7 +1,7 @@
 package com.ebike.config;
 
-import com.ebike.authModule.filter.JwtAuthenticationFilter;
-import com.ebike.shared.constants.PermissionConstants;
+import com.ebike.security.filter.JwtAuthenticationFilter;
+import com.ebike.common.constants.PermissionConstants;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -43,6 +43,7 @@ public class SecurityConfiguration {
             .authorizeHttpRequests(authorize -> authorize
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers("/", "/shop", "/products", "/models", "/bike/**", "/product/**", "/models/**", "/login", "/auth", "/signup", "/checkout", "/checkout/success", "/payment/return", "/support", "/compare", "/chatbot", "/css/**", "/js/**", "/images/**", "/favicon.ico").permitAll()
+                .requestMatchers("/cart", "/data/**").permitAll()
                 .requestMatchers("/favorites").authenticated()
                 .requestMatchers("/customer/**").hasAnyAuthority(PermissionConstants.Customer.PROFILE_VIEW, PermissionConstants.OrderManagement.ORDER_VIEW_ALL)
                 .requestMatchers("/manager/**").hasAuthority(PermissionConstants.OrderManagement.ORDER_VIEW_ALL)

@@ -1,8 +1,8 @@
 package com.ebike.config;
 
-import com.ebike.orderModule.config.VnPayProperties;
-import com.ebike.chatbotModule.config.GeminiChatProperties;
-import com.ebike.chatbotModule.config.PdfKnowledgeProperties;
+import com.ebike.config.order.VnPayProperties;
+import com.ebike.config.chatbot.GeminiChatProperties;
+import com.ebike.config.chatbot.PdfKnowledgeProperties;
 import java.util.List;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;

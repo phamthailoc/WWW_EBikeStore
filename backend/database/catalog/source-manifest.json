@@ -1,0 +1,5131 @@
+{
+  "source": "https://dibao.com.vn/xe-may-dien",
+  "excluded_gasoline": [
+    "kinetic-creer",
+    "kinetic-gofast",
+    "kinetic-pansy-xs",
+    "kinetic-pansy-xs1",
+    "kinetic-pansy-xs1-ban-nang-cap",
+    "kinetic-rs-50cc",
+    "kinetic-sir-50cc",
+    "kinetic-tesla-x"
+  ],
+  "products": [
+    {
+      "slug": "kinetic-amy",
+      "source_url": "https://dibao.com.vn/xe-dien-co-ban-dap-dibao-amy.html",
+      "source_title": "XE ĐIỆN CÓ BÀN ĐẠP DIBAO AMY",
+      "source_swatches": [
+        "6997be",
+        "e1ecec",
+        "b7a39c",
+        "b6dadf",
+        "a6a9ac"
+      ],
+      "images": [
+        {
+          "index": 1,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-amy/dibao-amy-1.png",
+          "path": "/images/catalog/kinetic-amy/source-01.png",
+          "sha256": "e9cc016ddc0982f41541a7c16ed25bc122399e64151cf2dfe5fda9f828acf9b6",
+          "width": 800,
+          "height": 500,
+          "bytes": 133468
+        },
+        {
+          "index": 2,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-amy/dibao-amy-2.png",
+          "path": "/images/catalog/kinetic-amy/source-02.png",
+          "sha256": "75f057c1b137704943cab8e1b46a0e5f020bdde20d12b8eee5578ddc4ba8d19d",
+          "width": 800,
+          "height": 500,
+          "bytes": 120135
+        },
+        {
+          "index": 3,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-amy/dibao-amy-3.png",
+          "path": "/images/catalog/kinetic-amy/source-03.png",
+          "sha256": "ed9d2885a14b6ffc917c3d4ec7d23669e040c6186530eb9a0a76ee85da1ae9cf",
+          "width": 800,
+          "height": 500,
+          "bytes": 130980
+        },
+        {
+          "index": 4,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-amy/dibao-amy-4.png",
+          "path": "/images/catalog/kinetic-amy/source-04.png",
+          "sha256": "20e69231447bba84590ff40cf8a66eb7a3fc3721284abaa8f94d59f3f1738b2d",
+          "width": 800,
+          "height": 500,
+          "bytes": 123539
+        },
+        {
+          "index": 5,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-amy/dibao-amy.png",
+          "path": "/images/catalog/kinetic-amy/source-05.png",
+          "sha256": "be39eb2050fd3f8a37d7b7cffaff5b730ba1a0ddf71ae16b017c402baa562e58",
+          "width": 800,
+          "height": 500,
+          "bytes": 139042
+        }
+      ],
+      "specification_rows": [
+        [
+          "1",
+          "Tên sản phẩm",
+          "Dibao AMY"
+        ],
+        [
+          "2",
+          "Kích thước xe (D/R/C)",
+          "1.510mm x 680mm x 1.095mm"
+        ],
+        [
+          "3",
+          "Tải trọng",
+          "75kg"
+        ],
+        [
+          "4",
+          "Công suất Động cơ điện (Max)",
+          "1000W"
+        ],
+        [
+          "5",
+          "Mô men xoắn (danh định)",
+          "6,75Nm"
+        ],
+        [
+          "5",
+          "Bình điện",
+          "Ắc quy 48V (4x12V) 22Ah"
+        ],
+        [
+          "6",
+          "Tốc độ",
+          "30 - 35km/h"
+        ],
+        [
+          "7",
+          "Quãng đường đi/lần sạc",
+          "70km - 90km (tùy theo tốc độ và tải trọng)"
+        ],
+        [
+          "8",
+          "Lốp xe",
+          "Lốp không săm 2.75-10"
+        ],
+        [
+          "9",
+          "Kiểu phanh",
+          "Phanh trống trước, phanh trống sau"
+        ],
+        [
+          "10",
+          "Đèn chiếu sáng",
+          "LED bi siêu sáng"
+        ],
+        [
+          "11",
+          "Thời gian sạc điện (tối đa)",
+          "12 tiếng đồng hồ"
+        ],
+        [
+          "12",
+          "Bảo hành (Max)",
+          "24 tháng"
+        ],
+        [
+          "13",
+          "Bảo vệ sụt áp",
+          "40V±1"
+        ],
+        [
+          "14",
+          "Bảo vệ quá áp",
+          "27A±1"
+        ],
+        [
+          "16",
+          "Mức tiêu thụ điện năng",
+          "31,97Wh/Km"
+        ],
+        [
+          "15",
+          "Trọng lượng xe",
+          "67kg"
+        ]
+      ]
+    },
+    {
+      "slug": "kinetic-ella",
+      "source_url": "https://dibao.com.vn/xe-dien-co-ban-dap-dibao-ella.html",
+      "source_title": "XE ĐIỆN CÓ BÀN ĐẠP DIBAO ELLA",
+      "source_swatches": [
+        "dac6d2",
+        "98aaac",
+        "e2e6ef",
+        "e1ded5",
+        "adb391",
+        "20252b",
+        "23352b",
+        "64707e"
+      ],
+      "images": [
+        {
+          "index": 1,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/ella/qgo08945.png",
+          "path": "/images/catalog/kinetic-ella/source-01.png",
+          "sha256": "f478b5f12baca1a569f2a3e5a140bc47a3f698e01824b0baf3a014140155c5bf",
+          "width": 4464,
+          "height": 3072,
+          "bytes": 3620403
+        },
+        {
+          "index": 2,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/ella/dibao-ella.png",
+          "path": "/images/catalog/kinetic-ella/source-02.png",
+          "sha256": "56581cf845f3a843311cdc1a4aa3a424a7b76b60d03734a51fd3cb484212f572",
+          "width": 4466,
+          "height": 3072,
+          "bytes": 3973681
+        },
+        {
+          "index": 3,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/ella/qgo08954.png",
+          "path": "/images/catalog/kinetic-ella/source-03.png",
+          "sha256": "a30bcc2938af979a4a7f414a473f597d8f2f2aeb8553fea66d5d6b8f9c3e05fd",
+          "width": 4477,
+          "height": 3048,
+          "bytes": 3437370
+        },
+        {
+          "index": 4,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/ella/qgo08971.png",
+          "path": "/images/catalog/kinetic-ella/source-04.png",
+          "sha256": "b5257ac47116851d7e4f0f2a4cadb7d26ed9090b71c07c43262711c124305238",
+          "width": 4466,
+          "height": 3075,
+          "bytes": 3326814
+        },
+        {
+          "index": 5,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/ella/qgo08967.png",
+          "path": "/images/catalog/kinetic-ella/source-05.png",
+          "sha256": "7f241fc3233e7f9c740ef008f5cb38a37ec82e4cf72595fd8921101ac165f684",
+          "width": 4452,
+          "height": 3072,
+          "bytes": 3721024
+        },
+        {
+          "index": 6,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/ella/qgo08948.png",
+          "path": "/images/catalog/kinetic-ella/source-06.png",
+          "sha256": "275c32e4154456db9dc668217c0909e724f74b0472f6adf6d71f70b10c37d901",
+          "width": 4473,
+          "height": 3072,
+          "bytes": 3551522
+        }
+      ],
+      "specification_rows": [
+        [
+          "1",
+          "Tên sản phẩm",
+          "Dibao ELLA"
+        ],
+        [
+          "2",
+          "Kích thước xe (D/R/C)",
+          "1.690mm x 675mm x 1.075mm"
+        ],
+        [
+          "3",
+          "Tải trọng",
+          "75kg"
+        ],
+        [
+          "4",
+          "Mô men xoắn (danh định)",
+          "9,55Nm"
+        ],
+        [
+          "5",
+          "Công suất Động cơ điện (Max)",
+          "1.400W"
+        ],
+        [
+          "6",
+          "Bình điện",
+          "Ắc quy 60V (5x12V) 22Ah"
+        ],
+        [
+          "7",
+          "Tốc độ",
+          "40 - 45km/h"
+        ],
+        [
+          "8",
+          "Quãng đường đi/lần sạc",
+          "70km - 90km (tùy theo tốc độ và tải trọng)"
+        ],
+        [
+          "9",
+          "Lốp xe",
+          "Lốp không săm 3.00-10"
+        ],
+        [
+          "10",
+          "Kiểu phanh",
+          "Phanh đĩa trước, phanh trống sau"
+        ],
+        [
+          "11",
+          "Đèn chiếu sáng",
+          "LED bi siêu sáng"
+        ],
+        [
+          "12",
+          "Thời gian sạc điện (tối đa)",
+          "12 tiếng đồng hồ"
+        ],
+        [
+          "13",
+          "Bảo hành (Max)",
+          "24 tháng"
+        ],
+        [
+          "14",
+          "Bảo vệ sụt áp",
+          "52V±1"
+        ],
+        [
+          "15",
+          "Bảo vệ quá áp",
+          "27A±1"
+        ],
+        [
+          "16",
+          "Mức tiêu thụ điện năng",
+          "32.62 Wh/Km"
+        ],
+        [
+          "17",
+          "Trọng lượng xe",
+          "84kg"
+        ]
+      ]
+    },
+    {
+      "slug": "kinetic-queen",
+      "source_url": "https://dibao.com.vn/xe-may-dien-dibao-queen.html",
+      "source_title": "XE MÁY ĐIỆN DIBAO QUEEN",
+      "source_swatches": [
+        "415d73",
+        "e1f3f7",
+        "a5ccd0",
+        "334458",
+        "a29e98",
+        "d7eaee",
+        "ddedf6"
+      ],
+      "images": [
+        {
+          "index": 1,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-queen/dibao-queen-2.png",
+          "path": "/images/catalog/kinetic-queen/source-01.png",
+          "sha256": "345a191b8d4eb17bbf250e4f4a17d3986578a885a160050020f216774f95fe4d",
+          "width": 800,
+          "height": 500,
+          "bytes": 121991
+        },
+        {
+          "index": 2,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-queen/dibao-queen-3.png",
+          "path": "/images/catalog/kinetic-queen/source-02.png",
+          "sha256": "4bb5564c1395876629433e36a34d7c8b936b187d6e16e3b649624cef6543c1e0",
+          "width": 800,
+          "height": 500,
+          "bytes": 110183
+        },
+        {
+          "index": 3,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-queen/dibao-queen-4.png",
+          "path": "/images/catalog/kinetic-queen/source-03.png",
+          "sha256": "60a785fe3318575b3508f63a06928dd901b5f8341b2937adafc9757ef434fef5",
+          "width": 800,
+          "height": 500,
+          "bytes": 116196
+        },
+        {
+          "index": 4,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-queen/dibao-queen-5.png",
+          "path": "/images/catalog/kinetic-queen/source-04.png",
+          "sha256": "a1687d69dfc82bf4e117cad5a8baf16d0bd3a2ac1847bdc906577ff8de7c1e4e",
+          "width": 800,
+          "height": 500,
+          "bytes": 108966
+        },
+        {
+          "index": 5,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-queen/dibao-queen.png",
+          "path": "/images/catalog/kinetic-queen/source-05.png",
+          "sha256": "a1331f0a8d20ac25aeafe11cb62c0192df3373e1c20c64f227da3510311ca43b",
+          "width": 800,
+          "height": 500,
+          "bytes": 117301
+        },
+        {
+          "index": 6,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-queen/dibao-queen-1.png",
+          "path": "/images/catalog/kinetic-queen/source-06.png",
+          "sha256": "2b65af90a0bef3e99fcdd44f860a7821ba0238f5bef09b8f6659b824a3b44007",
+          "width": 800,
+          "height": 500,
+          "bytes": 101845
+        }
+      ],
+      "specification_rows": [
+        [
+          "1",
+          "Tên sản phẩm",
+          "Dibao QUEEN"
+        ],
+        [
+          "2",
+          "Kích thước xe (D/R/C)",
+          "1.590mm x 690mm x 1.100mm"
+        ],
+        [
+          "3",
+          "Tải trọng",
+          "130 - 130kg"
+        ],
+        [
+          "4",
+          "Công suất Động cơ điện (Max)",
+          "1.550W"
+        ],
+        [
+          "5",
+          "Mô men xoắn (danh định)",
+          "9,55Nm"
+        ],
+        [
+          "5",
+          "Bình điện",
+          "Ắc quy 60V (5x12V) 22Ah"
+        ],
+        [
+          "6",
+          "Tốc độ",
+          "40 - 45km/h"
+        ],
+        [
+          "7",
+          "Quãng đường đi/lần sạc",
+          "80km - 90km (tùy theo tốc độ và tải trọng)"
+        ],
+        [
+          "8",
+          "Lốp xe",
+          "Lốp không săm 3.00-10"
+        ],
+        [
+          "9",
+          "Kiểu phanh",
+          "Phanh đĩa trước, phanh cơ sau"
+        ],
+        [
+          "10",
+          "Đèn chiếu sáng",
+          "LED bi siêu sáng"
+        ],
+        [
+          "11",
+          "Thời gian sạc điện (tối đa)",
+          "12 tiếng đồng hồ"
+        ],
+        [
+          "12",
+          "Bảo hành (Max)",
+          "24 tháng"
+        ],
+        [
+          "13",
+          "Bảo vệ sụt áp",
+          "52V±1"
+        ],
+        [
+          "14",
+          "Bảo vệ quá áp",
+          "27A±1"
+        ],
+        [
+          "16",
+          "Mức tiêu thụ điện năng",
+          "35,03Wh/Km"
+        ],
+        [
+          "15",
+          "Trọng lượng xe",
+          "86 kg"
+        ]
+      ]
+    },
+    {
+      "slug": "kinetic-ryan",
+      "source_url": "https://dibao.com.vn/xe-dien-co-ban-dap-dibao-ryan.html",
+      "source_title": "XE ĐIỆN CÓ BÀN ĐẠP DIBAO RYAN",
+      "source_swatches": [
+        "5e7692",
+        "92b1d6",
+        "b6dae7",
+        "e7f8fe",
+        "d4e5ed",
+        "b1bdce",
+        "7197bb",
+        "88aad0"
+      ],
+      "images": [
+        {
+          "index": 1,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/bai-viet/dibao-ryan.png",
+          "path": "/images/catalog/kinetic-ryan/source-01.png",
+          "sha256": "74c8f5dd41ff35e31e4f9d6d4496ed9ac604e914c4f82be55701f8cb0a6878c7",
+          "width": 800,
+          "height": 500,
+          "bytes": 97730
+        },
+        {
+          "index": 2,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/bai-viet/dibao-ryan-2.png",
+          "path": "/images/catalog/kinetic-ryan/source-02.png",
+          "sha256": "507a116032be1230cc76273fc44bbeee9f443103045c35cd1f006b21dc0a640b",
+          "width": 800,
+          "height": 500,
+          "bytes": 96779
+        },
+        {
+          "index": 3,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/bai-viet/dibao-ryan-3.png",
+          "path": "/images/catalog/kinetic-ryan/source-03.png",
+          "sha256": "8263e72fe2c091960c3f2d7b9263c6c8eb19723afe15f276ae99f5e0824c55d0",
+          "width": 800,
+          "height": 500,
+          "bytes": 94257
+        },
+        {
+          "index": 4,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/bai-viet/dibao-ryan-4.png",
+          "path": "/images/catalog/kinetic-ryan/source-04.png",
+          "sha256": "c92a2744c6979c5f043f540a1469b8581bdbb61694f65f25250311791eb3d61b",
+          "width": 800,
+          "height": 500,
+          "bytes": 95199
+        },
+        {
+          "index": 5,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/bai-viet/dibao-ryan-5.png",
+          "path": "/images/catalog/kinetic-ryan/source-05.png",
+          "sha256": "27a60541e21d61e8c31141445fffe027f8bbca9cf97aacabad1f3567d5437b3b",
+          "width": 800,
+          "height": 500,
+          "bytes": 93705
+        },
+        {
+          "index": 6,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/bai-viet/dibao-ryan-6.png",
+          "path": "/images/catalog/kinetic-ryan/source-06.png",
+          "sha256": "00110cd0e5f9be3af52f9b7da60f4dbcace86840a12d39658bf11d6b9deae9cb",
+          "width": 800,
+          "height": 500,
+          "bytes": 92211
+        }
+      ],
+      "specification_rows": [
+        [
+          "Tên sản phẩm",
+          "Dibao Ryan"
+        ],
+        [
+          "Kích thước xe (D/R/C)",
+          "1.650mm x 660mm x 1.055mm"
+        ],
+        [
+          "Tải trọng",
+          "130kg"
+        ],
+        [
+          "Công suất Động cơ điện (Max)",
+          "1.550W"
+        ],
+        [
+          "Mô men xoắn (danh định)",
+          "9,55Nm"
+        ],
+        [
+          "Bình điện",
+          "Ắc quy 60V (5x12V) 22Ah"
+        ],
+        [
+          "Tốc độ",
+          "40-45km/h"
+        ],
+        [
+          "Quãng đường đi/lần sạc",
+          "70km - 90km (tùy theo tốc độ và tải trọng)"
+        ],
+        [
+          "Lốp xe",
+          "Lốp không săm 3.00-10"
+        ],
+        [
+          "Kiểu phanh",
+          "Phanh đĩa trước, phanh trống sau"
+        ],
+        [
+          "Đèn chiếu sáng",
+          "LED bi siêu sáng"
+        ],
+        [
+          "Thời gian sạc điện (tối đa)",
+          "12 tiếng đồng hồ"
+        ],
+        [
+          "Bảo hành (Max)",
+          "24 tháng"
+        ],
+        [
+          "Bảo vệ sụt áp",
+          "52V±1"
+        ],
+        [
+          "Bảo vệ quá áp",
+          "27A±1"
+        ],
+        [
+          "Mức tiêu thụ điện năng",
+          "33,31 Wh/Km"
+        ],
+        [
+          "Trọng lượng xe",
+          "88 Kg"
+        ]
+      ]
+    },
+    {
+      "slug": "kinetic-s-one",
+      "source_url": "https://dibao.com.vn/xe-dien-co-ban-dap-dibao-s-one.html",
+      "source_title": "Xe điện có bàn đạp DIBAO S-ONE",
+      "source_swatches": [
+        "c9a3b2",
+        "c3bab1",
+        "222100",
+        "3c434d",
+        "87928c",
+        "beb4ab",
+        "e8dfd8"
+      ],
+      "images": [
+        {
+          "index": 1,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/s-one/s1-0032.png",
+          "path": "/images/catalog/kinetic-s-one/source-01.png",
+          "sha256": "e7f05afb396cc5ce6e02b4bf9118a92b69cdf08475fe9b21f0db4a0c1cd60aab",
+          "width": 1080,
+          "height": 720,
+          "bytes": 257085
+        },
+        {
+          "index": 2,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/s-one/s1-0033-0122.png",
+          "path": "/images/catalog/kinetic-s-one/source-02.png",
+          "sha256": "3691acd68ef4c966ff6ecac672e9b81c53fdc789f82882be7070a85f2f1d4f11",
+          "width": 1080,
+          "height": 720,
+          "bytes": 240680
+        },
+        {
+          "index": 3,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/s-one/s1-0033-1.png",
+          "path": "/images/catalog/kinetic-s-one/source-03.png",
+          "sha256": "c3b650d5efdfc7ffc793a30150d02ec38856271f33efca02dd5dcefb01a33afb",
+          "width": 1080,
+          "height": 720,
+          "bytes": 243669
+        },
+        {
+          "index": 4,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/s-one/s1-0033.png",
+          "path": "/images/catalog/kinetic-s-one/source-04.png",
+          "sha256": "653686f8da6debc87d6a6410ad61b52e875366d1b7509151d0df64945c1b319d",
+          "width": 1080,
+          "height": 720,
+          "bytes": 261156
+        },
+        {
+          "index": 5,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/s-one/s1-0105.png",
+          "path": "/images/catalog/kinetic-s-one/source-05.png",
+          "sha256": "4de77ef39d7f07fb3de318d366012e01c6a80727ed55c980023c5b1168c7faed",
+          "width": 1080,
+          "height": 720,
+          "bytes": 278699
+        },
+        {
+          "index": 6,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/s-one/s1-0133-0116.png",
+          "path": "/images/catalog/kinetic-s-one/source-06.png",
+          "sha256": "38f1d1572658e5736539717a01ed49b5af5399ccd25b3d2511a8730f8cac905d",
+          "width": 1080,
+          "height": 720,
+          "bytes": 242791
+        }
+      ],
+      "specification_rows": [
+        [
+          "1",
+          "Tên sản phẩm",
+          "Dibao S-One"
+        ],
+        [
+          "2",
+          "Kích thước xe (D/R/C)",
+          "1.645mm x 710mm x 1.060mm"
+        ],
+        [
+          "3",
+          "Tải trọng",
+          "75kg"
+        ],
+        [
+          "4",
+          "Công suất Động cơ điện (Max)",
+          "1.550W"
+        ],
+        [
+          "5",
+          "Bình điện",
+          "Ắc quy 60V (5x12V) 22Ah"
+        ],
+        [
+          "6",
+          "Tốc độ",
+          "40-45km/h"
+        ],
+        [
+          "7",
+          "Quãng đường đi/lần sạc",
+          "70km - 90km (tùy theo tốc độ và tải trọng)"
+        ],
+        [
+          "8",
+          "Lốp xe",
+          "Lốp không săm 3.00-10"
+        ],
+        [
+          "9",
+          "Kiểu phanh",
+          "Phanh đĩa trước, phanh trống sau"
+        ],
+        [
+          "10",
+          "Đèn chiếu sáng",
+          "LED bi siêu sáng"
+        ],
+        [
+          "11",
+          "Thời gian sạc điện (tối đa)",
+          "12 tiếng đồng hồ"
+        ],
+        [
+          "12",
+          "Bảo hành (Max)",
+          "24 tháng"
+        ],
+        [
+          "13",
+          "Bảo vệ sụt áp:",
+          "52V±1"
+        ],
+        [
+          "14",
+          "Bảo vệ quá áp",
+          "27A±1"
+        ],
+        [
+          "15",
+          "Mức tiêu thụ điện năng",
+          "36.33Wk/Km"
+        ],
+        [
+          "16",
+          "Trọng lượng xe",
+          "89kg"
+        ]
+      ]
+    },
+    {
+      "slug": "kinetic-creer-e",
+      "source_url": "https://dibao.com.vn/xe-may-dien-dibao-creer-e.html",
+      "source_title": "XE MÁY ĐIỆN DIBAO CREER E",
+      "source_swatches": [
+        "000000"
+      ],
+      "images": [
+        {
+          "index": 1,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/creer-e/10.jpg",
+          "path": "/images/catalog/kinetic-creer-e/source-01.jpg",
+          "sha256": "f26925bd212e3f436956afc9e05c78b004850738a51a012889109e9bfcf4488f",
+          "width": 960,
+          "height": 640,
+          "bytes": 74462
+        },
+        {
+          "index": 2,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/creer-e/2.jpg",
+          "path": "/images/catalog/kinetic-creer-e/source-02.jpg",
+          "sha256": "e4942f50144e7d2b99b8828af7fbc5e896b387678d70bd86bfe6d594a1e321d6",
+          "width": 960,
+          "height": 640,
+          "bytes": 89502
+        },
+        {
+          "index": 3,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/creer-e/5.jpg",
+          "path": "/images/catalog/kinetic-creer-e/source-03.jpg",
+          "sha256": "3cc93396234a85b04ea68b06ddf7f4bf785befb68140fd8aac0d5788c28bcc43",
+          "width": 960,
+          "height": 640,
+          "bytes": 83695
+        },
+        {
+          "index": 4,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/creer-e/7.jpg",
+          "path": "/images/catalog/kinetic-creer-e/source-04.jpg",
+          "sha256": "13bc99271dfa315a8b59b0821ebf80b58f5c54a5a841252b59660b1f755e0aa2",
+          "width": 960,
+          "height": 640,
+          "bytes": 80389
+        },
+        {
+          "index": 5,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/creer-e/8.jpg",
+          "path": "/images/catalog/kinetic-creer-e/source-05.jpg",
+          "sha256": "fa636b9b0947b67923285a1e29de72ca5b27cd50ec73b757ba1f67d2157fbe9c",
+          "width": 960,
+          "height": 640,
+          "bytes": 76969
+        },
+        {
+          "index": 6,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/creer-e/9.jpg",
+          "path": "/images/catalog/kinetic-creer-e/source-06.jpg",
+          "sha256": "1398cbbfdda47036bd1419610af7006a5789632fbbbfdafe7407ee18b6af7a4a",
+          "width": 960,
+          "height": 640,
+          "bytes": 72416
+        }
+      ],
+      "specification_rows": [
+        [
+          "TT",
+          "Nội dung",
+          "Thông số"
+        ],
+        [
+          "1",
+          "Trọng lượng bản thân",
+          "93kg"
+        ],
+        [
+          "2",
+          "Kích thước xe (D/R/C)",
+          "1.720mm x 660mm x 1.160mm"
+        ],
+        [
+          "3",
+          "Chiều cao yên",
+          "750mm"
+        ],
+        [
+          "4",
+          "Tải trọng",
+          "130kg – 150kg"
+        ],
+        [
+          "5",
+          "Động cơ điện, công suất (Max)",
+          "1.400W"
+        ],
+        [
+          "6",
+          "Bình điện",
+          "Tổ hợp Ắc quy 60V (5x12V) 23Ah"
+        ],
+        [
+          "7",
+          "Tôc độ tối đa",
+          "40-50km/h"
+        ],
+        [
+          "8",
+          "Quãng đường đi/lần xạc",
+          "60-90km (tùy thuộc vào tốc độ di chuyển và tải trọng)"
+        ],
+        [
+          "9",
+          "Lốp xe",
+          "Lốp không săm 90/90-10"
+        ],
+        [
+          "10",
+          "Kiểu phanh",
+          "Phanh đĩa trước, phanh đĩa sau"
+        ],
+        [
+          "11",
+          "Phuộc trước",
+          "Ống lồng, giảm chấn thủy lực"
+        ],
+        [
+          "12",
+          "Phuộc sau",
+          "Lò so trụ đơn, giảm chấn thủy lực"
+        ],
+        [
+          "13",
+          "Đèn chiếu sáng",
+          "Halogen siêu sáng"
+        ],
+        [
+          "14",
+          "Thời gian sạc điện (tối đa)",
+          "10- 13 tiếng đồng hồ"
+        ],
+        [
+          "16",
+          "Bảo vệ sụt áp:",
+          "52V±1"
+        ],
+        [
+          "16",
+          "Bảo vệ quá dòng",
+          "27A±1"
+        ],
+        [
+          "17",
+          "Bảo hành (max)",
+          "24 tháng"
+        ]
+      ]
+    },
+    {
+      "slug": "kinetic-creer-nile",
+      "source_url": "https://dibao.com.vn/xe-may-dien-dibao-creer-nile.html",
+      "source_title": "XE MÁY ĐIỆN DIBAO CREER NILE",
+      "source_swatches": [
+        "406d8e",
+        "e76d00",
+        "6ccbeb",
+        "faf72e",
+        "000000",
+        "1b5d62",
+        "cd1818"
+      ],
+      "images": [
+        {
+          "index": 1,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/creer-nile/creer-nine-017-1.png",
+          "path": "/images/catalog/kinetic-creer-nile/source-01.png",
+          "sha256": "07e7bf0d16040b255022644fb8b3406b54f0defe1b34da2fa60da24526427b18",
+          "width": 960,
+          "height": 640,
+          "bytes": 314375
+        },
+        {
+          "index": 2,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/creer-nile/1-27.png",
+          "path": "/images/catalog/kinetic-creer-nile/source-02.png",
+          "sha256": "4011031e40cd45388f377ffcde8bd1a3e5b7158c3740cfb5468ed47d346e4952",
+          "width": 960,
+          "height": 640,
+          "bytes": 284530
+        },
+        {
+          "index": 3,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/creer-nile/creer-nine-013.png",
+          "path": "/images/catalog/kinetic-creer-nile/source-03.png",
+          "sha256": "510aa7b018760672ec3320b09e8971911520e1dcfda6ab877d87142b4a1f383a",
+          "width": 960,
+          "height": 640,
+          "bytes": 293218
+        },
+        {
+          "index": 4,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/creer-nile/creer-nine-022.png",
+          "path": "/images/catalog/kinetic-creer-nile/source-04.png",
+          "sha256": "69f1a388748245bc0619b346ebe1ba98789ea0bb305df96267c4eed2495ea5c8",
+          "width": 960,
+          "height": 640,
+          "bytes": 279552
+        },
+        {
+          "index": 5,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/creer-nile/creer-nine-033.png",
+          "path": "/images/catalog/kinetic-creer-nile/source-05.png",
+          "sha256": "2b02a9ffa687b07f75cbb5e851962eebc2b1c82ea6fdb942f954c8b7bcc27bfa",
+          "width": 960,
+          "height": 640,
+          "bytes": 310177
+        },
+        {
+          "index": 6,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/creer-nile/creer-nine-046.png",
+          "path": "/images/catalog/kinetic-creer-nile/source-06.png",
+          "sha256": "af99659a24bd44c76b17f476a558daebff5d68e76955dfb4b29d4493d7921edf",
+          "width": 960,
+          "height": 640,
+          "bytes": 307189
+        }
+      ],
+      "specification_rows": [
+        [
+          "TT",
+          "Nội dung",
+          "Thông số"
+        ],
+        [
+          "1",
+          "Trọng lượng bản thân:",
+          "96kg"
+        ],
+        [
+          "2",
+          "Kích thước xe (D/R/C):",
+          "1.700mm x 660mm x 1.070mm"
+        ],
+        [
+          "3",
+          "Chiều cao yên:",
+          "740mm"
+        ],
+        [
+          "4",
+          "Tải trọng:",
+          "130kg – 150kg"
+        ],
+        [
+          "5",
+          "Động cơ điện, công suất (Max):",
+          "1.400W"
+        ],
+        [
+          "6",
+          "Bình điện:",
+          "Tổ hợp Ắc quy chì a xít 60V (5x12V) 23Ah"
+        ],
+        [
+          "7",
+          "Tốc độ tối đa:",
+          "40-50km/h"
+        ],
+        [
+          "8",
+          "Quãng đường đi/lần sạc:",
+          "60-90km (tùy thuộc vào tốc độ di chuyển và tải trọng)"
+        ],
+        [
+          "9",
+          "Lốp xe:",
+          "Lốp không săm 90/90-10"
+        ],
+        [
+          "10",
+          "Kiểu phanh:",
+          "Phanh đĩa trước, phanh đĩa sau"
+        ],
+        [
+          "11",
+          "Phuộc trước (giảm xóc trước):",
+          "Ống lồng, giảm chấn thủy lực"
+        ],
+        [
+          "12",
+          "Phuộc sau (giảm xóc sau):",
+          "Lò so trụ đơn, giảm chấn thủy lực"
+        ],
+        [
+          "13",
+          "Đèn chiếu sáng phía trước:",
+          "Full LED siêu sáng"
+        ],
+        [
+          "14",
+          "Thời gian sạc điện (tối đa):",
+          "10 - 13 tiếng đồng hồ"
+        ],
+        [
+          "16",
+          "Bảo vệ sụt áp:",
+          "52V±1"
+        ],
+        [
+          "16",
+          "Bảo vệ quá dòng:",
+          "27A±1"
+        ],
+        [
+          "17",
+          "Bảo hành (max):",
+          "24 tháng"
+        ]
+      ]
+    },
+    {
+      "slug": "kinetic-gogo-cross",
+      "source_url": "https://dibao.com.vn/xe-may-dien-dibao-gogo-cross.html",
+      "source_title": "XE MÁY ĐIỆN DIBAO GOGO CROSS",
+      "source_swatches": [
+        "000000"
+      ],
+      "images": [
+        {
+          "index": 1,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/gogo-cross/cross-0331.png",
+          "path": "/images/catalog/kinetic-gogo-cross/source-01.png",
+          "sha256": "8f68e1d6fbfb46b7d14be0a8439294393c0195af87c66eb67e3efef5cc38d22f",
+          "width": 960,
+          "height": 640,
+          "bytes": 323275
+        },
+        {
+          "index": 2,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/gogo-cross/cross-056.png",
+          "path": "/images/catalog/kinetic-gogo-cross/source-02.png",
+          "sha256": "9bb2b2c8c494f35be1e996055adc20c0e2144c370d7380d52eadc8d455b41a00",
+          "width": 960,
+          "height": 640,
+          "bytes": 320766
+        },
+        {
+          "index": 3,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/gogo-cross/cross-0561.png",
+          "path": "/images/catalog/kinetic-gogo-cross/source-03.png",
+          "sha256": "0ad952462931810f0b2da0e39043a3213482380060fedb8518f15b4e59292cf9",
+          "width": 960,
+          "height": 640,
+          "bytes": 310264
+        },
+        {
+          "index": 4,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/gogo-cross/cross-013.png",
+          "path": "/images/catalog/kinetic-gogo-cross/source-04.png",
+          "sha256": "b3416d126c10aa24bd83ce166170df0030a837d846eb1080ebd0f6931b3908fa",
+          "width": 960,
+          "height": 640,
+          "bytes": 289175
+        },
+        {
+          "index": 5,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/gogo-cross/cross-035.png",
+          "path": "/images/catalog/kinetic-gogo-cross/source-05.png",
+          "sha256": "92be18c7c11a27799941294e0ba55528941686ce87fc73a9980f4a1ff758530a",
+          "width": 960,
+          "height": 640,
+          "bytes": 296986
+        },
+        {
+          "index": 6,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/gogo-cross/cross-059.png",
+          "path": "/images/catalog/kinetic-gogo-cross/source-06.png",
+          "sha256": "dc35ec34a33f1d0a05f9a37f87a9b2f4258f578e6f24c349f8e1e25748216432",
+          "width": 960,
+          "height": 640,
+          "bytes": 269865
+        }
+      ],
+      "specification_rows": [
+        [
+          "TT",
+          "Nội dung",
+          "Thông số"
+        ],
+        [
+          "1",
+          "Trọng lượng bản thân",
+          "93kg"
+        ],
+        [
+          "2",
+          "Kích thước xe (D/R/C)",
+          "1.730mm x 730mm x 1.040mm"
+        ],
+        [
+          "3",
+          "Chiều cao yên",
+          "755mm"
+        ],
+        [
+          "4",
+          "Tải trọng",
+          "130kg – 150kg"
+        ],
+        [
+          "5",
+          "Động cơ điện, công suất (Max)",
+          "1.450W"
+        ],
+        [
+          "6",
+          "Bình điện",
+          "Tổ hợp Ắc quy 60V (5x12V) 23Ah"
+        ],
+        [
+          "7",
+          "Tôc độ tối đa",
+          "40-50km/h"
+        ],
+        [
+          "8",
+          "Quãng đường đi/lần xạc",
+          "60-90km (tùy thuộc vào tốc độ di chuyển và tải trọng)"
+        ],
+        [
+          "9",
+          "Lốp xe",
+          "Lốp không săm 90/90-10"
+        ],
+        [
+          "10",
+          "Kiểu phanh",
+          "Phanh đĩa trước, phanh đĩa sau"
+        ],
+        [
+          "11",
+          "Phuộc trước",
+          "Ống lồng, giảm chấn thủy lực"
+        ],
+        [
+          "12",
+          "Phuộc sau",
+          "Lò so trụ đơn, giảm chấn thủy lực"
+        ],
+        [
+          "13",
+          "Đèn chiếu sáng",
+          "Ful Led  4 bóng, siêu sáng"
+        ],
+        [
+          "14",
+          "Thời gian sạc điện (tối đa)",
+          "10- 12 tiếng đồng hồ"
+        ],
+        [
+          "16",
+          "Bảo vệ sụt áp:",
+          "52V±1"
+        ],
+        [
+          "16",
+          "Bảo vệ quá dòng",
+          "27A±1"
+        ],
+        [
+          "17",
+          "Bảo hành (max)",
+          "24 tháng"
+        ]
+      ]
+    },
+    {
+      "slug": "kinetic-gogo-cross-g",
+      "source_url": "https://dibao.com.vn/xe-may-dien-dibao-gogo-cross-g.html",
+      "source_title": "XE MÁY ĐIỆN DIBAO GOGO CROSS G",
+      "source_swatches": [
+        "fe9b3e",
+        "313540",
+        "97081e",
+        "ddeffb",
+        "b7dff3",
+        "475566"
+      ],
+      "images": [
+        {
+          "index": 1,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/gogo-cross/cross-024-1.png",
+          "path": "/images/catalog/kinetic-gogo-cross-g/source-01.png",
+          "sha256": "dfac2b00d3005e9bf883a13a60adddf46268251ff14b4e8506133a32628099d6",
+          "width": 960,
+          "height": 640,
+          "bytes": 317291
+        },
+        {
+          "index": 2,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/gogo-cross/cross-033.png",
+          "path": "/images/catalog/kinetic-gogo-cross-g/source-02.png",
+          "sha256": "fc53bc25da93c43737f8861ff38aac5ef8a4135aead10ceddbe81f7948862586",
+          "width": 960,
+          "height": 640,
+          "bytes": 315459
+        },
+        {
+          "index": 3,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/gogo-cross/cross-056.png",
+          "path": "/images/catalog/kinetic-gogo-cross-g/source-03.png",
+          "sha256": "9bb2b2c8c494f35be1e996055adc20c0e2144c370d7380d52eadc8d455b41a00",
+          "width": 960,
+          "height": 640,
+          "bytes": 320766
+        },
+        {
+          "index": 4,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/gogo-cross/cross-035.png",
+          "path": "/images/catalog/kinetic-gogo-cross-g/source-04.png",
+          "sha256": "92be18c7c11a27799941294e0ba55528941686ce87fc73a9980f4a1ff758530a",
+          "width": 960,
+          "height": 640,
+          "bytes": 296986
+        },
+        {
+          "index": 5,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/gogo-cross/cross-013.png",
+          "path": "/images/catalog/kinetic-gogo-cross-g/source-05.png",
+          "sha256": "b3416d126c10aa24bd83ce166170df0030a837d846eb1080ebd0f6931b3908fa",
+          "width": 960,
+          "height": 640,
+          "bytes": 289175
+        },
+        {
+          "index": 6,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/gogo-cross/cross-059.png",
+          "path": "/images/catalog/kinetic-gogo-cross-g/source-06.png",
+          "sha256": "dc35ec34a33f1d0a05f9a37f87a9b2f4258f578e6f24c349f8e1e25748216432",
+          "width": 960,
+          "height": 640,
+          "bytes": 269865
+        }
+      ],
+      "specification_rows": [
+        [
+          "XE MÁY ĐIỆN GOGO CROSS G"
+        ],
+        [
+          "Nội dung",
+          "Thông số"
+        ],
+        [
+          "Trọng lượng bản thân",
+          "97kg"
+        ],
+        [
+          "Kích thước xe (D/R/C)",
+          "1.720mm x 735mm x 1.040mm"
+        ],
+        [
+          "Chiều cao yên",
+          "755mm"
+        ],
+        [
+          "Tải trọng",
+          "130kg"
+        ],
+        [
+          "Động cơ điện, công suất (Max)",
+          "1.350W"
+        ],
+        [
+          "Mô men xoắn danh định",
+          "14.7Nm"
+        ],
+        [
+          "Bình điện",
+          "Tổ hợp Ắc quy 60V (5x12V) 22Ah"
+        ],
+        [
+          "Tốc độ tối đa",
+          "40-50km/h"
+        ],
+        [
+          "Quãng đường đi/lần sạc",
+          "60-90km (tùy thuộc vào tốc độ di chuyển và tải trọng)"
+        ],
+        [
+          "Lốp xe",
+          "Lốp không săm 90/90-10"
+        ],
+        [
+          "Kiểu phanh",
+          "Phanh đĩa trước, phanh đĩa sau"
+        ],
+        [
+          "Phuộc trước",
+          "Ống lồng, giảm chấn thủy lực"
+        ],
+        [
+          "Phuộc sau",
+          "Lò xo trụ đơn, giảm chấn thủy lực"
+        ],
+        [
+          "Đèn chiếu sáng",
+          "Ful Led siêu sáng"
+        ],
+        [
+          "Thời gian sạc điện (tối đa)",
+          "10- 12 tiếng đồng hồ"
+        ],
+        [
+          "Bảo vệ sụt áp",
+          "52V±1"
+        ],
+        [
+          "Bảo vệ quá dòng",
+          "27A±1"
+        ],
+        [
+          "Bảo hành (max)",
+          "24 tháng"
+        ],
+        [
+          "Mức tiêu thụ điện năng",
+          "37.76 Wh/Km"
+        ]
+      ]
+    },
+    {
+      "slug": "kinetic-gogo-crown",
+      "source_url": "https://dibao.com.vn/xe-may-dien-dibao-gogo-crown.html",
+      "source_title": "Xe máy điện DIBAO GOGO CROWN",
+      "source_swatches": [
+        "6b763e",
+        "7a8b81",
+        "9d9586",
+        "c80009",
+        "d8d5bc",
+        "333941",
+        "acc3d2",
+        "000000",
+        "e6f0f1"
+      ],
+      "images": [
+        {
+          "index": 1,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/gogo-crown/gogo-rown-bl0108.png",
+          "path": "/images/catalog/kinetic-gogo-crown/source-01.png",
+          "sha256": "2ccc22fb013a4bee1f461774625969684613253eea110648e8b68aa666f12512",
+          "width": 1080,
+          "height": 720,
+          "bytes": 374892
+        },
+        {
+          "index": 2,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/gogo-crown/gogo-rown-0059.png",
+          "path": "/images/catalog/kinetic-gogo-crown/source-02.png",
+          "sha256": "fef47151df9e5045257e8445a31efa86565dc790d28b07ac7027d746ebf70c5d",
+          "width": 1080,
+          "height": 720,
+          "bytes": 372930
+        },
+        {
+          "index": 3,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/gogo-crown/gogo-rown-bl0116.png",
+          "path": "/images/catalog/kinetic-gogo-crown/source-03.png",
+          "sha256": "7def129518b7542f2ff910db646a7b218e7da78bbcd5ca32d1d20b040e817735",
+          "width": 1080,
+          "height": 720,
+          "bytes": 358005
+        },
+        {
+          "index": 4,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/gogo-crown/gogo-rown-0056.png",
+          "path": "/images/catalog/kinetic-gogo-crown/source-04.png",
+          "sha256": "19e8c268bcc1b013c5f8976f3020369e603ff61bedde443ea5d3c5a1226166b6",
+          "width": 1080,
+          "height": 720,
+          "bytes": 309719
+        },
+        {
+          "index": 5,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/gogo-crown/gogo-rown-bl0133.png",
+          "path": "/images/catalog/kinetic-gogo-crown/source-05.png",
+          "sha256": "cc27039250dc75d56adf32fddf23f9f87a786fb7522a2f5d4e8ccc8f1344f91f",
+          "width": 1080,
+          "height": 720,
+          "bytes": 344336
+        },
+        {
+          "index": 6,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/gogo-crown/gogo-rown-0033.png",
+          "path": "/images/catalog/kinetic-gogo-crown/source-06.png",
+          "sha256": "e873c9a64b5e7e981ff48f8152ade5c42f43cd22b668edb856ba2fa903233396",
+          "width": 1080,
+          "height": 720,
+          "bytes": 322364
+        }
+      ],
+      "specification_rows": [
+        [
+          "STT",
+          "Nội dung",
+          "Thông số"
+        ],
+        [
+          "1",
+          "Kích thước xe (D/R/C)",
+          "1.725mm x 740mm x 1.040mm"
+        ],
+        [
+          "2",
+          "Tải trọng",
+          "130kg"
+        ],
+        [
+          "3",
+          "Công suất Động cơ điện (Max)",
+          "1.600W"
+        ],
+        [
+          "4",
+          "Mô men xoắn danh định",
+          "15.24Nm"
+        ],
+        [
+          "5",
+          "Bình điện",
+          "Ắc quy 60V (5x12V) 22Ah"
+        ],
+        [
+          "6",
+          "Tôc độ",
+          "45-54km/h"
+        ],
+        [
+          "7",
+          "Quãng đường đi/lần xạc",
+          "60km -80km (tùy theo tốc độ và tải trọng)"
+        ],
+        [
+          "8",
+          "Lốp xe",
+          "Lốp không săm 90/90-10"
+        ],
+        [
+          "9",
+          "Kiểu phanh",
+          "Phanh đĩa trước, phanh đĩa sau"
+        ],
+        [
+          "10",
+          "Đèn chiếu sáng",
+          "Full Led siêu sáng"
+        ],
+        [
+          "11",
+          "Thời gian xạc điện (tối đa)",
+          "12 tiếng đồng hồ"
+        ],
+        [
+          "12",
+          "Bảo hành (Max)",
+          "24 tháng"
+        ],
+        [
+          "13",
+          "Bảo vệ sụt áp:",
+          "52V±1"
+        ],
+        [
+          "14",
+          "Bảo vệ quá áp",
+          "30A±1"
+        ],
+        [
+          "14",
+          "Mức tiêu thụ điện năng",
+          "36,87Wh/Km"
+        ],
+        [
+          "15",
+          "Trọng lượng xe",
+          "97Kg"
+        ]
+      ]
+    },
+    {
+      "slug": "kinetic-gogo-moon",
+      "source_url": "https://dibao.com.vn/xe-may-dien-dibao-gogo-moon.html",
+      "source_title": "XE MÁY ĐIỆN DIBAO GOGO MOON",
+      "source_swatches": [
+        "65a4a4",
+        "bccdd1",
+        "4d9288"
+      ],
+      "images": [
+        {
+          "index": 1,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/gogo-moon/gogo-moon-013.png",
+          "path": "/images/catalog/kinetic-gogo-moon/source-01.png",
+          "sha256": "f191593f891f6ffcb9a52cd6dd2173459dade4725a738f56ea6406a47eb7f31d",
+          "width": 1920,
+          "height": 1280,
+          "bytes": 1101954
+        },
+        {
+          "index": 2,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/gogo-moon/gogo-moon-035.png",
+          "path": "/images/catalog/kinetic-gogo-moon/source-02.png",
+          "sha256": "5b6ee41a15ceb65334ada6ceea309e63c8c8699f9331a152e56f66a0e00427af",
+          "width": 1920,
+          "height": 1280,
+          "bytes": 1320048
+        },
+        {
+          "index": 3,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/gogo-moon/gogo-moon-046b.png",
+          "path": "/images/catalog/kinetic-gogo-moon/source-03.png",
+          "sha256": "3ccfcd2a8f1545b5cabfb5ff118d76c29afe4797d053f54ec4e51123af37cc7a",
+          "width": 1920,
+          "height": 1280,
+          "bytes": 1388174
+        }
+      ],
+      "specification_rows": [
+        [
+          "TT",
+          "Nội dung",
+          "Thông số"
+        ],
+        [
+          "1",
+          "Trọng lượng bản thân",
+          "107kg"
+        ],
+        [
+          "2",
+          "Kích thước xe (D/R/C)",
+          "1.800mm x 965mm x 1.080mm"
+        ],
+        [
+          "3",
+          "Chiều cao yên",
+          "765mm"
+        ],
+        [
+          "4",
+          "Tải trọng",
+          "130kg – 150kg"
+        ],
+        [
+          "5",
+          "Động cơ điện, công suất (Max)",
+          "1.500W"
+        ],
+        [
+          "6",
+          "Mô men xoắn danh định",
+          "14,7Nm"
+        ],
+        [
+          "7",
+          "Bình điện",
+          "Tổ hợp Ắc quy 60V (5x12V) 22Ah"
+        ],
+        [
+          "8",
+          "Tốc độ tối đa",
+          "45-50km/h"
+        ],
+        [
+          "9",
+          "Quãng đường đi/lần sạc",
+          "60-80km (tùy thuộc vào tốc độ di chuyển và tải trọng)"
+        ],
+        [
+          "10",
+          "Lốp xe",
+          "Lốp không săm 3.50-10"
+        ],
+        [
+          "11",
+          "Kiểu phanh",
+          "Phanh đĩa trước, phanh đĩa sau"
+        ],
+        [
+          "12",
+          "Phuộc trước",
+          "Ống lồng, giảm chấn thủy lực"
+        ],
+        [
+          "13",
+          "Phuộc sau",
+          "Lò so trụ đơn, giảm chấn thủy lực"
+        ],
+        [
+          "14",
+          "Đèn chiếu sáng",
+          "Ful Led  2 tầng, siêu sáng"
+        ],
+        [
+          "15",
+          "Thời gian sạc điện (tối đa)",
+          "10- 13 tiếng đồng hồ"
+        ],
+        [
+          "16",
+          "Bảo vệ sụt áp",
+          "52V±1"
+        ],
+        [
+          "17",
+          "Bảo vệ quá dòng",
+          "27A±1"
+        ],
+        [
+          "18",
+          "Bảo hành (max)",
+          "36 tháng"
+        ]
+      ]
+    },
+    {
+      "slug": "kinetic-keva",
+      "source_url": "https://dibao.com.vn/xe-dien-co-ban-dap-dibao-keva.html",
+      "source_title": "Xe điện có bàn đạp DIBAO KEVA",
+      "source_swatches": [
+        "000000",
+        "ffffff",
+        "e7e7ca",
+        "99bdbb",
+        "718591",
+        "00e8f9",
+        "7d6757"
+      ],
+      "images": [
+        {
+          "index": 1,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/keva/keva-0033.png",
+          "path": "/images/catalog/kinetic-keva/source-01.png",
+          "sha256": "93bc1357aec02487c66cef54f7d3b6409fc10e75f50a999e9ced8f4be119ebc1",
+          "width": 1080,
+          "height": 720,
+          "bytes": 337907
+        },
+        {
+          "index": 2,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/keva/keva-0035.png",
+          "path": "/images/catalog/kinetic-keva/source-02.png",
+          "sha256": "a1c0f4ca30d125d9de5f0cc5c1c7d26928c9b481eed8b54ffc472e0fce417cf4",
+          "width": 1080,
+          "height": 720,
+          "bytes": 303970
+        },
+        {
+          "index": 3,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/keva/keva-bl0133.png",
+          "path": "/images/catalog/kinetic-keva/source-03.png",
+          "sha256": "550a248e0a78d4f1bbb83e74643bdbdc6dfa6b74b70eb7360a6e0758ddbf6527",
+          "width": 1080,
+          "height": 720,
+          "bytes": 356128
+        },
+        {
+          "index": 4,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/keva/keva-bl0105.png",
+          "path": "/images/catalog/kinetic-keva/source-04.png",
+          "sha256": "ea485ec81e04e6f1d6169845667ba8c74cbdf1a66d761337c77c44c0b9db5891",
+          "width": 1080,
+          "height": 720,
+          "bytes": 356519
+        },
+        {
+          "index": 5,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/keva/keva-0017.png",
+          "path": "/images/catalog/kinetic-keva/source-05.png",
+          "sha256": "28316088e26d17922b8d2e749f68a07c23b8d3269904288e487a3ee4917786f4",
+          "width": 1080,
+          "height": 720,
+          "bytes": 359287
+        },
+        {
+          "index": 6,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/keva/keva-0022-1.png",
+          "path": "/images/catalog/kinetic-keva/source-06.png",
+          "sha256": "8a82b874b84a279e26bbb0ff888c197d7c9214af2bf96403cc7942bf0ef2d51c",
+          "width": 1080,
+          "height": 720,
+          "bytes": 385027
+        }
+      ],
+      "specification_rows": [
+        [
+          "STT",
+          "Nội dung",
+          "Thông số"
+        ],
+        [
+          "1",
+          "Kích thước xe (D/R/C)",
+          "1.670mm x 665mm x 1.040mm"
+        ],
+        [
+          "2",
+          "Tải trọng",
+          "75kg"
+        ],
+        [
+          "3",
+          "Công suất Động cơ điện (Max)",
+          "1.400W"
+        ],
+        [
+          "4",
+          "Bình điện",
+          "Ắc quy 60V (5x12V) 22Ah"
+        ],
+        [
+          "5",
+          "Tốc độ",
+          "40-45km/h"
+        ],
+        [
+          "6",
+          "Quãng đường đi/lần sạc",
+          "70km - 90km (tùy theo tốc độ và tải trọng)"
+        ],
+        [
+          "7",
+          "Lốp xe",
+          "Lốp không săm 3.00-10"
+        ],
+        [
+          "8",
+          "Kiểu phanh",
+          "Phanh đĩa trước, phanh trống sau"
+        ],
+        [
+          "9",
+          "Đèn chiếu sáng",
+          "LED bi siêu sáng"
+        ],
+        [
+          "10",
+          "Thời gian sạc điện (tối đa)",
+          "12 tiếng đồng hồ"
+        ],
+        [
+          "11",
+          "Bảo hành (Max)",
+          "24 tháng"
+        ],
+        [
+          "12",
+          "Bảo vệ sụt áp",
+          "52V±1"
+        ],
+        [
+          "13",
+          "Bảo vệ quá áp",
+          "27A±1"
+        ],
+        [
+          "14",
+          "Mức tiêu thụ điện năng",
+          "39Wh/Km"
+        ],
+        [
+          "15",
+          "Trọng lượng bản thân xe",
+          "83Kg"
+        ]
+      ]
+    },
+    {
+      "slug": "kinetic-ls007",
+      "source_url": "https://dibao.com.vn/xe-may-dien-dibao-ls007.html",
+      "source_title": "XE MÁY ĐIỆN DIBAO LS007",
+      "source_swatches": [
+        "ffffff",
+        "8f8a8a",
+        "000000",
+        "5e5a5a",
+        "049fd2"
+      ],
+      "images": [
+        {
+          "index": 1,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/ls007/ls007-0035-2.png",
+          "path": "/images/catalog/kinetic-ls007/source-01.png",
+          "sha256": "c56f15d8b4f9517b6b6108a0c1f4775aaa8d166e2c0f55c014dba866cdce0529",
+          "width": 2048,
+          "height": 1496,
+          "bytes": 1426148
+        },
+        {
+          "index": 2,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/ls007/ls007-bl0098.png",
+          "path": "/images/catalog/kinetic-ls007/source-02.png",
+          "sha256": "eef82fcefe6aba403c807ba76a9a9762aedc2d2226604d06f28421d2f8db2fba",
+          "width": 2048,
+          "height": 1496,
+          "bytes": 935572
+        },
+        {
+          "index": 3,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/ls007/ls007-bl0099-2.png",
+          "path": "/images/catalog/kinetic-ls007/source-03.png",
+          "sha256": "30190edf0daddeade32bffb77d64421fba84bb795a7b06453776c000370d6463",
+          "width": 2048,
+          "height": 1496,
+          "bytes": 1116755
+        },
+        {
+          "index": 4,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/ls007/ls007-bl0117.png",
+          "path": "/images/catalog/kinetic-ls007/source-04.png",
+          "sha256": "1783531ad01a0fa88bceaf08c437b4720c99a695900fb8504ce24b2ed818f227",
+          "width": 2048,
+          "height": 1496,
+          "bytes": 796353
+        },
+        {
+          "index": 5,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/ls007/ls007-bl0118.png",
+          "path": "/images/catalog/kinetic-ls007/source-05.png",
+          "sha256": "a4e32f05538bb0e9ab4cace38022388d451b7b5b1d72d0cf1f36896527d4fe2d",
+          "width": 2048,
+          "height": 1496,
+          "bytes": 1143465
+        }
+      ],
+      "specification_rows": [
+        [
+          "STT",
+          "Nội dung",
+          "Thông số"
+        ],
+        [
+          "1",
+          "Kích thước xe (D/R/C)",
+          "1.920mm x 700mm x 1.110mm"
+        ],
+        [
+          "2",
+          "Tải trọng",
+          "130kg"
+        ],
+        [
+          "3",
+          "Công suất Động cơ điện (Max)",
+          "2.800W"
+        ],
+        [
+          "4",
+          "Bình điện",
+          "Ắc quy 72V (5x12V) 22Ah"
+        ],
+        [
+          "5",
+          "Tốc độ",
+          "45 - 54km/h"
+        ],
+        [
+          "6",
+          "Quãng đường đi/lần sạc",
+          "60km -100km (tùy theo tốc độ và tải trọng)"
+        ],
+        [
+          "7",
+          "Lốp xe",
+          "Lốp không săm 90/90-14"
+        ],
+        [
+          "8",
+          "Kiểu phanh",
+          "Phanh đĩa trước, phanh đĩa sau"
+        ],
+        [
+          "9",
+          "Đèn chiếu sáng",
+          "Full Led siêu sáng"
+        ],
+        [
+          "10",
+          "Thời gian sạc điện (tối đa)",
+          "14 tiếng đồng hồ"
+        ],
+        [
+          "11",
+          "Bảo hành (Max)",
+          "36 tháng"
+        ],
+        [
+          "12",
+          "Bảo vệ sụt áp",
+          "63V±1"
+        ],
+        [
+          "13",
+          "Mức tiêu thụ điện năng",
+          "42,29Wh/Km"
+        ],
+        [
+          "14",
+          "Bảo vệ quá áp",
+          "50A±2"
+        ],
+        [
+          "15",
+          "Khối lượng bản thân xe",
+          "120Kg"
+        ]
+      ]
+    },
+    {
+      "slug": "kinetic-m-one",
+      "source_url": "https://dibao.com.vn/xe-may-dien-dibao-m-one.html",
+      "source_title": "XE MÁY ĐIỆN DIBAO M-ONE",
+      "source_swatches": [
+        "000000"
+      ],
+      "images": [
+        {
+          "index": 1,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/m-one/mone-035.webp",
+          "path": "/images/catalog/kinetic-m-one/source-01.webp",
+          "sha256": "1473a3851f23d8540e11c435172283e91601de189c99c0dc5a90a7151e3ac54f",
+          "width": 600,
+          "height": 400,
+          "bytes": 13126
+        }
+      ],
+      "specification_rows": [
+        [
+          "TT",
+          "Nội dung",
+          "Thông số"
+        ],
+        [
+          "1",
+          "Trọng lượng bản thân",
+          "83kg"
+        ],
+        [
+          "2",
+          "Kích thước xe (D/R/C)",
+          "1.630mm x 720mm x 1.250mm"
+        ],
+        [
+          "3",
+          "Chiều cao yên",
+          "725mm"
+        ],
+        [
+          "4",
+          "Tải trọng",
+          "110kg – 130kg"
+        ],
+        [
+          "5",
+          "Động cơ điện, công suất (Max)",
+          "980W"
+        ],
+        [
+          "6",
+          "Bình điện",
+          "Tổ hợp Ắc quy 48V (4x12V) 20Ah+"
+        ],
+        [
+          "7",
+          "Tôc độ tối đa",
+          "35-40km/h"
+        ],
+        [
+          "8",
+          "Quãng đường đi/lần xạc",
+          "60-110km (tùy theo vận tốc di chuyển và tải trọng)"
+        ],
+        [
+          "9",
+          "Lốp xe",
+          "Lốp không săm 3.00-10"
+        ],
+        [
+          "10",
+          "Kiểu phanh",
+          "Phanh đĩa trước, phanh cơ sau"
+        ],
+        [
+          "11",
+          "Phuộc trước",
+          "Ống lồng, giảm chấn thủy lực"
+        ],
+        [
+          "12",
+          "Phuộc sau",
+          "Lò so trụ đơn, giảm chấn thủy lực"
+        ],
+        [
+          "13",
+          "Đèn chiếu sáng",
+          "Led  siêu sáng"
+        ],
+        [
+          "14",
+          "Thời gian sạc điện (tối đa)",
+          "8 tiếng đồng hồ"
+        ],
+        [
+          "16",
+          "Bảo vệ sụt áp:",
+          "42V±1"
+        ],
+        [
+          "16",
+          "Bảo vệ quá dòng",
+          "25A±1"
+        ],
+        [
+          "17",
+          "Bảo hành (max)",
+          "24 tháng"
+        ]
+      ]
+    },
+    {
+      "slug": "kinetic-mxs",
+      "source_url": "https://dibao.com.vn/xe-dien-co-ban-dap-dibao-mxs.html",
+      "source_title": "XE ĐIỆN có bán đạp DIBAO MXS",
+      "source_swatches": [
+        "9ca0a1",
+        "9ba492",
+        "1d1e25",
+        "767f90",
+        "a4abad"
+      ],
+      "images": [
+        {
+          "index": 1,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-mxs/dibao-mxs-1.png",
+          "path": "/images/catalog/kinetic-mxs/source-01.png",
+          "sha256": "97843b9415f168ddb080f5b494c83d94bea6f88f47072ef459cda340fa379a93",
+          "width": 800,
+          "height": 500,
+          "bytes": 99469
+        },
+        {
+          "index": 2,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-mxs/dibao-mxs-2.png",
+          "path": "/images/catalog/kinetic-mxs/source-02.png",
+          "sha256": "08aead33a00fb870c86a36ef4b46e73bb75e92081d492f95cd8aafaab965191a",
+          "width": 800,
+          "height": 500,
+          "bytes": 94601
+        },
+        {
+          "index": 3,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-mxs/dibao-mxs-4.png",
+          "path": "/images/catalog/kinetic-mxs/source-03.png",
+          "sha256": "44311c1bb5f79562c0420b5b589bbd967f02a7ee9258434ef1fdd4938aaf02f2",
+          "width": 800,
+          "height": 500,
+          "bytes": 95892
+        },
+        {
+          "index": 4,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-mxs/dibao-mxs-3.png",
+          "path": "/images/catalog/kinetic-mxs/source-04.png",
+          "sha256": "1c1a9994d6cefe5dd6416d988cbd5db96ba490fc156c7d673534c1abf03ad565",
+          "width": 800,
+          "height": 500,
+          "bytes": 102521
+        },
+        {
+          "index": 5,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-mxs/dibao-mxs.png",
+          "path": "/images/catalog/kinetic-mxs/source-05.png",
+          "sha256": "dfaa9bdf719d62d12dffaa800796ef80dfea5112904e4ce7dea708416a781815",
+          "width": 800,
+          "height": 500,
+          "bytes": 102333
+        }
+      ],
+      "specification_rows": [
+        [
+          "STT",
+          "Nội dung",
+          "Thông số"
+        ],
+        [
+          "1",
+          "Kích thước xe (D/R/C)",
+          "1.700mm x 700mm x 1.055mm"
+        ],
+        [
+          "2",
+          "Tải trọng",
+          "75kg"
+        ],
+        [
+          "3",
+          "Công suất Động cơ điện (Max)",
+          "1.400W"
+        ],
+        [
+          "4",
+          "Mô men xoắn danh định",
+          "14,87Nm"
+        ],
+        [
+          "4",
+          "Bình điện",
+          "Ắc quy 60V (5x12V) 23Ah"
+        ],
+        [
+          "5",
+          "Tôc độ",
+          "40-45km/h"
+        ],
+        [
+          "6",
+          "Quãng đường đi/lần xạc",
+          "70km -80km (tùy theo tốc độ và tải trọng)"
+        ],
+        [
+          "7",
+          "Lốp xe",
+          "Lốp không săm 90/80-12"
+        ],
+        [
+          "8",
+          "Kiểu phanh",
+          "Phanh đĩa trước, phanh đĩa sau"
+        ],
+        [
+          "9",
+          "Đèn chiếu sáng",
+          "LED bi siêu sáng"
+        ],
+        [
+          "10",
+          "Thời gian xạc điện (tối đa)",
+          "12 tiếng đồng hồ"
+        ],
+        [
+          "11",
+          "Bảo hành (Max)",
+          "24 tháng"
+        ],
+        [
+          "12",
+          "Bảo vệ sụt áp:",
+          "52V±1"
+        ],
+        [
+          "13",
+          "Bảo vệ quá áp",
+          "27A±1"
+        ],
+        [
+          "14",
+          "Trọng lượng bản thân xe",
+          "90Kg"
+        ]
+      ]
+    },
+    {
+      "slug": "kinetic-pansy-dio",
+      "source_url": "https://dibao.com.vn/xe-may-dien-dibao-pansy-dio.html",
+      "source_title": "XE MÁY ĐIỆN DIBAO PANSY DIO",
+      "source_swatches": [
+        "000000",
+        "c20000",
+        "545454",
+        "750085",
+        "00a89d"
+      ],
+      "images": [
+        {
+          "index": 1,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-pansy-dio/xe-may-dien-pansy-dio-den.webp",
+          "path": "/images/catalog/kinetic-pansy-dio/source-01.webp",
+          "sha256": "a0687ef60a1b595685383dc384198e76a492ec062f77e2ee9a0c9d4564012af9",
+          "width": 1440,
+          "height": 960,
+          "bytes": 56918
+        },
+        {
+          "index": 2,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-pansy-dio/xe-may-dien-pansy-dio-do.jpg",
+          "path": "/images/catalog/kinetic-pansy-dio/source-02.jpg",
+          "sha256": "578bd998e255a2746da395d3ebb69f26adffcd14984cf5a6cc727e79fad325a4",
+          "width": 1440,
+          "height": 960,
+          "bytes": 163863
+        },
+        {
+          "index": 3,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-pansy-dio/xe-may-dien-dibao-pansy-dio-xam.jpg",
+          "path": "/images/catalog/kinetic-pansy-dio/source-03.jpg",
+          "sha256": "ea44e06720c1a5694d4661a2f6c840bf1eb84cdd105221f36f36d056eda81d29",
+          "width": 1440,
+          "height": 960,
+          "bytes": 96974
+        },
+        {
+          "index": 4,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-pansy-dio/xe-may-dien-pansy-dio-tim.jpg",
+          "path": "/images/catalog/kinetic-pansy-dio/source-04.jpg",
+          "sha256": "ab9f4815808af5927a438e7009ca03554b9b50ecd6340cd67b1cd5955543220a",
+          "width": 1440,
+          "height": 960,
+          "bytes": 171220
+        },
+        {
+          "index": 5,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-pansy-dio/xe-may-dien-pansy-dio-xanh-ngoc.jpg",
+          "path": "/images/catalog/kinetic-pansy-dio/source-05.jpg",
+          "sha256": "68bca578143128a4163f5b462260ca7b8744e53ebeff3a5a331a407d7c339ea7",
+          "width": 1440,
+          "height": 960,
+          "bytes": 154033
+        }
+      ],
+      "specification_rows": [
+        [
+          "STT",
+          "Nội dung",
+          "Thông số"
+        ],
+        [
+          "1",
+          "Tên sản phẩm",
+          "Dibao Pansy DIO"
+        ],
+        [
+          "2",
+          "Kích thước xe (D/R/C)",
+          "1.720mm x 710mm x 1.120mm"
+        ],
+        [
+          "3",
+          "Tải trọng",
+          "130kg"
+        ],
+        [
+          "4",
+          "Công suất Động cơ điện (Max)",
+          "1.450W"
+        ],
+        [
+          "5",
+          "Bình điện",
+          "Ắc quy 60V (5x12V) 22Ah"
+        ],
+        [
+          "6",
+          "Tôc độ",
+          "45-55km/h"
+        ],
+        [
+          "7",
+          "Quãng đường đi/lần xạc",
+          "60km -90km (tùy theo tốc độ và tải trọng)"
+        ],
+        [
+          "8",
+          "Lốp xe",
+          "Lốp không săm 90/90-10"
+        ],
+        [
+          "9",
+          "Kiểu phanh",
+          "Phanh đĩa trước, phanh cơ sau"
+        ],
+        [
+          "10",
+          "Đèn chiếu sáng",
+          "LED siêu sáng"
+        ],
+        [
+          "11",
+          "Thời gian xạc điện (tối đa)",
+          "12 tiếng đồng hồ"
+        ],
+        [
+          "12",
+          "Bảo hành (Max)",
+          "24 tháng"
+        ],
+        [
+          "13",
+          "Bảo vệ sụt áp:",
+          "52V±1"
+        ],
+        [
+          "14",
+          "Bảo vệ quá áp",
+          "27A±3"
+        ],
+        [
+          "15",
+          "Trọng lượng bản thân xe",
+          "97Kg"
+        ]
+      ]
+    },
+    {
+      "slug": "kinetic-pansy-dio-2025",
+      "source_url": "https://dibao.com.vn/xe-may-dien-dibao-pansy-dio-2025.html",
+      "source_title": "XE MÁY ĐIỆN DIBAO PANSY DIO + 2025",
+      "source_swatches": [
+        "31353e",
+        "cbd3c4",
+        "83919e",
+        "d0cabe",
+        "a50e25",
+        "757654",
+        "b1c1bf",
+        "d9dee2",
+        "8793a1"
+      ],
+      "images": [
+        {
+          "index": 1,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-pansy-dio-2025/dibao-pansy-dio-2025-1.png",
+          "path": "/images/catalog/kinetic-pansy-dio-2025/source-01.png",
+          "sha256": "9dce6b94c1c4502ae09b8ab177ba45b88a84e92d9c5fbdd2d6df34ea9bb61ebf",
+          "width": 800,
+          "height": 500,
+          "bytes": 108430
+        },
+        {
+          "index": 2,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-pansy-dio-2025/dibao-pansy-dio-2025-2.png",
+          "path": "/images/catalog/kinetic-pansy-dio-2025/source-02.png",
+          "sha256": "69a2e447fcfabd4dc8524a799d9c3f53cda6811c44b5f4d271ba92b1688fd4f3",
+          "width": 800,
+          "height": 500,
+          "bytes": 104781
+        },
+        {
+          "index": 3,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-pansy-dio-2025/dibao-pansy-dio-2025-3.png",
+          "path": "/images/catalog/kinetic-pansy-dio-2025/source-03.png",
+          "sha256": "c5c933e61e4674051db04543135a1b4bacd6951758653c25e58fd197d202372a",
+          "width": 800,
+          "height": 500,
+          "bytes": 113629
+        },
+        {
+          "index": 4,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-pansy-dio-2025/dibao-pansy-dio-2025-4.png",
+          "path": "/images/catalog/kinetic-pansy-dio-2025/source-04.png",
+          "sha256": "771cd4b4a61d6e6b385f8af6a6fd20ccaace75cc09ba33c97f92073a99c2e5cd",
+          "width": 800,
+          "height": 500,
+          "bytes": 103457
+        },
+        {
+          "index": 5,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-pansy-dio-2025/dibao-pansy-dio-2025-5.png",
+          "path": "/images/catalog/kinetic-pansy-dio-2025/source-05.png",
+          "sha256": "614a1d422bf309614731455d86b49f99812b7d259d7e4d0cac0608cf6ff2d9dc",
+          "width": 800,
+          "height": 500,
+          "bytes": 119034
+        },
+        {
+          "index": 6,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-pansy-dio-2025/dibao-pansy-dio-2025-6.png",
+          "path": "/images/catalog/kinetic-pansy-dio-2025/source-06.png",
+          "sha256": "73c8c0784d3a6048caa3d3694adb4c634222c592f6f4bc0d26d695a90dd8857d",
+          "width": 800,
+          "height": 500,
+          "bytes": 117227
+        }
+      ],
+      "specification_rows": [
+        [
+          "XE MÁY ĐIỆN DIBAO PANSY DIO +"
+        ],
+        [
+          "Tên sản phẩm",
+          "Dibao Pansy DIO +"
+        ],
+        [
+          "Kích thước xe (D/R/C)",
+          "1.740mm x 710mm x 1.120mm"
+        ],
+        [
+          "Tải trọng",
+          "130kg"
+        ],
+        [
+          "Công suất Động cơ điện (Max)",
+          "1.350W"
+        ],
+        [
+          "Mô men xoắn (danh định)",
+          "-"
+        ],
+        [
+          "Bình điện",
+          "Tổ hợp Ắc quy 60V (5x12V) 22Ah"
+        ],
+        [
+          "Tốc độ",
+          "45-50km/h"
+        ],
+        [
+          "Quãng đường đi/lần sạc",
+          "60km - 90km (tùy theo tốc độ và tải trọng)"
+        ],
+        [
+          "Lốp xe",
+          "Lốp không săm 90/90-10"
+        ],
+        [
+          "Kiểu phanh",
+          "Phanh đĩa trước, phanh đĩa sau"
+        ],
+        [
+          "Đèn chiếu sáng",
+          "LED siêu sáng"
+        ],
+        [
+          "Thời gian sạc điện (tối đa)",
+          "12 tiếng đồng hồ"
+        ],
+        [
+          "Bảo hành (Max)",
+          "24 tháng"
+        ],
+        [
+          "Bảo vệ sụt áp:",
+          "52V±1"
+        ],
+        [
+          "Bảo vệ quá áp:",
+          "27A±3"
+        ],
+        [
+          "Mức tiêu thụ điện năng",
+          "39.85 Wh/Km"
+        ],
+        [
+          "Trọng lượng xe",
+          "97 KG"
+        ]
+      ]
+    },
+    {
+      "slug": "kinetic-pansy-s2-cang-nhom",
+      "source_url": "https://dibao.com.vn/xe-may-dien-dibao-pansy-s2-cang-nhom.html",
+      "source_title": "XE MÁY ĐIỆN DIBAO PANSY S2 (CÀNG NHÔM)",
+      "source_swatches": [
+        "000000"
+      ],
+      "images": [
+        {
+          "index": 1,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/pansy-s2n/1pansy-s2n-017-ghep.png",
+          "path": "/images/catalog/kinetic-pansy-s2-cang-nhom/source-01.png",
+          "sha256": "20e6c9a66e5e443fa1ac3e4f6076653f1fae6cebc4c6d0af052690a8f253092e",
+          "width": 960,
+          "height": 640,
+          "bytes": 363389
+        }
+      ],
+      "specification_rows": [
+        [
+          "TT",
+          "Nội dung",
+          "Thông số"
+        ],
+        [
+          "1",
+          "Trọng lượng bản thân",
+          "93kg"
+        ],
+        [
+          "2",
+          "Kích thước xe (D/R/C)",
+          "1.750mm x 710mm x 1.110mm"
+        ],
+        [
+          "3",
+          "Chiều cao yên",
+          "760mm"
+        ],
+        [
+          "4",
+          "Tải trọng",
+          "130kg – 150kg"
+        ],
+        [
+          "5",
+          "Động cơ điện, công suất (Max)",
+          "1.450W"
+        ],
+        [
+          "6",
+          "Bình điện",
+          "Tổ hợp Ắc quy 60V (5x12V) 22Ah"
+        ],
+        [
+          "7",
+          "Tôc độ tối đa",
+          "45-50km/h"
+        ],
+        [
+          "8",
+          "Quãng đường đi/lần xạc",
+          "60-100km (tùy theo tốc độ di chuyển và tải trọng)"
+        ],
+        [
+          "9",
+          "Lốp xe",
+          "Lốp không săm 90/90-10"
+        ],
+        [
+          "10",
+          "Kiểu phanh",
+          "Phanh đĩa trước, phanh cơ sau"
+        ],
+        [
+          "11",
+          "Phuộc trước",
+          "Ống lồng, giảm chấn thủy lực"
+        ],
+        [
+          "12",
+          "Phuộc sau",
+          "Lò so trụ đơn, giảm chấn thủy lực"
+        ],
+        [
+          "13",
+          "Đèn chiếu sáng",
+          "Ful Led  2 tầng, siêu sáng"
+        ],
+        [
+          "14",
+          "Thời gian sạc điện (tối đa)",
+          "10- 12 tiếng đồng hồ"
+        ],
+        [
+          "16",
+          "Bảo vệ sụt áp",
+          "52V±1"
+        ],
+        [
+          "16",
+          "Bảo vệ quá dòng",
+          "27A±1"
+        ],
+        [
+          "17",
+          "Bảo hành (max)",
+          "24 tháng"
+        ]
+      ]
+    },
+    {
+      "slug": "kinetic-pansy-s3",
+      "source_url": "https://dibao.com.vn/xe-may-dien-dibao-pansy-s3.html",
+      "source_title": "XE MÁY ĐIỆN DIBAO PANSY S3",
+      "source_swatches": [
+        "000000"
+      ],
+      "images": [
+        {
+          "index": 1,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/pansy-s3/3pansy-s3-013-1.png",
+          "path": "/images/catalog/kinetic-pansy-s3/source-01.png",
+          "sha256": "ed73ccc75c7f596fa00747632f7934b937551ea4f5a9c676111b3e1227029eb3",
+          "width": 960,
+          "height": 640,
+          "bytes": 290529
+        },
+        {
+          "index": 2,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/pansy-s3/3pansy-s3-015-2-960.png",
+          "path": "/images/catalog/kinetic-pansy-s3/source-02.png",
+          "sha256": "fd4a9fc5916e45f9ea8a582acb4927bf3f7c8bd05c05391ea646375edf1a51e7",
+          "width": 960,
+          "height": 640,
+          "bytes": 294638
+        },
+        {
+          "index": 3,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/pansy-s3/3pansy-s3-017-ghep-2.png",
+          "path": "/images/catalog/kinetic-pansy-s3/source-03.png",
+          "sha256": "2b83d215f7eaf840fb5557ddbbf4451f225e81026c1c14190016ae0762d28806",
+          "width": 960,
+          "height": 640,
+          "bytes": 394681
+        },
+        {
+          "index": 4,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/pansy-s3/3pansy-s3-013-2.png",
+          "path": "/images/catalog/kinetic-pansy-s3/source-04.png",
+          "sha256": "b729b2ad61e640ecf01ad34c1a495f36f8e157a53c5187f18c708cb751bbcdc2",
+          "width": 960,
+          "height": 640,
+          "bytes": 249651
+        },
+        {
+          "index": 5,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/pansy-s3/pansy-0033.png",
+          "path": "/images/catalog/kinetic-pansy-s3/source-05.png",
+          "sha256": "52051a2c3743c9f6b98a108503dc12baeb3236453c76b9e34d3fffc6e3efef9c",
+          "width": 1080,
+          "height": 720,
+          "bytes": 283798
+        },
+        {
+          "index": 6,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/pansy-s3/pansy-0056.png",
+          "path": "/images/catalog/kinetic-pansy-s3/source-06.png",
+          "sha256": "3cbcdbfd7a23bb2823531eec05c7bb596062d786af3cfc8e8577787a43b2dc4c",
+          "width": 1080,
+          "height": 720,
+          "bytes": 294873
+        }
+      ],
+      "specification_rows": [
+        [
+          "TT",
+          "Nội dung",
+          "Thông số"
+        ],
+        [
+          "1",
+          "Trọng lượng bản thân",
+          "98kg"
+        ],
+        [
+          "2",
+          "Kích thước xe (D/R/C)",
+          "1.760mm x 710mm x 1.140mm"
+        ],
+        [
+          "3",
+          "Chiều cao yên",
+          "760mm"
+        ],
+        [
+          "4",
+          "Tải trọng",
+          "130kg – 150kg"
+        ],
+        [
+          "5",
+          "Động cơ điện, công suất (Max)",
+          "1.350W"
+        ],
+        [
+          "6",
+          "Mô men xoắn danh định",
+          "14,7Nm"
+        ],
+        [
+          "7",
+          "Bình điện",
+          "Tổ hợp Ắc quy 60V (5x12V) 22Ah"
+        ],
+        [
+          "8",
+          "Tôc độ tối đa",
+          "45-50km/h"
+        ],
+        [
+          "9",
+          "Quãng đường đi/lần xạc",
+          "60-90km (tùy thuộc vào tốc độ di chuyển và tải trọng)"
+        ],
+        [
+          "10",
+          "Lốp xe",
+          "Lốp không săm 3.50-10"
+        ],
+        [
+          "11",
+          "Kiểu phanh",
+          "Phanh đĩa trước, phanh đĩa sau"
+        ],
+        [
+          "12",
+          "Phuộc trước",
+          "Ống lồng, giảm chấn thủy lực"
+        ],
+        [
+          "13",
+          "Phuộc sau",
+          "Lò so trụ đơn, giảm chấn thủy lực"
+        ],
+        [
+          "14",
+          "Đèn chiếu sáng",
+          "Ful Led  2 tầng, siêu sáng"
+        ],
+        [
+          "15",
+          "Thời gian sạc điện (tối đa)",
+          "10- 13 tiếng đồng hồ"
+        ],
+        [
+          "16",
+          "Bảo vệ sụt áp:",
+          "52V±1"
+        ],
+        [
+          "17",
+          "Bảo vệ quá dòng",
+          "27A±1"
+        ],
+        [
+          "18",
+          "Bảo hành (max)",
+          "24 tháng"
+        ]
+      ]
+    },
+    {
+      "slug": "kinetic-pansy-s4",
+      "source_url": "https://dibao.com.vn/xe-may-dien-dibao-pansy-s4-sv.html",
+      "source_title": "XE MÁY ĐIỆN DIBAO PANSY S4-(SV)",
+      "source_swatches": [
+        "abccc9",
+        "002f9e",
+        "505a61",
+        "000000"
+      ],
+      "images": [
+        {
+          "index": 1,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/pansy-s4/pansy-s4-013-1-2.png",
+          "path": "/images/catalog/kinetic-pansy-s4/source-01.png",
+          "sha256": "29cdecc1747ebb75884bd2d1b2e7a4ab3892ce227ef74db5552e29e4128e9801",
+          "width": 960,
+          "height": 640,
+          "bytes": 289297
+        },
+        {
+          "index": 2,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/pansy-s4/pansy-s4-ghep-015.png",
+          "path": "/images/catalog/kinetic-pansy-s4/source-02.png",
+          "sha256": "c628f9728029df68d25057d37940b67e6f2110f22bba009f6edda9266cbcd495",
+          "width": 960,
+          "height": 640,
+          "bytes": 395456
+        },
+        {
+          "index": 3,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/pansy-s4/pansy-s4-017-2.png",
+          "path": "/images/catalog/kinetic-pansy-s4/source-03.png",
+          "sha256": "d1aaea895745a09a3e8c0cd4da85e47cc631b2f58881039b5a4a5779da0b86b9",
+          "width": 960,
+          "height": 640,
+          "bytes": 282886
+        },
+        {
+          "index": 4,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/pansy-s4/pansy-s4-033-1.png",
+          "path": "/images/catalog/kinetic-pansy-s4/source-04.png",
+          "sha256": "78bca16ce5c29262b12efdef69d1c84a81642df120a3ff3ab9a9426ffb441abf",
+          "width": 960,
+          "height": 640,
+          "bytes": 255392
+        },
+        {
+          "index": 5,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/pansy-s4/pansy-s4-bl0116.png",
+          "path": "/images/catalog/kinetic-pansy-s4/source-05.png",
+          "sha256": "3c5d0d6618b188f5ee84160bc5b7d6553b793f0856994d44d7f1296b4b3204e2",
+          "width": 1080,
+          "height": 720,
+          "bytes": 361120
+        },
+        {
+          "index": 6,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/pansy-s4/pansy-s4-0101-1ok-1.png",
+          "path": "/images/catalog/kinetic-pansy-s4/source-06.png",
+          "sha256": "3fbe2a7859dbe24ca68e5bfa70b70ca2ccdd0dd957ec024ac005da24559e3a51",
+          "width": 1080,
+          "height": 720,
+          "bytes": 291676
+        }
+      ],
+      "specification_rows": [
+        [
+          "TT",
+          "Nội dung",
+          "Thông số"
+        ],
+        [
+          "1",
+          "Trọng lượng bản thân",
+          "98kg"
+        ],
+        [
+          "2",
+          "Kích thước xe (D/R/C)",
+          "1.770mm x 710mm x 1.140mm"
+        ],
+        [
+          "3",
+          "Chiều cao yên",
+          "760mm"
+        ],
+        [
+          "4",
+          "Tải trọng",
+          "130kg – 150kg"
+        ],
+        [
+          "5",
+          "Động cơ điện, công suất (Max)",
+          "1.350W"
+        ],
+        [
+          "6",
+          "Bình điện",
+          "Tổ hợp Ắc quy 60V (5x12V) 22Ah"
+        ],
+        [
+          "7",
+          "Tôc độ tối đa",
+          "45-50km/h"
+        ],
+        [
+          "8",
+          "Quãng đường đi/lần sạc",
+          "60-90km (tùy thuộc vào tốc độ di chuyển và tải trọng)"
+        ],
+        [
+          "9",
+          "Lốp xe",
+          "Lốp không săm 3.50-10"
+        ],
+        [
+          "10",
+          "Kiểu phanh",
+          "Phanh đĩa trước, phanh đĩa sau"
+        ],
+        [
+          "11",
+          "Phuộc trước",
+          "Ống lồng, giảm chấn thủy lực"
+        ],
+        [
+          "12",
+          "Phuộc sau",
+          "Lò so trụ đơn, giảm chấn thủy lực"
+        ],
+        [
+          "13",
+          "Đèn chiếu sáng",
+          "Ful Led  2 tầng, siêu sáng"
+        ],
+        [
+          "14",
+          "Thời gian sạc điện (tối đa)",
+          "10 - 13 tiếng đồng hồ"
+        ],
+        [
+          "16",
+          "Bảo vệ sụt áp",
+          "52V±1"
+        ],
+        [
+          "16",
+          "Bảo vệ quá dòng",
+          "27A±1"
+        ],
+        [
+          "17",
+          "Bảo hành (max)",
+          "24 tháng"
+        ]
+      ]
+    },
+    {
+      "slug": "kinetic-pansy-sq2",
+      "source_url": "https://dibao.com.vn/xe-may-dien-dibao-pansy-sq2.html",
+      "source_title": "XE MÁY ĐIỆN DIBAO PANSY SQ2",
+      "source_swatches": [
+        "000000"
+      ],
+      "images": [
+        {
+          "index": 1,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/pansy-sq2/pansysq2-015-1-1.png",
+          "path": "/images/catalog/kinetic-pansy-sq2/source-01.png",
+          "sha256": "9b2d4c11e1f959af41b14ba8637dc3890576098700ab3d093dc5c389e0f06fb6",
+          "width": 960,
+          "height": 640,
+          "bytes": 371081
+        },
+        {
+          "index": 2,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/pansy-sq2/pansysq2-046b-1.png",
+          "path": "/images/catalog/kinetic-pansy-sq2/source-02.png",
+          "sha256": "70426f8f176cadea6455e4b88338f92ee27148a0020dd2a0eff83457f5b4e96a",
+          "width": 960,
+          "height": 640,
+          "bytes": 271577
+        },
+        {
+          "index": 3,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/pansy-sq2/pansysq2-017.png",
+          "path": "/images/catalog/kinetic-pansy-sq2/source-03.png",
+          "sha256": "255a17be171939a05ed0a54876b746e5cc6ed10c58ba02c3aeecb5ad68c95ff3",
+          "width": 960,
+          "height": 640,
+          "bytes": 264114
+        },
+        {
+          "index": 4,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/pansy-sq2/pansysq2-013-1.png",
+          "path": "/images/catalog/kinetic-pansy-sq2/source-04.png",
+          "sha256": "cc8a2d17d3bc3e8dde2385bd5ff8a18228ad3522cc4a3d28b347e7ef384da52f",
+          "width": 960,
+          "height": 640,
+          "bytes": 269141
+        },
+        {
+          "index": 5,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/pansy-sq2/pansysq2-023-2.png",
+          "path": "/images/catalog/kinetic-pansy-sq2/source-05.png",
+          "sha256": "8de338149c4ab159496a5aa39baad2b7ce2104f965ad2dc70f83fd6ca5792ae7",
+          "width": 960,
+          "height": 640,
+          "bytes": 277376
+        },
+        {
+          "index": 6,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/pansy-sq2/pansysq2-013-4.png",
+          "path": "/images/catalog/kinetic-pansy-sq2/source-06.png",
+          "sha256": "f5c605e7dd5a68a2cfe8eb1253af1243501fb00105d989410559e2999e74b717",
+          "width": 960,
+          "height": 640,
+          "bytes": 241142
+        }
+      ],
+      "specification_rows": [
+        [
+          "TT",
+          "Nội dung",
+          "Thông số"
+        ],
+        [
+          "1",
+          "Trọng lượng bản thân",
+          "93kg"
+        ],
+        [
+          "2",
+          "Kích thước xe (D/R/C)",
+          "1.750mm x 710mm x 1.110mm"
+        ],
+        [
+          "3",
+          "Chiều cao yên",
+          "760mm"
+        ],
+        [
+          "4",
+          "Tải trọng",
+          "130kg – 150kg"
+        ],
+        [
+          "5",
+          "Động cơ điện, công suất (Max)",
+          "1.450W"
+        ],
+        [
+          "6",
+          "Bình điện",
+          "Tổ hợp Ắc quy 60V (5x12V) 23Ah"
+        ],
+        [
+          "7",
+          "Tôc độ tối đa",
+          "45-50km/h"
+        ],
+        [
+          "8",
+          "Quãng đường đi/lần xạc",
+          "60-90km (tùy thuộc vào tốc độ di chuyển và tải trọng)"
+        ],
+        [
+          "9",
+          "Lốp xe",
+          "Lốp không săm 90/90-10"
+        ],
+        [
+          "10",
+          "Kiểu phanh",
+          "Phanh đĩa trước, phanh đĩa sau"
+        ],
+        [
+          "11",
+          "Phuộc trước",
+          "Ống lồng, giảm chấn thủy lực"
+        ],
+        [
+          "12",
+          "Phuộc sau",
+          "Lò so trụ đơn, giảm chấn thủy lực"
+        ],
+        [
+          "13",
+          "Đèn chiếu sáng",
+          "Ful Led  2 tầng, siêu sáng"
+        ],
+        [
+          "14",
+          "Thời gian sạc điện (tối đa)",
+          "10- 13 tiếng đồng hồ"
+        ],
+        [
+          "16",
+          "Bảo vệ sụt áp:",
+          "52V±1"
+        ],
+        [
+          "16",
+          "Bảo vệ quá dòng",
+          "27A±1"
+        ],
+        [
+          "17",
+          "Bảo hành (max)",
+          "36 tháng"
+        ]
+      ]
+    },
+    {
+      "slug": "kinetic-rosa",
+      "source_url": "https://dibao.com.vn/xe-dien-co-ban-dap-dibao-rosa.html",
+      "source_title": "XE ĐIỆN CÓ BÀN ĐẠP DIBAO ROSA",
+      "source_swatches": [
+        "b94b4b",
+        "5e7287",
+        "ffb8b8",
+        "7a6310",
+        "22774f",
+        "24b764"
+      ],
+      "images": [
+        {
+          "index": 1,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-rosa/dibao-rosa-7.png",
+          "path": "/images/catalog/kinetic-rosa/source-01.png",
+          "sha256": "e3e3ccebc42b2a9dbd1be913770d1cece5645b5a89b7bc4e7193c525f93b1e89",
+          "width": 800,
+          "height": 500,
+          "bytes": 84015
+        },
+        {
+          "index": 2,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-rosa/dibao-rosa-3.png",
+          "path": "/images/catalog/kinetic-rosa/source-02.png",
+          "sha256": "cd71ead1a1630833fce65892f26c0b35b7be39b59438c4e1437cbb0985af8369",
+          "width": 800,
+          "height": 500,
+          "bytes": 91807
+        },
+        {
+          "index": 3,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-rosa/hong-khoai-mon-dibao-rosa.jpg",
+          "path": "/images/catalog/kinetic-rosa/source-03.jpg",
+          "sha256": "2aab3672719ed0b07ce2c0de5afd7565219fd3879a0fe0bf0b797ed361193813",
+          "width": 960,
+          "height": 460,
+          "bytes": 47287
+        },
+        {
+          "index": 4,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-rosa/dibao-rosa-6.png",
+          "path": "/images/catalog/kinetic-rosa/source-04.png",
+          "sha256": "96033e011617404b315c95ee3b273ceb2781d1f3339f57813ca0124aa80570d5",
+          "width": 800,
+          "height": 500,
+          "bytes": 89178
+        },
+        {
+          "index": 5,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-rosa/dibao-rosa-5.png",
+          "path": "/images/catalog/kinetic-rosa/source-05.png",
+          "sha256": "859c67eeed538911c7bd9f29887156878bba9133d39911b1660341c0da808bc8",
+          "width": 800,
+          "height": 500,
+          "bytes": 81590
+        }
+      ],
+      "specification_rows": [
+        [
+          "STT",
+          "Nội dung",
+          "Thông số"
+        ],
+        [
+          "1",
+          "Kích thước xe (D/R/C)",
+          "1.740mm x 720mm x 1.060mm"
+        ],
+        [
+          "2",
+          "Tải trọng",
+          "75Kg"
+        ],
+        [
+          "3",
+          "Công suất Động cơ điện (Max)",
+          "1.400W"
+        ],
+        [
+          "4",
+          "Mô men xoắn danh định",
+          "10,51Nm"
+        ],
+        [
+          "5",
+          "Bình điện",
+          "Ắc quy 60V (5x12V) 23Ah"
+        ],
+        [
+          "6",
+          "Tốc độ",
+          "40 - 45km/h"
+        ],
+        [
+          "7",
+          "Quãng đường đi/lần sạc",
+          "80km - 90km (tùy theo tốc độ và tải trọng)"
+        ],
+        [
+          "8",
+          "Lốp xe",
+          "Lốp không săm 3.00-10"
+        ],
+        [
+          "9",
+          "Kiểu phanh",
+          "Phanh đĩa trước, phanh cơ sau"
+        ],
+        [
+          "10",
+          "Đèn chiếu sáng",
+          "LED bi siêu sáng"
+        ],
+        [
+          "11",
+          "Thời gian sạc điện (tối đa)",
+          "12 tiếng đồng hồ"
+        ],
+        [
+          "12",
+          "Bảo hành (Max)",
+          "24 tháng"
+        ],
+        [
+          "13",
+          "Bảo vệ sụt áp",
+          "52V±1"
+        ],
+        [
+          "14",
+          "Bảo vệ quá áp",
+          "27A±1"
+        ],
+        [
+          "15",
+          "Mức tiêu thụ điện năng",
+          "39Wh/Km"
+        ],
+        [
+          "16",
+          "Trọng lượng bản thân xe",
+          "90Kg"
+        ],
+        [
+          "Thiết bị",
+          "Thời gian bảo hành"
+        ],
+        [
+          "Động cơ, khung xe và các bộ phận cơ khí",
+          "Từ 18 - 24 tháng"
+        ],
+        [
+          "Bình ắc quy",
+          "Bảo hành 12 tháng (6 tháng đầu hỗ trợ đổi mới hoặc sửa chữa theo chính sách)"
+        ],
+        [
+          "Bộ điều khiển, bộ sạc và linh kiện điện tử",
+          "Bảo hành từ 6 -12 tháng"
+        ]
+      ]
+    },
+    {
+      "slug": "kinetic-tesla-chic",
+      "source_url": "https://dibao.com.vn/xe-may-dien-dibao-tesla-chic.html",
+      "source_title": "XE MÁY ĐIỆN DIBAO TESLA CHIC",
+      "source_swatches": [
+        "557a69",
+        "15161b",
+        "5e6a76",
+        "dfdfe1",
+        "818590",
+        "98a39d"
+      ],
+      "images": [
+        {
+          "index": 1,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/tesla-chic/dibao-tesla-chic-1.png",
+          "path": "/images/catalog/kinetic-tesla-chic/source-01.png",
+          "sha256": "2c61a4046b8f4c59d20a75112cb54528f575299f13fc1741840fa0a8820dd916",
+          "width": 800,
+          "height": 500,
+          "bytes": 154726
+        },
+        {
+          "index": 2,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/tesla-chic/dibao-tesla-chic-2.png",
+          "path": "/images/catalog/kinetic-tesla-chic/source-02.png",
+          "sha256": "f21e84e873ae31886334b8bfeaa76b2ac04c35c5e09b194704ee5e96f7f546be",
+          "width": 800,
+          "height": 500,
+          "bytes": 158217
+        },
+        {
+          "index": 3,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/tesla-chic/dibao-tesla-chic-3.png",
+          "path": "/images/catalog/kinetic-tesla-chic/source-03.png",
+          "sha256": "c1baea45669f7bea03a60fd3f5427b827c5e4fb8bc772219a94d579031499970",
+          "width": 800,
+          "height": 500,
+          "bytes": 160188
+        },
+        {
+          "index": 4,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/tesla-chic/dibao-tesla-chic-4.png",
+          "path": "/images/catalog/kinetic-tesla-chic/source-04.png",
+          "sha256": "3f2dfdac0acb1dd00b93c9b08a8905f4a0febaac8bf760716c30d0304007e001",
+          "width": 800,
+          "height": 500,
+          "bytes": 148433
+        },
+        {
+          "index": 5,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/tesla-chic/dibao-tesla-chic-5.png",
+          "path": "/images/catalog/kinetic-tesla-chic/source-05.png",
+          "sha256": "0bf63a8163134101caa970c9118e93c0b68bc45b031be65b29aeb41e00988bf6",
+          "width": 800,
+          "height": 500,
+          "bytes": 166400
+        },
+        {
+          "index": 6,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/tesla-chic/dibao-tesla-chic-6.png",
+          "path": "/images/catalog/kinetic-tesla-chic/source-06.png",
+          "sha256": "9d8589185c184e167657b4d8421d2ea9c9d841d5254c97374c745a277f8efd20",
+          "width": 800,
+          "height": 500,
+          "bytes": 149508
+        }
+      ],
+      "specification_rows": [
+        [
+          "TT",
+          "Nội dung",
+          "Thông số"
+        ],
+        [
+          "1",
+          "Trọng lượng bản thân",
+          "98kg"
+        ],
+        [
+          "2",
+          "Kích thước xe (D/R/C)",
+          "1.775mm x 715mm x 1.120mm"
+        ],
+        [
+          "3",
+          "Chiều cao yên",
+          "760mm"
+        ],
+        [
+          "4",
+          "Tải trọng",
+          "130kg – 150kg"
+        ],
+        [
+          "5",
+          "Động cơ điện, công suất (Max)",
+          "1.500W"
+        ],
+        [
+          "6",
+          "Bình điện",
+          "Tổ hợp Ắc quy 60V (5x12V) 23Ah"
+        ],
+        [
+          "7",
+          "Tốc độ tối đa",
+          "45-50km/h"
+        ],
+        [
+          "8",
+          "Quãng đường đi/lần sạc",
+          "60-80km (tùy thuộc vào tốc độ di chuyển và tải trọng)"
+        ],
+        [
+          "9",
+          "Lốp xe",
+          "Lốp không săm 3.50-10"
+        ],
+        [
+          "10",
+          "Kiểu phanh",
+          "Phanh đĩa trước, phanh đĩa sau"
+        ],
+        [
+          "11",
+          "Phuộc trước",
+          "Ống lồng, giảm chấn thủy lực"
+        ],
+        [
+          "12",
+          "Phuộc sau",
+          "Lò so trụ đơn, giảm chấn thủy lực"
+        ],
+        [
+          "13",
+          "Đèn chiếu sáng",
+          "Ful Led  2 tầng, siêu sáng"
+        ],
+        [
+          "14",
+          "Thời gian sạc điện (tối đa)",
+          "10- 13 tiếng đồng hồ"
+        ],
+        [
+          "16",
+          "Bảo vệ sụt áp",
+          "52V±1"
+        ],
+        [
+          "16",
+          "Bảo vệ quá dòng",
+          "27A±1"
+        ],
+        [
+          "17",
+          "Bảo hành (max)",
+          "36 tháng"
+        ]
+      ]
+    },
+    {
+      "slug": "kinetic-tesla-chic-q",
+      "source_url": "https://dibao.com.vn/xe-may-dien-dibao-tesla-chic-q.html",
+      "source_title": "XE MÁY ĐIỆN DIBAO TESLA CHIC Q",
+      "source_swatches": [
+        "c8deec",
+        "f2f6f6",
+        "bdeef1",
+        "c7e0ca",
+        "fdd600",
+        "fe9544",
+        "607b86",
+        "2c3234",
+        "222624",
+        "bc0a10",
+        "71b3ab",
+        "516369"
+      ],
+      "images": [
+        {
+          "index": 1,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/tesla-chic-q/tesla-chic-q-bl0100.png",
+          "path": "/images/catalog/kinetic-tesla-chic-q/source-01.png",
+          "sha256": "49843801b8606524580170c3115eb31ad25a4fcab38e4e932af315ceb12e87bd",
+          "width": 1080,
+          "height": 720,
+          "bytes": 310810
+        },
+        {
+          "index": 2,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/tesla-chic-q/tesla-chic-q-0035.png",
+          "path": "/images/catalog/kinetic-tesla-chic-q/source-02.png",
+          "sha256": "c0771224bb4abf34cf6c2761dd592f22f57e307b4cf81da8e7d128957036be72",
+          "width": 1080,
+          "height": 720,
+          "bytes": 307413
+        },
+        {
+          "index": 3,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/tesla-chic-q/tesla-chic-q-0046.png",
+          "path": "/images/catalog/kinetic-tesla-chic-q/source-03.png",
+          "sha256": "315520245e79c23e409ac3a66d7bee77ae92a4d42bf2a564a151c3b2c324396f",
+          "width": 1080,
+          "height": 720,
+          "bytes": 382515
+        },
+        {
+          "index": 4,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/tesla-chic-q/tesla-chic-q-bl0103.png",
+          "path": "/images/catalog/kinetic-tesla-chic-q/source-04.png",
+          "sha256": "5e9868f9f4ebff7819792f06fe733ffc2936cfcbe6818a147b349dfd2ae0524a",
+          "width": 1080,
+          "height": 720,
+          "bytes": 369736
+        },
+        {
+          "index": 5,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/tesla-chic-q/tesla-chic-q-0022.png",
+          "path": "/images/catalog/kinetic-tesla-chic-q/source-05.png",
+          "sha256": "01f65885f1d12fddf575440920bf9d64d2cd03db24aabddff9ff9941b3cf1993",
+          "width": 1080,
+          "height": 720,
+          "bytes": 359834
+        },
+        {
+          "index": 6,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/tesla-chic-q/tesla-chic-q-0024.png",
+          "path": "/images/catalog/kinetic-tesla-chic-q/source-06.png",
+          "sha256": "bd10b69bf56f6b8655e38e2070dd211313711ccb630378f74032eec0c1a90d9a",
+          "width": 1080,
+          "height": 720,
+          "bytes": 403346
+        }
+      ],
+      "specification_rows": [
+        [
+          "TT",
+          "Nội dung",
+          "Thông số"
+        ],
+        [
+          "1",
+          "Trọng lượng bản thân",
+          "102kg"
+        ],
+        [
+          "2",
+          "Kích thước xe (D/R/C)",
+          "1.780mm x 705mm x 1.110mm"
+        ],
+        [
+          "3",
+          "Chiều cao yên",
+          "760mm"
+        ],
+        [
+          "4",
+          "Tải trọng",
+          "130kg - 150kg"
+        ],
+        [
+          "5",
+          "Động cơ điện, công suất (Max)",
+          "1.500W"
+        ],
+        [
+          "6",
+          "Mô men xoắn danh định",
+          "14,7Nm"
+        ],
+        [
+          "7",
+          "Bình điện",
+          "Tổ hợp Ắc quy 60V (5x12V) 22Ah"
+        ],
+        [
+          "8",
+          "Tốc độ tối đa",
+          "45 - 50km/h"
+        ],
+        [
+          "9",
+          "Quãng đường đi/lần sạc",
+          "60 - 80km (tùy thuộc vào tốc độ di chuyển và tải trọng)"
+        ],
+        [
+          "10",
+          "Lốp xe",
+          "Lốp không săm 3.50-10"
+        ],
+        [
+          "11",
+          "Kiểu phanh",
+          "Phanh đĩa trước, phanh đĩa sau"
+        ],
+        [
+          "12",
+          "Phuộc trước",
+          "Ống lồng, giảm chấn thủy lực"
+        ],
+        [
+          "13",
+          "Phuộc sau",
+          "Lò so trụ đơn, giảm chấn thủy lực"
+        ],
+        [
+          "14",
+          "Đèn chiếu sáng",
+          "Ful Led  2 tầng, siêu sáng"
+        ],
+        [
+          "15",
+          "Thời gian sạc điện (tối đa)",
+          "10 - 13 tiếng đồng hồ"
+        ],
+        [
+          "16",
+          "Bảo vệ sụt áp",
+          "52V±1"
+        ],
+        [
+          "17",
+          "Bảo vệ quá dòng",
+          "27A±1"
+        ],
+        [
+          "18",
+          "Bảo hành (max)",
+          "36 tháng"
+        ]
+      ]
+    },
+    {
+      "slug": "kinetic-tesla-dio",
+      "source_url": "https://dibao.com.vn/xe-may-dien-dibao-tesla-dio.html",
+      "source_title": "XE MÁY ĐIỆN DIBAO TESLA DIO",
+      "source_swatches": [
+        "fffbd1",
+        "fae500",
+        "008059",
+        "404040",
+        "ad0000"
+      ],
+      "images": [
+        {
+          "index": 1,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-tesla-dio/xe-may-dien-tesla-dio-mau-be.jpg",
+          "path": "/images/catalog/kinetic-tesla-dio/source-01.jpg",
+          "sha256": "80354dbf0672fb90562318f4ba0bce1ec50e87ece0898821609f8e3421cd7d5d",
+          "width": 1440,
+          "height": 960,
+          "bytes": 158941
+        },
+        {
+          "index": 2,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-tesla-dio/xe-may-dien-tesla-dio-mau-vang.jpg",
+          "path": "/images/catalog/kinetic-tesla-dio/source-02.jpg",
+          "sha256": "143084d36b4b0a228eed1b4a7aa7bb0d0ea1a2de10d6f2711546ed8624396408",
+          "width": 1440,
+          "height": 960,
+          "bytes": 152528
+        },
+        {
+          "index": 3,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-tesla-dio/xe-may-dien-tesla-dio-mau-xanh.jpg",
+          "path": "/images/catalog/kinetic-tesla-dio/source-03.jpg",
+          "sha256": "63bd474180196244810b47ca08943773cac79c3761fb0f0b035f1db9d8434d80",
+          "width": 1440,
+          "height": 960,
+          "bytes": 154046
+        },
+        {
+          "index": 4,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-tesla-dio/xe-may-dien-tesla-dio-mau-xam.jpg",
+          "path": "/images/catalog/kinetic-tesla-dio/source-04.jpg",
+          "sha256": "5c7496b5ed3d07c958d060980a0bef1c783828ba758fc1ad92781ac27f004e63",
+          "width": 1440,
+          "height": 960,
+          "bytes": 154776
+        },
+        {
+          "index": 5,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-tesla-dio/xe-may-dien-tesla-dio-mau-do.jpg",
+          "path": "/images/catalog/kinetic-tesla-dio/source-05.jpg",
+          "sha256": "af0f0866c253b59eae096c586e37d490ba4458ac37bffedf1d3c73b6c71e0e49",
+          "width": 1440,
+          "height": 960,
+          "bytes": 171452
+        }
+      ],
+      "specification_rows": [
+        [
+          "STT",
+          "Nội dung",
+          "Thông số"
+        ],
+        [
+          "1",
+          "Tên sản phẩm",
+          "Dibao Tesla DIO"
+        ],
+        [
+          "2",
+          "Kích thước xe (D/R/C)",
+          "1.735mm x 720mm x 1.120mm"
+        ],
+        [
+          "3",
+          "Tải trọng",
+          "130kg"
+        ],
+        [
+          "4",
+          "Công suất Động cơ điện (Max)",
+          "1.450W"
+        ],
+        [
+          "5",
+          "Mô men xoắn danh định",
+          "14,16Nm"
+        ],
+        [
+          "6",
+          "Bình điện",
+          "Ắc quy 60V (5x12V) 22Ah"
+        ],
+        [
+          "7",
+          "Tôc độ",
+          "45-50km/h"
+        ],
+        [
+          "8",
+          "Quãng đường đi/lần xạc",
+          "60km -90km (tùy theo tốc độ và tải trọng)"
+        ],
+        [
+          "9",
+          "Lốp xe",
+          "Lốp không săm 90/90-10"
+        ],
+        [
+          "10",
+          "Kiểu phanh",
+          "Phanh đĩa trước, phanh cơ sau"
+        ],
+        [
+          "11",
+          "Đèn chiếu sáng",
+          "LED siêu sáng"
+        ],
+        [
+          "12",
+          "Thời gian xạc điện (tối đa)",
+          "12 tiếng đồng hồ"
+        ],
+        [
+          "13",
+          "Bảo hành (Max)",
+          "24 tháng"
+        ],
+        [
+          "14",
+          "Bảo vệ sụt áp:",
+          "52V±1"
+        ],
+        [
+          "15",
+          "Bảo vệ quá áp",
+          "27A±1"
+        ],
+        [
+          "16",
+          "Trọng lượng bản thân xe",
+          "97Kg"
+        ]
+      ]
+    },
+    {
+      "slug": "kinetic-tesla-dio-e",
+      "source_url": "https://dibao.com.vn/xe-may-dien-dibao-tesla-dio-e.html",
+      "source_title": "XE MÁY ĐIỆN DIBAO TESLA DIO E",
+      "source_swatches": [
+        "000000"
+      ],
+      "images": [
+        {
+          "index": 1,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/tesla-dio-e/tesla-dio-e-0033-1-2.png",
+          "path": "/images/catalog/kinetic-tesla-dio-e/source-01.png",
+          "sha256": "cbaf9a5f217cc70d672c3d9bd450a87b7f71c4430ec88606060264d3c70dfc6d",
+          "width": 1080,
+          "height": 720,
+          "bytes": 380366
+        },
+        {
+          "index": 2,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/tesla-dio-e/tesla-dio-e-0033-1.png",
+          "path": "/images/catalog/kinetic-tesla-dio-e/source-02.png",
+          "sha256": "27584e8c878db9bd771d75f8d070566630259ae3b2a50e7550b60b36c5736bd7",
+          "width": 1080,
+          "height": 720,
+          "bytes": 224044
+        },
+        {
+          "index": 3,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/tesla-dio-e/tesla-dio-e-0033.png",
+          "path": "/images/catalog/kinetic-tesla-dio-e/source-03.png",
+          "sha256": "54267f6b571e6e523963bc5c315692d1e87691dd630d8cf65dd59fc88be36c37",
+          "width": 1080,
+          "height": 720,
+          "bytes": 357597
+        },
+        {
+          "index": 4,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/tesla-dio-e/tesla-dio-e-0035.png",
+          "path": "/images/catalog/kinetic-tesla-dio-e/source-04.png",
+          "sha256": "cbe5f72c53b7e723cc319c26c982ab6d59c00ff9f7bf4e7b4d3fc12209cb177c",
+          "width": 1080,
+          "height": 720,
+          "bytes": 307377
+        },
+        {
+          "index": 5,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/tesla-dio-e/tesla-dio-e-0059-2.png",
+          "path": "/images/catalog/kinetic-tesla-dio-e/source-05.png",
+          "sha256": "e59aa67a0a01bb8bdcebb502b68ec38c284416cdd486f134cc79a95b0d1771c6",
+          "width": 1080,
+          "height": 720,
+          "bytes": 372391
+        },
+        {
+          "index": 6,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/tesla-dio-e/tesla-dio-e-0098.png",
+          "path": "/images/catalog/kinetic-tesla-dio-e/source-06.png",
+          "sha256": "5e2f063ed051d8123902367907ac58ea69ef602e271fe0c96f069e3577417cda",
+          "width": 1080,
+          "height": 720,
+          "bytes": 336534
+        }
+      ],
+      "specification_rows": [
+        [
+          "STT",
+          "Nội dung",
+          "Thông số"
+        ],
+        [
+          "1",
+          "Tên sản phẩm",
+          "Dibao Tesla DIO E"
+        ],
+        [
+          "2",
+          "Kích thước xe (D/R/C)",
+          "1.750mm x 685mm x 1.120mm"
+        ],
+        [
+          "3",
+          "Tải trọng",
+          "130kg"
+        ],
+        [
+          "4",
+          "Công suất Động cơ điện (Max)",
+          "1.350W"
+        ],
+        [
+          "5",
+          "Bình điện",
+          "Ắc quy 60V (5x12V) 22Ah"
+        ],
+        [
+          "6",
+          "Tôc độ",
+          "45-55km/h"
+        ],
+        [
+          "7",
+          "Quãng đường đi/lần xạc",
+          "60km -90km (tùy theo tốc độ và tải trọng)"
+        ],
+        [
+          "8",
+          "Lốp xe",
+          "Lốp không săm 90/90-10"
+        ],
+        [
+          "9",
+          "Kiểu phanh",
+          "Phanh đĩa trước, phanh cơ sau"
+        ],
+        [
+          "10",
+          "Đèn chiếu sáng",
+          "LED siêu sáng"
+        ],
+        [
+          "11",
+          "Thời gian xạc điện (tối đa)",
+          "12 tiếng đồng hồ"
+        ],
+        [
+          "12",
+          "Bảo hành (Max)",
+          "36 tháng"
+        ],
+        [
+          "13",
+          "Bảo vệ sụt áp:",
+          "52V±1"
+        ],
+        [
+          "14",
+          "Bảo vệ quá áp",
+          "27A±3"
+        ],
+        [
+          "15",
+          "Khối lượng bản thân xe",
+          "94Kg"
+        ]
+      ]
+    },
+    {
+      "slug": "kinetic-tesla-e",
+      "source_url": "https://dibao.com.vn/xe-may-dien-dibao-tesla-e.html",
+      "source_title": "XE MÁY ĐIỆN DIBAO TESLA E",
+      "source_swatches": [
+        "595b5b",
+        "3d3e33",
+        "710a19",
+        "514a3b",
+        "8b958c",
+        "d6d6d6",
+        "908874",
+        "7e8796",
+        "abb4c3"
+      ],
+      "images": [
+        {
+          "index": 1,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/tesla-e/dibao-tesla-e-1.png",
+          "path": "/images/catalog/kinetic-tesla-e/source-01.png",
+          "sha256": "d44d3ff5f37d98905bc635b30385932229d11da015c752c4902400908bd02594",
+          "width": 800,
+          "height": 500,
+          "bytes": 157205
+        },
+        {
+          "index": 2,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/tesla-e/dibao-tesla-e-2.png",
+          "path": "/images/catalog/kinetic-tesla-e/source-02.png",
+          "sha256": "6f7cfa45bf7abcbdb6628cee67f9c3fcc2a5dabd893870d46d823f1859be1e8b",
+          "width": 800,
+          "height": 500,
+          "bytes": 166185
+        },
+        {
+          "index": 3,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/tesla-e/dibao-tesla-e-3.png",
+          "path": "/images/catalog/kinetic-tesla-e/source-03.png",
+          "sha256": "dde9f7bd68f898f2fed8c75c3129145c68968fea6b816158d0d4910b6e408889",
+          "width": 800,
+          "height": 500,
+          "bytes": 163930
+        },
+        {
+          "index": 4,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/tesla-e/dibao-tesla-e-4.png",
+          "path": "/images/catalog/kinetic-tesla-e/source-04.png",
+          "sha256": "ea3bb9420ab86cc34306a81dbe9dc4881151be0bd4ba59507a6ec3ddc923d564",
+          "width": 800,
+          "height": 500,
+          "bytes": 166227
+        },
+        {
+          "index": 5,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/tesla-e/dibao-tesla-e-5.png",
+          "path": "/images/catalog/kinetic-tesla-e/source-05.png",
+          "sha256": "56cbdfbc5feccc456af8e08b908a52d5de8d21f2c2cae3997be888fde71b801a",
+          "width": 800,
+          "height": 500,
+          "bytes": 154028
+        },
+        {
+          "index": 6,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/tesla-e/dibao-tesla-e-6.png",
+          "path": "/images/catalog/kinetic-tesla-e/source-06.png",
+          "sha256": "03ccc90bc9f73dbd81ba1a8c41af57361d98d865ba18b81134ade5171d7b4293",
+          "width": 800,
+          "height": 500,
+          "bytes": 160267
+        }
+      ],
+      "specification_rows": [
+        [
+          "Mục",
+          "Nội dung"
+        ],
+        [
+          "Tên sản phẩm",
+          "Dibao Tesla E"
+        ],
+        [
+          "Kích thước xe (D/R/C)",
+          "1740 × 700 × 1110 mm"
+        ],
+        [
+          "Tải trọng",
+          "75kg"
+        ],
+        [
+          "Mô men xoắn (danh định)",
+          "-"
+        ],
+        [
+          "Công suất Động cơ điện (Max)",
+          "1550W"
+        ],
+        [
+          "Bình điện",
+          "Chì – a xít TIANNENG 6-DZF-22.3 / 5 / 12V – 22.3 (Ah)"
+        ],
+        [
+          "Tốc độ",
+          "40 - 45km/h"
+        ],
+        [
+          "Quãng đường đi/lần sạc",
+          "70km - 90km (tùy theo tốc độ và tải trọng)"
+        ],
+        [
+          "Lốp xe",
+          "1; 90/90-10"
+        ],
+        [
+          "Kiểu phanh",
+          "Phanh đĩa / Tang trống"
+        ],
+        [
+          "Đèn chiếu sáng",
+          "LED bi siêu sáng"
+        ],
+        [
+          "Thời gian sạc điện (tối đa)",
+          "12 tiếng đồng hồ"
+        ],
+        [
+          "Bảo hành (Max)",
+          "24 tháng"
+        ],
+        [
+          "Bảo vệ sụt áp",
+          "52V±1"
+        ],
+        [
+          "Bảo vệ quá áp",
+          "52V±1"
+        ],
+        [
+          "Mức tiêu thụ điện năng",
+          "41.14 Wh/Km"
+        ],
+        [
+          "Trọng lượng xe",
+          "94 KG"
+        ]
+      ]
+    },
+    {
+      "slug": "kinetic-tesla-sd",
+      "source_url": "https://dibao.com.vn/xe-may-dien-dibao-tesla-sd.html",
+      "source_title": "XE MÁY ĐIỆN DIBAO TESLA SD",
+      "source_swatches": [
+        "000000"
+      ],
+      "images": [
+        {
+          "index": 1,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/tesla-sd/tesla-sd-015.png",
+          "path": "/images/catalog/kinetic-tesla-sd/source-01.png",
+          "sha256": "9422c5afce9defdede995ce85ce596e2c7f02baa87acd1630d3f55b7f567caf2",
+          "width": 600,
+          "height": 400,
+          "bytes": 124492
+        },
+        {
+          "index": 2,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/tesla-sd/tesla-sd-017.png",
+          "path": "/images/catalog/kinetic-tesla-sd/source-02.png",
+          "sha256": "842d90d9744a422e5b1e76257fb74a91371e84b619e6ebd74a07e2438c9c95a0",
+          "width": 600,
+          "height": 400,
+          "bytes": 134122
+        },
+        {
+          "index": 3,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/tesla-sd/tesla-sd-023.png",
+          "path": "/images/catalog/kinetic-tesla-sd/source-03.png",
+          "sha256": "7bf1729c61bbe78a8071413b8888bc4678bf6f524e42a60cec5956031370870b",
+          "width": 600,
+          "height": 400,
+          "bytes": 124630
+        },
+        {
+          "index": 4,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/tesla-sd/tesla-sd-033-2.png",
+          "path": "/images/catalog/kinetic-tesla-sd/source-04.png",
+          "sha256": "9427d5aff73e87b18308aa48997f54c3f40d9c303fc5e56a8b70fbcc66364174",
+          "width": 600,
+          "height": 400,
+          "bytes": 119359
+        },
+        {
+          "index": 5,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/tesla-sd/tesla-sd-035.png",
+          "path": "/images/catalog/kinetic-tesla-sd/source-05.png",
+          "sha256": "43472f162f710b4c779d2a87fa32333df83befd39c5763241f30f571ac36a961",
+          "width": 600,
+          "height": 400,
+          "bytes": 119279
+        },
+        {
+          "index": 6,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/tesla-sd/tesla-sd-040.png",
+          "path": "/images/catalog/kinetic-tesla-sd/source-06.png",
+          "sha256": "a49560b03ec93f00a8a551d5edce5591bf23b8efddcc1fb700a962c2016cc4e4",
+          "width": 600,
+          "height": 400,
+          "bytes": 127987
+        }
+      ],
+      "specification_rows": [
+        [
+          "TT",
+          "Nội dung",
+          "Thông số"
+        ],
+        [
+          "1",
+          "Trọng lượng bản thân",
+          "93kg"
+        ],
+        [
+          "2",
+          "Kích thước xe (D/R/C)",
+          "1.750mm x 700mm x 1.100mm"
+        ],
+        [
+          "3",
+          "Chiều cao yên",
+          "758mm"
+        ],
+        [
+          "4",
+          "Tải trọng",
+          "130kg – 150kg"
+        ],
+        [
+          "5",
+          "Động cơ điện, công suất (Max)",
+          "1.450W"
+        ],
+        [
+          "6",
+          "Bình điện",
+          "Tổ hợp Ắc quy 60V (5x12V) 23Ah"
+        ],
+        [
+          "7",
+          "Tôc độ tối đa",
+          "45-50km/h"
+        ],
+        [
+          "8",
+          "Quãng đường đi/lần xạc",
+          "60-100km (tùy theo tốc độ và tải trọng)"
+        ],
+        [
+          "9",
+          "Lốp xe",
+          "Lốp không săm 90/90-10"
+        ],
+        [
+          "10",
+          "Kiểu phanh",
+          "Phanh đĩa trước, phanh đĩa sau"
+        ],
+        [
+          "11",
+          "Phuộc trước",
+          "Ống lồng, giảm chấn thủy lực"
+        ],
+        [
+          "12",
+          "Phuộc sau",
+          "Lò so trụ đơn, giảm chấn thủy lực"
+        ],
+        [
+          "13",
+          "Đèn chiếu sáng",
+          "Ful Led  2 tầng, siêu sáng"
+        ],
+        [
+          "14",
+          "Thời gian sạc điện (tối đa)",
+          "10- 12 tiếng đồng hồ"
+        ],
+        [
+          "16",
+          "Bảo vệ sụt áp:",
+          "52V±1"
+        ],
+        [
+          "16",
+          "Bảo vệ quá dòng",
+          "27A±1"
+        ],
+        [
+          "17",
+          "Bảo hành (max)",
+          "24 tháng"
+        ]
+      ]
+    },
+    {
+      "slug": "kinetic-xman-leo",
+      "source_url": "https://dibao.com.vn/xe-may-dien-dibao-xman-leo.html",
+      "source_title": "XE MÁY ĐIỆN DIBAO XMAN-LEO",
+      "source_swatches": [
+        "000000"
+      ],
+      "images": [
+        {
+          "index": 1,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-xman-leo/xman-leo-017-1.png",
+          "path": "/images/catalog/kinetic-xman-leo/source-01.png",
+          "sha256": "e9e60d0ec87c39d0b6e59a5ff0ccb2a858a5b14b922bf65aea5c6a78f184da98",
+          "width": 960,
+          "height": 720,
+          "bytes": 389423
+        },
+        {
+          "index": 2,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-xman-leo/xman-leo-017.png",
+          "path": "/images/catalog/kinetic-xman-leo/source-02.png",
+          "sha256": "0d0d9782227eb50de580016b946db565874434cc8b6b36d1494a40c51212d03d",
+          "width": 960,
+          "height": 720,
+          "bytes": 404489
+        },
+        {
+          "index": 3,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-xman-leo/xman-leo-023.png",
+          "path": "/images/catalog/kinetic-xman-leo/source-03.png",
+          "sha256": "8083c6193cfd3e6295a01177053d736376f8e18ad3a1ce2ef0f0f273c9067e15",
+          "width": 960,
+          "height": 720,
+          "bytes": 465016
+        },
+        {
+          "index": 4,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-xman-leo/xman-leo-033-2.png",
+          "path": "/images/catalog/kinetic-xman-leo/source-04.png",
+          "sha256": "26ac2fed1b8060c40f27b5186dcd65fc0d5f89549878c963712059e3344d29af",
+          "width": 960,
+          "height": 720,
+          "bytes": 427477
+        },
+        {
+          "index": 5,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-xman-leo/xman-leo-do.png",
+          "path": "/images/catalog/kinetic-xman-leo/source-05.png",
+          "sha256": "b1f48f6e247d86dc49121d97ab8c83c69843f1c87a0b81281a904cb59ad4f2bd",
+          "width": 960,
+          "height": 720,
+          "bytes": 446982
+        },
+        {
+          "index": 6,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/dibao-xman-leo/xman-leo-046b-1.png",
+          "path": "/images/catalog/kinetic-xman-leo/source-06.png",
+          "sha256": "f6ffb2b0e002357756d53f7dd38b86ddfc88bccc77c56298aa798347868abca9",
+          "width": 960,
+          "height": 720,
+          "bytes": 298587
+        }
+      ],
+      "specification_rows": [
+        [
+          "TT",
+          "Nội dung",
+          "Thông số"
+        ],
+        [
+          "1",
+          "Trọng lượng bản thân",
+          "95kg"
+        ],
+        [
+          "2",
+          "Kích thước xe (D/R/C)",
+          "1.770mm x 810mm x 1.080mm"
+        ],
+        [
+          "3",
+          "Chiều cao yên",
+          "760mm"
+        ],
+        [
+          "4",
+          "Tải trọng",
+          "130kg – 150kg"
+        ],
+        [
+          "5",
+          "Động cơ điện, công suất (Max)",
+          "1.450W"
+        ],
+        [
+          "6",
+          "Bình điện",
+          "Tổ hợp Ắc quy 60V (5x12V) 23Ah"
+        ],
+        [
+          "7",
+          "Tôc độ",
+          "45-55km/h"
+        ],
+        [
+          "8",
+          "Quãng đường đi/lần xạc",
+          "60-90km (tùy thuộc vào tốc độ di chuyển và tải trọng)"
+        ],
+        [
+          "9",
+          "Lốp xe",
+          "Lốp không săm 90/90-10"
+        ],
+        [
+          "10",
+          "Kiểu phanh",
+          "Phanh đĩa trước, phanh cơ sau"
+        ],
+        [
+          "11",
+          "Phuộc trước",
+          "Ống lồng, giảm chấn thủy lực"
+        ],
+        [
+          "12",
+          "Phuộc sau",
+          "Lò so trụ đơn, giảm chấn thủy lực"
+        ],
+        [
+          "13",
+          "Đèn chiếu sáng",
+          "Bóng Halogen, siêu sáng"
+        ],
+        [
+          "14",
+          "Thời gian sạc điện (tối đa)",
+          "10- 12 tiếng đồng hồ"
+        ],
+        [
+          "16",
+          "Bảo vệ sụt áp:",
+          "52V±1"
+        ],
+        [
+          "16",
+          "Bảo vệ quá dòng",
+          "27A±1"
+        ],
+        [
+          "17",
+          "Bảo hành (max)",
+          "24 tháng"
+        ]
+      ]
+    },
+    {
+      "slug": "kinetic-butterfly",
+      "source_url": "https://dibao.com.vn/xe-dien-dibao-butterfly.html",
+      "source_title": "XE ĐIỆN DIBAO BUTTERFLY",
+      "source_swatches": [
+        "000000"
+      ],
+      "images": [
+        {
+          "index": 1,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/butterfly/dibao-butterfly.png",
+          "path": "/images/catalog/kinetic-butterfly/source-01.png",
+          "sha256": "4ab8b27dcbc89b8e850cf624202c0fcd1b2e2ab88336773f52113dff6e2d95c0",
+          "width": 480,
+          "height": 320,
+          "bytes": 125900
+        },
+        {
+          "index": 2,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/butterfly/175.jpg",
+          "path": "/images/catalog/kinetic-butterfly/source-02.jpg",
+          "sha256": "36a5aec29c1ebdd20952b4e2096597be8256786b7b78773326ae6641fda25ed8",
+          "width": 675,
+          "height": 446,
+          "bytes": 71952
+        },
+        {
+          "index": 3,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/butterfly/191.png",
+          "path": "/images/catalog/kinetic-butterfly/source-03.png",
+          "sha256": "d497b81d856e72db6eb0c0d62cf6087f4985bd4513a9200e340cb9a102d0cb4c",
+          "width": 675,
+          "height": 446,
+          "bytes": 567704
+        }
+      ],
+      "specification_rows": [
+        [
+          "TT",
+          "Nội dung",
+          "Thông số"
+        ],
+        [
+          "1",
+          "Trọng lượng bản thân",
+          "92kg"
+        ],
+        [
+          "2",
+          "Kích thước xe (D/R/C)",
+          "1.800mm x 700mm x 1.060mm"
+        ],
+        [
+          "3",
+          "Chiều cao yên",
+          "760mm"
+        ],
+        [
+          "4",
+          "Tải trọng",
+          "130kg – 150kg"
+        ],
+        [
+          "5",
+          "Động cơ điện, công suất (Max)",
+          "1.500W"
+        ],
+        [
+          "6",
+          "Bình điện",
+          "Tổ hợp Ắc quy 60V (5x12V) 21.6Ah"
+        ],
+        [
+          "7",
+          "Tôc độ tối đa",
+          "45-50km/h"
+        ],
+        [
+          "8",
+          "Quãng đường đi/lần sạc",
+          "60-80km (tùy theo tốc độ di chuyển và tải trọng)"
+        ],
+        [
+          "9",
+          "Lốp xe",
+          "Lốp không săm 3.50-10"
+        ],
+        [
+          "10",
+          "Kiểu phanh",
+          "Phanh đĩa trước, phanh cơ sau"
+        ],
+        [
+          "11",
+          "Phuộc trước",
+          "Ống lồng, giảm chấn thủy lực"
+        ],
+        [
+          "12",
+          "Phuộc sau",
+          "Lò so trụ đơn, giảm chấn thủy lực"
+        ],
+        [
+          "13",
+          "Đèn chiếu sáng",
+          "Ful Led , siêu sáng"
+        ],
+        [
+          "14",
+          "Thời gian sạc điện (tối đa)",
+          "10- 12 tiếng đồng hồ"
+        ],
+        [
+          "16",
+          "Bảo vệ sụt áp:",
+          "52V±1"
+        ],
+        [
+          "16",
+          "Bảo vệ quá dòng",
+          "30A±1"
+        ],
+        [
+          "17",
+          "Bảo hành (max)",
+          "24 tháng"
+        ]
+      ]
+    },
+    {
+      "slug": "kinetic-gogo-s4",
+      "source_url": "https://dibao.com.vn/xe-dien-dibao-gogo-s4.html",
+      "source_title": "XE ĐIỆN DIBAO GOGO S4",
+      "source_swatches": [
+        "000000"
+      ],
+      "images": [
+        {
+          "index": 1,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/gogo-s4/gogoss-duc-vang.webp",
+          "path": "/images/catalog/kinetic-gogo-s4/source-01.webp",
+          "sha256": "86e971eae14f4df60ad0945c6f03348f90c71d12fb5454b38230ac22781a14c6",
+          "width": 1815,
+          "height": 1200,
+          "bytes": 65752
+        },
+        {
+          "index": 2,
+          "source_url": "https://dibao.com.vn/upimages/image/GOGO_SS/GOGOSS_DUC_019.png",
+          "path": "/images/catalog/kinetic-gogo-s4/source-02.png",
+          "sha256": "be30e22816375423fca13cfa811317114d388db05cf120519944410c04190014",
+          "width": 675,
+          "height": 446,
+          "bytes": 135849
+        },
+        {
+          "index": 3,
+          "source_url": "https://dibao.com.vn/upimages/image/GOGO_SS/GOGOSS_DUC_024.png",
+          "path": "/images/catalog/kinetic-gogo-s4/source-03.png",
+          "sha256": "8cba4990c4f0be9b68be6218c0de0ae045f3c933efe61d36e7914dab315d0621",
+          "width": 675,
+          "height": 446,
+          "bytes": 137181
+        },
+        {
+          "index": 4,
+          "source_url": "https://dibao.com.vn/upimages/image/GOGO_SS/GOGOSS_DUC_VANG.png",
+          "path": "/images/catalog/kinetic-gogo-s4/source-04.png",
+          "sha256": "9c5a79d4c530526a429bf54617f4599592abdf419f51ea9ebef3ff2ab40aab88",
+          "width": 1815,
+          "height": 1200,
+          "bytes": 181747
+        },
+        {
+          "index": 5,
+          "source_url": "https://dibao.com.vn/upimages/image/GOGO_SS/GOGOSS_DUC_023.png",
+          "path": "/images/catalog/kinetic-gogo-s4/source-05.png",
+          "sha256": "13c8c9589cc93c556d09de8aed03b69a11f7953687e9c4d09f7721694326981e",
+          "width": 675,
+          "height": 446,
+          "bytes": 142623
+        },
+        {
+          "index": 6,
+          "source_url": "https://dibao.com.vn/upimages/image/GOGO_SS/GOGOSS_DUC_017.png",
+          "path": "/images/catalog/kinetic-gogo-s4/source-06.png",
+          "sha256": "fa6532e133020f1ffc311c9e18e3081c7addeea740cce6d65b4ce1b9663196b5",
+          "width": 675,
+          "height": 446,
+          "bytes": 120865
+        }
+      ],
+      "specification_rows": [
+        [
+          "TT",
+          "Nội dung",
+          "Thông số"
+        ],
+        [
+          "1",
+          "Trọng lượng bản thân",
+          "93kg"
+        ],
+        [
+          "2",
+          "Kích thước xe (D/R/C)",
+          "1.700mm x 730mm x 1.050mm"
+        ],
+        [
+          "3",
+          "Chiều cao yên",
+          "755mm"
+        ],
+        [
+          "4",
+          "Tải trọng",
+          "130kg – 150kg"
+        ],
+        [
+          "5",
+          "Động cơ điện, công suất (Max)",
+          "1.450W"
+        ],
+        [
+          "6",
+          "Bình điện",
+          "Tổ hợp Ắc quy 60V (5x12V) 22Ah"
+        ],
+        [
+          "7",
+          "Tôc độ tối đa",
+          "40-50km/h"
+        ],
+        [
+          "8",
+          "Quãng đường đi/lần xạc",
+          "60-90km (tùy thuộc vào tốc độ di chuyển và tải trọng)"
+        ],
+        [
+          "9",
+          "Lốp xe",
+          "Lốp không săm 3.00-10"
+        ],
+        [
+          "10",
+          "Kiểu phanh",
+          "Phanh đĩa trước, phanh đĩa sau"
+        ],
+        [
+          "11",
+          "Phuộc trước",
+          "Ống lồng, giảm chấn thủy lực"
+        ],
+        [
+          "12",
+          "Phuộc sau",
+          "Lò so trụ đơn, giảm chấn thủy lực"
+        ],
+        [
+          "13",
+          "Đèn chiếu sáng",
+          "Ful Led  4 bóng, siêu sáng"
+        ],
+        [
+          "14",
+          "Thời gian sạc điện (tối đa)",
+          "10- 12 tiếng đồng hồ"
+        ],
+        [
+          "16",
+          "Bảo vệ sụt áp:",
+          "52V±1"
+        ],
+        [
+          "16",
+          "Bảo vệ quá dòng",
+          "27A±1"
+        ],
+        [
+          "17",
+          "Bảo hành (max)",
+          "24 tháng"
+        ]
+      ]
+    },
+    {
+      "slug": "kinetic-gogo-s5",
+      "source_url": "https://dibao.com.vn/xe-dien-dibao-gogo-s5.html",
+      "source_title": "XE ĐIỆN DIBAO GOGO S5",
+      "source_swatches": [
+        "8fbbbc",
+        "506053",
+        "000000",
+        "c95f22",
+        "45648a",
+        "cadded"
+      ],
+      "images": [
+        {
+          "index": 1,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/gogo-s5/f8481169-237e-42c4-922c-1cf955f6942b.jpg",
+          "path": "/images/catalog/kinetic-gogo-s5/source-01.jpg",
+          "sha256": "70307f39408ba3875740e37f6ab223a2a27d63fa0797b9e7f73305097cfd618c",
+          "width": 4032,
+          "height": 3024,
+          "bytes": 856386
+        },
+        {
+          "index": 2,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/gogo-s5/8ed2f922-4592-49df-94f5-550701b775d5.jpg",
+          "path": "/images/catalog/kinetic-gogo-s5/source-02.jpg",
+          "sha256": "91b3a6cae61b78069e40bcf40f37d4eec6a7af4df0769c1d6fc46b3e46208fde",
+          "width": 2048,
+          "height": 1536,
+          "bytes": 249752
+        },
+        {
+          "index": 3,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/gogo-s5/8be70413-bae8-42d0-88c3-791249b914dc.jpg",
+          "path": "/images/catalog/kinetic-gogo-s5/source-03.jpg",
+          "sha256": "d11aa1f4b3a0ae75c1011c12a390ddd36687a4c6281dca00b24b70544599d81a",
+          "width": 2048,
+          "height": 1536,
+          "bytes": 263143
+        },
+        {
+          "index": 4,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/gogo-s5/453cb7bc-e1d6-4fc2-83bb-622b31a37d5d.jpg",
+          "path": "/images/catalog/kinetic-gogo-s5/source-04.jpg",
+          "sha256": "ac8b9f1eda55a577a0c3458ab5dcb35f957db98bbeebd40857a63726d3d96bf9",
+          "width": 4032,
+          "height": 3024,
+          "bytes": 818811
+        },
+        {
+          "index": 5,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/gogo-s5/gogo-s5-bl098.png",
+          "path": "/images/catalog/kinetic-gogo-s5/source-05.png",
+          "sha256": "45dc7d297756d42cf7a95789942bc3023bc31cd5dc55880d7f1f68135c1bf3c0",
+          "width": 960,
+          "height": 640,
+          "bytes": 292030
+        },
+        {
+          "index": 6,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/gogo-s5/gogo-s5-035.png",
+          "path": "/images/catalog/kinetic-gogo-s5/source-06.png",
+          "sha256": "7f8145a21413353322ff6a2237cbaf6b73998a56089dbbe00df4ffaab69b8b8b",
+          "width": 960,
+          "height": 640,
+          "bytes": 284132
+        }
+      ],
+      "specification_rows": [
+        [
+          "TT",
+          "Nội dung",
+          "Thông số"
+        ],
+        [
+          "1",
+          "Trọng lượng bản thân",
+          "93kg"
+        ],
+        [
+          "2",
+          "Kích thước xe (D/R/C)",
+          "1.730mm x 730mm x 1.030mm"
+        ],
+        [
+          "3",
+          "Chiều cao yên",
+          "755mm"
+        ],
+        [
+          "4",
+          "Tải trọng",
+          "130kg – 150kg"
+        ],
+        [
+          "5",
+          "Động cơ điện, công suất (Max)",
+          "1.500W"
+        ],
+        [
+          "6",
+          "Bình điện",
+          "Tổ hợp Ắc quy 60V (5x12V) 23Ah"
+        ],
+        [
+          "7",
+          "Tốc độ tối đa",
+          "45-50km/h"
+        ],
+        [
+          "8",
+          "Quãng đường đi/lần sạc",
+          "60-70km (tùy theo tốc độ di chuyển và tải trọng)"
+        ],
+        [
+          "9",
+          "Lốp xe",
+          "Lốp không săm 90/90-10"
+        ],
+        [
+          "10",
+          "Kiểu phanh",
+          "Phanh đĩa trước, phanh đĩa sau"
+        ],
+        [
+          "11",
+          "Phuộc trước",
+          "Ống lồng, giảm chấn thủy lực"
+        ],
+        [
+          "12",
+          "Phuộc sau",
+          "Lò so trụ đơn, giảm chấn thủy lực"
+        ],
+        [
+          "13",
+          "Đèn chiếu sáng",
+          "Ful Led  2 tầng, siêu sáng"
+        ],
+        [
+          "14",
+          "Thời gian sạc điện (tối đa)",
+          "10 - 14 tiếng đồng hồ"
+        ],
+        [
+          "16",
+          "Bảo vệ sụt áp",
+          "52V±1"
+        ],
+        [
+          "16",
+          "Bảo vệ quá dòng",
+          "27A±1"
+        ],
+        [
+          "17",
+          "Bảo hành (max)",
+          "24 tháng"
+        ],
+        [
+          "Linh kiện",
+          "Thời gian"
+        ],
+        [
+          "Khung xe, càng và các bộ phận cơ khí:",
+          "24 tháng"
+        ],
+        [
+          "Linh kiện điện",
+          "12 tháng"
+        ],
+        [
+          "Bình điện",
+          "6 tháng đổi mới, kèm 6 tháng sửa chữa tiếp theo"
+        ]
+      ]
+    },
+    {
+      "slug": "kinetic-jeek-one",
+      "source_url": "https://dibao.com.vn/xe-dien-dibao-jeek-one.html",
+      "source_title": "XE ĐIỆN DIBAO JEEK ONE",
+      "source_swatches": [
+        "000000"
+      ],
+      "images": [
+        {
+          "index": 1,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/jeek-one/jo-023-1.png",
+          "path": "/images/catalog/kinetic-jeek-one/source-01.png",
+          "sha256": "f914e07c4bc26ba4c948a2eff56841ae4e3f3170e3fe5da70c01b7a935feff43",
+          "width": 600,
+          "height": 400,
+          "bytes": 155522
+        },
+        {
+          "index": 2,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/jeek-one/jo-023.png",
+          "path": "/images/catalog/kinetic-jeek-one/source-02.png",
+          "sha256": "d2c1f188ad8945c328b7959b86a3b293a769bc839936b860aea11560eba5d017",
+          "width": 600,
+          "height": 400,
+          "bytes": 150899
+        },
+        {
+          "index": 3,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/jeek-one/jo-024.png",
+          "path": "/images/catalog/kinetic-jeek-one/source-03.png",
+          "sha256": "b0d03d32b9ef86c95a94b2a02b6c267f0ea0a75b9b05f281daff5463924c107a",
+          "width": 600,
+          "height": 400,
+          "bytes": 154365
+        },
+        {
+          "index": 4,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/jeek-one/jo-033-1.png",
+          "path": "/images/catalog/kinetic-jeek-one/source-04.png",
+          "sha256": "c6a4b18553a1fca61008946a0c67013b0c88d7496cbfd9a1ca4c1fb868f7b709",
+          "width": 600,
+          "height": 400,
+          "bytes": 145220
+        },
+        {
+          "index": 5,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/jeek-one/jo-033.png",
+          "path": "/images/catalog/kinetic-jeek-one/source-05.png",
+          "sha256": "dd0d440806378b2593ec7496401636f7e5e8c00f8df42d38c53a9c2b501d9700",
+          "width": 600,
+          "height": 400,
+          "bytes": 163084
+        },
+        {
+          "index": 6,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/jeek-one/jo-040.png",
+          "path": "/images/catalog/kinetic-jeek-one/source-06.png",
+          "sha256": "74c87a638f0b4ae67df3aa704591ae5e116af9055888d2b728dc8db7e71b5fe5",
+          "width": 600,
+          "height": 400,
+          "bytes": 126141
+        }
+      ],
+      "specification_rows": [
+        [
+          "TT",
+          "Nội dung",
+          "Thông số"
+        ],
+        [
+          "1",
+          "Trọng lượng bản thân",
+          "93kg"
+        ],
+        [
+          "2",
+          "Kích thước xe (D/R/C)",
+          "1.760mm x 770mm x 1.100mm"
+        ],
+        [
+          "3",
+          "Chiều cao yên",
+          "760mm"
+        ],
+        [
+          "4",
+          "Tải trọng",
+          "130kg – 150kg"
+        ],
+        [
+          "5",
+          "Động cơ điện, công suất (Max)",
+          "1.500W"
+        ],
+        [
+          "6",
+          "Bình điện",
+          "Tổ hợp Ắc quy 60V (5x12V) 21.6Ah"
+        ],
+        [
+          "7",
+          "Tôc độ tối đa",
+          "45-50km/h"
+        ],
+        [
+          "8",
+          "Quãng đường đi/lần sạc",
+          "60-90km (tùy theo tốc độ di chuyển và tải trọng)"
+        ],
+        [
+          "9",
+          "Lốp xe",
+          "Lốp không săm 90/80-12 & 3.50-10"
+        ],
+        [
+          "10",
+          "Kiểu phanh",
+          "Phanh đĩa trước, phanh đĩa sau"
+        ],
+        [
+          "11",
+          "Phuộc trước",
+          "Ống lồng, giảm chấn thủy lực"
+        ],
+        [
+          "12",
+          "Phuộc sau",
+          "Lò so trụ đơn, giảm chấn thủy lực"
+        ],
+        [
+          "13",
+          "Đèn chiếu sáng",
+          "Ful Led  4 bóng, siêu sáng"
+        ],
+        [
+          "14",
+          "Thời gian sạc điện (tối đa)",
+          "10- 12 tiếng đồng hồ"
+        ],
+        [
+          "16",
+          "Bảo vệ sụt áp:",
+          "52V±1"
+        ],
+        [
+          "16",
+          "Bảo vệ quá dòng",
+          "30A±1"
+        ],
+        [
+          "17",
+          "Bảo hành (max)",
+          "24 tháng"
+        ]
+      ]
+    },
+    {
+      "slug": "kinetic-r1",
+      "source_url": "https://dibao.com.vn/xe-dien-dibao-r1.html",
+      "source_title": "XE ĐIỆN DIBAO R1",
+      "source_swatches": [
+        "000000"
+      ],
+      "images": [
+        {
+          "index": 1,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/r1/r1-013.png",
+          "path": "/images/catalog/kinetic-r1/source-01.png",
+          "sha256": "a696326034540d9bfe673a46150ce4e4501d69ac823ce7a92266862c1b2d161c",
+          "width": 600,
+          "height": 400,
+          "bytes": 137420
+        },
+        {
+          "index": 2,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/r1/r1-017.png",
+          "path": "/images/catalog/kinetic-r1/source-02.png",
+          "sha256": "6cfa019a7533c9883eb782a0d50fed7e7258a93238c2926f5626c716aef1a02e",
+          "width": 600,
+          "height": 400,
+          "bytes": 151136
+        },
+        {
+          "index": 3,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/r1/r1-033.png",
+          "path": "/images/catalog/kinetic-r1/source-03.png",
+          "sha256": "8014822e9edb8c04d8eae0b9d942bae8488fda965d62e533afac196f8db96129",
+          "width": 600,
+          "height": 400,
+          "bytes": 156336
+        },
+        {
+          "index": 4,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/r1/r1-040-1.png",
+          "path": "/images/catalog/kinetic-r1/source-04.png",
+          "sha256": "abd2e8e846139cf70e5c09d0bba71a6e9fef836a26dcb92914bf0f7c44f4d0fc",
+          "width": 600,
+          "height": 400,
+          "bytes": 157825
+        },
+        {
+          "index": 5,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/r1/r1-040.png",
+          "path": "/images/catalog/kinetic-r1/source-05.png",
+          "sha256": "a7e6f17ffbff24cfc107a0373f7247e38a0a44605e1e11fb54a4a304a98b558a",
+          "width": 600,
+          "height": 400,
+          "bytes": 125657
+        },
+        {
+          "index": 6,
+          "source_url": "https://dibao.com.vn/filemanager/photos/1/r1/r1-017-ghep.png",
+          "path": "/images/catalog/kinetic-r1/source-06.png",
+          "sha256": "cd15ca782ce88dd19656bc384a1ce9c14426598ad68d725fb3ea2a40634cd238",
+          "width": 600,
+          "height": 400,
+          "bytes": 157232
+        }
+      ],
+      "specification_rows": [
+        [
+          "TT",
+          "Nội dung",
+          "Thông số"
+        ],
+        [
+          "1",
+          "Trọng lượng bản thân",
+          "93kg"
+        ],
+        [
+          "2",
+          "Kích thước xe (D/R/C)",
+          "1.835mm x 720mm x 1.090mm"
+        ],
+        [
+          "3",
+          "Chiều cao yên",
+          "745mm"
+        ],
+        [
+          "4",
+          "Tải trọng",
+          "130kg – 150kg"
+        ],
+        [
+          "5",
+          "Động cơ điện, công suất (Max)",
+          "1.500W"
+        ],
+        [
+          "6",
+          "Bình điện",
+          "Tổ hợp Ắc quy 60V (5x12V) 23Ah"
+        ],
+        [
+          "7",
+          "Tôc độ tối đa",
+          "45-50km/h"
+        ],
+        [
+          "8",
+          "Quãng đường đi/lần xạc",
+          "60-90km (tùy thuộc vào tốc độ di chuyển và tải trọng)"
+        ],
+        [
+          "9",
+          "Lốp xe",
+          "Lốp không săm 90/90-10"
+        ],
+        [
+          "10",
+          "Kiểu phanh",
+          "Phanh đĩa trước, phanh đĩa sau"
+        ],
+        [
+          "11",
+          "Phuộc trước",
+          "Ống lồng, giảm chấn thủy lực"
+        ],
+        [
+          "12",
+          "Phuộc sau",
+          "Lò so trụ đơn, giảm chấn thủy lực"
+        ],
+        [
+          "13",
+          "Đèn chiếu sáng",
+          "Ful Led  4 bóng, siêu sáng"
+        ],
+        [
+          "14",
+          "Thời gian sạc điện (tối đa)",
+          "10- 12 tiếng đồng hồ"
+        ],
+        [
+          "16",
+          "Bảo vệ sụt áp:",
+          "52V±1"
+        ],
+        [
+          "16",
+          "Bảo vệ quá dòng",
+          "27A±1"
+        ],
+        [
+          "17",
+          "Bảo hành (max)",
+          "24 tháng"
+        ]
+      ]
+    }
+  ],
+  "errors": []
+}
