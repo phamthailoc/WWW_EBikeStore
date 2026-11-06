@@ -34,4 +34,7 @@ public interface OrderService {
 
     /** Attaches guest orders placed with the signed-in customer's email, once that email is proven by OTP. */
     GuestOrderLinkResponse linkGuestOrders(GuestOrderLinkRequest request, Authentication authentication);
+
+    /** Cancels PENDING orders whose payment window has passed and returns their stock. Returns how many were cancelled. */
+    int expireUnpaidOrders(java.time.LocalDateTime now);
 }

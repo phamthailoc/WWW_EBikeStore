@@ -40,6 +40,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -58,6 +59,13 @@ public class OrderServiceImpl implements OrderService {
 
     @Value("${app.order.email-otp.required:false}")
     private boolean emailOtpRequired;
+
+    // How long stock is held for an order that has not been paid or confirmed yet.
+    @Value("${app.order.vnpay-expiry:PT30M}")
+    private java.time.Duration vnpayExpiry = java.time.Duration.ofMinutes(30);
+
+    @Value("${app.order.pay-later-expiry:PT72H}")
+    private java.time.Duration payLaterExpiry = java.time.Duration.ofHours(72);
 
     private static final BigDecimal ZERO = BigDecimal.ZERO;
     private static final BigDecimal REGISTRATION_FEE_AMOUNT = new BigDecimal("2500000");
@@ -232,6 +240,38 @@ public class OrderServiceImpl implements OrderService {
         }
 
         return toResponse(orderRepository.save(order));
+    }
+
+    @Override
+    @Transactional
+    @CacheEvict(cacheNames = {
+        com.ebike.config.RedisCacheConfiguration.PRODUCT_LIST_CACHE,
+        com.ebike.config.RedisCacheConfiguration.PRODUCT_DETAIL_CACHE
+    }, allEntries = true)
+    public int expireUnpaidOrders(LocalDateTime now) {
+        LocalDateTime vnpayCutoff = now.minus(vnpayExpiry);
+        LocalDateTime payLaterCutoff = now.minus(payLaterExpiry);
+        LocalDateTime latestCutoff = vnpayCutoff.isAfter(payLaterCutoff) ? vnpayCutoff : payLaterCutoff;
+
+        List<Order> expired = new ArrayList<>();
+        for (Order order : orderRepository.findByStatusAndCreatedAtBefore(OrderStatus.PENDING, latestCutoff)) {
+            Payment payment = order.getPayment();
+            if (payment != null && payment.getPaymentStatus() == PaymentStatus.PAID) {
+                continue;
+            }
+            // VNPay orders have no payment row until the first payment URL is created.
+            boolean online = payment == null || payment.getPaymentMethod() == PaymentMethod.VNPAY;
+            if (!order.getCreatedAt().isBefore(online ? vnpayCutoff : payLaterCutoff)) {
+                continue;
+            }
+            String reason = online
+                ? "Tự động hủy: quá hạn thanh toán online."
+                : "Tự động hủy: cửa hàng chưa xác nhận đơn trả sau trong thời hạn giữ hàng.";
+            cancelOrder(order, reason, null, "Expired before payment");
+            expired.add(order);
+        }
+        orderRepository.saveAll(expired);
+        return expired.size();
     }
 
     @Override

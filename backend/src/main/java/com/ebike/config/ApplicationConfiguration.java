@@ -14,6 +14,7 @@ import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
+@org.springframework.scheduling.annotation.EnableScheduling
 @EnableConfigurationProperties({S3StorageProperties.class, VnPayProperties.class, GeminiChatProperties.class, PdfKnowledgeProperties.class})
 public class ApplicationConfiguration {
 
