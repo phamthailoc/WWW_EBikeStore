@@ -188,9 +188,21 @@ public class OrderServiceImpl implements OrderService {
         return toResponse(orderRepository.save(order));
     }
 
+    // The steps a staff member may take from each status. A cancelled or delivered order is final.
+    private static final Map<OrderStatus, List<OrderStatus>> STATUS_TRANSITIONS = Map.of(
+        OrderStatus.PENDING, List.of(OrderStatus.CONFIRMED, OrderStatus.CANCELLED),
+        OrderStatus.CONFIRMED, List.of(OrderStatus.PROCESSING, OrderStatus.CANCELLED),
+        OrderStatus.PROCESSING, List.of(OrderStatus.SHIPPED, OrderStatus.CANCELLED),
+        OrderStatus.SHIPPED, List.of(OrderStatus.DELIVERED)
+    );
+
     @Override
     @Transactional
-    public OrderResponse updateOrderStatus(Long id, OrderStatusUpdateRequest request) {
+    @CacheEvict(cacheNames = {
+        com.ebike.config.RedisCacheConfiguration.PRODUCT_LIST_CACHE,
+        com.ebike.config.RedisCacheConfiguration.PRODUCT_DETAIL_CACHE
+    }, allEntries = true)
+    public OrderResponse updateOrderStatus(Long id, OrderStatusUpdateRequest request, Authentication authentication) {
         if (request == null || request.status() == null || request.status().isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "status is required");
         }
@@ -198,10 +210,23 @@ public class OrderServiceImpl implements OrderService {
         Order order = orderRepository.findById(id)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
 
+        OrderStatus nextStatus;
         try {
-            order.setStatus(OrderStatus.valueOf(request.status().trim().toUpperCase(Locale.ROOT)));
+            nextStatus = OrderStatus.valueOf(request.status().trim().toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException exception) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid order status");
+        }
+
+        if (!STATUS_TRANSITIONS.getOrDefault(order.getStatus(), List.of()).contains(nextStatus)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                "Cannot change an order from " + order.getStatus() + " to " + nextStatus);
+        }
+
+        if (nextStatus == OrderStatus.CANCELLED) {
+            // Same effects as a customer cancelling: reason saved, pending payment closed, stock returned.
+            cancelOrder(order, request.reason(), getAuthenticatedUserOrNull(authentication), "Cancelled by staff");
+        } else {
+            order.setStatus(nextStatus);
         }
 
         return toResponse(orderRepository.save(order));
@@ -238,7 +263,13 @@ public class OrderServiceImpl implements OrderService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Orders that are already shipping or delivered cannot be cancelled");
         }
 
-        String reason = normalizeOptional(request == null ? null : request.reason());
+        cancelOrder(order, request == null ? null : request.reason(), currentUser, "Cancelled by customer");
+
+        return toResponse(orderRepository.save(order));
+    }
+
+    private void cancelOrder(Order order, String rawReason, User actor, String paymentNote) {
+        String reason = normalizeOptional(rawReason);
         if (reason == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cancellation reason is required");
         }
@@ -249,14 +280,12 @@ public class OrderServiceImpl implements OrderService {
         order.setCancellationRequestedFromStatus(order.getStatus());
         order.setStatus(OrderStatus.CANCELLED);
         order.setCancellationReason(reason);
-        order.setCancellationRequestedBy(currentUser);
+        order.setCancellationRequestedBy(actor);
         order.setCancellationRequestedAt(java.time.LocalDateTime.now());
         order.setCancellationReviewNote(null);
         order.setCancellationReviewedAt(null);
-        cancelPendingPayment(order.getPayment());
+        cancelPendingPayment(order.getPayment(), paymentNote);
         restoreStock(order);
-
-        return toResponse(orderRepository.save(order));
     }
 
     private void restoreStock(Order order) {
@@ -276,13 +305,13 @@ public class OrderServiceImpl implements OrderService {
         return stock == null ? 0 : stock;
     }
 
-    private void cancelPendingPayment(Payment payment) {
+    private void cancelPendingPayment(Payment payment, String note) {
         if (payment == null) {
             return;
         }
         if (payment.getPaymentStatus() == PaymentStatus.PENDING) {
             payment.setPaymentStatus(PaymentStatus.CANCELLED);
-            payment.setProviderResponse("Cancelled by customer");
+            payment.setProviderResponse(note);
         }
     }
 

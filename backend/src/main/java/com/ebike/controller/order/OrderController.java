@@ -62,8 +62,8 @@ public class OrderController {
 
     @PatchMapping("/{id}/status")
     @PreAuthorize("hasAuthority('" + PermissionConstants.OrderManagement.ORDER_UPDATE_STATUS + "')")
-    public OrderResponse updateOrderStatus(@PathVariable Long id, @RequestBody OrderStatusUpdateRequest request) {
-        return orderService.updateOrderStatus(id, request);
+    public OrderResponse updateOrderStatus(@PathVariable Long id, @RequestBody OrderStatusUpdateRequest request, Authentication authentication) {
+        return orderService.updateOrderStatus(id, request, authentication);
     }
 
     @PostMapping("/{id}/cancellation-request")

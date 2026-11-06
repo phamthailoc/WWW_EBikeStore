@@ -26,7 +26,7 @@ public interface OrderService {
 
     OrderResponse createOrder(OrderCreateRequest request, Authentication authentication);
 
-    OrderResponse updateOrderStatus(Long id, OrderStatusUpdateRequest request);
+    OrderResponse updateOrderStatus(Long id, OrderStatusUpdateRequest request, Authentication authentication);
 
     OrderResponse requestCancellation(Long id, OrderCancellationRequest request, Authentication authentication);
 }
