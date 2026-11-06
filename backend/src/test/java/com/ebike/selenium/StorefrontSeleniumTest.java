@@ -161,10 +161,15 @@ abstract class StorefrontSeleniumTest {
 
     /** Fills the checkout form for home delivery and submits it with the given payment method. */
     protected void placeOrder(String paymentMethod) {
+        placeOrder(paymentMethod, username + "@example.com");
+    }
+
+    /** Same as {@link #placeOrder(String)} but with the contact email typed at checkout. */
+    protected void placeOrder(String paymentMethod, String email) {
         openCheckoutWithOneBike();
         fill("customerName", "Selenium Tester");
         fill("phoneNumber", "0901234567");
-        fill("customerEmail", username + "@example.com");
+        fill("customerEmail", email);
         Select province = new Select(driver.findElement(By.name("province")));
         if (province.getFirstSelectedOption().getAttribute("value").isBlank()) {
             province.selectByIndex(1);

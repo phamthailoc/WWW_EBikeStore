@@ -153,5 +153,30 @@
   document.querySelector('#addPromotion')?.addEventListener('click',async()=>{const code=prompt('Mã ưu đãi (ví dụ SUMMER25)');if(!code)return;const campaignName=prompt('Tên chiến dịch');if(!campaignName)return;const discountType=prompt('Loại giảm giá: PERCENTAGE hoặc FIXED_AMOUNT','PERCENTAGE');if(!discountType)return;const discountValue=Number(prompt('Giá trị giảm','10'));if(!Number.isFinite(discountValue)||discountValue<=0)return;try{await send('/api/v1/admin/promotions','POST',{code:code.toUpperCase(),campaignName,discountType,discountValue,usageLimit:500,status:'WAITING',startsAt:new Date().toISOString().slice(0,19),endsAt:new Date(Date.now()+30*86400000).toISOString().slice(0,19)});tell('Đã tạo chương trình khuyến mãi.');await load()}catch(err){tell(err.message,true)}});
   table?.addEventListener('click',async e=>{const b=e.target.closest('[data-action]');if(!b)return;const id=b.dataset.id;try{if(b.dataset.action==='pay-vnpay'){b.disabled=true;try{const payment=await send('/api/v1/payments/vnpay/create','POST',{orderId:Number(id),language:'vn'});location.href=payment.paymentUrl}finally{b.disabled=false}return}if(b.dataset.action==='confirm-payment')await send(`/api/v1/manager/payments/${id}/confirm`,'PATCH',{});else if(b.dataset.action==='refund-payment'){const note=prompt('Ghi chú hoàn tiền (mã giao dịch hoàn, ngày chuyển...)');if(note===null)return;await send(`/api/v1/manager/payments/${id}/refund`,'PATCH',{note})}else if(b.dataset.action==='stock'){const stockQuantity=Number(prompt('Nhập số lượng tồn kho mới',b.dataset.stock));if(!Number.isInteger(stockQuantity)||stockQuantity<0)return;await send(`/api/v1/manager/products/${id}/stock`,'PATCH',{stockQuantity})}else if(b.dataset.action==='images'){const found=await get(`/api/v1/admin/product-images/by-product/${id}`);tell(`Sản phẩm hiện có ${found.length} ảnh. Chọn tệp để tải thêm.`);imageId=id;fileInput?.click();return}else if(b.dataset.action==='role'){const role=prompt('Vai trò mới: CUSTOMER, MANAGER hoặc ADMIN');if(!role)return;await send(`/api/v1/admin/accounts/${id}/role`,'PATCH',{role})}else if(b.dataset.action==='account-status'){const status=b.dataset.status==='ACTIVE'?'INACTIVE':'ACTIVE';await send(`/api/v1/admin/accounts/${id}/status`,'PATCH',{status})}else if(b.dataset.action==='pricing'){const amount=Number(prompt('Số tiền áp dụng',b.dataset.amount));if(!Number.isFinite(amount)||amount<0)return;await send(`/api/v1/admin/pricing-rules/${id}`,'PATCH',{amount,status:b.dataset.status})}else if(b.dataset.action==='promotion'){const item=promotions.find(x=>String(x.id)===String(id));if(!item)return;const status=prompt('Trạng thái: LIVE, WAITING, EXPIRED hoặc DISABLED',item.status);if(!status)return;await send(`/api/v1/admin/promotions/${id}`,'PATCH',{campaignName:item.campaignName,discountType:item.discountType,discountValue:item.discountValue,maxDiscountAmount:item.maxDiscountAmount,usageLimit:item.usageLimit,status,startsAt:item.startsAt,endsAt:item.endsAt})}else if(b.dataset.action==='read')await send(`/api/v1/notifications/${id}/read`,'PATCH',{});else if(b.dataset.action==='cancel-order'){const reason=prompt('Lý do hủy đơn hàng');if(reason===null)return;if(!reason.trim()){tell('Vui lòng nhập lý do hủy đơn hàng.',true);return}await send(`/api/v1/orders/${id}/cancellation-request`,'POST',{reason:reason.trim()});tell('Đã hủy đơn hàng.');await load();return}else if(b.dataset.action==='remove-favorite')await send(`/api/v1/favorites/${id}`,'DELETE');else return;tell('Đã cập nhật dữ liệu.');await load()}catch(err){tell(err.message,true)}});
   table?.addEventListener('change',async e=>{const s=e.target.closest('[data-action="order-status"]');if(!s||!s.value)return;try{if(await changeOrderStatus(s.dataset.id,s.value))tell('Trạng thái đơn hàng đã cập nhật.');await load()}catch(err){tell(err.message,true)}});
+  // Guest orders are attached only after the customer proves they own the account email with an OTP.
+  const linkButton=document.querySelector('#link-guest-orders');
+  if(page==='/customer/orders'&&linkButton){
+    linkButton.hidden=false;
+    linkButton.addEventListener('click',async()=>{
+      linkButton.disabled=true;
+      try{
+        const profile=await get('/api/v1/auth/profile');
+        const email=profile?.email;
+        if(!email){tell('Tài khoản chưa có email để xác minh.',true);return}
+        if(!confirm(`Hệ thống sẽ gửi mã xác minh tới ${email} để tìm các đơn bạn đã đặt bằng email này khi chưa đăng nhập. Tiếp tục?`))return;
+        let sent;
+        try{sent=await send('/api/v1/orders/email-verification/send','POST',{email})}
+        catch(err){tell('Chưa gửi được mã xác minh qua email. Vui lòng thử lại sau hoặc liên hệ cửa hàng.',true);return}
+        const code=prompt(`Nhập mã gồm 6 chữ số đã gửi tới ${email}`);
+        if(code===null)return;
+        if(!/^\d{6}$/.test(code.trim())){tell('Mã xác minh gồm 6 chữ số.',true);return}
+        await send('/api/v1/orders/email-verification/verify','POST',{verificationSessionId:sent.verificationSessionId,code:code.trim()});
+        const result=await send('/api/v1/orders/guest-orders/link','POST',{emailVerificationSessionId:sent.verificationSessionId});
+        tell(result.linkedOrders?`Đã liên kết ${result.linkedOrders} đơn hàng vào tài khoản.`:'Không tìm thấy đơn nào đặt bằng email này khi chưa đăng nhập.');
+        await load();
+      }catch(err){tell(err.message,true)}
+      finally{linkButton.disabled=false}
+    });
+  }
   if(page==='/admin/accounts'){const b=document.querySelector('#create-account');if(b)b.hidden=false}load();
 })();
