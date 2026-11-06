@@ -23,7 +23,7 @@
     const id=row.id??row.orderId??row.paymentId??row.productId, buttons=[];
     if(page==='/manager/payments'&&id!=null)buttons.push(`<button class="table-action" data-action="confirm-payment" data-id="${id}">Xác nhận đã thu</button>`);
     if(page==='/manager/payments'&&id!=null&&row.paymentStatus==='PAID'&&row.orderStatus==='CANCELLED')buttons.push(`<button class="table-action" data-action="refund-payment" data-id="${id}">Ghi nhận hoàn tiền</button>`);
-    if(page==='/manager/orders'&&id!=null)buttons.push(`<select class="table-action" data-action="order-status" data-id="${id}"><option value="">Cập nhật trạng thái…</option>${['CONFIRMED','PROCESSING','SHIPPED','DELIVERED','CANCELLED'].map(s=>`<option>${s}</option>`).join('')}</select>`);
+    if(page==='/manager/orders'&&id!=null&&(orderSteps[row.status]||[]).length)buttons.push(`<select class="table-action" data-action="order-status" data-id="${id}"><option value="">Cập nhật trạng thái…</option>${orderSteps[row.status].map(s=>`<option value="${s}">${orderStatusText[s]}</option>`).join('')}</select>`);
     if(page.startsWith('/manager')&&id!=null&&(page.includes('inventory')||page.includes('products')))buttons.push(`<button class="table-action" data-action="stock" data-id="${id}" data-stock="${row.stockQuantity??0}">Cập nhật tồn kho</button>`);
     if(page.startsWith('/admin')&&id!=null&&(page.includes('inventory')||page.includes('products')))buttons.push(`<button class="table-action" data-action="stock" data-id="${id}" data-stock="${row.stockQuantity??0}">Cập nhật tồn kho</button><button class="table-action" data-action="images" data-id="${id}">Quản lý ảnh</button>`);
     if(page==='/admin/accounts'&&id!=null)buttons.push(`<button class="table-action" data-action="role" data-id="${id}">Đổi vai trò</button><button class="table-action" data-action="account-status" data-id="${id}" data-status="${row.status||'ACTIVE'}">${row.status==='ACTIVE'?'Khóa tài khoản':'Mở khóa'}</button>`);
@@ -35,6 +35,7 @@
     if((page==='/customer/orders'||page==='/manager/orders'||page==='/manager')&&id!=null)buttons.push(`<a class="table-action" href="${page.startsWith('/manager')?'/manager':'/customer'}/orders/${id}">Chi tiết</a>`);
     return buttons.length?`<div class="product-action">${buttons.join('')}</div>`:'';
   };
+  const orderSummaryColumns=['orderNumber','status','totalAmount','paymentMethod','paymentStatus','createdAt','updatedAt'];
   const columnsForPage = {
     '/admin/accounts':['id','name','username','email','role','status','verified','createdAt'],
     '/admin/users':['id','name','username','email','role','status','verified','createdAt'],
@@ -57,7 +58,7 @@
     if(!records.length){empty.hidden=false;table.hidden=true;return}
     empty.hidden=true;table.hidden=false;
     const available=[...new Set(records.flatMap(row=>Object.keys(row||{})))].filter(k=>!['items','variants','permissions','specification','addresses','category','images','shipment'].includes(k));
-    const keys=(columnsForPage[page]||available.slice(0,9)).filter(k=>available.includes(k));
+    const keys=(mode==='detail'?orderSummaryColumns:columnsForPage[page]||available.slice(0,9)).filter(k=>available.includes(k));
     const hasActions=records.some(row=>actionFor(row));
     table.querySelector('thead').innerHTML=`<tr>${keys.map(k=>`<th data-field="${escape(k)}">${escape(label(k))}</th>`).join('')}${hasActions?'<th>Thao tác</th>':''}</tr>`;
     table.querySelector('tbody').innerHTML=records.map(row=>`<tr>${keys.map(k=>`<td data-field="${escape(k)}">${escape(human(row[k],k))}</td>`).join('')}${hasActions?`<td>${actionFor(row)}</td>`:''}</tr>`).join('');
@@ -72,11 +73,72 @@
   const renderMetrics=data=>{if(!data||typeof data!=='object')return;const entries=Object.entries(data).filter(([k,v])=>typeof v==='number'&&!/id$/i.test(k));metrics.innerHTML=entries.map(([k,v])=>`<article class="metric"><small>${escape(label(k))}</small><b>${escape(human(v,k))}</b></article>`).join('')};
   const reportList=rows=>rows.length?`<ol class="report-list">${rows.map(r=>`<li><span><b>${escape(r.productName||'Sản phẩm')}</b><small>${escape(human(r.quantitySold,'quantitySold'))} xe đã bán</small></span><strong>${escape(human(r.revenue,'revenue'))}</strong></li>`).join('')}</ol>`:'<p class="empty">Chưa có dữ liệu trong kỳ này.</p>';
   const renderProfile=data=>{profile.hidden=false;const fields=['firstName','lastName','email','phone','phoneNumber'];profile.innerHTML=`<form id="profileForm"><p class="eyebrow">THÔNG TIN TÀI KHOẢN</p><div class="profile-grid">${fields.filter(f=>f in(data||{})).map(f=>`<label>${escape(label(f))}<input name="${f}" value="${escape(data[f]||'')}"></label>`).join('')}</div><p><button class="button compact">Lưu hồ sơ</button></p></form>`;profile.querySelector('form').addEventListener('submit',async e=>{e.preventDefault();try{await send('/api/v1/auth/profile','PUT',Object.fromEntries(new FormData(e.currentTarget)));tell('Hồ sơ đã được cập nhật.')}catch(err){tell(err.message,true)}})};
+  // ---- order detail page -------------------------------------------------------------
+  // Mirrors OrderServiceImpl.STATUS_TRANSITIONS: the steps staff may take from each status.
+  const orderSteps={PENDING:['CONFIRMED','CANCELLED'],CONFIRMED:['PROCESSING','CANCELLED'],PROCESSING:['SHIPPED','CANCELLED'],SHIPPED:['DELIVERED']};
+  const orderStatusText={PENDING:'Chờ xử lý',CONFIRMED:'Đã xác nhận',PROCESSING:'Đang xử lý',SHIPPED:'Đang giao',DELIVERED:'Đã giao',CANCELLED:'Đã hủy'};
+  const shipmentStatusText={PENDING:'Chưa chuẩn bị',PREPARING:'Đang chuẩn bị',SHIPPED:'Đã bàn giao vận chuyển',IN_TRANSIT:'Đang vận chuyển',DELIVERED:'Đã giao',RETURNED:'Hoàn trả'};
+  const money=value=>new Intl.NumberFormat('vi-VN').format(value??0)+' ₫';
+  const when=value=>value?new Date(value).toLocaleString('vi-VN'):'—';
+  const detailPanel=(id,html)=>{
+    let panel=document.querySelector('#'+id);
+    if(!panel){panel=document.createElement('section');panel.id=id;panel.className='data-panel';panel.style.marginTop='20px';document.querySelector('.work-main').appendChild(panel);}
+    panel.innerHTML=html;
+    return panel;
+  };
+  const removePanel=id=>document.querySelector('#'+id)?.remove();
+  // Staff cancellations need a reason, exactly like the customer's. Returns false when nothing was sent.
+  const changeOrderStatus=async(id,status)=>{
+    const payload={status};
+    if(status==='CANCELLED'){
+      const reason=prompt('Lý do hủy đơn hàng');
+      if(reason===null)return false;
+      if(!reason.trim()){tell('Vui lòng nhập lý do hủy đơn hàng.',true);return false}
+      payload.reason=reason.trim();
+    }
+    await send(`/api/v1/orders/${id}/status`,'PATCH',payload);
+    return true;
+  };
+  const renderOrderItems=order=>{
+    const items=order.items||[];
+    if(!items.length){removePanel('orderItems');return}
+    const rows=items.map(item=>`<tr><td>${escape(item.productName||'—')}</td><td>${escape(item.colorName||'—')}</td><td>${escape(item.quantity??0)}</td><td>${escape(money(item.unitPrice))}</td><td>${escape(money(item.lineTotal))}</td></tr>`).join('');
+    detailPanel('orderItems',`<h2>Xe trong đơn hàng</h2><div class="table-scroll"><table><thead><tr><th>Xe</th><th>Màu</th><th>Số lượng</th><th>Đơn giá</th><th>Thành tiền</th></tr></thead><tbody>${rows}</tbody></table></div>`);
+  };
+  const renderPricing=order=>{
+    const line=(name,value)=>`<tr><td>${name}</td><td data-price="${escape(name)}">${escape(value)}</td></tr>`;
+    const lines=[line('Tạm tính',money(order.subtotal))];
+    if(order.includeRegistrationService)lines.push(line('Dịch vụ đăng ký xe',money(order.registrationFee)));
+    if(Number(order.shippingFee)>0)lines.push(line('Phí giao hàng',money(order.shippingFee)));
+    if(Number(order.discountAmount)>0)lines.push(line('Giảm giá','−'+money(order.discountAmount)));
+    lines.push(line('<strong>Tổng cộng</strong>',money(order.totalAmount)));
+    const payment=`${order.paymentMethod||'—'} · ${order.paymentStatus||'Chưa có giao dịch'}`;
+    detailPanel('orderPricing',`<h2>Giá và thanh toán</h2><div class="table-scroll"><table><tbody>${lines.join('')}</tbody></table></div><p><strong>Thanh toán:</strong> ${escape(payment)}</p>${order.notes?`<p><strong>Ghi chú:</strong> ${escape(order.notes)}</p>`:''}`);
+  };
   const renderDelivery=shipment=>{
-    let panel=document.querySelector('#shipmentDetails');
-    if(!shipment){panel?.remove();return;}
-    if(!panel){panel=document.createElement('section');panel.id='shipmentDetails';panel.className='data-panel';panel.style.marginTop='20px';document.querySelector('.work-main').appendChild(panel);}
-    panel.innerHTML=`<h2>Thông tin nhận hàng</h2><p><strong>Hình thức:</strong> ${shipment.pickupShowroom?'Nhận tại cửa hàng':'Giao hàng tại nhà'}</p><p><strong>Người nhận:</strong> ${escape(shipment.recipientName)} · ${escape(shipment.phoneNumber)}</p><p><strong>Địa chỉ:</strong> ${escape(shipment.shippingAddress)}</p>`;
+    if(!shipment){removePanel('shipmentDetails');return}
+    const status=shipmentStatusText[shipment.shipmentStatus]||shipment.shipmentStatus||'—';
+    detailPanel('shipmentDetails',`<h2>Thông tin nhận hàng</h2><p><strong>Hình thức:</strong> ${shipment.pickupShowroom?'Nhận tại cửa hàng':'Giao hàng tại nhà'}</p><p><strong>Người nhận:</strong> ${escape(shipment.recipientName)} · ${escape(shipment.phoneNumber)}</p><p><strong>Địa chỉ:</strong> ${escape(shipment.shippingAddress)}</p><p><strong>Giao nhận:</strong> ${escape(status)}${shipment.trackingNumber?` · Mã vận đơn ${escape(shipment.trackingNumber)}`:''}</p>${shipment.shippedAt?`<p><strong>Bàn giao vận chuyển:</strong> ${escape(when(shipment.shippedAt))}</p>`:''}${shipment.deliveredAt?`<p><strong>Đã giao lúc:</strong> ${escape(when(shipment.deliveredAt))}</p>`:''}`);
+  };
+  // Manager controls: only the valid next order statuses, and the shipment form (UC-16).
+  const renderManagerControls=order=>{
+    if(!page.startsWith('/manager/orders/')){return}
+    const steps=orderSteps[order.status]||[];
+    const shipment=order.shipment;
+    const canShip=shipment&&order.status!=='CANCELLED';
+    if(!steps.length&&!canShip){removePanel('orderManage');return}
+    const stepForm=steps.length?`<form id="orderStatusForm" class="flow-form"><label>Chuyển đơn sang<select name="status">${steps.map(s=>`<option value="${s}">${escape(orderStatusText[s])}</option>`).join('')}</select></label><button class="button compact">Cập nhật trạng thái</button></form>`:'';
+    const shipForm=canShip?`<form id="shipmentForm" class="flow-form"><label>Trạng thái giao nhận<select name="shipmentStatus">${Object.keys(shipmentStatusText).map(s=>`<option value="${s}"${s===shipment.shipmentStatus?' selected':''}>${escape(shipmentStatusText[s])}</option>`).join('')}</select></label><label>Mã vận đơn<input name="trackingNumber" value="${escape(shipment.trackingNumber||'')}" maxlength="100"></label><button class="button compact">Lưu giao nhận</button></form>`:'';
+    const panel=detailPanel('orderManage',`<h2>Xử lý đơn hàng</h2><div class="profile-grid">${stepForm}${shipForm}</div>`);
+    panel.querySelector('#orderStatusForm')?.addEventListener('submit',async e=>{
+      e.preventDefault();
+      try{if(await changeOrderStatus(order.id,new FormData(e.target).get('status'))){tell('Trạng thái đơn hàng đã cập nhật.');await load()}}catch(err){tell(err.message,true)}
+    });
+    panel.querySelector('#shipmentForm')?.addEventListener('submit',async e=>{
+      e.preventDefault();
+      const form=new FormData(e.target);
+      try{await send(`/api/v1/manager/orders/${order.id}/shipment`,'PATCH',{shipmentStatus:form.get('shipmentStatus'),trackingNumber:form.get('trackingNumber')});tell('Đã cập nhật thông tin giao nhận.');await load()}catch(err){tell(err.message,true)}
+    });
   };
   const renderCancellation=order=>{
     let panel=document.querySelector('#cancellationDetails');
@@ -84,12 +146,12 @@
     if(!panel){panel=document.createElement('section');panel.id='cancellationDetails';panel.className='data-panel';panel.style.marginTop='20px';document.querySelector('.work-main').appendChild(panel);}
     panel.innerHTML=`<h2>Thông tin hủy đơn</h2><p><strong>Lý do:</strong> ${escape(order.cancellationReason)}</p>${order.cancellationRequestedAt?`<p><strong>Thời điểm hủy:</strong> ${escape(new Date(order.cancellationRequestedAt).toLocaleString('vi-VN'))}</p>`:''}`;
   };
-  const load=async()=>{if(!api){loading.hidden=true;empty.hidden=true;return}loading.hidden=false;empty.hidden=true;try{const data=await get(api);if(secondaryApi)renderPromotions(await get(secondaryApi));if(mode==='dashboard'){renderMetrics(data);if(page==='/manager/reports'){document.querySelector('#panel-title').textContent='Doanh thu theo kỳ';renderTable(data?.breakdown||[]);let extra=document.querySelector('#report-products');if(!extra){extra=document.createElement('section');extra.id='report-products';extra.className='data-panel report-products';document.querySelector('.work-main').appendChild(extra)}extra.innerHTML=`<div class="report-columns"><div><p class="eyebrow">KINETIC / SẢN PHẨM</p><h2>Sản phẩm bán chạy</h2>${reportList(data?.topProducts||[])}</div><div><p class="eyebrow">KINETIC / TỒN KHO</p><h2>Sản phẩm bán chậm</h2>${reportList(data?.slowProducts||[])}</div></div>`;return}const rows=page==='/admin'?(data?.auditLogs||[]):page==='/manager'?(data?.recentOrders||[]):data;document.querySelector('#panel-title').textContent=page==='/admin'?'Nhật ký hoạt động gần đây':'Đơn hàng gần đây';renderTable(Array.isArray(rows)?rows:[])}else if(mode==='profile'){loading.hidden=true;renderProfile(data||{});renderTable([])}else if(mode==='detail'){document.querySelector('#panel-title').textContent='Thông tin đơn hàng';renderTable([data]);renderDelivery(data.shipment);renderCancellation(data)}else if(page==='/favorites'){document.querySelector('#panel-title').textContent='Xe bạn đã lưu';renderFavorites(data)}else{document.querySelector('#panel-title').textContent=mode==='inventory'?'Danh mục xe và tồn kho':mode==='pricing'?'Quy tắc giá hiện hành':'Danh sách';renderTable(data)}}catch(err){loading.hidden=true;tell(err.message,true)}};
+  const load=async()=>{if(!api){loading.hidden=true;empty.hidden=true;return}loading.hidden=false;empty.hidden=true;try{const data=await get(api);if(secondaryApi)renderPromotions(await get(secondaryApi));if(mode==='dashboard'){renderMetrics(data);if(page==='/manager/reports'){document.querySelector('#panel-title').textContent='Doanh thu theo kỳ';renderTable(data?.breakdown||[]);let extra=document.querySelector('#report-products');if(!extra){extra=document.createElement('section');extra.id='report-products';extra.className='data-panel report-products';document.querySelector('.work-main').appendChild(extra)}extra.innerHTML=`<div class="report-columns"><div><p class="eyebrow">KINETIC / SẢN PHẨM</p><h2>Sản phẩm bán chạy</h2>${reportList(data?.topProducts||[])}</div><div><p class="eyebrow">KINETIC / TỒN KHO</p><h2>Sản phẩm bán chậm</h2>${reportList(data?.slowProducts||[])}</div></div>`;return}const rows=page==='/admin'?(data?.auditLogs||[]):page==='/manager'?(data?.recentOrders||[]):data;document.querySelector('#panel-title').textContent=page==='/admin'?'Nhật ký hoạt động gần đây':'Đơn hàng gần đây';renderTable(Array.isArray(rows)?rows:[])}else if(mode==='profile'){loading.hidden=true;renderProfile(data||{});renderTable([])}else if(mode==='detail'){document.querySelector('#panel-title').textContent='Thông tin đơn hàng';renderTable([data]);renderOrderItems(data);renderPricing(data);renderDelivery(data.shipment);renderManagerControls(data);renderCancellation(data)}else if(page==='/favorites'){document.querySelector('#panel-title').textContent='Xe bạn đã lưu';renderFavorites(data)}else{document.querySelector('#panel-title').textContent=mode==='inventory'?'Danh mục xe và tồn kho':mode==='pricing'?'Quy tắc giá hiện hành':'Danh sách';renderTable(data)}}catch(err){loading.hidden=true;tell(err.message,true)}};
   document.querySelector('#refresh')?.addEventListener('click',load);document.querySelector('#logout')?.addEventListener('click',async()=>{try{await send('/api/v1/auth/logout','POST')}finally{location.href='/'}});
   document.querySelector('#create-account')?.addEventListener('click',async()=>{const name=prompt('Họ và tên');if(!name)return;const username=prompt('Tên đăng nhập');if(!username)return;const email=prompt('Email');if(!email)return;const password=prompt('Mật khẩu tạm thời (ít nhất 8 ký tự)');if(!password)return;const role=prompt('Vai trò: CUSTOMER, MANAGER hoặc ADMIN','CUSTOMER');if(!role)return;try{await send('/api/v1/admin/accounts','POST',{name,username,email,password,role,status:'ACTIVE',verified:true});tell('Đã tạo tài khoản.');await load()}catch(err){tell(err.message,true)}});
   const fileInput=document.querySelector('#productImageFile');let imageId=null;fileInput?.addEventListener('change',async()=>{const file=fileInput.files?.[0];if(!file||!imageId)return;const fd=new FormData();fd.append('productId',imageId);fd.append('file',file);fd.append('altText',file.name);try{const r=await fetch('/api/v1/admin/product-images',{method:'POST',credentials:'same-origin',body:fd});if(!r.ok)throw Error(await r.text());tell('Đã tải ảnh sản phẩm lên.')}catch(err){tell(err.message,true)}finally{fileInput.value=''}});
   document.querySelector('#addPromotion')?.addEventListener('click',async()=>{const code=prompt('Mã ưu đãi (ví dụ SUMMER25)');if(!code)return;const campaignName=prompt('Tên chiến dịch');if(!campaignName)return;const discountType=prompt('Loại giảm giá: PERCENTAGE hoặc FIXED_AMOUNT','PERCENTAGE');if(!discountType)return;const discountValue=Number(prompt('Giá trị giảm','10'));if(!Number.isFinite(discountValue)||discountValue<=0)return;try{await send('/api/v1/admin/promotions','POST',{code:code.toUpperCase(),campaignName,discountType,discountValue,usageLimit:500,status:'WAITING',startsAt:new Date().toISOString().slice(0,19),endsAt:new Date(Date.now()+30*86400000).toISOString().slice(0,19)});tell('Đã tạo chương trình khuyến mãi.');await load()}catch(err){tell(err.message,true)}});
   table?.addEventListener('click',async e=>{const b=e.target.closest('[data-action]');if(!b)return;const id=b.dataset.id;try{if(b.dataset.action==='pay-vnpay'){b.disabled=true;try{const payment=await send('/api/v1/payments/vnpay/create','POST',{orderId:Number(id),language:'vn'});location.href=payment.paymentUrl}finally{b.disabled=false}return}if(b.dataset.action==='confirm-payment')await send(`/api/v1/manager/payments/${id}/confirm`,'PATCH',{});else if(b.dataset.action==='refund-payment'){const note=prompt('Ghi chú hoàn tiền (mã giao dịch hoàn, ngày chuyển...)');if(note===null)return;await send(`/api/v1/manager/payments/${id}/refund`,'PATCH',{note})}else if(b.dataset.action==='stock'){const stockQuantity=Number(prompt('Nhập số lượng tồn kho mới',b.dataset.stock));if(!Number.isInteger(stockQuantity)||stockQuantity<0)return;await send(`/api/v1/manager/products/${id}/stock`,'PATCH',{stockQuantity})}else if(b.dataset.action==='images'){const found=await get(`/api/v1/admin/product-images/by-product/${id}`);tell(`Sản phẩm hiện có ${found.length} ảnh. Chọn tệp để tải thêm.`);imageId=id;fileInput?.click();return}else if(b.dataset.action==='role'){const role=prompt('Vai trò mới: CUSTOMER, MANAGER hoặc ADMIN');if(!role)return;await send(`/api/v1/admin/accounts/${id}/role`,'PATCH',{role})}else if(b.dataset.action==='account-status'){const status=b.dataset.status==='ACTIVE'?'INACTIVE':'ACTIVE';await send(`/api/v1/admin/accounts/${id}/status`,'PATCH',{status})}else if(b.dataset.action==='pricing'){const amount=Number(prompt('Số tiền áp dụng',b.dataset.amount));if(!Number.isFinite(amount)||amount<0)return;await send(`/api/v1/admin/pricing-rules/${id}`,'PATCH',{amount,status:b.dataset.status})}else if(b.dataset.action==='promotion'){const item=promotions.find(x=>String(x.id)===String(id));if(!item)return;const status=prompt('Trạng thái: LIVE, WAITING, EXPIRED hoặc DISABLED',item.status);if(!status)return;await send(`/api/v1/admin/promotions/${id}`,'PATCH',{campaignName:item.campaignName,discountType:item.discountType,discountValue:item.discountValue,maxDiscountAmount:item.maxDiscountAmount,usageLimit:item.usageLimit,status,startsAt:item.startsAt,endsAt:item.endsAt})}else if(b.dataset.action==='read')await send(`/api/v1/notifications/${id}/read`,'PATCH',{});else if(b.dataset.action==='cancel-order'){const reason=prompt('Lý do hủy đơn hàng');if(reason===null)return;if(!reason.trim()){tell('Vui lòng nhập lý do hủy đơn hàng.',true);return}await send(`/api/v1/orders/${id}/cancellation-request`,'POST',{reason:reason.trim()});tell('Đã hủy đơn hàng.');await load();return}else if(b.dataset.action==='remove-favorite')await send(`/api/v1/favorites/${id}`,'DELETE');else return;tell('Đã cập nhật dữ liệu.');await load()}catch(err){tell(err.message,true)}});
-  table?.addEventListener('change',async e=>{const s=e.target.closest('[data-action="order-status"]');if(!s||!s.value)return;try{await send(`/api/v1/orders/${s.dataset.id}/status`,'PATCH',{status:s.value});tell('Trạng thái đơn hàng đã cập nhật.');await load()}catch(err){tell(err.message,true)}});
+  table?.addEventListener('change',async e=>{const s=e.target.closest('[data-action="order-status"]');if(!s||!s.value)return;try{if(await changeOrderStatus(s.dataset.id,s.value))tell('Trạng thái đơn hàng đã cập nhật.');await load()}catch(err){tell(err.message,true)}});
   if(page==='/admin/accounts'){const b=document.querySelector('#create-account');if(b)b.hidden=false}load();
 })();

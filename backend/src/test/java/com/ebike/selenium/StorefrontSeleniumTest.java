@@ -21,6 +21,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
+import org.openqa.selenium.Alert;
 import org.openqa.selenium.By;
 import org.openqa.selenium.ElementClickInterceptedException;
 import org.openqa.selenium.JavascriptExecutor;
@@ -262,5 +263,24 @@ abstract class StorefrontSeleniumTest {
             }
         }
         throw new AssertionError("order " + orderNumber + " not found for " + username);
+    }
+
+    protected String placePayLaterOrder() {
+        placeOrder("PAY_LATER");
+        wait.until(ExpectedConditions.urlContains("/checkout/success"));
+        return wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".order-number"))).getText();
+    }
+
+    protected void answerPrompt(String reason) {
+        Alert prompt = wait.until(ExpectedConditions.alertIsPresent());
+        prompt.sendKeys(reason);
+        prompt.accept();
+    }
+
+    protected String notice() {
+        return wait.until(d -> {
+            WebElement notice = d.findElement(By.id("notice"));
+            return notice.isDisplayed() && !notice.getText().isBlank() ? notice.getText() : null;
+        });
     }
 }
