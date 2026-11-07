@@ -49,6 +49,7 @@ class ChatbotPricingTest {
         assertTrue(context.contains(String.format("%,.0f VND", new BigDecimal("650000"))), context);
         assertFalse(context.contains(String.format("%,.0f VND", new BigDecimal("2500000"))), context);
         assertFalse(context.contains("ưu đãi showroom"), "checkout has no showroom incentive: " + context);
+        assertTrue(context.contains("nhận xe tại cửa hàng") && context.contains("VNeID"), context);
     }
 
     @Test
@@ -60,6 +61,7 @@ class ChatbotPricingTest {
         assertTrue(answer.contains(String.format("%,.0f VND", new BigDecimal("650000"))), answer);
         assertFalse(answer.contains("2500000"), answer);
         assertFalse(answer.contains("{"), "placeholder must be filled in: " + answer);
+        assertTrue(answer.contains("nhận xe tại cửa hàng") && answer.contains("VNeID"), "help only at pickup; the owner declares on VNeID: " + answer);
         assertFalse(answer.contains("ưu đãi showroom"), "checkout has no showroom incentive: " + answer);
     }
 }

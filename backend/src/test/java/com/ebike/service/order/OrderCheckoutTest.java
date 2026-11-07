@@ -220,10 +220,12 @@ class OrderCheckoutTest {
         stock();kickScooter();
         var plated=service.quoteOrder(new OrderQuoteRequest(true,List.of(new OrderCreateItemRequest(1L,1)),null));
         assertTrue(plated.registrationServiceAvailable());
+        assertTrue(plated.registrationRequired());
         assertEquals(0, plated.registrationFee().compareTo(new BigDecimal("500000")));
 
         var small=service.quoteOrder(new OrderQuoteRequest(true,List.of(new OrderCreateItemRequest(2L,1)),null));
         assertFalse(small.registrationServiceAvailable());
+        assertFalse(small.registrationRequired());
         assertEquals(0, small.registrationFee().compareTo(BigDecimal.ZERO));
         assertEquals(0, small.totalAmount().compareTo(new BigDecimal("5000000")));
     }
@@ -238,26 +240,46 @@ class OrderCheckoutTest {
     @Test void anOrderCannotAskForRegistrationWhenNoBikeNeedsOne() {
         kickScooter();
         var req=new OrderCreateRequest(null,"Khách Hàng","0901234567","checkout@example.com",null,
-            null,"123 Nguyễn Trãi, Phường Bến Thành","PAY_LATER",null,null,null,true,null,
-            List.of(new OrderCreateItemRequest(2L,1)),"HOME_DELIVERY","Hà Nội");
-        assertThrows(ResponseStatusException.class,()->service.createOrder(req,null));
+            1L,null,"PAY_LATER",null,null,null,true,null,
+            List.of(new OrderCreateItemRequest(2L,1)),"STORE_PICKUP",null);
+        var ex=assertThrows(ResponseStatusException.class,()->service.createOrder(req,null));
+        assertTrue(ex.getReason().contains("không thuộc diện phải đăng ký"), ex.getReason());
         verify(orders,never()).save(any());
     }
 
     @Test void registrationServiceIsChargedPerBike() {
-        stock(); save(); showroomIn("TP. Ho Chi Minh");
+        stock(); save(); openShowroom();
         // 2 bikes x 500.000 registration service (pricing default)
         var quote=service.quoteOrder(new OrderQuoteRequest(true,List.of(new OrderCreateItemRequest(1L,2)),null));
         assertEquals(0, quote.registrationFee().compareTo(new BigDecimal("1000000")));
         assertEquals(0, quote.registrationServicePerBike().compareTo(new BigDecimal("500000")));
         assertEquals(0, quote.totalAmount().compareTo(new BigDecimal("41600000")));
         var twoBikes=new OrderCreateRequest(null,"Khách Hàng","0901234567","checkout@example.com",null,
-            null,"123 Nguyễn Trãi, Phường Bến Thành","PAY_LATER",null,null,null,true,null,
-            List.of(new OrderCreateItemRequest(1L,2)),"HOME_DELIVERY","Hồ Chí Minh");
+            1L,null,"PAY_LATER",null,null,null,true,null,
+            List.of(new OrderCreateItemRequest(1L,2)),"STORE_PICKUP",null);
         var order=service.createOrder(twoBikes,null);
         assertEquals(0, order.registrationFee().compareTo(new BigDecimal("1000000")));
-        // + 2 bikes x 200.000 home delivery inside Hồ Chí Minh
-        assertEquals(0, order.totalAmount().compareTo(new BigDecimal("42000000")));
+        assertEquals(0, order.totalAmount().compareTo(new BigDecimal("41600000")));
+    }
+
+    @Test void registrationHelpIsOnlyOfferedWhenTheBuyerCollectsAtTheStore() {
+        // The owner declares the bike on their own VNeID account; the store can only help when they come in.
+        stock(); showroomIn("TP. Ho Chi Minh");
+        var items=List.of(new OrderCreateItemRequest(1L,1));
+        var home=service.quoteOrder(new OrderQuoteRequest(true,items,null,"HOME_DELIVERY","Hồ Chí Minh"));
+        assertTrue(home.registrationRequired(), "the bike still needs a plate");
+        assertFalse(home.registrationServiceAvailable());
+        assertEquals(0, home.registrationFee().compareTo(BigDecimal.ZERO));
+        var pickup=service.quoteOrder(new OrderQuoteRequest(true,items,null,"STORE_PICKUP",null));
+        assertTrue(pickup.registrationServiceAvailable());
+        assertEquals(0, pickup.registrationFee().compareTo(new BigDecimal("500000")));
+
+        var homeOrder=new OrderCreateRequest(null,"Khách Hàng","0901234567","checkout@example.com",null,
+            null,"123 Nguyễn Trãi, Phường Bến Thành","PAY_LATER",null,null,null,true,null,
+            items,"HOME_DELIVERY","Hồ Chí Minh");
+        var ex=assertThrows(ResponseStatusException.class,()->service.createOrder(homeOrder,null));
+        assertTrue(ex.getReason().contains("nhận xe tại cửa hàng"), ex.getReason());
+        verify(orders,never()).save(any());
     }
 
     @Test void homeDeliveryStoresProvinceAndAddressWithoutShowroom() {

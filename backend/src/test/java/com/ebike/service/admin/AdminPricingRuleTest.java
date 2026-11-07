@@ -40,7 +40,7 @@ class AdminPricingRuleTest {
         service = new AdminServiceImpl(pricingRules, promotions, audits, users, roles, encoder);
         rule = new PricingRule();
         rule.setCode("REGISTRATION_SERVICE");
-        rule.setName("Phí dịch vụ làm hồ sơ đăng ký xe");
+        rule.setName("Phí hỗ trợ đăng ký biển số tại cửa hàng");
         rule.setAmount(new BigDecimal("500000"));
         rule.setUnit("VND/xe");
     }

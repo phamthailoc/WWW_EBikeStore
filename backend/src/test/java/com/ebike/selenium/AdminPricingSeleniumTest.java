@@ -51,6 +51,9 @@ class AdminPricingSeleniumTest extends StorefrontSeleniumTest {
     /** Ticks the registration service at checkout and returns the digits of the "Phí hồ sơ" line. */
     private String feeShownAtCheckout() {
         openCheckoutWithOneBike();
+        // Registration help is only offered when the bike is collected at a store.
+        chooseStorePickup();
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".registration-option")));
         By service = By.name("includeRegistrationService");
         if (!driver.findElement(service).isSelected()) {
             click(service);

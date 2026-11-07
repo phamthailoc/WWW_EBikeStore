@@ -14,7 +14,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import org.openqa.selenium.By;
 import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.Select;
 
 /** B5: registration is the owner's job; the store only sells a paperwork service, and state fees stay out of the total. */
 @Tag("selenium")
@@ -27,26 +26,37 @@ class RegistrationServiceSeleniumTest extends StorefrontSeleniumTest {
     private static final By OPTION = By.cssSelector(".registration-option");
 
     @Test
-    void optionIsAServiceAndStateFeesAreOnlyANote() {
+    void homeDeliveryExplainsSelfRegistrationAndOnlyPickupOffersHelp() {
         openCheckoutWithOneBike();
-        wait.until(ExpectedConditions.visibilityOfElementLocated(OPTION));
-        assertTrue(driver.findElement(OPTION).getText().contains("Nhờ cửa hàng làm hộ thủ tục đăng ký xe"));
-
-        wait.until(d -> !d.findElement(NOTE).getText().isBlank());
-        String withoutService = driver.findElement(NOTE).getText();
-        assertTrue(withoutService.contains("tự đăng ký") && withoutService.contains("phiếu kiểm tra chất lượng"),
-            "unchecked: tells the buyer how to register on their own: " + withoutService);
-        assertTrue(withoutService.contains("Nhà nước") && withoutService.contains("không tính vào đơn"),
-            "state fees are explained and left out of the order: " + withoutService);
-        long totalBefore = digits(TOTAL);
+        // Checkout opens on home delivery: the owner registers on their own VNeID account, so no option to tick.
+        wait.until(d -> d.findElement(NOTE).getText().contains("Giao tận nhà"));
+        assertFalse(driver.findElement(OPTION).isDisplayed(), "no registration help for home delivery");
+        String home = driver.findElement(NOTE).getText();
+        assertTrue(home.contains("VNeID") && home.contains("phiếu kiểm tra chất lượng") && home.contains("nhận xe tại cửa hàng"),
+            "home delivery: tells the owner to register on VNeID and where help is offered: " + home);
+        assertTrue(home.contains("Nhà nước") && home.contains("không tính vào đơn"),
+            "state fees are explained and left out of the order: " + home);
         assertEquals(0, digits(FEE));
+
+        chooseStorePickup();
+        wait.until(ExpectedConditions.visibilityOfElementLocated(OPTION));
+        assertTrue(driver.findElement(OPTION).getText().contains("Hỗ trợ đăng ký biển số tại cửa hàng"));
+        wait.until(d -> d.findElement(NOTE).getText().startsWith("Nếu không chọn"));
+        long totalBefore = digits(TOTAL);
 
         click(By.name("includeRegistrationService"));
         wait.until(d -> digits(FEE) > 0);
         assertEquals(digits(FEE), digits(TOTAL) - totalBefore, "ticking the service adds only the store's service fee");
-        assertTrue(driver.findElement(NOTE).getText().contains("Khoản cộng thêm ở trên là phí dịch vụ của cửa hàng"), driver.findElement(NOTE).getText());
-    }
+        String helped = driver.findElement(NOTE).getText();
+        assertTrue(helped.contains("có mặt") && helped.contains("VNeID mức 2") && helped.contains("Khoản cộng thêm ở trên là phí dịch vụ của cửa hàng"),
+            "pickup with help: the owner still declares in person: " + helped);
 
+        // Back to home delivery: the option goes away, unticked, and the fee with it.
+        js("arguments[0].click()", driver.findElement(By.cssSelector("input[name='deliveryMethod'][value='HOME_DELIVERY']")));
+        wait.until(ExpectedConditions.invisibilityOfElementLocated(OPTION));
+        assertFalse(driver.findElement(By.name("includeRegistrationService")).isSelected());
+        wait.until(d -> digits(FEE) == 0);
+    }
 
     @Test
     void optionDisappearsWithoutAnErrorWhenTheAdminSwitchesItOffMidCheckout() throws Exception {
@@ -67,17 +77,19 @@ class RegistrationServiceSeleniumTest extends StorefrontSeleniumTest {
         String status = rule.path("status").asText();
         try {
             openCheckoutWithOneBike();
+            chooseStorePickup();
             wait.until(ExpectedConditions.visibilityOfElementLocated(OPTION));
             click(By.name("includeRegistrationService"));
             wait.until(d -> digits(FEE) > 0);
 
             call(admin, "PATCH", "/api/v1/admin/pricing-rules/" + id, Map.of("amount", amount, "status", "INACTIVE"));
-            // Any change that requotes, e.g. picking the province.
-            new Select(driver.findElement(By.name("province"))).selectByVisibleText("Hồ Chí Minh");
+            // Any change that requotes, e.g. applying the (empty) promo code.
+            click(By.id("applyPromo"));
             wait.until(ExpectedConditions.invisibilityOfElementLocated(OPTION));
             assertFalse(driver.findElement(By.name("includeRegistrationService")).isSelected(), "the hidden option is unticked");
             assertEquals(0, digits(FEE), "no service fee once the service is off");
             assertTrue(driver.findElements(By.cssSelector("#checkoutQuote .commerce-error")).isEmpty(), "the quote shows no error");
+            assertTrue(driver.findElement(NOTE).getText().startsWith("Xe cần đăng ký biển số"), "the self-registration note stays: " + driver.findElement(NOTE).getText());
         } finally {
             call(admin, "PATCH", "/api/v1/admin/pricing-rules/" + id, Map.of("amount", amount, "status", status));
         }

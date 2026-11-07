@@ -64,7 +64,7 @@ CREATE INDEX IF NOT EXISTS idx_admin_audit_logs_created_at ON ebike_admin.admin_
 
 INSERT INTO ebike_admin.pricing_rules (code, name, description, amount, unit, status, effective_from)
 VALUES
-    ('REGISTRATION_SERVICE', 'Phí dịch vụ làm hồ sơ đăng ký xe', 'Phí cửa hàng thu khi làm hộ thủ tục đăng ký xe. Không gồm lệ phí nộp Nhà nước.', 500000, 'VND/xe', 'ACTIVE', CURRENT_TIMESTAMP),
+    ('REGISTRATION_SERVICE', 'Phí hỗ trợ đăng ký biển số tại cửa hàng', 'Nhân viên hỗ trợ chủ xe tự kê khai trên VNeID khi nhận xe tại cửa hàng. Không gồm lệ phí nộp Nhà nước.', 500000, 'VND/xe', 'ACTIVE', CURRENT_TIMESTAMP),
     ('HOME_DELIVERY_SAME_CITY', 'Phí giao xe tận nhà cùng tỉnh', 'Giao xe đến địa chỉ trong tỉnh, thành phố có showroom.', 200000, 'VND/xe', 'ACTIVE', CURRENT_TIMESTAMP),
     ('HOME_DELIVERY_OTHER_PROVINCE', 'Phí giao xe tận nhà khác tỉnh', 'Giao xe đến địa chỉ ở tỉnh, thành phố không có showroom.', 800000, 'VND/xe', 'ACTIVE', CURRENT_TIMESTAMP),
     ('REGISTRATION_TAX_RATE_CENTRAL', 'Tỷ lệ lệ phí trước bạ (thành phố lớn)', 'Chỉ hiển thị ước tính tham khảo, không cộng vào đơn.', 5, '%', 'ACTIVE', CURRENT_TIMESTAMP),

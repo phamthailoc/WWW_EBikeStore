@@ -177,7 +177,7 @@ public class OrderServiceImpl implements OrderService {
         order.setStatus(OrderStatus.PENDING);
         boolean includeRegistrationService = shouldIncludeRegistrationService(request.includeRegistrationService());
         List<OrderCreateItemRequest> items = validateQuoteItems(request.items());
-        assertRegistrationServiceOffered(includeRegistrationService, items);
+        assertRegistrationServiceOffered(includeRegistrationService, items, isHomeDelivery(request));
         order.setIncludeRegistrationService(includeRegistrationService);
         validateCheckoutDetails(request);
         if (emailOtpRequired) {
@@ -613,7 +613,7 @@ public class OrderServiceImpl implements OrderService {
 
         // The quote is only a preview: a tick on a service the admin has since switched off is ignored here
         // (checkout then unticks and hides it); placing the order still rejects it.
-        boolean registrationServiceOffered = registrationServiceOffered(items);
+        boolean registrationServiceOffered = !homeDelivery && registrationServiceOffered(items);
         BigDecimal promoDiscountAmount = resolvePromoDiscount(discountCode, subtotal);
         BigDecimal registrationServicePerBike = pricingService.registrationServicePerBike();
         BigDecimal registrationFee = registrationFee(includeRegistrationService && registrationServiceOffered, registrationServicePerBike, items);
@@ -629,7 +629,8 @@ public class OrderServiceImpl implements OrderService {
             registrationServicePerBike,
             registrationServiceOffered,
             percentOf(subtotal, pricingService.registrationTaxRateOther()),
-            percentOf(subtotal, pricingService.registrationTaxRateCentral())
+            percentOf(subtotal, pricingService.registrationTaxRateCentral()),
+            registrableBikes(items) > 0
         );
     }
 
@@ -637,17 +638,21 @@ public class OrderServiceImpl implements OrderService {
         return amount.multiply(percent).divide(BigDecimal.valueOf(100), 0, java.math.RoundingMode.HALF_UP);
     }
 
-    /** The store offers the service, and at least one bike in the order must be registered. */
+    /** The store offers the service, and at least one bike in the order must be registered (pickup is checked by callers). */
     private boolean registrationServiceOffered(List<OrderCreateItemRequest> items) {
         return pricingService.registrationServiceOffered() && registrableBikes(items) > 0;
     }
 
-    private void assertRegistrationServiceOffered(boolean requested, List<OrderCreateItemRequest> items) {
+    private void assertRegistrationServiceOffered(boolean requested, List<OrderCreateItemRequest> items, boolean homeDelivery) {
         if (!requested) {
             return;
         }
         if (!pricingService.registrationServiceOffered()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cửa hàng hiện không nhận làm hộ thủ tục đăng ký xe.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cửa hàng hiện không nhận hỗ trợ đăng ký xe.");
+        }
+        if (homeDelivery) {
+            // The owner declares the bike on their own VNeID account, so the store can only help in person.
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Hỗ trợ đăng ký biển số chỉ áp dụng khi nhận xe tại cửa hàng.");
         }
         if (registrableBikes(items) == 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Xe trong đơn không thuộc diện phải đăng ký biển số.");

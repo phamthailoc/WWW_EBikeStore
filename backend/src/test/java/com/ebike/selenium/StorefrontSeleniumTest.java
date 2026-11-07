@@ -159,6 +159,11 @@ abstract class StorefrontSeleniumTest {
         wait.until(ExpectedConditions.elementToBeClickable(By.id("placeOrder")));
     }
 
+    /** Switches checkout to collecting the bike at a store, which requotes the order. */
+    protected void chooseStorePickup() {
+        js("arguments[0].click()", driver.findElement(By.cssSelector("input[name='deliveryMethod'][value='STORE_PICKUP']")));
+    }
+
     /** Fills the checkout form for home delivery and submits it with the given payment method. */
     protected void placeOrder(String paymentMethod) {
         placeOrder(paymentMethod, username + "@example.com");

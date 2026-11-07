@@ -534,7 +534,7 @@ public class ChatbotService {
         return """
             Quy trình đặt hàng: khách hàng đăng nhập rồi nhập họ tên số điện thoại email, xác thực OTP email, chọn showroom nhận xe, địa chỉ cụ thể và ghi chú nếu có. Hệ thống không yêu cầu CCCD khi đặt hàng.
             Nhận xe: hệ thống hiện ưu tiên nhận xe tại showroom đã chọn trong TP.HCM.
-            Báo giá checkout: phí dịch vụ hỗ trợ hồ sơ đăng ký xe %s mỗi xe (khách tự chọn, không bắt buộc).
+            Báo giá checkout: phí hỗ trợ đăng ký biển số %s mỗi xe, chỉ khi khách nhận xe tại cửa hàng (khách tự chọn, không bắt buộc); chủ xe cần có mặt và tự kê khai trên VNeID mức 2. Giao tận nhà thì chủ xe tự đăng ký.
             Thanh toán: hỗ trợ lưu phương thức thanh toán theo đơn và có luồng VNPay. Khi thanh toán VNPay thành công hệ thống cập nhật payment PAID và đơn hàng CONFIRMED.
             VNPay IPN: backend nhận callback tại /api/v1/payments/vnpay/ipn. Return URL dùng để hiển thị kết quả cho khách hàng.
             """.formatted(formatCurrency(pricingService.registrationServicePerBike())).trim();
