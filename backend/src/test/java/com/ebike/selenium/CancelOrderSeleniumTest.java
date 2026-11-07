@@ -93,7 +93,7 @@ class CancelOrderSeleniumTest extends StorefrontSeleniumTest {
         HttpClient manager = managerApi();
         String orderNumber = placePayLaterOrder();
         long orderId = findOrder(orderNumber).path("id").asLong();
-        call(manager, "PATCH", "/api/v1/orders/" + orderId + "/status", Map.of("status", "PROCESSING"));
+        moveThrough(manager, orderId, "CONFIRMED", "PROCESSING");
 
         driver.get(baseUrl + "/customer/orders");
         click(orderRow(orderNumber).findElement(CANCEL_BUTTON));
@@ -108,7 +108,7 @@ class CancelOrderSeleniumTest extends StorefrontSeleniumTest {
         HttpClient manager = managerApi();
         String orderNumber = placePayLaterOrder();
         long orderId = findOrder(orderNumber).path("id").asLong();
-        call(manager, "PATCH", "/api/v1/orders/" + orderId + "/status", Map.of("status", "SHIPPED"));
+        moveThrough(manager, orderId, "CONFIRMED", "PROCESSING", "SHIPPED");
 
         driver.get(baseUrl + "/customer/orders");
         assertTrue(orderRow(orderNumber).findElements(CANCEL_BUTTON).isEmpty());
@@ -119,7 +119,7 @@ class CancelOrderSeleniumTest extends StorefrontSeleniumTest {
         HttpClient manager = managerApi();
         String orderNumber = placePayLaterOrder();
         long orderId = findOrder(orderNumber).path("id").asLong();
-        call(manager, "PATCH", "/api/v1/orders/" + orderId + "/status", Map.of("status", "PROCESSING"));
+        moveThrough(manager, orderId, "CONFIRMED", "PROCESSING");
         call(manager, "PATCH", "/api/v1/manager/orders/" + orderId + "/shipment", Map.of("shipmentStatus", "IN_TRANSIT"));
 
         driver.get(baseUrl + "/customer/orders");
@@ -148,23 +148,11 @@ class CancelOrderSeleniumTest extends StorefrontSeleniumTest {
 
     // ---- steps ---------------------------------------------------------------------------
 
-    private String placePayLaterOrder() {
-        placeOrder("PAY_LATER");
-        wait.until(ExpectedConditions.urlContains("/checkout/success"));
-        return wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".order-number"))).getText();
-    }
-
-    private void answerPrompt(String reason) {
-        Alert prompt = wait.until(ExpectedConditions.alertIsPresent());
-        prompt.sendKeys(reason);
-        prompt.accept();
-    }
-
-    private String notice() {
-        return wait.until(d -> {
-            WebElement notice = d.findElement(By.id("notice"));
-            return notice.isDisplayed() && !notice.getText().isBlank() ? notice.getText() : null;
-        });
+    /** The server only allows one forward step at a time, so walk the order through each status in turn. */
+    private static void moveThrough(HttpClient manager, long orderId, String... statuses) throws Exception {
+        for (String status : statuses) {
+            call(manager, "PATCH", "/api/v1/orders/" + orderId + "/status", Map.of("status", status));
+        }
     }
 
     /** Stock of the test product as the storefront API reports it. */

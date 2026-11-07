@@ -6,6 +6,7 @@
   const line=item=>`<div class="checkout-item"><img src="${e(safeImage(item.image))}" alt="${e(item.name)}"><div><a href="/product/${encodeURIComponent(item.slug)}">${e(item.name)}</a><small>${e(item.colorName||'Màu tiêu chuẩn')} · ${item.quantity} xe</small><strong>${money(item.price*item.quantity)}</strong></div></div>`;
   const validItems=items=>items.length>0 && items.every(i=>!i.unavailable && i.quantity<=C.limit(i) && C.limit(i)>0);
   const vnpayEnabled=document.body.dataset.vnpayEnabled==='true';
+  const emailOtpRequired=document.body.dataset.emailOtpRequired==='true';
   async function startVnPay(orderId){const payment=await request('/api/v1/payments/vnpay/create',{orderId,language:'vn'});if(!payment?.paymentUrl)throw Error('VNPay không trả về đường dẫn thanh toán.');location.href=payment.paymentUrl;}
   const normalizeSearch=value=>value.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').toLowerCase();
 
@@ -58,7 +59,7 @@
     if(!validItems(items)){target.innerHTML='<div class="commerce-empty"><h2>Cần kiểm tra lại giỏ hàng</h2><p>Một số xe hoặc màu không còn đủ số lượng bạn chọn.</p><a class="commerce-button" href="/cart">Xem giỏ hàng</a><a href="/products">Chọn lại mẫu xe</a></div>';return;}
     if(!buyNow)C.write(items);
     const stores=showrooms.filter(s=>s.active!==false);
-    target.innerHTML=`<form id="checkoutForm" class="commerce-layout checkout-layout"><div class="checkout-forms"><section class="commerce-card"><h2>Thông tin người nhận</h2><div class="contact-grid"><label><span class="field-label">Họ và tên <b>*</b></span><input name="customerName" autocomplete="name" maxlength="100" required placeholder="Họ và tên người nhận"></label><label><span class="field-label">Số điện thoại <b>*</b></span><input name="phoneNumber" type="tel" autocomplete="tel" pattern="0[0-9]{9,10}" required placeholder="Số điện thoại liên hệ"></label><label class="wide-field"><span class="field-label">Email <b>*</b></span><input name="customerEmail" type="email" autocomplete="email" required placeholder="Email nhận thông tin đơn hàng"></label></div></section><section class="commerce-card delivery-card"><h2>Yêu cầu nhận hàng</h2><div class="delivery-options"><label><input type="radio" name="deliveryMethod" value="HOME_DELIVERY" checked> Giao hàng tại nhà</label><label><input type="radio" name="deliveryMethod" value="STORE_PICKUP"> Nhận tại cửa hàng</label></div><div id="homeDeliveryFields" class="delivery-fields"><label><span class="field-label">Tỉnh/Thành phố <b>*</b></span><select name="province" required><option value="">Chọn Tỉnh/Thành phố</option>${provinces.map(p=>`<option value="${e(p)}">${e(p)}</option>`).join('')}</select></label><label><span class="field-label">Địa chỉ nhận hàng <b>*</b></span><input name="detailedAddress" autocomplete="street-address" minlength="10" maxlength="500" required placeholder="Số nhà, tên đường, phường/xã"></label></div><div id="storePickupFields" class="delivery-fields" hidden><label class="showroom-search"><span class="sr-only">Tìm cửa hàng nhận xe</span><input id="showroomSearch" type="search" placeholder="Tìm kiếm cửa hàng, địa chỉ..." aria-label="Tìm cửa hàng nhận xe"></label><div id="showroomResults" class="showroom-results" role="group" aria-label="Danh sách cửa hàng"></div></div><label class="seller-note">Ghi chú cho người bán<textarea name="notes" maxlength="1000" placeholder="Ghi chú cho người bán"></textarea></label></section><section class="commerce-card"><h2>Thanh toán và dịch vụ</h2><label>Phương thức thanh toán<select name="paymentMethod"><option value="PAY_LATER">Thanh toán khi nhận xe</option>${vnpayEnabled?'<option value="VNPAY">Thanh toán online qua VNPay</option>':''}</select></label><label class="registration-option"><input type="checkbox" name="includeRegistrationService"> Đăng ký dịch vụ hỗ trợ hồ sơ <strong>+ ${money(2500000)}</strong></label></section></div><aside class="commerce-card checkout-summary"><div class="commerce-card-heading"><h2>Đơn hàng của bạn</h2><a href="${buyNow?'/product/'+encodeURIComponent(items[0].slug):'/cart'}">Chỉnh sửa</a></div>${items.map(line).join('')}<div class="promo-field"><label for="discountCode">Mã khuyến mãi</label><div><input id="discountCode" name="discountCode" autocomplete="off" placeholder="Nhập mã khuyến mãi"><button type="button" id="applyPromo">Áp dụng</button></div></div><div id="checkoutQuote" aria-live="polite"></div><button type="submit" id="placeOrder" class="commerce-button" disabled>Đặt hàng</button><p class="checkout-confirmation">Kiểm tra thông tin và hình thức nhận hàng trước khi đặt đơn.</p><div id="checkoutError" class="commerce-error" role="alert" hidden></div></aside></form>`;
+    target.innerHTML=`<form id="checkoutForm" class="commerce-layout checkout-layout"><div class="checkout-forms"><section class="commerce-card"><h2>Thông tin người nhận</h2><div class="contact-grid"><label><span class="field-label">Họ và tên <b>*</b></span><input name="customerName" autocomplete="name" maxlength="100" required placeholder="Họ và tên người nhận"></label><label><span class="field-label">Số điện thoại <b>*</b></span><input name="phoneNumber" type="tel" autocomplete="tel" pattern="0[0-9]{9,10}" required placeholder="Số điện thoại liên hệ"></label><label class="wide-field"><span class="field-label">Email <b>*</b></span><input name="customerEmail" type="email" autocomplete="email" required placeholder="Email nhận thông tin đơn hàng"></label></div></section><section class="commerce-card delivery-card"><h2>Yêu cầu nhận hàng</h2><div class="delivery-options"><label><input type="radio" name="deliveryMethod" value="HOME_DELIVERY" checked> Giao hàng tại nhà</label><label><input type="radio" name="deliveryMethod" value="STORE_PICKUP"> Nhận tại cửa hàng</label></div><div id="homeDeliveryFields" class="delivery-fields"><label id="savedAddressRow" hidden><span class="field-label">Địa chỉ đã lưu</span><select id="savedAddress"></select></label><label><span class="field-label">Tỉnh/Thành phố <b>*</b></span><select name="province" required><option value="">Chọn Tỉnh/Thành phố</option>${provinces.map(p=>`<option value="${e(p)}">${e(p)}</option>`).join('')}</select></label><label><span class="field-label">Địa chỉ nhận hàng <b>*</b></span><input name="detailedAddress" autocomplete="street-address" minlength="10" maxlength="500" required placeholder="Số nhà, tên đường, phường/xã"></label></div><div id="storePickupFields" class="delivery-fields" hidden><label class="showroom-search"><span class="sr-only">Tìm cửa hàng nhận xe</span><input id="showroomSearch" type="search" placeholder="Tìm kiếm cửa hàng, địa chỉ..." aria-label="Tìm cửa hàng nhận xe"></label><div id="showroomResults" class="showroom-results" role="group" aria-label="Danh sách cửa hàng"></div></div><label class="seller-note">Ghi chú cho người bán<textarea name="notes" maxlength="1000" placeholder="Ghi chú cho người bán"></textarea></label></section><section class="commerce-card"><h2>Thanh toán và dịch vụ</h2><label>Phương thức thanh toán<select name="paymentMethod"><option value="PAY_LATER">Thanh toán khi nhận xe</option>${vnpayEnabled?'<option value="VNPAY">Thanh toán online qua VNPay</option>':''}</select></label><div id="registrationBlock"><label class="registration-option"><input type="checkbox" name="includeRegistrationService"> Hỗ trợ đăng ký biển số tại cửa hàng <strong id="registrationServicePrice"></strong></label><p class="registration-note" id="registrationNote"></p></div></section></div><aside class="commerce-card checkout-summary"><div class="commerce-card-heading"><h2>Đơn hàng của bạn</h2><a href="${buyNow?'/product/'+encodeURIComponent(items[0].slug):'/cart'}">Chỉnh sửa</a></div>${items.map(line).join('')}<div class="promo-field"><label for="discountCode">Mã khuyến mãi</label><div><input id="discountCode" name="discountCode" autocomplete="off" placeholder="Nhập mã khuyến mãi"><button type="button" id="applyPromo">Áp dụng</button></div></div><div id="checkoutQuote" aria-live="polite"></div><button type="submit" id="placeOrder" class="commerce-button" disabled>Đặt hàng</button><p class="checkout-confirmation">Kiểm tra thông tin và hình thức nhận hàng trước khi đặt đơn.</p><div id="checkoutError" class="commerce-error" role="alert" hidden></div></aside></form>`;
     const form=document.querySelector('#checkoutForm'),submit=form.querySelector('#placeOrder');
     let selectedStore=null,sequence=0,quoteValid=false,submitting=false,redirecting=false;
     function renderStores(){
@@ -75,11 +76,72 @@
       form.querySelectorAll('[name="pickupShowroomId"]').forEach(input=>{input.disabled=home;input.required=!home;});
     }
     renderStores();updateDelivery();
+    // Email confirmation (UC-06): send a code, type it in, and order with the verified session. A code can be
+    // asked for again after the server's waiting time; changing the email throws the confirmation away.
+    let verification=null;
+    if(emailOtpRequired){
+      const emailInput=form.elements.customerEmail;
+      const box=document.createElement('div');
+      box.className='otp-box wide-field';
+      box.innerHTML='<p class="otp-help">Để bảo vệ đơn hàng, vui lòng xác minh email trước khi đặt.</p><div class="otp-row"><button type="button" class="button compact ghost" id="otpSend">Gửi mã xác minh</button><input id="otpCode" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="Nhập mã" aria-label="Mã xác minh email" hidden><button type="button" class="button compact" id="otpVerify" hidden>Xác minh</button></div><p class="otp-status" id="otpStatus" role="status"></p>';
+      emailInput.closest('label').after(box);
+      const send=box.querySelector('#otpSend'),code=box.querySelector('#otpCode'),verify=box.querySelector('#otpVerify'),status=box.querySelector('#otpStatus');
+      let pending=null,timer=null;
+      const say=(text,error)=>{status.textContent=text;status.classList.toggle('error',Boolean(error))};
+      const countdown=seconds=>{clearInterval(timer);let left=seconds;send.disabled=true;const tick=()=>{send.textContent=left>0?'Gửi lại mã sau '+left+'s':'Gửi lại mã';if(left<=0){clearInterval(timer);send.disabled=false}left--};tick();timer=setInterval(tick,1000)};
+      const reset=()=>{clearInterval(timer);verification=null;pending=null;send.disabled=false;send.textContent='Gửi mã xác minh';code.hidden=true;code.value='';verify.hidden=true};
+      emailInput.addEventListener('input',()=>{if(verification||pending){reset();say('Email đã thay đổi, vui lòng xác minh lại.',false)}});
+      send.addEventListener('click',async()=>{
+        const email=emailInput.value.trim();
+        if(!emailInput.checkValidity()||!email){emailInput.reportValidity();return}
+        send.disabled=true;
+        try{
+          const sent=await request('/api/v1/orders/email-verification/send',{email});
+          pending={id:sent.verificationSessionId,email};verification=null;
+          code.hidden=false;verify.hidden=false;code.value='';code.focus();
+          say('Đã gửi mã tới '+email+'. Mã có hiệu lực trong ít phút.',false);
+          countdown(Number(sent.resendAfterSeconds)||60);
+        }catch(error){send.disabled=false;say(error.message,true)}
+      });
+      verify.addEventListener('click',async()=>{
+        if(!pending||!code.value.trim()){say('Vui lòng nhập mã đã gửi tới email.',true);return}
+        verify.disabled=true;
+        try{
+          const result=await request('/api/v1/orders/email-verification/verify',{verificationSessionId:pending.id,code:code.value.trim()});
+          if(!result.verified)throw Error('Mã chưa đúng.');
+          verification={id:pending.id,email:pending.email};
+          clearInterval(timer);send.hidden=true;code.hidden=true;verify.hidden=true;
+          say('Email đã được xác minh ✓',false);
+        }catch(error){say(error.message,true)}
+        finally{verify.disabled=false}
+      });
+    }
+    // A signed-in customer can pick an address from the profile's address book; guests simply do not see this.
+    (async()=>{
+      try{
+        const asJson=url=>fetch(url,{credentials:'same-origin',headers:{Accept:'application/json'}}).then(r=>r.ok?r.json():null);
+        const profile=await asJson('/api/v1/auth/profile');
+        if(!profile||!profile.userId)return;
+        const saved=((await asJson('/api/v1/users/'+profile.userId+'/addresses'))||[]).filter(a=>provinces.includes(a.city));
+        if(!saved.length)return;
+        const pick=form.querySelector('#savedAddress');
+        pick.innerHTML='<option value="">Nhập địa chỉ khác</option>'+saved.map((a,i)=>'<option value="'+i+'">'+e(a.street)+', '+e(a.city)+(a.isDefault?' (mặc định)':'')+'</option>').join('');
+        form.querySelector('#savedAddressRow').hidden=false;
+        const apply=a=>{
+          form.elements.province.value=a?a.city:'';
+          form.elements.detailedAddress.value=a?a.street:'';
+          form.elements.province.dispatchEvent(new Event('change',{bubbles:true}));
+        };
+        pick.addEventListener('change',()=>apply(pick.value===''?null:saved[Number(pick.value)]));
+        const fallback=saved.findIndex(a=>a.isDefault);
+        if(fallback>=0&&!form.elements.province.value&&!form.elements.detailedAddress.value){pick.value=String(fallback);apply(saved[fallback]);}
+      }catch(ignored){/* the address book is optional */}
+    })();
     form.querySelector('#showroomSearch').addEventListener('input',()=>{renderStores();updateDelivery();});
     form.addEventListener('change',event=>{
       if(event.target.name==='deliveryMethod')updateDelivery();
       if(event.target.name==='pickupShowroomId')selectedStore=Number(event.target.value);
-      if(event.target.name==='includeRegistrationService'||event.target.name==='discountCode')updateQuote();
+      if(['includeRegistrationService','discountCode','deliveryMethod','province'].includes(event.target.name))updateQuote();
     });
     async function updateQuote(){
       const current=++sequence,box=form.querySelector('#checkoutQuote');
@@ -87,9 +149,23 @@
       box.innerHTML='<p class="quote-status">Đang tính tổng tiền...</p>';
       try{
         const code=form.elements.discountCode.value.trim();
-        const q=await request('/api/v1/orders/quote',{items:items.map(i=>({productId:i.id,quantity:i.quantity,productVariantId:i.variantId||null})),discountCode:code||null,includeRegistrationService:form.elements.includeRegistrationService.checked});
+        const awaitingProvince=form.elements.deliveryMethod.value==='HOME_DELIVERY'&&!form.elements.province.value;
+        const q=await request('/api/v1/orders/quote',{items:items.map(i=>({productId:i.id,quantity:i.quantity,productVariantId:i.variantId||null})),discountCode:code||null,includeRegistrationService:form.elements.includeRegistrationService.checked,deliveryMethod:form.elements.deliveryMethod.value,province:form.elements.province.value||null});
         if(current!==sequence)return false;
-        box.innerHTML=`<div class="quote-breakdown"><div class="quote-line"><span>Tạm tính</span><strong>${money(q.subtotal)}</strong></div><div class="quote-line"><span>Phí giao xe</span><strong>${money(q.shippingFee)}</strong></div><div class="quote-line quote-discount"><span>Giảm giá khuyến mãi</span><strong>${q.discountAmount?'- ':''}${money(q.discountAmount)}</strong></div><div class="quote-line"><span>Phí hồ sơ</span><strong>${money(q.registrationFee)}</strong></div><div class="quote-line quote-total"><span>Tổng thanh toán</span><strong>${money(q.totalAmount)}</strong></div><p class="quote-status">${code?'Đã áp dụng mã '+e(code)+'.':'Chưa áp dụng mã khuyến mãi.'}</p></div>`;
+        box.innerHTML=`<div class="quote-breakdown"><div class="quote-line"><span>Tạm tính</span><strong>${money(q.subtotal)}</strong></div><div class="quote-line"><span>Phí giao xe</span><strong>${awaitingProvince?'Chọn tỉnh để tính phí':money(q.shippingFee)}</strong></div><div class="quote-line quote-discount"><span>Giảm giá khuyến mãi</span><strong>${q.discountAmount?'- ':''}${money(q.discountAmount)}</strong></div><div class="quote-line"><span>Phí hồ sơ</span><strong>${money(q.registrationFee)}</strong></div><div class="quote-line quote-total"><span>Tổng thanh toán</span><strong>${money(q.totalAmount)}</strong></div><p class="quote-status">${code?'Đã áp dụng mã '+e(code)+'.':'Chưa áp dụng mã khuyến mãi.'}</p></div>`;
+        form.querySelector('#registrationServicePrice').textContent=`+ ${money(q.registrationServicePerBike)}/xe`;
+        // The note shows whenever a bike needs a plate; the option only when the store can help (pickup, service on).
+        form.querySelector('#registrationBlock').hidden=!q.registrationRequired;
+        form.querySelector('.registration-option').hidden=!q.registrationServiceAvailable;
+        if(!q.registrationServiceAvailable)form.elements.includeRegistrationService.checked=false;
+        const stateFee=`Lệ phí trước bạ và lệ phí cấp biển số là tiền nộp Nhà nước do chủ xe chịu, không tính vào đơn này (lệ phí trước bạ ước tính ${money(q.registrationTaxLow)} – ${money(q.registrationTaxHigh)} cho xe trong đơn).`;
+        const selfService='chủ xe tự đăng ký trên VNeID (tài khoản định danh mức 2) với hóa đơn và phiếu kiểm tra chất lượng xuất xưởng cửa hàng giao kèm xe. ';
+        const how=form.elements.includeRegistrationService.checked
+          ?'Khi bạn đến nhận xe, nhân viên hỗ trợ đăng ký biển số. Chủ xe cần có mặt và có tài khoản VNeID mức 2 để tự kê khai. Khoản cộng thêm ở trên là phí dịch vụ của cửa hàng. '
+          :form.elements.deliveryMethod.value==='HOME_DELIVERY'
+            ?'Giao tận nhà: '+selfService+'Cửa hàng chỉ hỗ trợ đăng ký khi bạn nhận xe tại cửa hàng. '
+            :(q.registrationServiceAvailable?'Nếu không chọn, ':'Xe cần đăng ký biển số: ')+selfService;
+        form.querySelector('#registrationNote').textContent=how+stateFee;
         quoteValid=true;submit.disabled=submitting;return true;
       }catch(error){if(current===sequence)box.innerHTML=`<p class="commerce-error">${e(error.message)}</p>`;return false;}
     }
@@ -101,10 +177,11 @@
       const home=form.elements.deliveryMethod.value==='HOME_DELIVERY';
       const errorBox=form.querySelector('#checkoutError');errorBox.hidden=true;
       if(!home && (!selectedStore || !stores.some(s=>s.id===selectedStore))){errorBox.textContent='Vui lòng chọn cửa hàng nhận xe.';errorBox.hidden=false;return;}
+      if(emailOtpRequired&&(!verification||verification.email!==form.elements.customerEmail.value.trim())){errorBox.textContent='Vui lòng xác minh email trước khi đặt hàng.';errorBox.hidden=false;return;}
       submitting=true;submit.disabled=true;
       try{
         if(!await updateQuote())return;
-        const order=await request('/api/v1/orders',{customerName:form.elements.customerName.value.trim(),phoneNumber:form.elements.phoneNumber.value.trim(),customerEmail:form.elements.customerEmail.value.trim(),deliveryMethod:form.elements.deliveryMethod.value,province:home?form.elements.province.value:null,pickupShowroomId:home?null:selectedStore,detailedAddress:home?form.elements.detailedAddress.value.trim():null,paymentMethod:form.elements.paymentMethod.value,discountCode:form.elements.discountCode.value.trim()||null,includeRegistrationService:form.elements.includeRegistrationService.checked,notes:form.elements.notes.value.trim(),items:items.map(i=>({productId:i.id,quantity:i.quantity,productVariantId:i.variantId||null}))});
+        const order=await request('/api/v1/orders',{customerName:form.elements.customerName.value.trim(),phoneNumber:form.elements.phoneNumber.value.trim(),customerEmail:form.elements.customerEmail.value.trim(),emailVerificationSessionId:verification?verification.id:null,deliveryMethod:form.elements.deliveryMethod.value,province:home?form.elements.province.value:null,pickupShowroomId:home?null:selectedStore,detailedAddress:home?form.elements.detailedAddress.value.trim():null,paymentMethod:form.elements.paymentMethod.value,discountCode:form.elements.discountCode.value.trim()||null,includeRegistrationService:form.elements.includeRegistrationService.checked,notes:form.elements.notes.value.trim(),items:items.map(i=>({productId:i.id,quantity:i.quantity,productVariantId:i.variantId||null}))});
         if(buyNow)sessionStorage.removeItem('kinetic_buy_now');
         else C.write(C.read().flatMap(item=>{const purchased=items.find(i=>key(i)===key(item));return purchased?(item.quantity>purchased.quantity?[{...item,quantity:item.quantity-purchased.quantity}]:[]):[item];}));
         if(form.elements.paymentMethod.value==='VNPAY'){

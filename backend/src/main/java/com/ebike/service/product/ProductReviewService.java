@@ -2,19 +2,24 @@ package com.ebike.service.product;
 
 import com.ebike.model.entity.auth.User;
 import com.ebike.repository.auth.UserRepository;
+import com.ebike.repository.order.OrderRepository;
 import com.ebike.config.RedisCacheConfiguration;
 import com.ebike.dto.product.request.ProductReviewRequest;
 import com.ebike.dto.product.response.ProductReviewDto;
+import com.ebike.dto.product.response.ReviewEligibilityDto;
 import com.ebike.model.entity.product.Product;
 import com.ebike.model.entity.product.Review;
 import com.ebike.repository.product.ProductRepository;
 import com.ebike.repository.product.ReviewRepository;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
@@ -33,23 +38,27 @@ public class ProductReviewService {
     private final ReviewRepository reviewRepository;
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
+    private final OrderRepository orderRepository;
 
     public ProductReviewService(
         ReviewRepository reviewRepository,
         ProductRepository productRepository,
-        UserRepository userRepository
+        UserRepository userRepository,
+        OrderRepository orderRepository
     ) {
         this.reviewRepository = reviewRepository;
         this.productRepository = productRepository;
         this.userRepository = userRepository;
+        this.orderRepository = orderRepository;
     }
 
     @Transactional(readOnly = true)
     public List<ProductReviewDto> getReviews(String productSlug, Authentication authentication) {
         String currentUsername = authentication == null ? null : authentication.getName();
         boolean canModerate = hasAuthority(authentication, REVIEW_MODERATE_PERMISSION);
+        Set<Long> buyers = new HashSet<>(orderRepository.findDeliveredBuyerIds(findActiveProduct(productSlug).getId()));
         return reviewRepository.findByProductSlugOrderByCreatedAtDesc(productSlug).stream()
-            .map(review -> toDto(review, canEdit(review, currentUsername, canModerate)))
+            .map(review -> toDto(review, canEdit(review, currentUsername, canModerate), review.getUser() != null && buyers.contains(review.getUser().getId())))
             .toList();
     }
 
@@ -65,8 +74,11 @@ public class ProductReviewService {
 
         reviewRepository.findByProductSlugAndUserUsername(productSlug, user.getUsername())
             .ifPresent(existing -> {
-                throw new ResponseStatusException(HttpStatus.CONFLICT, "You have already reviewed this product");
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "Bạn đã đánh giá sản phẩm này rồi. Hãy sửa đánh giá cũ.");
             });
+        if (!orderRepository.hasDeliveredProduct(user.getId(), product.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Chỉ khách đã nhận xe mới có thể đánh giá sản phẩm này.");
+        }
 
         Review review = new Review();
         review.setProduct(product);
@@ -75,7 +87,24 @@ public class ProductReviewService {
 
         Review savedReview = reviewRepository.save(review);
         refreshProductRating(product);
-        return toDto(savedReview, true);
+        return toDto(savedReview, true, true);
+    }
+
+    /** Tells the product page whether to show the review form or the reason there is none. */
+    @Transactional(readOnly = true)
+    public ReviewEligibilityDto getEligibility(String productSlug, Authentication authentication) {
+        Product product = findActiveProduct(productSlug);
+        if (authentication == null || authentication instanceof AnonymousAuthenticationToken || isBlank(authentication.getName())) {
+            return new ReviewEligibilityDto(false, "Đăng nhập để đánh giá sản phẩm.");
+        }
+        User user = currentUser(authentication);
+        if (reviewRepository.findByProductSlugAndUserUsername(productSlug, user.getUsername()).isPresent()) {
+            return new ReviewEligibilityDto(false, "Bạn đã đánh giá sản phẩm này. Bạn có thể sửa hoặc xóa đánh giá của mình.");
+        }
+        if (!orderRepository.hasDeliveredProduct(user.getId(), product.getId())) {
+            return new ReviewEligibilityDto(false, "Chỉ khách đã nhận xe mới có thể đánh giá sản phẩm này.");
+        }
+        return new ReviewEligibilityDto(true, null);
     }
 
     @Transactional
@@ -88,7 +117,7 @@ public class ProductReviewService {
         Review review = findReview(reviewId);
         boolean canModerate = hasAuthority(authentication, REVIEW_MODERATE_PERMISSION);
         if (!isOwner(review, user) && !canModerate) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can only update your own review");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn chỉ sửa được đánh giá của chính mình.");
         }
 
         validateRequest(request);
@@ -96,7 +125,8 @@ public class ProductReviewService {
 
         Review savedReview = reviewRepository.save(review);
         refreshProductRating(savedReview.getProduct());
-        return toDto(savedReview, true);
+        boolean bought = review.getUser() != null && orderRepository.hasDeliveredProduct(review.getUser().getId(), savedReview.getProduct().getId());
+        return toDto(savedReview, true, bought);
     }
 
     @Transactional
@@ -109,7 +139,7 @@ public class ProductReviewService {
         Review review = findReview(reviewId);
         boolean canModerate = hasAuthority(authentication, REVIEW_MODERATE_PERMISSION);
         if (!isOwner(review, user) && !canModerate) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can only delete your own review");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn chỉ xóa được đánh giá của chính mình.");
         }
 
         Product product = review.getProduct();
@@ -146,13 +176,13 @@ public class ProductReviewService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Request body is required");
         }
         if (request.rating() == null || request.rating() < MIN_RATING || request.rating() > MAX_RATING) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Rating must be between 1 and 5");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vui lòng chọn số sao từ 1 đến 5.");
         }
         if (normalize(request.title()) != null && normalize(request.title()).length() > MAX_TITLE_LENGTH) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Review title is too long");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tiêu đề đánh giá quá dài.");
         }
         if (normalize(request.comment()) != null && normalize(request.comment()).length() > MAX_COMMENT_LENGTH) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Review comment is too long");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nội dung đánh giá quá dài (tối đa 2000 ký tự).");
         }
     }
 
@@ -177,7 +207,7 @@ public class ProductReviewService {
         productRepository.save(product);
     }
 
-    private ProductReviewDto toDto(Review review, boolean editableByCurrentUser) {
+    private ProductReviewDto toDto(Review review, boolean editableByCurrentUser, boolean verifiedPurchase) {
         User user = review.getUser();
         Product product = review.getProduct();
         return new ProductReviewDto(
@@ -191,7 +221,8 @@ public class ProductReviewService {
             review.getTitle(),
             review.getComment(),
             review.getCreatedAt(),
-            editableByCurrentUser
+            editableByCurrentUser,
+            verifiedPurchase
         );
     }
 

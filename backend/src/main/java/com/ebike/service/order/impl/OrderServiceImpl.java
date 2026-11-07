@@ -2,18 +2,21 @@ package com.ebike.service.order.impl;
 
 import com.ebike.model.entity.auth.User;
 import com.ebike.repository.auth.UserRepository;
+import com.ebike.dto.order.request.GuestOrderLinkRequest;
 import com.ebike.dto.order.request.OrderCancellationRequest;
 import com.ebike.dto.order.request.OrderCreateItemRequest;
 import com.ebike.dto.order.request.OrderCreateRequest;
 import com.ebike.dto.order.request.OrderQuoteRequest;
 import com.ebike.dto.order.request.OrderStatusUpdateRequest;
 import com.ebike.dto.order.response.OrderItemResponse;
+import com.ebike.dto.order.response.GuestOrderLinkResponse;
 import com.ebike.dto.order.response.OrderQuoteResponse;
 import com.ebike.dto.order.response.OrderResponse;
 import com.ebike.dto.order.response.ShipmentResponse;
 import com.ebike.dto.order.response.ShowroomResponse;
 import com.ebike.model.entity.admin.Promotion;
 import com.ebike.repository.admin.PromotionRepository;
+import com.ebike.service.admin.PricingService;
 import com.ebike.model.entity.order.Order;
 import com.ebike.model.entity.order.OrderItem;
 import com.ebike.model.entity.order.OrderStatus;
@@ -27,6 +30,7 @@ import com.ebike.repository.order.OrderRepository;
 import com.ebike.repository.order.ShowroomRepository;
 import com.ebike.service.order.OrderEmailVerificationService;
 import com.ebike.service.order.OrderService;
+import com.ebike.service.product.VehicleRegistration;
 import com.ebike.model.entity.product.Product;
 import com.ebike.model.entity.product.ProductVariant;
 import com.ebike.repository.product.ProductRepository;
@@ -38,6 +42,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -57,8 +62,14 @@ public class OrderServiceImpl implements OrderService {
     @Value("${app.order.email-otp.required:false}")
     private boolean emailOtpRequired;
 
+    // How long stock is held for an order that has not been paid or confirmed yet.
+    @Value("${app.order.vnpay-expiry:PT30M}")
+    private java.time.Duration vnpayExpiry = java.time.Duration.ofMinutes(30);
+
+    @Value("${app.order.pay-later-expiry:PT72H}")
+    private java.time.Duration payLaterExpiry = java.time.Duration.ofHours(72);
+
     private static final BigDecimal ZERO = BigDecimal.ZERO;
-    private static final BigDecimal REGISTRATION_FEE_AMOUNT = new BigDecimal("2500000");
     private static final int MAX_ORDER_ITEMS = 20;
     private static final int MAX_ITEM_QUANTITY = 10;
     private static final int MAX_CUSTOMER_NAME_LENGTH = 100;
@@ -73,6 +84,7 @@ public class OrderServiceImpl implements OrderService {
     private final ShowroomRepository showroomRepository;
     private final PromotionRepository promotionRepository;
     private final OrderEmailVerificationService orderEmailVerificationService;
+    private final PricingService pricingService;
 
     public OrderServiceImpl(
         OrderRepository orderRepository,
@@ -80,7 +92,8 @@ public class OrderServiceImpl implements OrderService {
         ProductRepository productRepository,
         ShowroomRepository showroomRepository,
         PromotionRepository promotionRepository,
-        OrderEmailVerificationService orderEmailVerificationService
+        OrderEmailVerificationService orderEmailVerificationService,
+        PricingService pricingService
     ) {
         this.orderRepository = orderRepository;
         this.userRepository = userRepository;
@@ -88,6 +101,7 @@ public class OrderServiceImpl implements OrderService {
         this.showroomRepository = showroomRepository;
         this.promotionRepository = promotionRepository;
         this.orderEmailVerificationService = orderEmailVerificationService;
+        this.pricingService = pricingService;
     }
 
     @Override
@@ -129,10 +143,13 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional(readOnly = true)
     public OrderQuoteResponse quoteOrder(OrderQuoteRequest request) {
+        boolean homeDelivery = request != null && isHomeDelivery(request.deliveryMethod());
         return buildQuote(
             validateQuoteItems(request == null ? null : request.items()),
             shouldIncludeRegistrationService(request == null ? null : request.includeRegistrationService()),
-            request == null ? null : request.discountCode()
+            request == null ? null : request.discountCode(),
+            homeDelivery,
+            request == null ? null : request.province()
         );
     }
 
@@ -158,10 +175,10 @@ public class OrderServiceImpl implements OrderService {
         }
         order.setOrderNumber(generateOrderNumber());
         order.setStatus(OrderStatus.PENDING);
-        order.setShippingFee(ZERO);
         boolean includeRegistrationService = shouldIncludeRegistrationService(request.includeRegistrationService());
+        List<OrderCreateItemRequest> items = validateQuoteItems(request.items());
+        assertRegistrationServiceOffered(includeRegistrationService, items, isHomeDelivery(request));
         order.setIncludeRegistrationService(includeRegistrationService);
-        order.setRegistrationFee(includeRegistrationService ? REGISTRATION_FEE_AMOUNT : ZERO);
         validateCheckoutDetails(request);
         if (emailOtpRequired) {
             orderEmailVerificationService.assertVerifiedForOrder(request.emailVerificationSessionId(), request.customerEmail());
@@ -173,12 +190,18 @@ public class OrderServiceImpl implements OrderService {
             .filter(candidate -> Boolean.TRUE.equals(candidate.getActive()))
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cửa hàng nhận xe không còn hoạt động."));
 
-        BigDecimal subtotal = addItems(order, validateQuoteItems(request.items()));
+        BigDecimal subtotal = addItems(order, items);
         order.setSubtotal(subtotal);
+        order.setShippingFee(shippingFee(isHomeDelivery(request), request.province(), items));
+        order.setRegistrationFee(registrationFee(includeRegistrationService, pricingService.registrationServicePerBike(), items));
         Promotion promotion = findValidPromotion(request.discountCode());
         BigDecimal promoDiscountAmount = promotion == null ? ZERO : calculatePromoDiscount(promotion, subtotal);
-        if (promotion != null && promotionRepository.tryIncrementUsage(promotion.getId()) == 0) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mã giảm giá không hợp lệ hoặc đã hết hạn.");
+        if (promotion != null) {
+            assertCodeNotUsedBefore(promotion, user, order.getCustomerEmail());
+            if (promotionRepository.tryIncrementUsage(promotion.getId()) == 0) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mã giảm giá không hợp lệ hoặc đã hết hạn.");
+            }
+            order.setPromotion(promotion);
         }
         order.setDiscountAmount(promoDiscountAmount);
         order.setTotalAmount(calculateTotalAmount(subtotal, order.getShippingFee(), order.getDiscountAmount(), order.getRegistrationFee()));
@@ -188,9 +211,21 @@ public class OrderServiceImpl implements OrderService {
         return toResponse(orderRepository.save(order));
     }
 
+    // The steps a staff member may take from each status. A cancelled or delivered order is final.
+    private static final Map<OrderStatus, List<OrderStatus>> STATUS_TRANSITIONS = Map.of(
+        OrderStatus.PENDING, List.of(OrderStatus.CONFIRMED, OrderStatus.CANCELLED),
+        OrderStatus.CONFIRMED, List.of(OrderStatus.PROCESSING, OrderStatus.CANCELLED),
+        OrderStatus.PROCESSING, List.of(OrderStatus.SHIPPED, OrderStatus.CANCELLED),
+        OrderStatus.SHIPPED, List.of(OrderStatus.DELIVERED)
+    );
+
     @Override
     @Transactional
-    public OrderResponse updateOrderStatus(Long id, OrderStatusUpdateRequest request) {
+    @CacheEvict(cacheNames = {
+        com.ebike.config.RedisCacheConfiguration.PRODUCT_LIST_CACHE,
+        com.ebike.config.RedisCacheConfiguration.PRODUCT_DETAIL_CACHE
+    }, allEntries = true)
+    public OrderResponse updateOrderStatus(Long id, OrderStatusUpdateRequest request, Authentication authentication) {
         if (request == null || request.status() == null || request.status().isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "status is required");
         }
@@ -198,13 +233,74 @@ public class OrderServiceImpl implements OrderService {
         Order order = orderRepository.findById(id)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
 
+        OrderStatus nextStatus;
         try {
-            order.setStatus(OrderStatus.valueOf(request.status().trim().toUpperCase(Locale.ROOT)));
+            nextStatus = OrderStatus.valueOf(request.status().trim().toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException exception) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid order status");
         }
 
+        if (!STATUS_TRANSITIONS.getOrDefault(order.getStatus(), List.of()).contains(nextStatus)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                "Cannot change an order from " + order.getStatus() + " to " + nextStatus);
+        }
+
+        if (nextStatus == OrderStatus.CANCELLED) {
+            // Same effects as a customer cancelling: reason saved, pending payment closed, stock returned.
+            cancelOrder(order, request.reason(), getAuthenticatedUserOrNull(authentication), "Cancelled by staff");
+        } else {
+            order.setStatus(nextStatus);
+        }
+
         return toResponse(orderRepository.save(order));
+    }
+
+    @Override
+    @Transactional
+    @CacheEvict(cacheNames = {
+        com.ebike.config.RedisCacheConfiguration.PRODUCT_LIST_CACHE,
+        com.ebike.config.RedisCacheConfiguration.PRODUCT_DETAIL_CACHE
+    }, allEntries = true)
+    public int expireUnpaidOrders(LocalDateTime now) {
+        LocalDateTime vnpayCutoff = now.minus(vnpayExpiry);
+        LocalDateTime payLaterCutoff = now.minus(payLaterExpiry);
+        LocalDateTime latestCutoff = vnpayCutoff.isAfter(payLaterCutoff) ? vnpayCutoff : payLaterCutoff;
+
+        List<Order> expired = new ArrayList<>();
+        for (Order order : orderRepository.findByStatusAndCreatedAtBefore(OrderStatus.PENDING, latestCutoff)) {
+            Payment payment = order.getPayment();
+            if (payment != null && payment.getPaymentStatus() == PaymentStatus.PAID) {
+                continue;
+            }
+            // VNPay orders have no payment row until the first payment URL is created.
+            boolean online = payment == null || payment.getPaymentMethod() == PaymentMethod.VNPAY;
+            if (!order.getCreatedAt().isBefore(online ? vnpayCutoff : payLaterCutoff)) {
+                continue;
+            }
+            String reason = online
+                ? "Tự động hủy: quá hạn thanh toán online."
+                : "Tự động hủy: cửa hàng chưa xác nhận đơn trả sau trong thời hạn giữ hàng.";
+            cancelOrder(order, reason, null, "Expired before payment");
+            expired.add(order);
+        }
+        orderRepository.saveAll(expired);
+        return expired.size();
+    }
+
+    @Override
+    @Transactional
+    public GuestOrderLinkResponse linkGuestOrders(GuestOrderLinkRequest request, Authentication authentication) {
+        User currentUser = getAuthenticatedUser(authentication);
+        // The OTP proves the customer owns this mailbox; without it anyone could register with a stranger's email.
+        orderEmailVerificationService.assertVerifiedForOrder(
+            request == null ? null : request.emailVerificationSessionId(),
+            currentUser.getEmail()
+        );
+
+        List<Order> guestOrders = orderRepository.findByUserIsNullAndCustomerEmail(normalizeEmail(currentUser.getEmail()));
+        guestOrders.forEach(order -> order.setUser(currentUser));
+        orderRepository.saveAll(guestOrders);
+        return new GuestOrderLinkResponse(guestOrders.size());
     }
 
     @Override
@@ -238,7 +334,13 @@ public class OrderServiceImpl implements OrderService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Orders that are already shipping or delivered cannot be cancelled");
         }
 
-        String reason = normalizeOptional(request == null ? null : request.reason());
+        cancelOrder(order, request == null ? null : request.reason(), currentUser, "Cancelled by customer");
+
+        return toResponse(orderRepository.save(order));
+    }
+
+    private void cancelOrder(Order order, String rawReason, User actor, String paymentNote) {
+        String reason = normalizeOptional(rawReason);
         if (reason == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cancellation reason is required");
         }
@@ -249,14 +351,15 @@ public class OrderServiceImpl implements OrderService {
         order.setCancellationRequestedFromStatus(order.getStatus());
         order.setStatus(OrderStatus.CANCELLED);
         order.setCancellationReason(reason);
-        order.setCancellationRequestedBy(currentUser);
+        order.setCancellationRequestedBy(actor);
         order.setCancellationRequestedAt(java.time.LocalDateTime.now());
         order.setCancellationReviewNote(null);
         order.setCancellationReviewedAt(null);
-        cancelPendingPayment(order.getPayment());
+        cancelPendingPayment(order.getPayment(), paymentNote);
         restoreStock(order);
-
-        return toResponse(orderRepository.save(order));
+        if (order.getPromotion() != null) {
+            promotionRepository.releaseUsage(order.getPromotion().getId());
+        }
     }
 
     private void restoreStock(Order order) {
@@ -276,13 +379,13 @@ public class OrderServiceImpl implements OrderService {
         return stock == null ? 0 : stock;
     }
 
-    private void cancelPendingPayment(Payment payment) {
+    private void cancelPendingPayment(Payment payment, String note) {
         if (payment == null) {
             return;
         }
         if (payment.getPaymentStatus() == PaymentStatus.PENDING) {
             payment.setPaymentStatus(PaymentStatus.CANCELLED);
-            payment.setProviderResponse("Cancelled by customer");
+            payment.setProviderResponse(note);
         }
     }
 
@@ -355,7 +458,10 @@ public class OrderServiceImpl implements OrderService {
     }
 
     private boolean isHomeDelivery(OrderCreateRequest request) {
-        String method = request.deliveryMethod();
+        return isHomeDelivery(request.deliveryMethod());
+    }
+
+    private boolean isHomeDelivery(String method) {
         if (method == null || method.isBlank() || "STORE_PICKUP".equals(method)) {
             return false;
         }
@@ -478,7 +584,13 @@ public class OrderServiceImpl implements OrderService {
         return items;
     }
 
-    private OrderQuoteResponse buildQuote(List<OrderCreateItemRequest> items, boolean includeRegistrationService, String discountCode) {
+    private OrderQuoteResponse buildQuote(
+        List<OrderCreateItemRequest> items,
+        boolean includeRegistrationService,
+        String discountCode,
+        boolean homeDelivery,
+        String province
+    ) {
         BigDecimal subtotal = ZERO;
         Map<Long, Integer> productQuantities = new HashMap<>();
         Map<Long, Integer> variantQuantities = new HashMap<>();
@@ -499,17 +611,101 @@ public class OrderServiceImpl implements OrderService {
             subtotal = subtotal.add(unitPrice.multiply(BigDecimal.valueOf(itemRequest.quantity())));
         }
 
+        // The quote is only a preview: a tick on a service the admin has since switched off is ignored here
+        // (checkout then unticks and hides it); placing the order still rejects it.
+        boolean registrationServiceOffered = !homeDelivery && registrationServiceOffered(items);
         BigDecimal promoDiscountAmount = resolvePromoDiscount(discountCode, subtotal);
-        BigDecimal registrationFee = includeRegistrationService ? REGISTRATION_FEE_AMOUNT : ZERO;
+        BigDecimal registrationServicePerBike = pricingService.registrationServicePerBike();
+        BigDecimal registrationFee = registrationFee(includeRegistrationService && registrationServiceOffered, registrationServicePerBike, items);
         BigDecimal totalDiscountAmount = promoDiscountAmount;
+        BigDecimal shippingFee = shippingFee(homeDelivery, province, items);
 
         return new OrderQuoteResponse(
             subtotal,
-            ZERO,
+            shippingFee,
             totalDiscountAmount,
             registrationFee,
-            calculateTotalAmount(subtotal, ZERO, totalDiscountAmount, registrationFee)
+            calculateTotalAmount(subtotal, shippingFee, totalDiscountAmount, registrationFee),
+            registrationServicePerBike,
+            registrationServiceOffered,
+            percentOf(subtotal, pricingService.registrationTaxRateOther()),
+            percentOf(subtotal, pricingService.registrationTaxRateCentral()),
+            registrableBikes(items) > 0
         );
+    }
+
+    private BigDecimal percentOf(BigDecimal amount, BigDecimal percent) {
+        return amount.multiply(percent).divide(BigDecimal.valueOf(100), 0, java.math.RoundingMode.HALF_UP);
+    }
+
+    /** The store offers the service, and at least one bike in the order must be registered (pickup is checked by callers). */
+    private boolean registrationServiceOffered(List<OrderCreateItemRequest> items) {
+        return pricingService.registrationServiceOffered() && registrableBikes(items) > 0;
+    }
+
+    private void assertRegistrationServiceOffered(boolean requested, List<OrderCreateItemRequest> items, boolean homeDelivery) {
+        if (!requested) {
+            return;
+        }
+        if (!pricingService.registrationServiceOffered()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cửa hàng hiện không nhận hỗ trợ đăng ký xe.");
+        }
+        if (homeDelivery) {
+            // The owner declares the bike on their own VNeID account, so the store can only help in person.
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Hỗ trợ đăng ký biển số chỉ áp dụng khi nhận xe tại cửa hàng.");
+        }
+        if (registrableBikes(items) == 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Xe trong đơn không thuộc diện phải đăng ký biển số.");
+        }
+    }
+
+    /** Bikes in the order that must be registered (see {@link VehicleRegistration}). */
+    private int registrableBikes(List<OrderCreateItemRequest> items) {
+        int bikes = 0;
+        for (OrderCreateItemRequest item : items) {
+            if (VehicleRegistration.requiresRegistration(getActiveProduct(item.productId()).getSpecification())) {
+                bikes += item.quantity();
+            }
+        }
+        return bikes;
+    }
+
+    /**
+     * Pickup at a store is free. Home delivery is charged per bike: the same-city fee when the province has
+     * an active showroom, the other-province fee otherwise. Until a province is chosen nothing is charged.
+     */
+    private BigDecimal shippingFee(boolean homeDelivery, String province, List<OrderCreateItemRequest> items) {
+        if (!homeDelivery || isBlank(province)) {
+            return ZERO;
+        }
+        String wanted = provinceKey(province);
+        boolean hasShowroom = showroomRepository.findByActiveTrueOrderByDistrictAscNameAsc().stream()
+            .anyMatch(showroom -> provinceKey(showroom.getCity()).equals(wanted));
+        int bikes = items.stream().mapToInt(OrderCreateItemRequest::quantity).sum();
+        return pricingService.homeDeliveryPerBike(hasShowroom).multiply(BigDecimal.valueOf(bikes));
+    }
+
+    /** "Thành phố Hồ Chí Minh", "TP. Ho Chi Minh" and "Hồ Chí Minh" all become "ho chi minh". */
+    private static String provinceKey(String name) {
+        if (name == null) {
+            return "";
+        }
+        String plain = java.text.Normalizer.normalize(name, java.text.Normalizer.Form.NFD)
+            .replaceAll("\\p{M}+", "")
+            .replace("đ", "d").replace("Đ", "D")
+            .toLowerCase(java.util.Locale.ROOT)
+            .replaceAll("[^a-z0-9 ]", " ")
+            .replaceAll("\\s+", " ")
+            .trim();
+        return plain.replaceFirst("^(thanh pho|tinh|tp) ", "");
+    }
+
+    /** Each bike is registered on its own papers, so the fee is charged per bike that needs a plate. */
+    private BigDecimal registrationFee(boolean includeRegistrationService, BigDecimal perBike, List<OrderCreateItemRequest> items) {
+        if (!includeRegistrationService) {
+            return ZERO;
+        }
+        return perBike.multiply(BigDecimal.valueOf(registrableBikes(items)));
     }
 
     private boolean shouldIncludeRegistrationService(Boolean includeRegistrationService) {
@@ -528,6 +724,16 @@ public class OrderServiceImpl implements OrderService {
             .subtract(defaultValue(discountAmount));
 
         return totalAmount.signum() < 0 ? ZERO : totalAmount;
+    }
+
+    /** One use per customer: a signed-in customer by account, a guest by email. Cancelled orders do not count. */
+    private void assertCodeNotUsedBefore(Promotion promotion, User user, String email) {
+        boolean used = user != null
+            ? orderRepository.existsByUserIdAndPromotionIdAndStatusNot(user.getId(), promotion.getId(), OrderStatus.CANCELLED)
+            : orderRepository.existsByUserIsNullAndCustomerEmailIgnoreCaseAndPromotionIdAndStatusNot(email, promotion.getId(), OrderStatus.CANCELLED);
+        if (used) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bạn đã dùng mã giảm giá này cho một đơn hàng khác.");
+        }
     }
 
     private BigDecimal resolvePromoDiscount(String discountCode, BigDecimal subtotal) {

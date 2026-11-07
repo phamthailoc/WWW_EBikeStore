@@ -129,7 +129,7 @@ public class VnPayServiceImpl implements VnPayService {
         if (payment == null) {
             return response("01", "Order not found");
         }
-        if (payment.getPaymentStatus() != PaymentStatus.PENDING) {
+        if (!awaitsGatewayResult(payment)) {
             return response(SUCCESS_CODE, "Order already confirmed");
         }
         if (!amountMatches(payment, params.get("vnp_Amount"))) {
@@ -148,7 +148,7 @@ public class VnPayServiceImpl implements VnPayService {
             ? paymentRepository.findByTransactionReference(params.get("vnp_TxnRef")).orElse(null)
             : null;
 
-        if (payment != null && payment.getPaymentStatus() == PaymentStatus.PENDING && amountMatches(payment, params.get("vnp_Amount"))) {
+        if (payment != null && awaitsGatewayResult(payment) && amountMatches(payment, params.get("vnp_Amount"))) {
             applyGatewayResult(payment, params);
         }
 
@@ -214,6 +214,19 @@ public class VnPayServiceImpl implements VnPayService {
         return "EBIKE" + timestamp + orderNumber + suffix;
     }
 
+    /**
+     * A VNPay result still has to be recorded when the payment is waiting, or when the order was cancelled
+     * (for example by the unpaid-order expiry) while the customer was still on the gateway page.
+     */
+    private boolean awaitsGatewayResult(Payment payment) {
+        if (payment.getPaymentStatus() == PaymentStatus.PENDING) {
+            return true;
+        }
+        return payment.getPaymentStatus() == PaymentStatus.CANCELLED
+            && payment.getPaymentMethod() == PaymentMethod.VNPAY
+            && payment.getOrder().getStatus() == OrderStatus.CANCELLED;
+    }
+
     private void applyGatewayResult(Payment payment, Map<String, String> params) {
         payment.setProviderTxnId(params.get("vnp_TransactionNo"));
         payment.setProviderResponse(toJson(params));
@@ -222,11 +235,16 @@ public class VnPayServiceImpl implements VnPayService {
         payment.setVnpayCardType(params.get("vnp_CardType"));
         payment.setVnpaySecureHash(params.get("vnp_SecureHash"));
 
+        boolean orderCancelled = payment.getOrder().getStatus() == OrderStatus.CANCELLED;
         if (isGatewaySuccess(params)) {
             payment.setPaymentStatus(PaymentStatus.PAID);
             payment.setPaidAt(LocalDateTime.now());
-            payment.getOrder().setStatus(OrderStatus.CONFIRMED);
-        } else {
+            // A cancelled order stays cancelled (its stock is already back on sale);
+            // the money shows up as PAID on a cancelled order so the manager refunds it (UC-17).
+            if (!orderCancelled) {
+                payment.getOrder().setStatus(OrderStatus.CONFIRMED);
+            }
+        } else if (!orderCancelled) {
             payment.setPaymentStatus(PaymentStatus.FAILED);
         }
         paymentRepository.save(payment);

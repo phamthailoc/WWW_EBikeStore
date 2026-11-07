@@ -50,6 +50,9 @@ def specs_for(item,source,bike):
         elif 'trong luong' in key and numbers:spec['product_weight_kg']=max(numbers)
         elif 'kich thuoc' in key:spec['dimensions_mm']=value
         elif 'phanh' in key:spec['brake_type']='DISC' if 'dia' in normalized else 'DRUM'
+    # An electric bicycle is at most 25 km/h and 250 W; anything over that is a motorbike in law.
+    if spec['vehicle_type']=='E_BIKE' and ((spec.get('max_speed_kmh') or 0)>25 or (spec.get('motor_power_watts') or 0)>250):
+        spec['vehicle_type']='E_MOTORBIKE'
     return spec
 
 def main(write_update=False):

@@ -63,14 +63,19 @@ public class UserProfileServiceImpl implements UserProfileService {
     public UserAddressResponse createAddress(Long userId, UserAddressRequest request, Authentication authentication) {
         assertCanAccessUser(userId, authentication);
         User user = getUserOrThrow(userId);
+        validateAddress(request);
+        if (userAddressRepository.findByUserId(userId).size() >= MAX_ADDRESSES) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                "Bạn chỉ lưu được tối đa " + MAX_ADDRESSES + " địa chỉ. Hãy xóa bớt địa chỉ cũ.");
+        }
 
         UserAddress address = new UserAddress();
         address.setUser(user);
-        address.setAddressType(parseAddressType(request == null ? null : request.addressType()));
-        address.setStreet(request == null ? null : request.street());
-        address.setCity(request == null ? null : request.city());
-        address.setPostalCode(request == null ? null : request.postalCode());
-        address.setCountry(request == null ? null : request.country());
+        address.setAddressType(parseAddressType(request.addressType()));
+        address.setStreet(request.street().trim());
+        address.setCity(request.city().trim());
+        address.setPostalCode(request.postalCode());
+        address.setCountry(countryOrDefault(request.country()));
         address.setDefaultAddress(request != null && Boolean.TRUE.equals(request.isDefault()));
 
         if (Boolean.TRUE.equals(request != null ? request.isDefault() : null)) {
@@ -88,11 +93,12 @@ public class UserProfileServiceImpl implements UserProfileService {
         UserAddress address = userAddressRepository.findByIdAndUserId(addressId, userId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Address not found"));
 
-        address.setAddressType(parseAddressType(request == null ? null : request.addressType()));
-        address.setStreet(request == null ? null : request.street());
-        address.setCity(request == null ? null : request.city());
-        address.setPostalCode(request == null ? null : request.postalCode());
-        address.setCountry(request == null ? null : request.country());
+        validateAddress(request);
+        address.setAddressType(parseAddressType(request.addressType()));
+        address.setStreet(request.street().trim());
+        address.setCity(request.city().trim());
+        address.setPostalCode(request.postalCode());
+        address.setCountry(countryOrDefault(request.country()));
         address.setDefaultAddress(request != null && Boolean.TRUE.equals(request.isDefault()));
 
         if (Boolean.TRUE.equals(request != null ? request.isDefault() : null)) {
@@ -110,6 +116,29 @@ public class UserProfileServiceImpl implements UserProfileService {
         userAddressRepository.findByIdAndUserId(addressId, userId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Address not found"));
         userAddressRepository.deleteByIdAndUserId(addressId, userId);
+    }
+
+    private static final int MAX_ADDRESSES = 10;
+    private static final int MIN_STREET_LENGTH = 10;
+
+    /** Same minimum as checkout asks for: a house number, street and ward. */
+    private void validateAddress(UserAddressRequest request) {
+        String street = request == null || request.street() == null ? "" : request.street().trim();
+        String city = request == null || request.city() == null ? "" : request.city().trim();
+        if (city.isEmpty() || city.length() > 100) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vui lòng chọn tỉnh/thành phố.");
+        }
+        if (street.length() < MIN_STREET_LENGTH) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                "Địa chỉ cụ thể quá ngắn. Vui lòng nhập số nhà, tên đường và phường/xã.");
+        }
+        if (street.length() > 255) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Địa chỉ cụ thể không được vượt quá 255 ký tự.");
+        }
+    }
+
+    private String countryOrDefault(String country) {
+        return country == null || country.isBlank() ? "Việt Nam" : country.trim();
     }
 
     private void unsetDefaultAddresses(Long userId, Long keepAddressId) {

@@ -59,6 +59,26 @@ for migration in sorted((DB / "migration").glob("V2_0_[1-9]*.sql")):
         OUT.append("ALTER TABLE orders DROP COLUMN customer_identity_number;\n")
     if migration.name.startswith("V2_0_7"):
         OUT.append("ALTER TABLE users ADD COLUMN account_status VARCHAR(30) NOT NULL DEFAULT 'ACTIVE';\n")
+        OUT.append("ALTER TABLE orders ADD COLUMN promotion_id BIGINT NULL, ADD CONSTRAINT fk_orders_promotion FOREIGN KEY (promotion_id) REFERENCES promotions(id) ON DELETE SET NULL;\n")
+        OUT.append("""
+DROP TABLE IF EXISTS `support_requests`;
+CREATE TABLE `support_requests` (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NULL,
+    customer_name VARCHAR(100) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    phone VARCHAR(30),
+    subject VARCHAR(150) NOT NULL,
+    message LONGTEXT NOT NULL,
+    status VARCHAR(30) NOT NULL DEFAULT 'NEW',
+    staff_note LONGTEXT,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_support_requests_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL,
+    CONSTRAINT chk_support_requests_status CHECK (status IN ('NEW', 'IN_PROGRESS', 'RESOLVED'))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE INDEX `idx_support_requests_status` ON `support_requests` (status, created_at);
+""")
     for unique, index_name, table_name, cols in re.findall(r"CREATE (UNIQUE )?INDEX IF NOT EXISTS\s+(\w+)\s+ON\s+([\w.]+)\s*\(([^;]+?)\)\s*(?:WHERE\s+[^;]+)?;", content, re.I | re.S):
         table = table_name.split(".")[-1]
         if index_name.lower() in known_indexes or table.lower() not in created_tables:
@@ -121,11 +141,11 @@ for row in [
     OUT.append("INSERT INTO showrooms(name,district,address,phone,opening_hours,is_active) VALUES (" + ",".join(q(v) for v in (*row,"08:00 - 21:00",True)) + ");\n")
 OUT.append("""
 INSERT INTO pricing_rules(code,name,description,amount,unit,status,effective_from) VALUES
-('UNLOCK_FEE','Phí đăng ký dịch vụ','Phí dịch vụ một lần khi tạo đơn hàng.',5000,'VND/lần','ACTIVE',NOW()),
-('MINUTE_RATE','Phí giao xe','Phí xử lý và giao xe tại cửa hàng.',1800,'VND/phút','ACTIVE',NOW()),
-('HOUR_RATE','Gói bảo hành mở rộng','Gói bảo hành mở rộng theo thời hạn.',45000,'VND/giờ','SCHEDULED',DATE_ADD(NOW(), INTERVAL 5 DAY)),
-('WRONG_ZONE_FINE','Phí giao hàng ngoài khu vực','Áp dụng khi giao hàng ngoài vùng hỗ trợ.',30000,'VND/lần','ACTIVE',NOW()),
-('OVERDUE_FINE','Phí giao trễ','Phí phát sinh khi lịch giao xe bị trễ.',12000,'VND/lần','ACTIVE',NOW());
+('REGISTRATION_SERVICE','Phí hỗ trợ đăng ký biển số tại cửa hàng','Nhân viên hỗ trợ chủ xe tự kê khai trên VNeID khi nhận xe tại cửa hàng. Không gồm lệ phí nộp Nhà nước.',500000,'VND/xe','ACTIVE',NOW()),
+('HOME_DELIVERY_SAME_CITY','Phí giao xe tận nhà cùng tỉnh','Giao xe đến địa chỉ trong tỉnh, thành phố có showroom.',200000,'VND/xe','ACTIVE',NOW()),
+('HOME_DELIVERY_OTHER_PROVINCE','Phí giao xe tận nhà khác tỉnh','Giao xe đến địa chỉ ở tỉnh, thành phố không có showroom.',800000,'VND/xe','ACTIVE',NOW()),
+('REGISTRATION_TAX_RATE_CENTRAL','Tỷ lệ lệ phí trước bạ (thành phố lớn)','Chỉ hiển thị ước tính tham khảo, không cộng vào đơn.',5,'%','ACTIVE',NOW()),
+('REGISTRATION_TAX_RATE_OTHER','Tỷ lệ lệ phí trước bạ (khu vực khác)','Chỉ hiển thị ước tính tham khảo, không cộng vào đơn.',2,'%','ACTIVE',NOW());
 INSERT INTO promotions(code,campaign_name,discount_type,discount_value,max_discount_amount,usage_count,usage_limit,status,starts_at,ends_at) VALUES
 ('KINETIC20','Chào hè xanh','PERCENTAGE',20,25000,326,800,'LIVE','2026-06-01 00:00:00','2026-06-30 23:59:59'),
 ('STUDENT15','Ưu đãi sinh viên','FIXED_AMOUNT',15000,NULL,1020,2000,'LIVE','2026-05-15 00:00:00','2026-07-15 23:59:59'),

@@ -14,7 +14,6 @@ import com.ebike.dto.manager.response.ManagerRevenuePeriodPointResponse;
 import com.ebike.dto.manager.response.ManagerRevenueReportResponse;
 import com.ebike.dto.manager.response.ManagerTopProductResponse;
 import com.ebike.service.manager.ManagerService;
-import com.ebike.dto.order.request.OrderCancellationRequest;
 import com.ebike.dto.order.response.OrderResponse;
 import com.ebike.model.entity.order.Order;
 import com.ebike.model.entity.order.OrderItem;
@@ -29,6 +28,7 @@ import com.ebike.repository.order.OrderRepository;
 import com.ebike.repository.order.PaymentRepository;
 import com.ebike.dto.product.response.ProductSummaryDto;
 import com.ebike.model.entity.product.Product;
+import com.ebike.model.entity.product.ProductVariant;
 import com.ebike.repository.product.ProductRepository;
 import com.ebike.service.product.ProductService;
 import java.math.BigDecimal;
@@ -141,6 +141,12 @@ public class ManagerServiceImpl implements ManagerService {
         if (payment.getPaymentStatus() == PaymentStatus.REFUNDED) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Refunded payments cannot be confirmed again");
         }
+        if (payment.getPaymentStatus() != PaymentStatus.PENDING) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chỉ xác nhận được khoản trả sau đang chờ thu.");
+        }
+        if (payment.getOrder().getStatus() == OrderStatus.CANCELLED) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Đơn hàng đã hủy, không thể xác nhận thu tiền.");
+        }
 
         payment.setPaymentStatus(PaymentStatus.PAID);
         payment.setPaidAt(LocalDateTime.now());
@@ -152,9 +158,6 @@ public class ManagerServiceImpl implements ManagerService {
         }
 
         Order order = payment.getOrder();
-        if (order.getStatus() == OrderStatus.CANCELLATION_REQUESTED) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Resolve the cancellation request before confirming this payment");
-        }
         if (order.getStatus() == OrderStatus.PENDING) {
             order.setStatus(OrderStatus.CONFIRMED);
         }
@@ -181,39 +184,6 @@ public class ManagerServiceImpl implements ManagerService {
         }
 
         return toPaymentResponse(paymentRepository.save(payment));
-    }
-
-    @Override
-    @Transactional
-    public OrderResponse approveOrderCancellation(Long orderId, OrderCancellationRequest request) {
-        Order order = getPendingCancellationOrder(orderId);
-        Payment payment = order.getPayment();
-        if (payment == null || payment.getPaymentMethod() != PaymentMethod.PAY_LATER || payment.getPaymentStatus() != PaymentStatus.PENDING) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Order is no longer eligible for cancellation approval");
-        }
-
-        order.setStatus(OrderStatus.CANCELLED);
-        order.setCancellationReviewNote(normalizeOptional(request == null ? null : request.reviewNote()));
-        order.setCancellationReviewedAt(LocalDateTime.now());
-        payment.setPaymentStatus(PaymentStatus.CANCELLED);
-        payment.setProviderResponse("Cancelled after manager approval");
-
-        return toOrderResponse(orderRepository.save(order));
-    }
-
-    @Override
-    @Transactional
-    public OrderResponse rejectOrderCancellation(Long orderId, OrderCancellationRequest request) {
-        Order order = getPendingCancellationOrder(orderId);
-        OrderStatus previousStatus = order.getCancellationRequestedFromStatus() == null
-            ? OrderStatus.PENDING
-            : order.getCancellationRequestedFromStatus();
-
-        order.setStatus(previousStatus);
-        order.setCancellationReviewNote(normalizeOptional(request == null ? null : request.reviewNote()));
-        order.setCancellationReviewedAt(LocalDateTime.now());
-
-        return toOrderResponse(orderRepository.save(order));
     }
 
     @Override
@@ -261,13 +231,21 @@ public class ManagerServiceImpl implements ManagerService {
         long successfulOrders = inScope.stream()
             .filter(order -> order.getStatus() == OrderStatus.DELIVERED)
             .count();
-        BigDecimal totalRevenue = inScope.stream()
+        // Revenue is money received in the period (by payment date, like the dashboard), whenever the order was placed.
+        List<Order> paidInPeriod = orders.stream()
+            .filter(this::isCountedOrder)
             .filter(this::hasPaidPayment)
+            .filter(order -> {
+                LocalDate paid = paymentDate(order);
+                return !paid.isBefore(fromDate) && !paid.isAfter(toDate);
+            })
+            .toList();
+        BigDecimal totalRevenue = paidInPeriod.stream()
             .map(order -> order.getPayment().getAmount())
             .reduce(ZERO, BigDecimal::add);
 
         List<ManagerRevenuePeriodPointResponse> breakdown = buildRevenueBreakdown(orders, bucketPeriod, fromDate, toDate);
-        List<Order> paidOrders = inScope.stream().filter(this::hasPaidPayment).toList();
+        List<Order> paidOrders = paidInPeriod;
         List<ManagerTopProductResponse> topProducts = buildTopProducts(paidOrders);
         List<ManagerTopProductResponse> slowProducts = buildSlowProducts(paidOrders);
 
@@ -310,6 +288,15 @@ public class ManagerServiceImpl implements ManagerService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid shipment status");
         }
 
+        // The shipment must not push the order past a step it has not reached (e.g. a PENDING order straight to DELIVERED).
+        boolean leavingWarehouse = nextStatus == ShipmentStatus.SHIPPED || nextStatus == ShipmentStatus.IN_TRANSIT;
+        if (leavingWarehouse && order.getStatus() != OrderStatus.PROCESSING && order.getStatus() != OrderStatus.SHIPPED) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Only orders being processed can be handed over for shipping");
+        }
+        if (nextStatus == ShipmentStatus.DELIVERED && order.getStatus() != OrderStatus.SHIPPED && order.getStatus() != OrderStatus.DELIVERED) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Only orders that are being shipped can be marked as delivered");
+        }
+
         shipment.setShipmentStatus(nextStatus);
         if (request.trackingNumber() != null) {
             String trackingNumber = request.trackingNumber().trim();
@@ -348,23 +335,49 @@ public class ManagerServiceImpl implements ManagerService {
         Product product = productRepository.findById(productId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
 
+        // Orders need stock in the product and in the chosen colour, so a total typed here would not make any
+        // colour available. For a product with colours the total is the sum of the colours (see updateVariantStock).
+        if (product.getVariants().stream().anyMatch(variant -> Boolean.TRUE.equals(variant.getActive()))) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                "Sản phẩm có nhiều màu: hãy sửa tồn kho từng màu, tổng tồn kho sẽ tự tính.");
+        }
+
         product.setStockQuantity(request.stockQuantity());
+        return productService.toSummaryDto(productRepository.save(product));
+    }
+
+    @Override
+    @Transactional
+    @Caching(evict = {
+        @CacheEvict(cacheNames = RedisCacheConfiguration.PRODUCT_LIST_CACHE, allEntries = true),
+        @CacheEvict(cacheNames = RedisCacheConfiguration.PRODUCT_DETAIL_CACHE, allEntries = true)
+    })
+    public ProductSummaryDto updateVariantStock(Long productId, Long variantId, ManagerProductStockUpdateRequest request) {
+        if (request == null || request.stockQuantity() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vui lòng nhập số lượng tồn kho.");
+        }
+        if (request.stockQuantity() < 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Số lượng tồn kho không được âm.");
+        }
+
+        Product product = productRepository.findById(productId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
+        ProductVariant variant = product.getVariants().stream()
+            .filter(candidate -> candidate.getId() != null && candidate.getId().equals(variantId))
+            .findFirst()
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy màu này của sản phẩm."));
+
+        variant.setStockQuantity(request.stockQuantity());
+        // Only active colours can be ordered, so only they make up what the product has in stock.
+        product.setStockQuantity(product.getVariants().stream()
+            .filter(candidate -> Boolean.TRUE.equals(candidate.getActive()))
+            .mapToInt(candidate -> candidate.getStockQuantity() == null ? 0 : candidate.getStockQuantity())
+            .sum());
         return productService.toSummaryDto(productRepository.save(product));
     }
 
     private boolean isCustomer(User user) {
         return user.getRoles().stream().map(Role::getName).anyMatch(ROLE_CUSTOMER::equals);
-    }
-
-    private Order getPendingCancellationOrder(Long orderId) {
-        Order order = orderRepository.findById(orderId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
-
-        if (order.getStatus() != OrderStatus.CANCELLATION_REQUESTED) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Order does not have a pending cancellation request");
-        }
-
-        return order;
     }
 
     private boolean matchesCustomerSearch(User user, String rawSearch) {
@@ -614,6 +627,12 @@ public class ManagerServiceImpl implements ManagerService {
         return order.getStatus() != OrderStatus.CANCELLED;
     }
 
+    /** The day the money arrived; older rows without a payment time fall back to the order date. */
+    private LocalDate paymentDate(Order order) {
+        LocalDateTime paidAt = order.getPayment().getPaidAt();
+        return (paidAt != null ? paidAt : order.getCreatedAt()).toLocalDate();
+    }
+
     private boolean hasPaidPayment(Order order) {
         Payment payment = order.getPayment();
         return payment != null && payment.getPaymentStatus() == PaymentStatus.PAID;
@@ -644,8 +663,8 @@ public class ManagerServiceImpl implements ManagerService {
                     .filter(this::isCountedOrder)
                     .filter(this::hasPaidPayment)
                     .filter(order -> {
-                        LocalDate createdAt = order.getCreatedAt().toLocalDate();
-                        return !createdAt.isBefore(bucket.start()) && !createdAt.isAfter(bucket.end());
+                        LocalDate paid = paymentDate(order);
+                        return !paid.isBefore(bucket.start()) && !paid.isAfter(bucket.end());
                     })
                     .map(order -> order.getPayment().getAmount())
                     .reduce(ZERO, BigDecimal::add);

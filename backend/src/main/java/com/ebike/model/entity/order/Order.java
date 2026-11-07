@@ -1,5 +1,6 @@
 package com.ebike.model.entity.order;
 
+import com.ebike.model.entity.admin.Promotion;
 import com.ebike.model.entity.auth.User;
 import com.ebike.listener.notification.OrderNotificationJpaListener;
 import jakarta.persistence.CascadeType;
@@ -38,6 +39,11 @@ public class Order {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
+
+    /** The discount code this order used, so a customer can use a code once and a cancelled order frees it. */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "promotion_id")
+    private Promotion promotion;
 
     @Column(name = "order_number", nullable = false, unique = true, length = 50)
     private String orderNumber;
@@ -131,6 +137,14 @@ public class Order {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Promotion getPromotion() {
+        return promotion;
+    }
+
+    public void setPromotion(Promotion promotion) {
+        this.promotion = promotion;
     }
 
     public User getUser() {

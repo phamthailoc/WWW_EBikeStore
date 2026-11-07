@@ -49,6 +49,8 @@ public class SecurityConfiguration {
                 .requestMatchers("/manager/**").hasAuthority(PermissionConstants.OrderManagement.ORDER_VIEW_ALL)
                 .requestMatchers("/admin/**").hasAnyRole(ADMIN_CONSOLE_ROLES)
                 .requestMatchers(HttpMethod.POST, "/api/v1/orders/quote").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/v1/faq").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/v1/support-requests").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/v1/orders/email-verification/send", "/api/v1/orders/email-verification/verify").permitAll()
                 .requestMatchers("/api/v1/payments/vnpay/ipn", "/api/v1/payments/vnpay/return").permitAll()
                 .requestMatchers(
@@ -82,6 +84,7 @@ public class SecurityConfiguration {
                     PermissionConstants.OrderManagement.ORDER_VIEW_ALL
                 )
                 .requestMatchers(HttpMethod.POST, "/api/v1/orders").hasAuthority(PermissionConstants.Guest.ORDER_CREATE)
+                .requestMatchers(HttpMethod.POST, "/api/v1/orders/guest-orders/link").hasAuthority(PermissionConstants.Customer.ORDER_VIEW_OWN)
                 .requestMatchers(HttpMethod.POST, "/api/v1/orders/*/cancellation-request").hasAuthority(PermissionConstants.Customer.ORDER_CANCEL_OWN)
                 .requestMatchers(HttpMethod.PATCH, "/api/v1/orders/*/status").hasAuthority(PermissionConstants.OrderManagement.ORDER_UPDATE_STATUS)
                 .requestMatchers(HttpMethod.GET, "/api/v1/favorites").hasAuthority(PermissionConstants.Customer.FAVORITE_VIEW)
@@ -101,6 +104,7 @@ public class SecurityConfiguration {
                 )
                 .requestMatchers(HttpMethod.POST, "/api/v1/users/**").hasAuthority(PermissionConstants.Customer.PROFILE_UPDATE)
                 .requestMatchers(HttpMethod.PUT, "/api/v1/users/**").hasAuthority(PermissionConstants.Customer.PROFILE_UPDATE)
+                .requestMatchers(HttpMethod.DELETE, "/api/v1/users/**").hasAuthority(PermissionConstants.Customer.PROFILE_UPDATE)
                 .requestMatchers(HttpMethod.GET,
                     "/api/v1/admin/overview",
                     "/api/v1/admin/pricing-rules",

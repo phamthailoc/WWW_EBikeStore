@@ -21,11 +21,13 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
+import org.openqa.selenium.Alert;
 import org.openqa.selenium.By;
 import org.openqa.selenium.ElementClickInterceptedException;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.PageLoadStrategy;
+import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -115,7 +117,9 @@ abstract class StorefrontSeleniumTest {
         options.addArguments("--host-resolver-rules=MAP " + gatewayHost + " 127.0.0.1:9");
         options.setPageLoadStrategy(PageLoadStrategy.EAGER);
         driver = new ChromeDriver(options);
+        // Tables and quotes are re-rendered by JavaScript; a row read mid-render goes stale, so try again next poll.
         wait = new WebDriverWait(driver, Duration.ofSeconds(20));
+        wait.ignoring(StaleElementReferenceException.class);
         logIn(username, PASSWORD);
     }
 
@@ -139,10 +143,16 @@ abstract class StorefrontSeleniumTest {
 
     protected void openCheckoutWithOneBike() {
         driver.get(baseUrl + "/product/" + productSlug);
-        if (!driver.findElements(By.cssSelector(".variant-option")).isEmpty()
-            && driver.findElements(By.cssSelector(".variant-option.selected")).isEmpty()) {
-            click(By.cssSelector(".variant-option"));
-        }
+        // Pick the colour with the most bikes left. Tests that ship orders keep their stock for good,
+        // so always taking the first colour would eventually sell it out and disable "add to cart".
+        driver.findElements(By.cssSelector(".variant-option")).stream()
+            .max(java.util.Comparator.comparingInt(color -> Integer.parseInt(color.getAttribute("data-stock"))))
+            .ifPresent(color -> {
+                assumeTrue(Integer.parseInt(color.getAttribute("data-stock")) > 0, "every colour of " + productSlug + " is sold out");
+                if (!color.getAttribute("class").contains("selected")) {
+                    click(color);
+                }
+            });
         click(By.id("addToCart"));
         wait.until(d -> {
             Object cart = js("return localStorage.getItem('kinetic_cart')");
@@ -152,12 +162,22 @@ abstract class StorefrontSeleniumTest {
         wait.until(ExpectedConditions.elementToBeClickable(By.id("placeOrder")));
     }
 
+    /** Switches checkout to collecting the bike at a store, which requotes the order. */
+    protected void chooseStorePickup() {
+        js("arguments[0].click()", driver.findElement(By.cssSelector("input[name='deliveryMethod'][value='STORE_PICKUP']")));
+    }
+
     /** Fills the checkout form for home delivery and submits it with the given payment method. */
     protected void placeOrder(String paymentMethod) {
+        placeOrder(paymentMethod, username + "@example.com");
+    }
+
+    /** Same as {@link #placeOrder(String)} but with the contact email typed at checkout. */
+    protected void placeOrder(String paymentMethod, String email) {
         openCheckoutWithOneBike();
         fill("customerName", "Selenium Tester");
         fill("phoneNumber", "0901234567");
-        fill("customerEmail", username + "@example.com");
+        fill("customerEmail", email);
         Select province = new Select(driver.findElement(By.name("province")));
         if (province.getFirstSelectedOption().getAttribute("value").isBlank()) {
             province.selectByIndex(1);
@@ -262,5 +282,24 @@ abstract class StorefrontSeleniumTest {
             }
         }
         throw new AssertionError("order " + orderNumber + " not found for " + username);
+    }
+
+    protected String placePayLaterOrder() {
+        placeOrder("PAY_LATER");
+        wait.until(ExpectedConditions.urlContains("/checkout/success"));
+        return wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".order-number"))).getText();
+    }
+
+    protected void answerPrompt(String reason) {
+        Alert prompt = wait.until(ExpectedConditions.alertIsPresent());
+        prompt.sendKeys(reason);
+        prompt.accept();
+    }
+
+    protected String notice() {
+        return wait.until(d -> {
+            WebElement notice = d.findElement(By.id("notice"));
+            return notice.isDisplayed() && !notice.getText().isBlank() ? notice.getText() : null;
+        });
     }
 }

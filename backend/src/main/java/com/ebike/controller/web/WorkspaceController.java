@@ -9,6 +9,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 @Controller
 public class WorkspaceController {
+
+    /** When on, checkout asks the buyer to confirm their email with a code before ordering (UC-06). */
+    @org.springframework.beans.factory.annotation.Value("${app.order.email-otp.required:false}")
+    private boolean emailOtpRequired;
+
     private record Link(String label, String href) {}
 
     private final VnPayProperties vnPayProperties;
@@ -36,12 +41,15 @@ public class WorkspaceController {
             case "manager" -> { title = "Tổng quan cửa hàng"; api = "/api/v1/manager/dashboard"; description = "Đơn hàng, thanh toán và doanh thu cửa hàng."; mode = "dashboard"; }
             case "manager/orders" -> { title = "Quản lý đơn hàng"; api = "/api/v1/orders"; description = "Theo dõi và cập nhật các đơn xe."; }
             case "manager/payments" -> { title = "Thanh toán"; api = "/api/v1/manager/payments"; description = "Xác nhận giao dịch và thanh toán sau."; }
+            case "manager/support" -> { title = "Yêu cầu hỗ trợ"; api = "/api/v1/manager/support-requests"; description = "Câu hỏi và khiếu nại khách gửi từ trang Hỗ trợ."; }
             case "manager/customers" -> { title = "Khách hàng"; api = "/api/v1/manager/customers"; description = "Danh sách khách hàng và lịch sử mua."; }
             case "manager/inventory", "manager/products", "admin/inventory", "admin/products" -> { title = "Kho sản phẩm"; api = "/api/v1/products"; description = "Theo dõi tồn kho và tình trạng xe."; mode = "inventory"; }
             case "manager/reports" -> { title = "Báo cáo doanh thu"; api = "/api/v1/manager/revenue-report"; description = "Tổng hợp hoạt động kinh doanh."; mode = "dashboard"; }
             case "admin" -> { title = "Bảng điều khiển quản trị"; api = "/api/v1/admin/overview"; description = "Tài khoản, chương trình giá và hoạt động hệ thống."; mode = "dashboard"; }
             case "admin/pricing" -> { title = "Giá và khuyến mãi"; api = "/api/v1/admin/pricing-rules"; description = "Quản lý phí dịch vụ và chiến dịch ưu đãi."; mode = "pricing"; }
             case "admin/accounts" -> { title = "Tài khoản và phân quyền"; api = "/api/v1/admin/accounts"; description = "Quản lý tài khoản và vai trò truy cập."; mode = "accounts"; }
+            case "admin/roles" -> { title = "Vai trò và quyền"; api = "/api/v1/admin/roles"; description = "Mỗi vai trò được làm những gì trong hệ thống."; }
+            case "admin/audit-logs" -> { title = "Nhật ký hoạt động"; api = "/api/v1/admin/audit-logs"; description = "100 thao tác quản trị gần nhất."; }
             case "admin/users" -> { title = "Người dùng"; api = "/api/v1/admin/accounts?type=CUSTOMER"; description = "Danh sách tài khoản khách hàng."; }
             default -> {
                 if (path.startsWith("/customer/orders/")) { title = "Chi tiết đơn hàng"; api = "/api/v1/orders/" + id; description = "Chi tiết và tiến trình đơn hàng."; mode = "detail"; }
@@ -50,8 +58,8 @@ public class WorkspaceController {
             }
         }
         List<Link> links = switch (role) {
-            case "admin" -> List.of(new Link("Tổng quan", "/admin"), new Link("Sản phẩm", "/admin/products"), new Link("Kho hàng", "/admin/inventory"), new Link("Giá & khuyến mãi", "/admin/pricing"), new Link("Tài khoản", "/admin/accounts"), new Link("Người dùng", "/admin/users"));
-            case "manager" -> List.of(new Link("Tổng quan", "/manager"), new Link("Đơn hàng", "/manager/orders"), new Link("Thanh toán", "/manager/payments"), new Link("Khách hàng", "/manager/customers"), new Link("Kho hàng", "/manager/inventory"), new Link("Sản phẩm", "/manager/products"), new Link("Báo cáo", "/manager/reports"));
+            case "admin" -> List.of(new Link("Tổng quan", "/admin"), new Link("Sản phẩm", "/admin/products"), new Link("Kho hàng", "/admin/inventory"), new Link("Giá & khuyến mãi", "/admin/pricing"), new Link("Tài khoản", "/admin/accounts"), new Link("Vai trò", "/admin/roles"), new Link("Nhật ký", "/admin/audit-logs"), new Link("Người dùng", "/admin/users"));
+            case "manager" -> List.of(new Link("Tổng quan", "/manager"), new Link("Đơn hàng", "/manager/orders"), new Link("Thanh toán", "/manager/payments"), new Link("Khách hàng", "/manager/customers"), new Link("Hỗ trợ", "/manager/support"), new Link("Kho hàng", "/manager/inventory"), new Link("Sản phẩm", "/manager/products"), new Link("Báo cáo", "/manager/reports"));
             default -> List.of(new Link("Tổng quan", "/customer"), new Link("Đơn hàng", "/customer/orders"), new Link("Thanh toán", "/customer/payments"), new Link("Thông báo", "/customer/notifications"), new Link("Hồ sơ", "/customer/profile"), new Link("Yêu thích", "/favorites"));
         };
         model.addAttribute("workspaceRole", role);
@@ -88,6 +96,7 @@ public class WorkspaceController {
         model.addAttribute("api", api);
         model.addAttribute("flow", path.substring(1).replace('/', '-'));
         model.addAttribute("vnpayEnabled", vnPayProperties.isConfigured());
+        model.addAttribute("emailOtpRequired", emailOtpRequired);
         return "store/flow";
     }
 }

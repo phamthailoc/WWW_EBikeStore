@@ -9,6 +9,7 @@ import com.ebike.repository.order.ShowroomRepository;
 import com.ebike.model.entity.product.Product;
 import com.ebike.model.entity.product.ProductSpecification;
 import com.ebike.repository.product.ProductRepository;
+import com.ebike.service.admin.PricingService;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -16,6 +17,7 @@ import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.text.Normalizer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -34,27 +36,31 @@ import org.springframework.web.server.ResponseStatusException;
 @Transactional(readOnly = true)
 public class ChatbotService {
 
-    private static final BigDecimal REGISTRATION_FEE_AMOUNT = new BigDecimal("2500000");
-    private static final BigDecimal SHOWROOM_INCENTIVE_AMOUNT = new BigDecimal("1200000");
     private static final Pattern SENTENCE_BOUNDARY = Pattern.compile("(?<=[.!?])\\s+|\\s+-\\s+");
 
     private final ProductRepository productRepository;
     private final ShowroomRepository showroomRepository;
     private final GeminiChatClient geminiChatClient;
     private final PdfKnowledgeBaseService pdfKnowledgeBaseService;
+    private final PricingService pricingService;
     private final List<FaqEntry> faqEntries = new ArrayList<>();
+    /** The chat id comes from the browser, so cap how many conversations are remembered and how long an id may be. */
+    private static final int MAX_REMEMBERED_CHATS = 2000;
+    private static final int MAX_CHAT_ID_LENGTH = 64;
     private final Map<String, List<ChatbotRecommendationDto>> recentRecommendationsByChatId = new ConcurrentHashMap<>();
 
     public ChatbotService(
         ProductRepository productRepository,
         ShowroomRepository showroomRepository,
         GeminiChatClient geminiChatClient,
-        PdfKnowledgeBaseService pdfKnowledgeBaseService
+        PdfKnowledgeBaseService pdfKnowledgeBaseService,
+        PricingService pricingService
     ) {
         this.productRepository = productRepository;
         this.showroomRepository = showroomRepository;
         this.geminiChatClient = geminiChatClient;
         this.pdfKnowledgeBaseService = pdfKnowledgeBaseService;
+        this.pricingService = pricingService;
         loadFaqEntries();
     }
 
@@ -104,7 +110,11 @@ public class ChatbotService {
         String normalizedMessage = userMessage.trim().toLowerCase(Locale.ROOT);
         FaqEntry faqMatch = faqEntries.stream()
             .filter(entry -> entry.matches(normalizedMessage))
-            .max(Comparator.comparingInt(FaqEntry::priorityScore))
+            // An exact question wins; then priority; then the entry sharing more keywords with the message.
+            .max(Comparator.comparing((FaqEntry entry) -> entry.isAskedExactly(normalizedMessage))
+                .thenComparingInt(FaqEntry::priorityScore)
+                .thenComparingInt(entry -> entry.keywordHits(normalizedMessage)))
+            .map(this::withCurrentFees)
             .orElse(null);
         List<ChatbotRecommendationDto> recommendations = findProductRecommendations(normalizedMessage);
         if (recommendations.isEmpty() && isFollowUpPriceQuestion(normalizedMessage)) {
@@ -124,6 +134,9 @@ public class ChatbotService {
         );
 
         if (!recommendations.isEmpty()) {
+            if (recentRecommendationsByChatId.size() >= MAX_REMEMBERED_CHATS) {
+                recentRecommendationsByChatId.clear();
+            }
             recentRecommendationsByChatId.put(chatId, recommendations);
         }
 
@@ -471,12 +484,35 @@ public class ChatbotService {
                 "những mẫu",
                 "nhung mau",
                 "xe đó",
-                "xe do"
+                "xe do",
+                // Pointing at one of the bikes just suggested ("xe đầu tiên giá bao nhiêu?"); the list keeps its order.
+                "đầu tiên",
+                "dau tien",
+                "thứ nhất",
+                "thu nhat",
+                "thứ hai",
+                "thu hai",
+                "thứ 2",
+                "thu 2",
+                "thứ ba",
+                "thu ba",
+                "thứ 3",
+                "thu 3",
+                "cuối cùng",
+                "cuoi cung",
+                "xe này",
+                "xe nay",
+                "mẫu này",
+                "mau nay"
             );
     }
 
     private String normalizeChatId(String chatId) {
-        return chatId == null || chatId.isBlank() ? "default" : chatId.trim();
+        if (chatId == null || chatId.isBlank()) {
+            return "default";
+        }
+        String trimmed = chatId.trim();
+        return trimmed.length() > MAX_CHAT_ID_LENGTH ? trimmed.substring(0, MAX_CHAT_ID_LENGTH) : trimmed;
     }
 
     private String buildShowroomContext(String message) {
@@ -526,11 +562,15 @@ public class ChatbotService {
 
         return """
             Quy trình đặt hàng: khách hàng đăng nhập rồi nhập họ tên số điện thoại email, xác thực OTP email, chọn showroom nhận xe, địa chỉ cụ thể và ghi chú nếu có. Hệ thống không yêu cầu CCCD khi đặt hàng.
-            Nhận xe: hệ thống hiện ưu tiên nhận xe tại showroom đã chọn trong TP.HCM.
-            Báo giá checkout: phí đăng ký %s và ưu đãi showroom %s.
+            Nhận xe: khách chọn giao xe tận nhà (phí %s mỗi xe nếu tỉnh nhận xe có showroom, %s mỗi xe nếu khác tỉnh) hoặc nhận xe tại cửa hàng (miễn phí).
+            Báo giá checkout: phí hỗ trợ đăng ký biển số %s mỗi xe, chỉ khi khách nhận xe tại cửa hàng (khách tự chọn, không bắt buộc); chủ xe cần có mặt và tự kê khai trên VNeID mức 2. Giao tận nhà thì chủ xe tự đăng ký.
             Thanh toán: hỗ trợ lưu phương thức thanh toán theo đơn và có luồng VNPay. Khi thanh toán VNPay thành công hệ thống cập nhật payment PAID và đơn hàng CONFIRMED.
             VNPay IPN: backend nhận callback tại /api/v1/payments/vnpay/ipn. Return URL dùng để hiển thị kết quả cho khách hàng.
-            """.formatted(formatCurrency(REGISTRATION_FEE_AMOUNT), formatCurrency(SHOWROOM_INCENTIVE_AMOUNT)).trim();
+            """.formatted(
+                formatCurrency(pricingService.homeDeliveryPerBike(true)),
+                formatCurrency(pricingService.homeDeliveryPerBike(false)),
+                formatCurrency(pricingService.registrationServicePerBike())
+            ).trim();
     }
 
     private boolean isOrderPaymentQuestion(String message) {
@@ -550,7 +590,14 @@ public class ChatbotService {
             "tong thanh toan",
             "otp",
             "giao dịch",
-            "giao dich"
+            "giao dich",
+            "giao xe",
+            "tận nhà",
+            "tan nha",
+            "phí giao",
+            "phi giao",
+            "biển số",
+            "bien so"
         );
     }
 
@@ -570,6 +617,23 @@ public class ChatbotService {
             details.add("tốc độ tối đa khoảng " + specification.getMaxSpeedKmh().stripTrailingZeros().toPlainString() + " km/h");
         }
         return details.isEmpty() ? "đang được bán trên hệ thống" : String.join(", ", details);
+    }
+
+    /** FAQ answers name fees as placeholders so the chatbot always quotes what the admin set. */
+    /** FAQ for the support page: category, question and answer, with the current fees filled in. */
+    public List<com.ebike.dto.support.FaqItemDto> listFaq() {
+        return faqEntries.stream()
+            .map(this::withCurrentFees)
+            .map(entry -> new com.ebike.dto.support.FaqItemDto(entry.category(), entry.question(), entry.answer()))
+            .toList();
+    }
+
+    private FaqEntry withCurrentFees(FaqEntry entry) {
+        String answer = entry.answer()
+            .replace("{REGISTRATION_SERVICE_FEE}", formatCurrency(pricingService.registrationServicePerBike()))
+            .replace("{HOME_DELIVERY_SAME_CITY_FEE}", formatCurrency(pricingService.homeDeliveryPerBike(true)))
+            .replace("{HOME_DELIVERY_OTHER_PROVINCE_FEE}", formatCurrency(pricingService.homeDeliveryPerBike(false)));
+        return new FaqEntry(entry.category(), entry.question(), answer, entry.keywords(), entry.priority());
     }
 
     private String formatCurrency(BigDecimal amount) {
@@ -828,6 +892,17 @@ public class ChatbotService {
                 }
             }
             return false;
+        }
+
+        boolean isAskedExactly(String message) {
+            return message.contains(question.toLowerCase(Locale.ROOT));
+        }
+
+        int keywordHits(String message) {
+            return (int) Arrays.stream(keywords.toLowerCase(Locale.ROOT).split(" "))
+                .filter(keyword -> !keyword.isBlank() && message.contains(keyword))
+                .distinct()
+                .count();
         }
 
         int priorityScore() {

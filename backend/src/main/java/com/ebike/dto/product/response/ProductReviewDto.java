@@ -13,6 +13,8 @@ public record ProductReviewDto(
     String title,
     String comment,
     LocalDateTime createdAt,
-    Boolean editableByCurrentUser
+    Boolean editableByCurrentUser,
+    // True when the author has had this product delivered (shown as "Đã mua hàng").
+    Boolean verifiedPurchase
 ) {
 }

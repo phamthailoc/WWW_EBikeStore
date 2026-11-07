@@ -2,6 +2,7 @@ package com.ebike.controller.product;
 
 import com.ebike.dto.product.request.ProductReviewRequest;
 import com.ebike.dto.product.response.ProductReviewDto;
+import com.ebike.dto.product.response.ReviewEligibilityDto;
 import com.ebike.service.product.ProductReviewService;
 import java.util.List;
 import org.springframework.http.HttpStatus;
@@ -17,7 +18,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping
+@RequestMapping("/api/v1")
 public class ProductReviewController {
 
     private final ProductReviewService productReviewService;
@@ -32,6 +33,11 @@ public class ProductReviewController {
         Authentication authentication
     ) {
         return productReviewService.getReviews(slug, authentication);
+    }
+
+    @GetMapping("/products/{slug}/reviews/eligibility")
+    public ReviewEligibilityDto getReviewEligibility(@PathVariable String slug, Authentication authentication) {
+        return productReviewService.getEligibility(slug, authentication);
     }
 
     @PostMapping("/products/{slug}/reviews")

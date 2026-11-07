@@ -17,13 +17,9 @@ import com.ebike.repository.auth.UserRepository;
 import com.ebike.service.auth.AuthenticationService;
 import com.ebike.service.auth.JwtTokenProvider;
 import com.ebike.service.auth.PermissionService;
-import com.ebike.model.entity.order.Order;
-import com.ebike.repository.order.OrderRepository;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -50,7 +46,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final PermissionService permissionService;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
-    private final OrderRepository orderRepository;
 
     public AuthenticationServiceImpl(
         UserRepository userRepository,
@@ -58,8 +53,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         AuthenticationLogRepository authenticationLogRepository,
         PermissionService permissionService,
         PasswordEncoder passwordEncoder,
-        JwtTokenProvider jwtTokenProvider,
-        OrderRepository orderRepository
+        JwtTokenProvider jwtTokenProvider
     ) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
@@ -67,7 +61,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         this.permissionService = permissionService;
         this.passwordEncoder = passwordEncoder;
         this.jwtTokenProvider = jwtTokenProvider;
-        this.orderRepository = orderRepository;
     }
 
     @Override
@@ -95,8 +88,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Default role is missing"));
         user.getRoles().add(defaultRole);
 
+        // Guest orders with this email are NOT attached here: the email is unverified at sign-up.
+        // Customers attach them later via POST /api/v1/orders/guest-orders/link after an OTP check.
         User savedUser = userRepository.save(user);
-        linkGuestOrdersToUser(savedUser);
         return toAuthResponse(savedUser);
     }
 
@@ -221,18 +215,21 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         String confirmPassword = trimToNull(request.confirmPassword());
 
         if (currentPassword == null || newPassword == null || confirmPassword == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "currentPassword, newPassword, and confirmPassword are required");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vui lòng nhập mật khẩu hiện tại, mật khẩu mới và nhập lại mật khẩu mới.");
         }
         if (!newPassword.equals(confirmPassword)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "New password confirmation does not match");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mật khẩu nhập lại không khớp.");
         }
         if (newPassword.length() < 6) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "New password must be at least 6 characters");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mật khẩu mới cần ít nhất 6 ký tự.");
+        }
+        if (newPassword.equals(currentPassword)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mật khẩu mới phải khác mật khẩu hiện tại.");
         }
 
         User user = findUser(usernameOrEmail);
         if (!passwordEncoder.matches(currentPassword, user.getPasswordHash())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Current password is incorrect");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mật khẩu hiện tại không đúng.");
         }
 
         user.setPasswordHash(passwordEncoder.encode(newPassword));
@@ -254,22 +251,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         return userRepository.findByEmail(trimmed.toLowerCase(Locale.ROOT))
             .or(() -> userRepository.findByUsername(trimmed))
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
-    }
-
-    private void linkGuestOrdersToUser(User user) {
-        if (user == null || isBlank(user.getEmail())) {
-            return;
-        }
-
-        List<Order> guestOrders = new ArrayList<>(orderRepository.findByUserIsNullAndCustomerEmail(user.getEmail()));
-        if (guestOrders.isEmpty()) {
-            return;
-        }
-
-        for (Order order : guestOrders) {
-            order.setUser(user);
-        }
-        orderRepository.saveAll(guestOrders);
     }
 
     private void validateRegisterRequest(RegisterRequest request) {

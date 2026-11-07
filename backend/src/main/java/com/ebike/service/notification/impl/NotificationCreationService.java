@@ -8,6 +8,7 @@ import com.ebike.event.notification.OrderCreatedEvent;
 import com.ebike.event.notification.OrderStatusChangedEvent;
 import com.ebike.event.notification.PaymentStatusChangedEvent;
 import com.ebike.repository.notification.NotificationRepository;
+import com.ebike.repository.user.UserPreferenceRepository;
 import com.ebike.service.notification.NotificationStreamService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -21,15 +22,18 @@ public class NotificationCreationService {
     private final NotificationRepository notificationRepository;
     private final UserRepository userRepository;
     private final NotificationStreamService notificationStreamService;
+    private final UserPreferenceRepository userPreferenceRepository;
 
     public NotificationCreationService(
         NotificationRepository notificationRepository,
         UserRepository userRepository,
-        NotificationStreamService notificationStreamService
+        NotificationStreamService notificationStreamService,
+        UserPreferenceRepository userPreferenceRepository
     ) {
         this.notificationRepository = notificationRepository;
         this.userRepository = userRepository;
         this.notificationStreamService = notificationStreamService;
+        this.userPreferenceRepository = userPreferenceRepository;
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
@@ -80,6 +84,13 @@ public class NotificationCreationService {
         Long orderId,
         Long paymentId
     ) {
+        // A customer who switched notifications off in the profile gets none; no saved setting means on.
+        boolean optedOut = userPreferenceRepository.findByUserId(user.getId())
+            .map(preference -> Boolean.FALSE.equals(preference.getNotificationsEnabled()))
+            .orElse(false);
+        if (optedOut) {
+            return;
+        }
         Notification notification = new Notification();
         notification.setUser(user);
         notification.setType(type);
@@ -98,9 +109,6 @@ public class NotificationCreationService {
         }
         if ("CONFIRMED".equals(status)) {
             return "đã xác nhận";
-        }
-        if ("CANCELLATION_REQUESTED".equals(status)) {
-            return "đang chờ duyệt hủy";
         }
         if ("PROCESSING".equals(status)) {
             return "đang xử lý";
