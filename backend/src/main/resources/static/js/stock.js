@@ -8,6 +8,10 @@ window.KineticStock = (() => {
    * save(url, method, body) sends the request and returns the parsed response; say(message, isError) shows a notice.
    * Resolves when the dialog is closed.
    */
+  // Same thresholds as the product table: none left, or 3 and fewer.
+  const tag = n => n <= 0 ? ['Hết hàng', 'out'] : n <= 3 ? ['Sắp hết', 'low'] : ['Còn hàng', 'ok'];
+  const tagHtml = n => { const [text, kind] = tag(n); return `<span class="stock-tag ${kind}" data-tag>${text}</span>`; };
+
   function open(product, save, say) {
     return new Promise(resolve => {
       const dialog = document.createElement('dialog');
@@ -22,6 +26,7 @@ window.KineticStock = (() => {
             ${colours.map(v => `<tr data-variant="${v.id}">
               <td><span class="swatch" style="background:${esc(v.colorHex || '#ccc')}"></span> ${esc(v.colorName || v.variantName)}</td>
               <td><input type="number" min="0" step="1" value="${v.stockQuantity || 0}" aria-label="Tồn kho ${esc(v.colorName || v.variantName)}"></td>
+              <td data-tag-cell>${tagHtml(v.stockQuantity || 0)}</td>
               <td><button type="button" class="table-action" data-save>Lưu</button></td></tr>`).join('')}
           </tbody></table>
           <p><button class="button compact" value="close">Đóng</button></p>
@@ -41,6 +46,7 @@ window.KineticStock = (() => {
         button.disabled = true;
         try {
           const summary = await save(`/api/v1/manager/products/${product.id}/variants/${row.dataset.variant}/stock`, 'PATCH', {stockQuantity: quantity});
+          row.querySelector('[data-tag-cell]').innerHTML = tagHtml(quantity);
           total = summary && summary.stockQuantity != null ? summary.stockQuantity : total;
           dialog.querySelector('[data-total]').textContent = total;
           say('Đã cập nhật tồn kho.');

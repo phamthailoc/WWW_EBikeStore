@@ -110,3 +110,7 @@ h1,h2,h3,.brand,.eyebrow,.metric b,.metric small{font-family:'Space Grotesk','Se
 .timeline li.todo b{color:#8a9691;font-weight:500}
 .timeline b{display:block;font-size:14px}
 .timeline small{display:block;color:#6b7771;font-size:12px;line-height:1.5}
+.stock-tag{font-size:11px;padding:2px 8px;border-radius:99px;white-space:nowrap}
+.stock-tag.ok{background:#e4f3e8;color:#1d5b3a}
+.stock-tag.low{background:#fff4d6;color:#7a5a00}
+.stock-tag.out{background:#fde4df;color:#922f1e}
