@@ -27,7 +27,7 @@ Mặc định ứng dụng kết nối MariaDB ở `localhost:3306`. Thông tin 
 | Database | `SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME`, `SPRING_DATASOURCE_PASSWORD` | Kết nối MariaDB `ebike_db` |
 | Đăng nhập | `APP_JWT_SECRET` | Khóa ký JWT, bắt buộc đổi khi chạy thật (≥ 32 ký tự) |
 | VNPay | `VNPAY_TMN_CODE`, `VNPAY_HASH_SECRET`, `VNPAY_RETURN_URL`, `VNPAY_IPN_URL` | Thanh toán VNPay; chưa đặt `TMN_CODE` và `HASH_SECRET` thì checkout ẩn lựa chọn VNPay |
-| Chatbot | `GEMINI_AI_KEY`, `GEMINI_AI_ENABLED`, `GEMINI_AI_MODEL` | Trả lời bằng Gemini; không có khóa thì chatbot dùng câu trả lời có sẵn |
+| Chatbot | `GEMINI_AI_KEY`, `GEMINI_AI_ENABLED`, `GEMINI_AI_MODEL` (mặc định `gemini-3.1-flash-lite`), `GEMINI_AI_FALLBACK_MODELS` (mặc định `gemini-flash-lite-latest`, dùng khi model chính quá tải hoặc không còn cấp) | Trả lời bằng Gemini; không có khóa thì chatbot dùng câu trả lời có sẵn |
 | Email | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `ORDER_EMAIL_OTP_FROM` | Gửi mã xác minh email (đặt hàng, liên kết đơn đã đặt) |
 | Xác minh email | `ORDER_EMAIL_OTP_REQUIRED` | `true` thì đặt hàng phải xác minh email bằng mã (mặc định `false`) |
 | Hủy đơn quá hạn | `APP_ORDER_VNPAY_EXPIRY`, `APP_ORDER_PAY_LATER_EXPIRY` | Thời hạn giữ xe cho đơn VNPay (mặc định 30 phút) và đơn trả sau (72 giờ) |
