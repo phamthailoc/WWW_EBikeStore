@@ -19,11 +19,11 @@ class DeliveryFeeSeleniumTest extends StorefrontSeleniumTest {
     @Test
     void shippingFeeFollowsDeliveryMethodAndProvince() {
         openCheckoutWithOneBike();
-        // Checkout opens on home delivery with no province chosen yet.
-        assertEquals("0", shippingDigits(), "no delivery fee until a province is chosen");
+        // Checkout opens on home delivery with no province chosen yet: ask for it instead of showing 0 ₫.
+        assertEquals("Chọn tỉnh để tính phí", shippingText(), "no delivery fee is shown until a province is chosen");
 
         selectProvince("Hồ Chí Minh");
-        wait.until(d -> !"0".equals(shippingDigits()));
+        wait.until(d -> "200000".equals(shippingDigits()));
         assertEquals("200000", shippingDigits(), "a province with a showroom uses the same-city fee");
 
         selectProvince("Hà Nội");
@@ -39,8 +39,12 @@ class DeliveryFeeSeleniumTest extends StorefrontSeleniumTest {
         new Select(driver.findElement(By.name("province"))).selectByVisibleText(name);
     }
 
-    private String shippingDigits() {
+    private String shippingText() {
         wait.until(ExpectedConditions.presenceOfElementLocated(SHIPPING));
-        return driver.findElement(SHIPPING).getText().replaceAll("[^0-9]", "");
+        return driver.findElement(SHIPPING).getText().trim();
+    }
+
+    private String shippingDigits() {
+        return shippingText().replaceAll("[^0-9]", "");
     }
 }
