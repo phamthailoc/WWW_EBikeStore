@@ -79,7 +79,7 @@
     form.addEventListener('change',event=>{
       if(event.target.name==='deliveryMethod')updateDelivery();
       if(event.target.name==='pickupShowroomId')selectedStore=Number(event.target.value);
-      if(event.target.name==='includeRegistrationService'||event.target.name==='discountCode')updateQuote();
+      if(['includeRegistrationService','discountCode','deliveryMethod','province'].includes(event.target.name))updateQuote();
     });
     async function updateQuote(){
       const current=++sequence,box=form.querySelector('#checkoutQuote');
@@ -87,7 +87,7 @@
       box.innerHTML='<p class="quote-status">Đang tính tổng tiền...</p>';
       try{
         const code=form.elements.discountCode.value.trim();
-        const q=await request('/api/v1/orders/quote',{items:items.map(i=>({productId:i.id,quantity:i.quantity,productVariantId:i.variantId||null})),discountCode:code||null,includeRegistrationService:form.elements.includeRegistrationService.checked});
+        const q=await request('/api/v1/orders/quote',{items:items.map(i=>({productId:i.id,quantity:i.quantity,productVariantId:i.variantId||null})),discountCode:code||null,includeRegistrationService:form.elements.includeRegistrationService.checked,deliveryMethod:form.elements.deliveryMethod.value,province:form.elements.province.value||null});
         if(current!==sequence)return false;
         box.innerHTML=`<div class="quote-breakdown"><div class="quote-line"><span>Tạm tính</span><strong>${money(q.subtotal)}</strong></div><div class="quote-line"><span>Phí giao xe</span><strong>${money(q.shippingFee)}</strong></div><div class="quote-line quote-discount"><span>Giảm giá khuyến mãi</span><strong>${q.discountAmount?'- ':''}${money(q.discountAmount)}</strong></div><div class="quote-line"><span>Phí hồ sơ</span><strong>${money(q.registrationFee)}</strong></div><div class="quote-line quote-total"><span>Tổng thanh toán</span><strong>${money(q.totalAmount)}</strong></div><p class="quote-status">${code?'Đã áp dụng mã '+e(code)+'.':'Chưa áp dụng mã khuyến mãi.'}</p></div>`;
         form.querySelector('#registrationServicePrice').textContent=`+ ${money(q.registrationServicePerBike)}/xe`;

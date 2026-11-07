@@ -142,10 +142,13 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional(readOnly = true)
     public OrderQuoteResponse quoteOrder(OrderQuoteRequest request) {
+        boolean homeDelivery = request != null && isHomeDelivery(request.deliveryMethod());
         return buildQuote(
             validateQuoteItems(request == null ? null : request.items()),
             shouldIncludeRegistrationService(request == null ? null : request.includeRegistrationService()),
-            request == null ? null : request.discountCode()
+            request == null ? null : request.discountCode(),
+            homeDelivery,
+            request == null ? null : request.province()
         );
     }
 
@@ -171,7 +174,6 @@ public class OrderServiceImpl implements OrderService {
         }
         order.setOrderNumber(generateOrderNumber());
         order.setStatus(OrderStatus.PENDING);
-        order.setShippingFee(ZERO);
         boolean includeRegistrationService = shouldIncludeRegistrationService(request.includeRegistrationService());
         order.setIncludeRegistrationService(includeRegistrationService);
         validateCheckoutDetails(request);
@@ -188,6 +190,7 @@ public class OrderServiceImpl implements OrderService {
         List<OrderCreateItemRequest> items = validateQuoteItems(request.items());
         BigDecimal subtotal = addItems(order, items);
         order.setSubtotal(subtotal);
+        order.setShippingFee(shippingFee(isHomeDelivery(request), request.province(), items));
         order.setRegistrationFee(registrationFee(includeRegistrationService, pricingService.registrationServicePerBike(), items));
         Promotion promotion = findValidPromotion(request.discountCode());
         BigDecimal promoDiscountAmount = promotion == null ? ZERO : calculatePromoDiscount(promotion, subtotal);
@@ -446,7 +449,10 @@ public class OrderServiceImpl implements OrderService {
     }
 
     private boolean isHomeDelivery(OrderCreateRequest request) {
-        String method = request.deliveryMethod();
+        return isHomeDelivery(request.deliveryMethod());
+    }
+
+    private boolean isHomeDelivery(String method) {
         if (method == null || method.isBlank() || "STORE_PICKUP".equals(method)) {
             return false;
         }
@@ -569,7 +575,13 @@ public class OrderServiceImpl implements OrderService {
         return items;
     }
 
-    private OrderQuoteResponse buildQuote(List<OrderCreateItemRequest> items, boolean includeRegistrationService, String discountCode) {
+    private OrderQuoteResponse buildQuote(
+        List<OrderCreateItemRequest> items,
+        boolean includeRegistrationService,
+        String discountCode,
+        boolean homeDelivery,
+        String province
+    ) {
         BigDecimal subtotal = ZERO;
         Map<Long, Integer> productQuantities = new HashMap<>();
         Map<Long, Integer> variantQuantities = new HashMap<>();
@@ -594,15 +606,46 @@ public class OrderServiceImpl implements OrderService {
         BigDecimal registrationServicePerBike = pricingService.registrationServicePerBike();
         BigDecimal registrationFee = registrationFee(includeRegistrationService, registrationServicePerBike, items);
         BigDecimal totalDiscountAmount = promoDiscountAmount;
+        BigDecimal shippingFee = shippingFee(homeDelivery, province, items);
 
         return new OrderQuoteResponse(
             subtotal,
-            ZERO,
+            shippingFee,
             totalDiscountAmount,
             registrationFee,
-            calculateTotalAmount(subtotal, ZERO, totalDiscountAmount, registrationFee),
+            calculateTotalAmount(subtotal, shippingFee, totalDiscountAmount, registrationFee),
             registrationServicePerBike
         );
+    }
+
+    /**
+     * Pickup at a store is free. Home delivery is charged per bike: the same-city fee when the province has
+     * an active showroom, the other-province fee otherwise. Until a province is chosen nothing is charged.
+     */
+    private BigDecimal shippingFee(boolean homeDelivery, String province, List<OrderCreateItemRequest> items) {
+        if (!homeDelivery || isBlank(province)) {
+            return ZERO;
+        }
+        String wanted = provinceKey(province);
+        boolean hasShowroom = showroomRepository.findByActiveTrueOrderByDistrictAscNameAsc().stream()
+            .anyMatch(showroom -> provinceKey(showroom.getCity()).equals(wanted));
+        int bikes = items.stream().mapToInt(OrderCreateItemRequest::quantity).sum();
+        return pricingService.homeDeliveryPerBike(hasShowroom).multiply(BigDecimal.valueOf(bikes));
+    }
+
+    /** "Thành phố Hồ Chí Minh", "TP. Ho Chi Minh" and "Hồ Chí Minh" all become "ho chi minh". */
+    private static String provinceKey(String name) {
+        if (name == null) {
+            return "";
+        }
+        String plain = java.text.Normalizer.normalize(name, java.text.Normalizer.Form.NFD)
+            .replaceAll("\\p{M}+", "")
+            .replace("đ", "d").replace("Đ", "D")
+            .toLowerCase(java.util.Locale.ROOT)
+            .replaceAll("[^a-z0-9 ]", " ")
+            .replaceAll("\\s+", " ")
+            .trim();
+        return plain.replaceFirst("^(thanh pho|tinh|tp) ", "");
     }
 
     /** Each bike is registered on its own papers, so the service fee is charged per bike. */
