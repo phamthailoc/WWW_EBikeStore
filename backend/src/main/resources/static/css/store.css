@@ -21,3 +21,4 @@ a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid 
   .top .actions input { width: 100%; min-width: 0; }
   .top nav { display: flex; order: 4; flex-basis: 100%; justify-content: center; gap: 28px; font-size: 12px; }
 }
+.registration-required{margin:12px 0 0;font-size:13px;line-height:1.6;color:#6b7771}

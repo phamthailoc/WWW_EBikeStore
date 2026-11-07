@@ -30,6 +30,7 @@ import com.ebike.repository.order.OrderRepository;
 import com.ebike.repository.order.ShowroomRepository;
 import com.ebike.service.order.OrderEmailVerificationService;
 import com.ebike.service.order.OrderService;
+import com.ebike.service.product.VehicleRegistration;
 import com.ebike.model.entity.product.Product;
 import com.ebike.model.entity.product.ProductVariant;
 import com.ebike.repository.product.ProductRepository;
@@ -175,7 +176,8 @@ public class OrderServiceImpl implements OrderService {
         order.setOrderNumber(generateOrderNumber());
         order.setStatus(OrderStatus.PENDING);
         boolean includeRegistrationService = shouldIncludeRegistrationService(request.includeRegistrationService());
-        assertRegistrationServiceOffered(includeRegistrationService);
+        List<OrderCreateItemRequest> items = validateQuoteItems(request.items());
+        assertRegistrationServiceOffered(includeRegistrationService, items);
         order.setIncludeRegistrationService(includeRegistrationService);
         validateCheckoutDetails(request);
         if (emailOtpRequired) {
@@ -188,7 +190,6 @@ public class OrderServiceImpl implements OrderService {
             .filter(candidate -> Boolean.TRUE.equals(candidate.getActive()))
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cửa hàng nhận xe không còn hoạt động."));
 
-        List<OrderCreateItemRequest> items = validateQuoteItems(request.items());
         BigDecimal subtotal = addItems(order, items);
         order.setSubtotal(subtotal);
         order.setShippingFee(shippingFee(isHomeDelivery(request), request.province(), items));
@@ -612,7 +613,7 @@ public class OrderServiceImpl implements OrderService {
 
         // The quote is only a preview: a tick on a service the admin has since switched off is ignored here
         // (checkout then unticks and hides it); placing the order still rejects it.
-        boolean registrationServiceOffered = pricingService.registrationServiceOffered();
+        boolean registrationServiceOffered = registrationServiceOffered(items);
         BigDecimal promoDiscountAmount = resolvePromoDiscount(discountCode, subtotal);
         BigDecimal registrationServicePerBike = pricingService.registrationServicePerBike();
         BigDecimal registrationFee = registrationFee(includeRegistrationService && registrationServiceOffered, registrationServicePerBike, items);
@@ -636,10 +637,32 @@ public class OrderServiceImpl implements OrderService {
         return amount.multiply(percent).divide(BigDecimal.valueOf(100), 0, java.math.RoundingMode.HALF_UP);
     }
 
-    private void assertRegistrationServiceOffered(boolean requested) {
-        if (requested && !pricingService.registrationServiceOffered()) {
+    /** The store offers the service, and at least one bike in the order must be registered. */
+    private boolean registrationServiceOffered(List<OrderCreateItemRequest> items) {
+        return pricingService.registrationServiceOffered() && registrableBikes(items) > 0;
+    }
+
+    private void assertRegistrationServiceOffered(boolean requested, List<OrderCreateItemRequest> items) {
+        if (!requested) {
+            return;
+        }
+        if (!pricingService.registrationServiceOffered()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cửa hàng hiện không nhận làm hộ thủ tục đăng ký xe.");
         }
+        if (registrableBikes(items) == 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Xe trong đơn không thuộc diện phải đăng ký biển số.");
+        }
+    }
+
+    /** Bikes in the order that must be registered (see {@link VehicleRegistration}). */
+    private int registrableBikes(List<OrderCreateItemRequest> items) {
+        int bikes = 0;
+        for (OrderCreateItemRequest item : items) {
+            if (VehicleRegistration.requiresRegistration(getActiveProduct(item.productId()).getSpecification())) {
+                bikes += item.quantity();
+            }
+        }
+        return bikes;
     }
 
     /**
@@ -672,13 +695,12 @@ public class OrderServiceImpl implements OrderService {
         return plain.replaceFirst("^(thanh pho|tinh|tp) ", "");
     }
 
-    /** Each bike is registered on its own papers, so the service fee is charged per bike. */
+    /** Each bike is registered on its own papers, so the fee is charged per bike that needs a plate. */
     private BigDecimal registrationFee(boolean includeRegistrationService, BigDecimal perBike, List<OrderCreateItemRequest> items) {
         if (!includeRegistrationService) {
             return ZERO;
         }
-        int bikes = items.stream().mapToInt(OrderCreateItemRequest::quantity).sum();
-        return perBike.multiply(BigDecimal.valueOf(bikes));
+        return perBike.multiply(BigDecimal.valueOf(registrableBikes(items)));
     }
 
     private boolean shouldIncludeRegistrationService(Boolean includeRegistrationService) {

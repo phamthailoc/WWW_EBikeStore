@@ -82,6 +82,14 @@ class RegistrationServiceSeleniumTest extends StorefrontSeleniumTest {
             call(admin, "PATCH", "/api/v1/admin/pricing-rules/" + id, Map.of("amount", amount, "status", status));
         }
     }
+    @Test
+    void productPageSaysWhenAVehicleNeedsAPlate() {
+        // The test product is faster than 25 km/h, so it is a motorbike in law.
+        driver.get(baseUrl + "/product/" + productSlug);
+        String note = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".registration-required"))).getText();
+        assertTrue(note.contains("đăng ký") && note.contains("biển số"), note);
+    }
+
     private long digits(By locator) {
         wait.until(ExpectedConditions.presenceOfElementLocated(locator));
         return Long.parseLong(driver.findElement(locator).getText().replaceAll("[^0-9]", ""));

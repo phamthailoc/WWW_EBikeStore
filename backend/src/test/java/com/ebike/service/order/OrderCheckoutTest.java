@@ -42,8 +42,21 @@ class OrderCheckoutTest {
         product = new Product();
         product.setId(1L); product.setName("KINETIC Test");
         product.setPrice(new BigDecimal("20300000")); product.setStockQuantity(8); product.setActive(true);
+        product.setSpecification(spec(com.ebike.model.entity.product.VehicleType.E_SCOOTER,"50",800)); // needs a plate
     }
 
+    private static com.ebike.model.entity.product.ProductSpecification spec(com.ebike.model.entity.product.VehicleType type,String speed,int watts) {
+        var spec=new com.ebike.model.entity.product.ProductSpecification();
+        spec.setVehicleType(type);spec.setMaxSpeedKmh(new BigDecimal(speed));spec.setMotorPowerWatts(watts);
+        return spec;
+    }
+    private Product kickScooter() {
+        Product small=new Product();small.setId(2L);small.setName("KINETIC Mini");
+        small.setPrice(new BigDecimal("5000000"));small.setStockQuantity(8);small.setActive(true);
+        small.setSpecification(spec(com.ebike.model.entity.product.VehicleType.E_SCOOTER,"20",200)); // no plate
+        when(products.findById(2L)).thenReturn(Optional.of(small));
+        return small;
+    }
     private void stock() { when(products.findById(1L)).thenReturn(Optional.of(product)); }
     private void save() { when(orders.save(any())).thenAnswer(invocation -> invocation.getArgument(0)); }
     private OrderCreateRequest request(String method, String province, Long showroom, String address) {
@@ -201,6 +214,34 @@ class OrderCheckoutTest {
         when(orders.save(saved.capture())).thenAnswer(invocation -> invocation.getArgument(0));
         service.createOrder(withCode("khach@example.com"),null);
         assertEquals(5L, saved.getValue().getPromotion().getId());
+    }
+
+    @Test void registrationServiceIsOnlyOfferedForVehiclesThatNeedAPlate() {
+        stock();kickScooter();
+        var plated=service.quoteOrder(new OrderQuoteRequest(true,List.of(new OrderCreateItemRequest(1L,1)),null));
+        assertTrue(plated.registrationServiceAvailable());
+        assertEquals(0, plated.registrationFee().compareTo(new BigDecimal("500000")));
+
+        var small=service.quoteOrder(new OrderQuoteRequest(true,List.of(new OrderCreateItemRequest(2L,1)),null));
+        assertFalse(small.registrationServiceAvailable());
+        assertEquals(0, small.registrationFee().compareTo(BigDecimal.ZERO));
+        assertEquals(0, small.totalAmount().compareTo(new BigDecimal("5000000")));
+    }
+
+    @Test void inAMixedOrderOnlyTheBikesThatNeedAPlateAreCharged() {
+        stock();kickScooter();
+        var quote=service.quoteOrder(new OrderQuoteRequest(true,List.of(new OrderCreateItemRequest(1L,2),new OrderCreateItemRequest(2L,3)),null));
+        assertTrue(quote.registrationServiceAvailable());
+        assertEquals(0, quote.registrationFee().compareTo(new BigDecimal("1000000"))); // 2 plated x 500.000
+    }
+
+    @Test void anOrderCannotAskForRegistrationWhenNoBikeNeedsOne() {
+        kickScooter();
+        var req=new OrderCreateRequest(null,"Khách Hàng","0901234567","checkout@example.com",null,
+            null,"123 Nguyễn Trãi, Phường Bến Thành","PAY_LATER",null,null,null,true,null,
+            List.of(new OrderCreateItemRequest(2L,1)),"HOME_DELIVERY","Hà Nội");
+        assertThrows(ResponseStatusException.class,()->service.createOrder(req,null));
+        verify(orders,never()).save(any());
     }
 
     @Test void registrationServiceIsChargedPerBike() {

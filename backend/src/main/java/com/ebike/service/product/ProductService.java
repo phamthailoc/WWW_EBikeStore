@@ -393,7 +393,8 @@ public class ProductService {
             specification.getMotorPowerWatts(),
             specification.getBrakeType() == null ? null : specification.getBrakeType().name(),
             specification.getDriveType() == null ? null : specification.getDriveType().name(),
-            specification.getWarrantyMonths()
+            specification.getWarrantyMonths(),
+            VehicleRegistration.requiresRegistration(specification)
         );
     }
 

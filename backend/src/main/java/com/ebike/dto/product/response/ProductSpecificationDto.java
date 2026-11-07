@@ -13,6 +13,8 @@ public record ProductSpecificationDto(
     Integer motorPowerWatts,
     String brakeType,
     String driveType,
-    Integer warrantyMonths
+    Integer warrantyMonths,
+    // True when the vehicle is a motorbike in law (over 25 km/h or 250 W) and must be registered and plated.
+    boolean requiresRegistration
 ) {
 }

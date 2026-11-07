@@ -38,7 +38,7 @@
       "specification": {
         "model_code": "AMY",
         "brand": "DIBAO",
-        "vehicle_type": "E_BIKE",
+        "vehicle_type": "E_MOTORBIKE",
         "battery_type": "LEAD_ACID",
         "battery_capacity_ah": 22.0,
         "battery_voltage_v": 48,
@@ -190,7 +190,7 @@
       "specification": {
         "model_code": "ELLA",
         "brand": "DIBAO",
-        "vehicle_type": "E_BIKE",
+        "vehicle_type": "E_MOTORBIKE",
         "battery_type": "LEAD_ACID",
         "battery_capacity_ah": 22.0,
         "battery_voltage_v": 60,
@@ -342,7 +342,7 @@
       "specification": {
         "model_code": "QUEEN",
         "brand": "DIBAO",
-        "vehicle_type": "E_BIKE",
+        "vehicle_type": "E_MOTORBIKE",
         "battery_type": "LEAD_ACID",
         "battery_capacity_ah": 22.0,
         "battery_voltage_v": 60,
@@ -514,7 +514,7 @@
       "specification": {
         "model_code": "RYAN",
         "brand": "DIBAO",
-        "vehicle_type": "E_BIKE",
+        "vehicle_type": "E_MOTORBIKE",
         "battery_type": "LEAD_ACID",
         "battery_capacity_ah": 22.0,
         "battery_voltage_v": 60,
@@ -675,7 +675,7 @@
       "specification": {
         "model_code": "S-ONE",
         "brand": "DIBAO",
-        "vehicle_type": "E_BIKE",
+        "vehicle_type": "E_MOTORBIKE",
         "battery_type": "LEAD_ACID",
         "battery_capacity_ah": 22.0,
         "battery_voltage_v": 60,
@@ -1808,7 +1808,7 @@
       "specification": {
         "model_code": "KEVA",
         "brand": "DIBAO",
-        "vehicle_type": "E_BIKE",
+        "vehicle_type": "E_MOTORBIKE",
         "battery_type": "LEAD_ACID",
         "battery_capacity_ah": 22.0,
         "battery_voltage_v": 60,
@@ -2193,7 +2193,7 @@
       "specification": {
         "model_code": "MXS",
         "brand": "DIBAO",
-        "vehicle_type": "E_BIKE",
+        "vehicle_type": "E_MOTORBIKE",
         "battery_type": "LEAD_ACID",
         "battery_capacity_ah": 23.0,
         "battery_voltage_v": 60,
@@ -3235,7 +3235,7 @@
       "specification": {
         "model_code": "ROSA",
         "brand": "DIBAO",
-        "vehicle_type": "E_BIKE",
+        "vehicle_type": "E_MOTORBIKE",
         "battery_type": "LEAD_ACID",
         "battery_capacity_ah": 23.0,
         "battery_voltage_v": 60,
