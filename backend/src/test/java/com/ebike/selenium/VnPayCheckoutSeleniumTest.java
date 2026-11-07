@@ -73,7 +73,7 @@ class VnPayCheckoutSeleniumTest extends StorefrontSeleniumTest {
 
         driver.get(baseUrl + "/customer/orders");
         WebElement row = orderRow(orderNumber(gateway));
-        assertTrue(row.getText().contains("PAID"));
+        assertTrue(row.getText().contains("Đã thanh toán"), "the order list shows the payment status in Vietnamese: " + row.getText());
         assertTrue(row.findElements(By.cssSelector("[data-action='pay-vnpay']")).isEmpty());
     }
 
