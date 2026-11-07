@@ -12,6 +12,8 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     Optional<Order> findByOrderNumber(String orderNumber);
 
+    boolean existsByUserId(Long userId);
+
     List<Order> findByUserId(Long userId);
 
     List<Order> findByUserIsNullAndCustomerEmail(String customerEmail);

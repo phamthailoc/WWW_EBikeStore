@@ -3,6 +3,7 @@ package com.ebike.service.admin;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -37,7 +38,7 @@ class AdminPricingRuleTest {
     PricingRule rule;
 
     @BeforeEach void setup() {
-        service = new AdminServiceImpl(pricingRules, promotions, audits, users, roles, encoder);
+        service = new AdminServiceImpl(pricingRules, promotions, audits, users, roles, encoder, mock(com.ebike.repository.order.OrderRepository.class));
         rule = new PricingRule();
         rule.setCode("REGISTRATION_SERVICE");
         rule.setName("Phí hỗ trợ đăng ký biển số tại cửa hàng");

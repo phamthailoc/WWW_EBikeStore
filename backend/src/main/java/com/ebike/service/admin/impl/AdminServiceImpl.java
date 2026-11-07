@@ -18,6 +18,7 @@ import com.ebike.model.entity.admin.Promotion;
 import com.ebike.repository.admin.AdminAuditLogRepository;
 import com.ebike.repository.admin.PricingRuleRepository;
 import com.ebike.repository.admin.PromotionRepository;
+import com.ebike.repository.order.OrderRepository;
 import com.ebike.service.admin.AdminService;
 import com.ebike.model.entity.auth.Permission;
 import com.ebike.model.entity.auth.Role;
@@ -46,7 +47,7 @@ public class AdminServiceImpl implements AdminService {
     private static final Set<String> PROMOTION_STATUSES = Set.of("LIVE", "WAITING", "EXPIRED", "DISABLED");
     private static final Set<String> DISCOUNT_TYPES = Set.of("PERCENTAGE", "FIXED_AMOUNT");
     private static final Set<String> ACCOUNT_STATUSES = Set.of("ACTIVE", "INACTIVE", "LOCKED");
-    private static final Set<String> ACCOUNT_ROLES = Set.of("SUPER_ADMIN", "ADMIN", "OPERATOR", "SUPPORT", "MAINTENANCE", "CUSTOMER");
+    private static final Set<String> ACCOUNT_ROLES = Set.of("SUPER_ADMIN", "ADMIN", "MANAGER", "OPERATOR", "SUPPORT", "MAINTENANCE", "CUSTOMER");
 
     private final PricingRuleRepository pricingRuleRepository;
     private final PromotionRepository promotionRepository;
@@ -54,6 +55,7 @@ public class AdminServiceImpl implements AdminService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
+    private final OrderRepository orderRepository;
 
     public AdminServiceImpl(
         PricingRuleRepository pricingRuleRepository,
@@ -61,7 +63,8 @@ public class AdminServiceImpl implements AdminService {
         AdminAuditLogRepository auditLogRepository,
         UserRepository userRepository,
         RoleRepository roleRepository,
-        PasswordEncoder passwordEncoder
+        PasswordEncoder passwordEncoder,
+        OrderRepository orderRepository
     ) {
         this.pricingRuleRepository = pricingRuleRepository;
         this.promotionRepository = promotionRepository;
@@ -69,6 +72,7 @@ public class AdminServiceImpl implements AdminService {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
+        this.orderRepository = orderRepository;
     }
 
     @Override
@@ -222,9 +226,7 @@ public class AdminServiceImpl implements AdminService {
         User user = new User();
         user.setEmail(email);
         user.setUsername(username);
-        user.setPasswordHash(passwordEncoder.encode(
-            request.password() == null || request.password().isBlank() ? "ChangeMe@123" : request.password()
-        ));
+        user.setPasswordHash(passwordEncoder.encode(requiredPassword(request.password())));
         applyName(user, normalizeRequired(request.name(), "Name"));
         user.setVerified(Boolean.TRUE.equals(request.verified()));
         user.setAccountStatus(normalizeOrDefault(request.status(), "ACTIVE", ACCOUNT_STATUSES));
@@ -245,6 +247,10 @@ public class AdminServiceImpl implements AdminService {
         Role role = roleRepository.findByName(normalizedRole)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Role not found: " + normalizedRole));
 
+        if (!"ADMIN".equals(normalizedRole)) {
+            assertNotSelf(user, "Bạn không thể tự đổi vai trò của chính mình.");
+            assertNotLastAdmin(user, "Đây là quản trị viên cuối cùng đang hoạt động, không thể bỏ quyền quản trị.");
+        }
         user.setRoles(new HashSet<>(Set.of(role)));
         User saved = userRepository.save(user);
         writeAudit("cập nhật quyền", displayName(saved) + " thành " + normalizedRole);
@@ -258,6 +264,10 @@ public class AdminServiceImpl implements AdminService {
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Account not found"));
         String status = normalizeOrDefault(request.status(), "ACTIVE", ACCOUNT_STATUSES);
 
+        if (!"ACTIVE".equals(status)) {
+            assertNotSelf(user, "Bạn không thể tự vô hiệu hóa tài khoản của chính mình.");
+            assertNotLastAdmin(user, "Đây là quản trị viên cuối cùng đang hoạt động, không thể vô hiệu hóa.");
+        }
         user.setAccountStatus(status);
         user.setActive("ACTIVE".equals(status));
         User saved = userRepository.save(user);
@@ -270,6 +280,13 @@ public class AdminServiceImpl implements AdminService {
     public void deleteAccount(Long id) {
         User user = userRepository.findById(id)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Account not found"));
+        assertNotSelf(user, "Bạn không thể tự xóa tài khoản của chính mình.");
+        assertNotLastAdmin(user, "Đây là quản trị viên cuối cùng đang hoạt động, không thể xóa.");
+        // Orders and payments are the shop's accounting record; keep the account and switch it off instead.
+        if (orderRepository.existsByUserId(id)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                "Tài khoản này đã có đơn hàng nên không thể xóa. Hãy vô hiệu hóa tài khoản.");
+        }
         String target = displayName(user);
         userRepository.delete(user);
         writeAudit("xóa tài khoản", target);
@@ -380,6 +397,38 @@ public class AdminServiceImpl implements AdminService {
             return "System";
         }
         return authentication.getName();
+    }
+
+    private String requiredPassword(String password) {
+        if (password == null || password.trim().length() < 6) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mật khẩu cần ít nhất 6 ký tự.");
+        }
+        return password;
+    }
+
+    private void assertNotSelf(User target, String message) {
+        String actor = currentActor();
+        if (actor.equalsIgnoreCase(target.getUsername()) || actor.equalsIgnoreCase(target.getEmail())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, message);
+        }
+    }
+
+    /** Someone must always be able to sign in as an admin, or nobody can fix the shop. */
+    private void assertNotLastAdmin(User target, String message) {
+        if (!isActiveAdmin(target)) {
+            return;
+        }
+        boolean anotherAdmin = userRepository.findAll().stream()
+            .filter(candidate -> !candidate.getId().equals(target.getId()))
+            .anyMatch(this::isActiveAdmin);
+        if (!anotherAdmin) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, message);
+        }
+    }
+
+    private boolean isActiveAdmin(User user) {
+        return Boolean.TRUE.equals(user.getActive())
+            && user.getRoles().stream().anyMatch(role -> "ADMIN".equals(role.getName()) || "SUPER_ADMIN".equals(role.getName()));
     }
 
     private String normalizeRole(String role) {
