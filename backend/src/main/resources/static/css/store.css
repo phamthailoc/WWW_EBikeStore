@@ -61,3 +61,19 @@ a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid 
 .range-filter{display:grid;gap:6px;font-size:13px}
 .range-filter>div{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .range-filter input{min-width:0;box-sizing:border-box}
+.support-section{max-width:960px;margin:0 auto 48px}
+.support-section h2{margin:0 0 12px}
+.support-section .muted{color:#6b7771;font-size:14px}
+.faq-group{margin:16px 0}
+.faq-group h3{font-size:14px;letter-spacing:.04em;text-transform:uppercase;color:#53605a;margin:0 0 8px}
+.faq-group details{border-bottom:1px solid #e3eae6;padding:12px 0}
+.faq-group summary{cursor:pointer;font-weight:600;line-height:1.5}
+.faq-group details p{margin:8px 0 0;line-height:1.7;color:#3d4a44}
+.support-form{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
+.support-form label{display:grid;gap:6px;font-size:13px}
+.support-form .wide{grid-column:1/-1}
+.support-form input,.support-form textarea{font:14px 'DM Sans',sans-serif;padding:10px;border:1px solid #cfd8d6;border-radius:6px;width:100%;box-sizing:border-box}
+.support-message{grid-column:1/-1;padding:10px 12px;border-radius:6px;background:#edf5e4;font-size:14px;margin:0}
+.support-message.error{background:#fff0ec;color:#922f1e}
+.support-message[hidden]{display:none}
+@media (max-width:640px){.support-form{grid-template-columns:1fr}}

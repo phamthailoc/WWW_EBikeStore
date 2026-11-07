@@ -36,6 +36,7 @@ public class WorkspaceController {
             case "manager" -> { title = "Tổng quan cửa hàng"; api = "/api/v1/manager/dashboard"; description = "Đơn hàng, thanh toán và doanh thu cửa hàng."; mode = "dashboard"; }
             case "manager/orders" -> { title = "Quản lý đơn hàng"; api = "/api/v1/orders"; description = "Theo dõi và cập nhật các đơn xe."; }
             case "manager/payments" -> { title = "Thanh toán"; api = "/api/v1/manager/payments"; description = "Xác nhận giao dịch và thanh toán sau."; }
+            case "manager/support" -> { title = "Yêu cầu hỗ trợ"; api = "/api/v1/manager/support-requests"; description = "Câu hỏi và khiếu nại khách gửi từ trang Hỗ trợ."; }
             case "manager/customers" -> { title = "Khách hàng"; api = "/api/v1/manager/customers"; description = "Danh sách khách hàng và lịch sử mua."; }
             case "manager/inventory", "manager/products", "admin/inventory", "admin/products" -> { title = "Kho sản phẩm"; api = "/api/v1/products"; description = "Theo dõi tồn kho và tình trạng xe."; mode = "inventory"; }
             case "manager/reports" -> { title = "Báo cáo doanh thu"; api = "/api/v1/manager/revenue-report"; description = "Tổng hợp hoạt động kinh doanh."; mode = "dashboard"; }
@@ -53,7 +54,7 @@ public class WorkspaceController {
         }
         List<Link> links = switch (role) {
             case "admin" -> List.of(new Link("Tổng quan", "/admin"), new Link("Sản phẩm", "/admin/products"), new Link("Kho hàng", "/admin/inventory"), new Link("Giá & khuyến mãi", "/admin/pricing"), new Link("Tài khoản", "/admin/accounts"), new Link("Vai trò", "/admin/roles"), new Link("Nhật ký", "/admin/audit-logs"), new Link("Người dùng", "/admin/users"));
-            case "manager" -> List.of(new Link("Tổng quan", "/manager"), new Link("Đơn hàng", "/manager/orders"), new Link("Thanh toán", "/manager/payments"), new Link("Khách hàng", "/manager/customers"), new Link("Kho hàng", "/manager/inventory"), new Link("Sản phẩm", "/manager/products"), new Link("Báo cáo", "/manager/reports"));
+            case "manager" -> List.of(new Link("Tổng quan", "/manager"), new Link("Đơn hàng", "/manager/orders"), new Link("Thanh toán", "/manager/payments"), new Link("Khách hàng", "/manager/customers"), new Link("Hỗ trợ", "/manager/support"), new Link("Kho hàng", "/manager/inventory"), new Link("Sản phẩm", "/manager/products"), new Link("Báo cáo", "/manager/reports"));
             default -> List.of(new Link("Tổng quan", "/customer"), new Link("Đơn hàng", "/customer/orders"), new Link("Thanh toán", "/customer/payments"), new Link("Thông báo", "/customer/notifications"), new Link("Hồ sơ", "/customer/profile"), new Link("Yêu thích", "/favorites"));
         };
         model.addAttribute("workspaceRole", role);

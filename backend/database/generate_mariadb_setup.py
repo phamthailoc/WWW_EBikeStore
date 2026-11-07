@@ -60,6 +60,25 @@ for migration in sorted((DB / "migration").glob("V2_0_[1-9]*.sql")):
     if migration.name.startswith("V2_0_7"):
         OUT.append("ALTER TABLE users ADD COLUMN account_status VARCHAR(30) NOT NULL DEFAULT 'ACTIVE';\n")
         OUT.append("ALTER TABLE orders ADD COLUMN promotion_id BIGINT NULL, ADD CONSTRAINT fk_orders_promotion FOREIGN KEY (promotion_id) REFERENCES promotions(id) ON DELETE SET NULL;\n")
+        OUT.append("""
+DROP TABLE IF EXISTS `support_requests`;
+CREATE TABLE `support_requests` (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NULL,
+    customer_name VARCHAR(100) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    phone VARCHAR(30),
+    subject VARCHAR(150) NOT NULL,
+    message LONGTEXT NOT NULL,
+    status VARCHAR(30) NOT NULL DEFAULT 'NEW',
+    staff_note LONGTEXT,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_support_requests_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL,
+    CONSTRAINT chk_support_requests_status CHECK (status IN ('NEW', 'IN_PROGRESS', 'RESOLVED'))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE INDEX `idx_support_requests_status` ON `support_requests` (status, created_at);
+""")
     for unique, index_name, table_name, cols in re.findall(r"CREATE (UNIQUE )?INDEX IF NOT EXISTS\s+(\w+)\s+ON\s+([\w.]+)\s*\(([^;]+?)\)\s*(?:WHERE\s+[^;]+)?;", content, re.I | re.S):
         table = table_name.split(".")[-1]
         if index_name.lower() in known_indexes or table.lower() not in created_tables:

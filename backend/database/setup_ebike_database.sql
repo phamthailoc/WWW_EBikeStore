@@ -392,6 +392,24 @@ CREATE TABLE `admin_audit_logs` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 ALTER TABLE users ADD COLUMN account_status VARCHAR(30) NOT NULL DEFAULT 'ACTIVE';
 ALTER TABLE orders ADD COLUMN promotion_id BIGINT NULL, ADD CONSTRAINT fk_orders_promotion FOREIGN KEY (promotion_id) REFERENCES promotions(id) ON DELETE SET NULL;
+
+DROP TABLE IF EXISTS `support_requests`;
+CREATE TABLE `support_requests` (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NULL,
+    customer_name VARCHAR(100) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    phone VARCHAR(30),
+    subject VARCHAR(150) NOT NULL,
+    message LONGTEXT NOT NULL,
+    status VARCHAR(30) NOT NULL DEFAULT 'NEW',
+    staff_note LONGTEXT,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_support_requests_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL,
+    CONSTRAINT chk_support_requests_status CHECK (status IN ('NEW', 'IN_PROGRESS', 'RESOLVED'))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE INDEX `idx_support_requests_status` ON `support_requests` (status, created_at);
 CREATE INDEX `idx_pricing_rules_status` ON `pricing_rules` (status);
 CREATE INDEX `idx_promotions_status` ON `promotions` (status);
 CREATE INDEX `idx_promotions_code` ON `promotions` (code);

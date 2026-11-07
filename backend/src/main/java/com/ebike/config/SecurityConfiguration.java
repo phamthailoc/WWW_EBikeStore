@@ -49,6 +49,8 @@ public class SecurityConfiguration {
                 .requestMatchers("/manager/**").hasAuthority(PermissionConstants.OrderManagement.ORDER_VIEW_ALL)
                 .requestMatchers("/admin/**").hasAnyRole(ADMIN_CONSOLE_ROLES)
                 .requestMatchers(HttpMethod.POST, "/api/v1/orders/quote").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/v1/faq").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/v1/support-requests").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/v1/orders/email-verification/send", "/api/v1/orders/email-verification/verify").permitAll()
                 .requestMatchers("/api/v1/payments/vnpay/ipn", "/api/v1/payments/vnpay/return").permitAll()
                 .requestMatchers(

@@ -601,6 +601,14 @@ public class ChatbotService {
     }
 
     /** FAQ answers name fees as placeholders so the chatbot always quotes what the admin set. */
+    /** FAQ for the support page: category, question and answer, with the current fees filled in. */
+    public List<com.ebike.dto.support.FaqItemDto> listFaq() {
+        return faqEntries.stream()
+            .map(this::withCurrentFees)
+            .map(entry -> new com.ebike.dto.support.FaqItemDto(entry.category(), entry.question(), entry.answer()))
+            .toList();
+    }
+
     private FaqEntry withCurrentFees(FaqEntry entry) {
         String answer = entry.answer()
             .replace("{REGISTRATION_SERVICE_FEE}", formatCurrency(pricingService.registrationServicePerBike()))
