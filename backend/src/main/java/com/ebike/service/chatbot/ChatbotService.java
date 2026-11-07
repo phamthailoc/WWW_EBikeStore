@@ -484,7 +484,26 @@ public class ChatbotService {
                 "những mẫu",
                 "nhung mau",
                 "xe đó",
-                "xe do"
+                "xe do",
+                // Pointing at one of the bikes just suggested ("xe đầu tiên giá bao nhiêu?"); the list keeps its order.
+                "đầu tiên",
+                "dau tien",
+                "thứ nhất",
+                "thu nhat",
+                "thứ hai",
+                "thu hai",
+                "thứ 2",
+                "thu 2",
+                "thứ ba",
+                "thu ba",
+                "thứ 3",
+                "thu 3",
+                "cuối cùng",
+                "cuoi cung",
+                "xe này",
+                "xe nay",
+                "mẫu này",
+                "mau nay"
             );
     }
 
