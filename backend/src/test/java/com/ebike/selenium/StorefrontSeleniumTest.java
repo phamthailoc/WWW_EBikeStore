@@ -27,6 +27,7 @@ import org.openqa.selenium.ElementClickInterceptedException;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.PageLoadStrategy;
+import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -116,7 +117,9 @@ abstract class StorefrontSeleniumTest {
         options.addArguments("--host-resolver-rules=MAP " + gatewayHost + " 127.0.0.1:9");
         options.setPageLoadStrategy(PageLoadStrategy.EAGER);
         driver = new ChromeDriver(options);
+        // Tables and quotes are re-rendered by JavaScript; a row read mid-render goes stale, so try again next poll.
         wait = new WebDriverWait(driver, Duration.ofSeconds(20));
+        wait.ignoring(StaleElementReferenceException.class);
         logIn(username, PASSWORD);
     }
 
