@@ -58,6 +58,10 @@ class AdminPricingSeleniumTest extends StorefrontSeleniumTest {
         wait.until(ExpectedConditions.presenceOfElementLocated(FEE_LINE));
         // The quote reloads after the checkbox changes; wait until the digits settle.
         wait.until(d -> !d.findElement(FEE_LINE).getText().replaceAll("[^0-9]", "").isBlank());
-        return driver.findElement(FEE_LINE).getText().replaceAll("[^0-9]", "");
+        String fee = driver.findElement(FEE_LINE).getText().replaceAll("[^0-9]", "");
+        // One bike in the cart, so the per-bike label next to the checkbox must match the quote line.
+        assertEquals(fee, driver.findElement(By.id("registrationServicePrice")).getText().replaceAll("[^0-9]", ""),
+            "the label next to the registration checkbox must show the same fee");
+        return fee;
     }
 }
