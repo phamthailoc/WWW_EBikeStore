@@ -54,3 +54,7 @@ a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid 
 .review-list h3{margin:8px 0 4px;font-size:15px}
 .review-list p{margin:4px 0;line-height:1.6;font-size:14px}
 .review-actions button{background:none;border:0;color:#087d98;cursor:pointer;padding:0;font-size:13px}
+.chat-cards{list-style:none;margin:6px 0 14px;padding:0;display:grid;gap:8px;max-width:520px}
+.chat-cards li{display:grid;gap:2px;padding:10px 12px;border:1px solid #e3eae6;border-radius:8px;background:#fff}
+.chat-cards a{color:#087d98;text-decoration:none}
+.chat-cards small{color:#6b7771}

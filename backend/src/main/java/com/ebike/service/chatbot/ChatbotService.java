@@ -44,6 +44,9 @@ public class ChatbotService {
     private final PdfKnowledgeBaseService pdfKnowledgeBaseService;
     private final PricingService pricingService;
     private final List<FaqEntry> faqEntries = new ArrayList<>();
+    /** The chat id comes from the browser, so cap how many conversations are remembered and how long an id may be. */
+    private static final int MAX_REMEMBERED_CHATS = 2000;
+    private static final int MAX_CHAT_ID_LENGTH = 64;
     private final Map<String, List<ChatbotRecommendationDto>> recentRecommendationsByChatId = new ConcurrentHashMap<>();
 
     public ChatbotService(
@@ -131,6 +134,9 @@ public class ChatbotService {
         );
 
         if (!recommendations.isEmpty()) {
+            if (recentRecommendationsByChatId.size() >= MAX_REMEMBERED_CHATS) {
+                recentRecommendationsByChatId.clear();
+            }
             recentRecommendationsByChatId.put(chatId, recommendations);
         }
 
@@ -483,7 +489,11 @@ public class ChatbotService {
     }
 
     private String normalizeChatId(String chatId) {
-        return chatId == null || chatId.isBlank() ? "default" : chatId.trim();
+        if (chatId == null || chatId.isBlank()) {
+            return "default";
+        }
+        String trimmed = chatId.trim();
+        return trimmed.length() > MAX_CHAT_ID_LENGTH ? trimmed.substring(0, MAX_CHAT_ID_LENGTH) : trimmed;
     }
 
     private String buildShowroomContext(String message) {
