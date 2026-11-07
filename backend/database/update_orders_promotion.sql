@@ -5,5 +5,5 @@
 -- do not count against the one-use limit.
 
 ALTER TABLE orders ADD COLUMN IF NOT EXISTS promotion_id BIGINT NULL;
-ALTER TABLE orders ADD CONSTRAINT IF NOT EXISTS fk_orders_promotion
-    FOREIGN KEY (promotion_id) REFERENCES promotions(id) ON DELETE SET NULL;
+ALTER TABLE orders ADD CONSTRAINT fk_orders_promotion
+    FOREIGN KEY IF NOT EXISTS (promotion_id) REFERENCES promotions(id) ON DELETE SET NULL;
