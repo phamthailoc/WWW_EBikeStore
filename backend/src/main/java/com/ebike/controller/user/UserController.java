@@ -68,7 +68,10 @@ public class UserController {
     userProfileService.deleteAddress(userId, addressId, authentication);
   }
 
-  @GetMapping("/{userId}/preferences")
+    @GetMapping("/{userId}/preferences")
+    public UserPreferenceResponse getPreferences(@PathVariable Long userId, Authentication authentication) {
+        return userProfileService.getPreferences(userId, authentication);
+    }
 
     @PutMapping("/{userId}/preferences")
     public UserPreferenceResponse upsertPreferences(
