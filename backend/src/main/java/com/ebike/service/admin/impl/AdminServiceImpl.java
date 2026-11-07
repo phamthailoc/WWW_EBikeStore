@@ -150,6 +150,7 @@ public class AdminServiceImpl implements AdminService {
         promotion.setStatus(normalizeOrDefault(request.status(), "WAITING", PROMOTION_STATUSES));
         promotion.setStartsAt(request.startsAt());
         promotion.setEndsAt(request.endsAt());
+        validatePromotion(promotion);
 
         Promotion saved = promotionRepository.save(promotion);
         writeAudit("tạo campaign", saved.getCode());
@@ -172,7 +173,8 @@ public class AdminServiceImpl implements AdminService {
             promotion.setDiscountValue(validatePositive(request.discountValue(), "Discount value"));
         }
         if (request.maxDiscountAmount() != null) {
-            promotion.setMaxDiscountAmount(request.maxDiscountAmount());
+            // 0 (or less) means "no cap"
+            promotion.setMaxDiscountAmount(request.maxDiscountAmount().signum() <= 0 ? null : request.maxDiscountAmount());
         }
         if (request.usageLimit() != null && request.usageLimit() >= 0) {
             promotion.setUsageLimit(request.usageLimit());
@@ -186,6 +188,7 @@ public class AdminServiceImpl implements AdminService {
         if (request.endsAt() != null) {
             promotion.setEndsAt(request.endsAt());
         }
+        validatePromotion(promotion);
 
         Promotion saved = promotionRepository.save(promotion);
         writeAudit("cập nhật campaign", saved.getCode());
@@ -397,6 +400,16 @@ public class AdminServiceImpl implements AdminService {
             return "System";
         }
         return authentication.getName();
+    }
+
+    /** Checks the code as a whole, so an edit that is fine on its own cannot leave a broken code behind. */
+    private void validatePromotion(Promotion promotion) {
+        if ("PERCENTAGE".equals(promotion.getDiscountType()) && promotion.getDiscountValue().compareTo(BigDecimal.valueOf(100)) > 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Giảm theo phần trăm không được vượt quá 100%.");
+        }
+        if (promotion.getStartsAt() != null && promotion.getEndsAt() != null && promotion.getEndsAt().isBefore(promotion.getStartsAt())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ngày kết thúc phải sau ngày bắt đầu.");
+        }
     }
 
     private String requiredPassword(String password) {
