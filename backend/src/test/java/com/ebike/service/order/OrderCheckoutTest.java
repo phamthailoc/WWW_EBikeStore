@@ -65,6 +65,21 @@ class OrderCheckoutTest {
         assertEquals(0, withCode.totalAmount().compareTo(new BigDecimal("20700000")));
     }
 
+    @Test void registrationServiceIsChargedPerBike() {
+        stock(); save();
+        // 2 bikes x 500.000 registration service (pricing default)
+        var quote=service.quoteOrder(new OrderQuoteRequest(true,List.of(new OrderCreateItemRequest(1L,2)),null));
+        assertEquals(0, quote.registrationFee().compareTo(new BigDecimal("1000000")));
+        assertEquals(0, quote.registrationServicePerBike().compareTo(new BigDecimal("500000")));
+        assertEquals(0, quote.totalAmount().compareTo(new BigDecimal("41600000")));
+        var twoBikes=new OrderCreateRequest(null,"Khách Hàng","0901234567","checkout@example.com",null,
+            null,"123 Nguyễn Trãi, Phường Bến Thành","PAY_LATER",null,null,null,true,null,
+            List.of(new OrderCreateItemRequest(1L,2)),"HOME_DELIVERY","Hồ Chí Minh");
+        var order=service.createOrder(twoBikes,null);
+        assertEquals(0, order.registrationFee().compareTo(new BigDecimal("1000000")));
+        assertEquals(0, order.totalAmount().compareTo(new BigDecimal("41600000")));
+    }
+
     @Test void homeDeliveryStoresProvinceAndAddressWithoutShowroom() {
         stock(); save();
         var response=service.createOrder(request("HOME_DELIVERY","Hồ Chí Minh",null,"123 Nguyễn Trãi, Phường Bến Thành"),null);

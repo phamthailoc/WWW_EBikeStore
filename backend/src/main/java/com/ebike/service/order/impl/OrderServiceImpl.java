@@ -174,7 +174,6 @@ public class OrderServiceImpl implements OrderService {
         order.setShippingFee(ZERO);
         boolean includeRegistrationService = shouldIncludeRegistrationService(request.includeRegistrationService());
         order.setIncludeRegistrationService(includeRegistrationService);
-        order.setRegistrationFee(includeRegistrationService ? pricingService.registrationServicePerBike() : ZERO);
         validateCheckoutDetails(request);
         if (emailOtpRequired) {
             orderEmailVerificationService.assertVerifiedForOrder(request.emailVerificationSessionId(), request.customerEmail());
@@ -186,8 +185,10 @@ public class OrderServiceImpl implements OrderService {
             .filter(candidate -> Boolean.TRUE.equals(candidate.getActive()))
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cửa hàng nhận xe không còn hoạt động."));
 
-        BigDecimal subtotal = addItems(order, validateQuoteItems(request.items()));
+        List<OrderCreateItemRequest> items = validateQuoteItems(request.items());
+        BigDecimal subtotal = addItems(order, items);
         order.setSubtotal(subtotal);
+        order.setRegistrationFee(registrationFee(includeRegistrationService, pricingService.registrationServicePerBike(), items));
         Promotion promotion = findValidPromotion(request.discountCode());
         BigDecimal promoDiscountAmount = promotion == null ? ZERO : calculatePromoDiscount(promotion, subtotal);
         if (promotion != null && promotionRepository.tryIncrementUsage(promotion.getId()) == 0) {
@@ -590,7 +591,8 @@ public class OrderServiceImpl implements OrderService {
         }
 
         BigDecimal promoDiscountAmount = resolvePromoDiscount(discountCode, subtotal);
-        BigDecimal registrationFee = includeRegistrationService ? pricingService.registrationServicePerBike() : ZERO;
+        BigDecimal registrationServicePerBike = pricingService.registrationServicePerBike();
+        BigDecimal registrationFee = registrationFee(includeRegistrationService, registrationServicePerBike, items);
         BigDecimal totalDiscountAmount = promoDiscountAmount;
 
         return new OrderQuoteResponse(
@@ -598,8 +600,18 @@ public class OrderServiceImpl implements OrderService {
             ZERO,
             totalDiscountAmount,
             registrationFee,
-            calculateTotalAmount(subtotal, ZERO, totalDiscountAmount, registrationFee)
+            calculateTotalAmount(subtotal, ZERO, totalDiscountAmount, registrationFee),
+            registrationServicePerBike
         );
+    }
+
+    /** Each bike is registered on its own papers, so the service fee is charged per bike. */
+    private BigDecimal registrationFee(boolean includeRegistrationService, BigDecimal perBike, List<OrderCreateItemRequest> items) {
+        if (!includeRegistrationService) {
+            return ZERO;
+        }
+        int bikes = items.stream().mapToInt(OrderCreateItemRequest::quantity).sum();
+        return perBike.multiply(BigDecimal.valueOf(bikes));
     }
 
     private boolean shouldIncludeRegistrationService(Boolean includeRegistrationService) {

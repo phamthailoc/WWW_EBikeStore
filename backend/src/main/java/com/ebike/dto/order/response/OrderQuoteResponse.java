@@ -7,6 +7,8 @@ public record OrderQuoteResponse(
     BigDecimal shippingFee,
     BigDecimal discountAmount,
     BigDecimal registrationFee,
-    BigDecimal totalAmount
+    BigDecimal totalAmount,
+    // Store fee per bike for the registration service, so checkout can label the option before it is ticked.
+    BigDecimal registrationServicePerBike
 ) {
 }
