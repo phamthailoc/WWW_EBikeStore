@@ -53,3 +53,11 @@ h1,h2,h3,.brand,.eyebrow,.metric b,.metric small{font-family:'Space Grotesk','Se
 .address-list .row-actions{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}
 .address-list .badge{font-size:11px;background:#e4eade;padding:2px 8px;border-radius:99px}
 .address-list .empty-line{color:#6b7771}
+.stock-dialog{border:0;border-radius:12px;padding:24px;max-width:480px;width:calc(100% - 32px);box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.stock-dialog::backdrop{background:rgba(20,30,28,.45)}
+.stock-dialog h2{margin:0 0 4px}
+.stock-dialog .muted{color:#6b7771;font-size:13px;margin:0 0 16px}
+.stock-table{width:100%;border-collapse:collapse}
+.stock-table td{padding:8px 6px;border-bottom:1px solid #e3eae6;vertical-align:middle}
+.stock-table input{width:96px;box-sizing:border-box}
+.stock-table .swatch{display:inline-block;width:14px;height:14px;border-radius:50%;border:1px solid #cfd8d6;vertical-align:-2px;margin-right:6px}

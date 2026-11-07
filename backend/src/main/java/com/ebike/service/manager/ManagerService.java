@@ -32,5 +32,8 @@ public interface ManagerService {
 
     ProductSummaryDto updateProductStock(Long productId, ManagerProductStockUpdateRequest request);
 
+    /** Sets the stock of one colour and recomputes the product's total from its colours. */
+    ProductSummaryDto updateVariantStock(Long productId, Long variantId, ManagerProductStockUpdateRequest request);
+
     OrderResponse updateOrderShipment(Long orderId, ManagerShipmentUpdateRequest request);
 }

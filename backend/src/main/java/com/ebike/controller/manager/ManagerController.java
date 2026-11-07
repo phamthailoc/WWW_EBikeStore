@@ -117,4 +117,14 @@ public class ManagerController {
     ) {
         return managerService.updateProductStock(productId, request);
     }
+
+    @PatchMapping("/products/{productId}/variants/{variantId}/stock")
+    @PreAuthorize("hasAuthority('" + PermissionConstants.ProductManagement.PRODUCT_MANAGE_STOCK + "')")
+    public ProductSummaryDto updateVariantStock(
+        @PathVariable Long productId,
+        @PathVariable Long variantId,
+        @RequestBody ManagerProductStockUpdateRequest request
+    ) {
+        return managerService.updateVariantStock(productId, variantId, request);
+    }
 }

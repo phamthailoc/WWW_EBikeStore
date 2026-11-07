@@ -29,6 +29,7 @@ import com.ebike.repository.order.OrderRepository;
 import com.ebike.repository.order.PaymentRepository;
 import com.ebike.dto.product.response.ProductSummaryDto;
 import com.ebike.model.entity.product.Product;
+import com.ebike.model.entity.product.ProductVariant;
 import com.ebike.repository.product.ProductRepository;
 import com.ebike.service.product.ProductService;
 import java.math.BigDecimal;
@@ -363,7 +364,44 @@ public class ManagerServiceImpl implements ManagerService {
         Product product = productRepository.findById(productId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
 
+        // Orders need stock in the product and in the chosen colour, so a total typed here would not make any
+        // colour available. For a product with colours the total is the sum of the colours (see updateVariantStock).
+        if (product.getVariants().stream().anyMatch(variant -> Boolean.TRUE.equals(variant.getActive()))) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                "Sản phẩm có nhiều màu: hãy sửa tồn kho từng màu, tổng tồn kho sẽ tự tính.");
+        }
+
         product.setStockQuantity(request.stockQuantity());
+        return productService.toSummaryDto(productRepository.save(product));
+    }
+
+    @Override
+    @Transactional
+    @Caching(evict = {
+        @CacheEvict(cacheNames = RedisCacheConfiguration.PRODUCT_LIST_CACHE, allEntries = true),
+        @CacheEvict(cacheNames = RedisCacheConfiguration.PRODUCT_DETAIL_CACHE, allEntries = true)
+    })
+    public ProductSummaryDto updateVariantStock(Long productId, Long variantId, ManagerProductStockUpdateRequest request) {
+        if (request == null || request.stockQuantity() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vui lòng nhập số lượng tồn kho.");
+        }
+        if (request.stockQuantity() < 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Số lượng tồn kho không được âm.");
+        }
+
+        Product product = productRepository.findById(productId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
+        ProductVariant variant = product.getVariants().stream()
+            .filter(candidate -> candidate.getId() != null && candidate.getId().equals(variantId))
+            .findFirst()
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy màu này của sản phẩm."));
+
+        variant.setStockQuantity(request.stockQuantity());
+        // Only active colours can be ordered, so only they make up what the product has in stock.
+        product.setStockQuantity(product.getVariants().stream()
+            .filter(candidate -> Boolean.TRUE.equals(candidate.getActive()))
+            .mapToInt(candidate -> candidate.getStockQuantity() == null ? 0 : candidate.getStockQuantity())
+            .sum());
         return productService.toSummaryDto(productRepository.save(product));
     }
 
