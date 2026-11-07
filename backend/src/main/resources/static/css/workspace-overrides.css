@@ -97,3 +97,16 @@ h1,h2,h3,.brand,.eyebrow,.metric b,.metric small{font-family:'Space Grotesk','Se
 .revenue-chart text{font-size:11px;fill:#53605a}
 .revenue-chart .grid{stroke:#e3eae6;stroke-width:1}
 .report-chart{margin-bottom:24px}
+.timeline{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:0}
+.timeline li{flex:1 1 140px;display:flex;flex-direction:column;gap:8px;position:relative;padding-right:12px;min-width:120px}
+.timeline li::before{content:"";position:absolute;top:7px;left:16px;right:-4px;height:2px;background:#cfd8d6}
+.timeline li:last-child::before{display:none}
+.timeline li.done::before{background:#087d98}
+.timeline .dot{width:16px;height:16px;border-radius:50%;border:2px solid #cfd8d6;background:#fff;position:relative;z-index:1}
+.timeline li.done .dot{background:#087d98;border-color:#087d98}
+.timeline li.current .dot{border-color:#087d98;box-shadow:0 0 0 4px rgba(8,125,152,.2)}
+.timeline li.cancelled .dot{background:#c53a31;border-color:#c53a31}
+.timeline li.cancelled b{color:#922f1e}
+.timeline li.todo b{color:#8a9691;font-weight:500}
+.timeline b{display:block;font-size:14px}
+.timeline small{display:block;color:#6b7771;font-size:12px;line-height:1.5}
