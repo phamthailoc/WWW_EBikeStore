@@ -30,19 +30,36 @@ class ChatbotPricingTest {
     @Mock PdfKnowledgeBaseService pdf;
     @Mock PricingRuleRepository pricingRules;
 
-    @Test
-    void orderContextQuotesRegistrationFeeFromPricingRules() {
+    private ChatbotService chatbotWithRegistrationFee(String amount) {
         PricingRule rule = new PricingRule();
         rule.setCode(PricingService.REGISTRATION_SERVICE);
-        rule.setAmount(new BigDecimal("650000"));
+        rule.setAmount(new BigDecimal(amount));
         rule.setStatus("ACTIVE");
         when(pricingRules.findByCode(PricingService.REGISTRATION_SERVICE)).thenReturn(Optional.of(rule));
         when(pdf.findRelevantContext(anyString())).thenReturn(PdfKnowledgeBaseService.PdfKnowledgeContext.empty());
-        ChatbotService chatbot = new ChatbotService(products, showrooms, gemini, pdf, new PricingService(pricingRules));
+        return new ChatbotService(products, showrooms, gemini, pdf, new PricingService(pricingRules));
+    }
+
+    @Test
+    void orderContextQuotesRegistrationFeeFromPricingRules() {
+        ChatbotService chatbot = chatbotWithRegistrationFee("650000");
 
         String context = chatbot.debug(new ChatbotAskRequest("Đặt hàng có mất phí đăng ký không?", null, null)).orderPaymentContext();
 
         assertTrue(context.contains(String.format("%,.0f VND", new BigDecimal("650000"))), context);
         assertFalse(context.contains(String.format("%,.0f VND", new BigDecimal("2500000"))), context);
+        assertFalse(context.contains("ưu đãi showroom"), "checkout has no showroom incentive: " + context);
+    }
+
+    @Test
+    void faqAnswerQuotesRegistrationFeeFromPricingRules() {
+        ChatbotService chatbot = chatbotWithRegistrationFee("650000");
+
+        String answer = chatbot.debug(new ChatbotAskRequest("Phí đăng ký là bao nhiêu?", null, null)).fallbackAnswer();
+
+        assertTrue(answer.contains(String.format("%,.0f VND", new BigDecimal("650000"))), answer);
+        assertFalse(answer.contains("2500000"), answer);
+        assertFalse(answer.contains("{"), "placeholder must be filled in: " + answer);
+        assertFalse(answer.contains("ưu đãi showroom"), "checkout has no showroom incentive: " + answer);
     }
 }

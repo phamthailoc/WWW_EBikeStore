@@ -17,6 +17,7 @@ import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.text.Normalizer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -35,7 +36,6 @@ import org.springframework.web.server.ResponseStatusException;
 @Transactional(readOnly = true)
 public class ChatbotService {
 
-    private static final BigDecimal SHOWROOM_INCENTIVE_AMOUNT = new BigDecimal("1200000");
     private static final Pattern SENTENCE_BOUNDARY = Pattern.compile("(?<=[.!?])\\s+|\\s+-\\s+");
 
     private final ProductRepository productRepository;
@@ -107,7 +107,11 @@ public class ChatbotService {
         String normalizedMessage = userMessage.trim().toLowerCase(Locale.ROOT);
         FaqEntry faqMatch = faqEntries.stream()
             .filter(entry -> entry.matches(normalizedMessage))
-            .max(Comparator.comparingInt(FaqEntry::priorityScore))
+            // An exact question wins; then priority; then the entry sharing more keywords with the message.
+            .max(Comparator.comparing((FaqEntry entry) -> entry.isAskedExactly(normalizedMessage))
+                .thenComparingInt(FaqEntry::priorityScore)
+                .thenComparingInt(entry -> entry.keywordHits(normalizedMessage)))
+            .map(this::withCurrentFees)
             .orElse(null);
         List<ChatbotRecommendationDto> recommendations = findProductRecommendations(normalizedMessage);
         if (recommendations.isEmpty() && isFollowUpPriceQuestion(normalizedMessage)) {
@@ -530,10 +534,10 @@ public class ChatbotService {
         return """
             Quy trình đặt hàng: khách hàng đăng nhập rồi nhập họ tên số điện thoại email, xác thực OTP email, chọn showroom nhận xe, địa chỉ cụ thể và ghi chú nếu có. Hệ thống không yêu cầu CCCD khi đặt hàng.
             Nhận xe: hệ thống hiện ưu tiên nhận xe tại showroom đã chọn trong TP.HCM.
-            Báo giá checkout: phí dịch vụ hỗ trợ hồ sơ đăng ký xe %s mỗi xe (khách tự chọn, không bắt buộc) và ưu đãi showroom %s.
+            Báo giá checkout: phí dịch vụ hỗ trợ hồ sơ đăng ký xe %s mỗi xe (khách tự chọn, không bắt buộc).
             Thanh toán: hỗ trợ lưu phương thức thanh toán theo đơn và có luồng VNPay. Khi thanh toán VNPay thành công hệ thống cập nhật payment PAID và đơn hàng CONFIRMED.
             VNPay IPN: backend nhận callback tại /api/v1/payments/vnpay/ipn. Return URL dùng để hiển thị kết quả cho khách hàng.
-            """.formatted(formatCurrency(pricingService.registrationServicePerBike()), formatCurrency(SHOWROOM_INCENTIVE_AMOUNT)).trim();
+            """.formatted(formatCurrency(pricingService.registrationServicePerBike())).trim();
     }
 
     private boolean isOrderPaymentQuestion(String message) {
@@ -573,6 +577,12 @@ public class ChatbotService {
             details.add("tốc độ tối đa khoảng " + specification.getMaxSpeedKmh().stripTrailingZeros().toPlainString() + " km/h");
         }
         return details.isEmpty() ? "đang được bán trên hệ thống" : String.join(", ", details);
+    }
+
+    /** FAQ answers name fees as placeholders so the chatbot always quotes what the admin set. */
+    private FaqEntry withCurrentFees(FaqEntry entry) {
+        String answer = entry.answer().replace("{REGISTRATION_SERVICE_FEE}", formatCurrency(pricingService.registrationServicePerBike()));
+        return new FaqEntry(entry.category(), entry.question(), answer, entry.keywords(), entry.priority());
     }
 
     private String formatCurrency(BigDecimal amount) {
@@ -831,6 +841,17 @@ public class ChatbotService {
                 }
             }
             return false;
+        }
+
+        boolean isAskedExactly(String message) {
+            return message.contains(question.toLowerCase(Locale.ROOT));
+        }
+
+        int keywordHits(String message) {
+            return (int) Arrays.stream(keywords.toLowerCase(Locale.ROOT).split(" "))
+                .filter(keyword -> !keyword.isBlank() && message.contains(keyword))
+                .distinct()
+                .count();
         }
 
         int priorityScore() {
