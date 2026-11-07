@@ -1,5 +1,6 @@
 package com.ebike.controller.web;
 
+import com.ebike.config.order.VnPayProperties;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 import org.springframework.stereotype.Controller;
@@ -9,6 +10,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class WorkspaceController {
     private record Link(String label, String href) {}
+
+    private final VnPayProperties vnPayProperties;
+
+    public WorkspaceController(VnPayProperties vnPayProperties) {
+        this.vnPayProperties = vnPayProperties;
+    }
 
     @GetMapping({"/customer", "/customer/**", "/manager", "/manager/**", "/admin", "/admin/**"})
     public String workspace(HttpServletRequest request, Model model) {
@@ -55,6 +62,7 @@ public class WorkspaceController {
         model.addAttribute("mode", mode);
         model.addAttribute("links", links);
         model.addAttribute("activePath", path);
+        model.addAttribute("vnpayEnabled", vnPayProperties.isConfigured());
         return "store/workspace";
     }
 
@@ -79,6 +87,7 @@ public class WorkspaceController {
         model.addAttribute("title", title);
         model.addAttribute("api", api);
         model.addAttribute("flow", path.substring(1).replace('/', '-'));
+        model.addAttribute("vnpayEnabled", vnPayProperties.isConfigured());
         return "store/flow";
     }
 }

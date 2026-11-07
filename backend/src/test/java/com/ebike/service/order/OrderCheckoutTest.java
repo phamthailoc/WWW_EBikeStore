@@ -3,6 +3,8 @@ package com.ebike.service.order;
 import com.ebike.dto.order.request.OrderCreateItemRequest;
 import com.ebike.dto.order.request.OrderCreateRequest;
 import com.ebike.dto.order.request.OrderQuoteRequest;
+import com.ebike.model.entity.admin.Promotion;
+import com.ebike.repository.admin.PromotionRepository;
 import com.ebike.model.entity.order.Showroom;
 import com.ebike.model.entity.product.Product;
 import com.ebike.repository.auth.UserRepository;
@@ -29,12 +31,13 @@ class OrderCheckoutTest {
     @Mock UserRepository users;
     @Mock ProductRepository products;
     @Mock ShowroomRepository showrooms;
+    @Mock PromotionRepository promotions;
     @Mock OrderEmailVerificationService verification;
     OrderServiceImpl service;
     Product product;
 
     @BeforeEach void setup() {
-        service = new OrderServiceImpl(orders, users, products, showrooms, verification);
+        service = new OrderServiceImpl(orders, users, products, showrooms, promotions, verification);
         product = new Product();
         product.setId(1L); product.setName("KINETIC Test");
         product.setPrice(new BigDecimal("20300000")); product.setStockQuantity(8); product.setActive(true);
@@ -53,6 +56,9 @@ class OrderCheckoutTest {
         var plain=service.quoteOrder(new OrderQuoteRequest(false,List.of(new OrderCreateItemRequest(1L,2)),null));
         assertEquals(0, plain.discountAmount().compareTo(BigDecimal.ZERO));
         assertEquals(0, plain.totalAmount().compareTo(new BigDecimal("40600000")));
+        Promotion ebike100=new Promotion();ebike100.setCode("EBIKE100");ebike100.setStatus("LIVE");
+        ebike100.setDiscountType("FIXED_AMOUNT");ebike100.setDiscountValue(new BigDecimal("100000"));
+        when(promotions.findByCodeIgnoreCase("EBIKE100")).thenReturn(Optional.of(ebike100));
         var withCode=service.quoteOrder(new OrderQuoteRequest(true,List.of(new OrderCreateItemRequest(1L,1)),"EBIKE100"));
         assertEquals(0, withCode.totalAmount().compareTo(new BigDecimal("22700000")));
     }

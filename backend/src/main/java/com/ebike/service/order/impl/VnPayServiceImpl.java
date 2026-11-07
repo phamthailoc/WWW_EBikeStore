@@ -289,12 +289,8 @@ public class VnPayServiceImpl implements VnPayService {
     }
 
     private void validateConfigured() {
-        if (isBlank(properties.getTmnCode()) || isBlank(properties.getHashSecret()) || isBlank(properties.getPayUrl()) || isBlank(properties.getReturnUrl())) {
+        if (!properties.isConfigured()) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "VNPay is not configured");
         }
-    }
-
-    private boolean isBlank(String value) {
-        return value == null || value.isBlank();
     }
 }

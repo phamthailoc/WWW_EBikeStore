@@ -50,4 +50,13 @@ public class VnPayProperties {
     public void setIpnUrl(String ipnUrl) {
         this.ipnUrl = ipnUrl;
     }
+
+    /** True when every value needed to build a signed payment URL is present. */
+    public boolean isConfigured() {
+        return hasText(tmnCode) && hasText(hashSecret) && hasText(payUrl) && hasText(returnUrl);
+    }
+
+    private static boolean hasText(String value) {
+        return value != null && !value.isBlank();
+    }
 }

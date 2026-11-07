@@ -999,7 +999,9 @@ INSERT INTO pricing_rules(code,name,description,amount,unit,status,effective_fro
 INSERT INTO promotions(code,campaign_name,discount_type,discount_value,max_discount_amount,usage_count,usage_limit,status,starts_at,ends_at) VALUES
 ('KINETIC20','Chào hè xanh','PERCENTAGE',20,25000,326,800,'LIVE','2026-06-01 00:00:00','2026-06-30 23:59:59'),
 ('STUDENT15','Ưu đãi sinh viên','FIXED_AMOUNT',15000,NULL,1020,2000,'LIVE','2026-05-15 00:00:00','2026-07-15 23:59:59'),
-('WEEKEND','Ưu đãi cuối tuần','PERCENTAGE',10,NULL,0,500,'WAITING','2026-06-08 00:00:00','2026-06-30 23:59:59');
+('WEEKEND','Ưu đãi cuối tuần','PERCENTAGE',10,NULL,0,500,'WAITING','2026-06-08 00:00:00','2026-06-30 23:59:59'),
+('EBIKE100','Giảm 100 nghìn','FIXED_AMOUNT',100000,NULL,0,1000,'LIVE','2026-01-01 00:00:00','2027-12-31 23:59:59'),
+('EBIKE200','Giảm 200 nghìn','FIXED_AMOUNT',200000,NULL,0,1000,'LIVE','2026-01-01 00:00:00','2027-12-31 23:59:59');
 INSERT INTO admin_audit_logs(actor,action,target,ip_address) VALUES ('System','Khởi tạo dữ liệu mẫu','pricing rules và promotions','127.0.0.1');
 
 SET FOREIGN_KEY_CHECKS=1;
