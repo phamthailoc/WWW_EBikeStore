@@ -102,6 +102,7 @@ public class SecurityConfiguration {
                 )
                 .requestMatchers(HttpMethod.POST, "/api/v1/users/**").hasAuthority(PermissionConstants.Customer.PROFILE_UPDATE)
                 .requestMatchers(HttpMethod.PUT, "/api/v1/users/**").hasAuthority(PermissionConstants.Customer.PROFILE_UPDATE)
+                .requestMatchers(HttpMethod.DELETE, "/api/v1/users/**").hasAuthority(PermissionConstants.Customer.PROFILE_UPDATE)
                 .requestMatchers(HttpMethod.GET,
                     "/api/v1/admin/overview",
                     "/api/v1/admin/pricing-rules",
