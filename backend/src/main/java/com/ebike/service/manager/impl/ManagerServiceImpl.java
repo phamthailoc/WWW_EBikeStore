@@ -268,13 +268,21 @@ public class ManagerServiceImpl implements ManagerService {
         long successfulOrders = inScope.stream()
             .filter(order -> order.getStatus() == OrderStatus.DELIVERED)
             .count();
-        BigDecimal totalRevenue = inScope.stream()
+        // Revenue is money received in the period (by payment date, like the dashboard), whenever the order was placed.
+        List<Order> paidInPeriod = orders.stream()
+            .filter(this::isCountedOrder)
             .filter(this::hasPaidPayment)
+            .filter(order -> {
+                LocalDate paid = paymentDate(order);
+                return !paid.isBefore(fromDate) && !paid.isAfter(toDate);
+            })
+            .toList();
+        BigDecimal totalRevenue = paidInPeriod.stream()
             .map(order -> order.getPayment().getAmount())
             .reduce(ZERO, BigDecimal::add);
 
         List<ManagerRevenuePeriodPointResponse> breakdown = buildRevenueBreakdown(orders, bucketPeriod, fromDate, toDate);
-        List<Order> paidOrders = inScope.stream().filter(this::hasPaidPayment).toList();
+        List<Order> paidOrders = paidInPeriod;
         List<ManagerTopProductResponse> topProducts = buildTopProducts(paidOrders);
         List<ManagerTopProductResponse> slowProducts = buildSlowProducts(paidOrders);
 
@@ -667,6 +675,12 @@ public class ManagerServiceImpl implements ManagerService {
         return order.getStatus() != OrderStatus.CANCELLED;
     }
 
+    /** The day the money arrived; older rows without a payment time fall back to the order date. */
+    private LocalDate paymentDate(Order order) {
+        LocalDateTime paidAt = order.getPayment().getPaidAt();
+        return (paidAt != null ? paidAt : order.getCreatedAt()).toLocalDate();
+    }
+
     private boolean hasPaidPayment(Order order) {
         Payment payment = order.getPayment();
         return payment != null && payment.getPaymentStatus() == PaymentStatus.PAID;
@@ -697,8 +711,8 @@ public class ManagerServiceImpl implements ManagerService {
                     .filter(this::isCountedOrder)
                     .filter(this::hasPaidPayment)
                     .filter(order -> {
-                        LocalDate createdAt = order.getCreatedAt().toLocalDate();
-                        return !createdAt.isBefore(bucket.start()) && !createdAt.isAfter(bucket.end());
+                        LocalDate paid = paymentDate(order);
+                        return !paid.isBefore(bucket.start()) && !paid.isAfter(bucket.end());
                     })
                     .map(order -> order.getPayment().getAmount())
                     .reduce(ZERO, BigDecimal::add);
