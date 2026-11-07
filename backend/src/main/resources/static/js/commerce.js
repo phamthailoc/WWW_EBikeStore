@@ -6,6 +6,7 @@
   const line=item=>`<div class="checkout-item"><img src="${e(safeImage(item.image))}" alt="${e(item.name)}"><div><a href="/product/${encodeURIComponent(item.slug)}">${e(item.name)}</a><small>${e(item.colorName||'Màu tiêu chuẩn')} · ${item.quantity} xe</small><strong>${money(item.price*item.quantity)}</strong></div></div>`;
   const validItems=items=>items.length>0 && items.every(i=>!i.unavailable && i.quantity<=C.limit(i) && C.limit(i)>0);
   const vnpayEnabled=document.body.dataset.vnpayEnabled==='true';
+  const emailOtpRequired=document.body.dataset.emailOtpRequired==='true';
   async function startVnPay(orderId){const payment=await request('/api/v1/payments/vnpay/create',{orderId,language:'vn'});if(!payment?.paymentUrl)throw Error('VNPay không trả về đường dẫn thanh toán.');location.href=payment.paymentUrl;}
   const normalizeSearch=value=>value.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').toLowerCase();
 
@@ -75,6 +76,46 @@
       form.querySelectorAll('[name="pickupShowroomId"]').forEach(input=>{input.disabled=home;input.required=!home;});
     }
     renderStores();updateDelivery();
+    // Email confirmation (UC-06): send a code, type it in, and order with the verified session. A code can be
+    // asked for again after the server's waiting time; changing the email throws the confirmation away.
+    let verification=null;
+    if(emailOtpRequired){
+      const emailInput=form.elements.customerEmail;
+      const box=document.createElement('div');
+      box.className='otp-box wide-field';
+      box.innerHTML='<p class="otp-help">Để bảo vệ đơn hàng, vui lòng xác minh email trước khi đặt.</p><div class="otp-row"><button type="button" class="button compact ghost" id="otpSend">Gửi mã xác minh</button><input id="otpCode" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="Nhập mã" aria-label="Mã xác minh email" hidden><button type="button" class="button compact" id="otpVerify" hidden>Xác minh</button></div><p class="otp-status" id="otpStatus" role="status"></p>';
+      emailInput.closest('label').after(box);
+      const send=box.querySelector('#otpSend'),code=box.querySelector('#otpCode'),verify=box.querySelector('#otpVerify'),status=box.querySelector('#otpStatus');
+      let pending=null,timer=null;
+      const say=(text,error)=>{status.textContent=text;status.classList.toggle('error',Boolean(error))};
+      const countdown=seconds=>{clearInterval(timer);let left=seconds;send.disabled=true;const tick=()=>{send.textContent=left>0?'Gửi lại mã sau '+left+'s':'Gửi lại mã';if(left<=0){clearInterval(timer);send.disabled=false}left--};tick();timer=setInterval(tick,1000)};
+      const reset=()=>{clearInterval(timer);verification=null;pending=null;send.disabled=false;send.textContent='Gửi mã xác minh';code.hidden=true;code.value='';verify.hidden=true};
+      emailInput.addEventListener('input',()=>{if(verification||pending){reset();say('Email đã thay đổi, vui lòng xác minh lại.',false)}});
+      send.addEventListener('click',async()=>{
+        const email=emailInput.value.trim();
+        if(!emailInput.checkValidity()||!email){emailInput.reportValidity();return}
+        send.disabled=true;
+        try{
+          const sent=await request('/api/v1/orders/email-verification/send',{email});
+          pending={id:sent.verificationSessionId,email};verification=null;
+          code.hidden=false;verify.hidden=false;code.value='';code.focus();
+          say('Đã gửi mã tới '+email+'. Mã có hiệu lực trong ít phút.',false);
+          countdown(Number(sent.resendAfterSeconds)||60);
+        }catch(error){send.disabled=false;say(error.message,true)}
+      });
+      verify.addEventListener('click',async()=>{
+        if(!pending||!code.value.trim()){say('Vui lòng nhập mã đã gửi tới email.',true);return}
+        verify.disabled=true;
+        try{
+          const result=await request('/api/v1/orders/email-verification/verify',{verificationSessionId:pending.id,code:code.value.trim()});
+          if(!result.verified)throw Error('Mã chưa đúng.');
+          verification={id:pending.id,email:pending.email};
+          clearInterval(timer);send.hidden=true;code.hidden=true;verify.hidden=true;
+          say('Email đã được xác minh ✓',false);
+        }catch(error){say(error.message,true)}
+        finally{verify.disabled=false}
+      });
+    }
     // A signed-in customer can pick an address from the profile's address book; guests simply do not see this.
     (async()=>{
       try{
@@ -136,10 +177,11 @@
       const home=form.elements.deliveryMethod.value==='HOME_DELIVERY';
       const errorBox=form.querySelector('#checkoutError');errorBox.hidden=true;
       if(!home && (!selectedStore || !stores.some(s=>s.id===selectedStore))){errorBox.textContent='Vui lòng chọn cửa hàng nhận xe.';errorBox.hidden=false;return;}
+      if(emailOtpRequired&&(!verification||verification.email!==form.elements.customerEmail.value.trim())){errorBox.textContent='Vui lòng xác minh email trước khi đặt hàng.';errorBox.hidden=false;return;}
       submitting=true;submit.disabled=true;
       try{
         if(!await updateQuote())return;
-        const order=await request('/api/v1/orders',{customerName:form.elements.customerName.value.trim(),phoneNumber:form.elements.phoneNumber.value.trim(),customerEmail:form.elements.customerEmail.value.trim(),deliveryMethod:form.elements.deliveryMethod.value,province:home?form.elements.province.value:null,pickupShowroomId:home?null:selectedStore,detailedAddress:home?form.elements.detailedAddress.value.trim():null,paymentMethod:form.elements.paymentMethod.value,discountCode:form.elements.discountCode.value.trim()||null,includeRegistrationService:form.elements.includeRegistrationService.checked,notes:form.elements.notes.value.trim(),items:items.map(i=>({productId:i.id,quantity:i.quantity,productVariantId:i.variantId||null}))});
+        const order=await request('/api/v1/orders',{customerName:form.elements.customerName.value.trim(),phoneNumber:form.elements.phoneNumber.value.trim(),customerEmail:form.elements.customerEmail.value.trim(),emailVerificationSessionId:verification?verification.id:null,deliveryMethod:form.elements.deliveryMethod.value,province:home?form.elements.province.value:null,pickupShowroomId:home?null:selectedStore,detailedAddress:home?form.elements.detailedAddress.value.trim():null,paymentMethod:form.elements.paymentMethod.value,discountCode:form.elements.discountCode.value.trim()||null,includeRegistrationService:form.elements.includeRegistrationService.checked,notes:form.elements.notes.value.trim(),items:items.map(i=>({productId:i.id,quantity:i.quantity,productVariantId:i.variantId||null}))});
         if(buyNow)sessionStorage.removeItem('kinetic_buy_now');
         else C.write(C.read().flatMap(item=>{const purchased=items.find(i=>key(i)===key(item));return purchased?(item.quantity>purchased.quantity?[{...item,quantity:item.quantity-purchased.quantity}]:[]):[item];}));
         if(form.elements.paymentMethod.value==='VNPAY'){

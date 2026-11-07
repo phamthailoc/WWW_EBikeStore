@@ -77,3 +77,9 @@ a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid 
 .support-message.error{background:#fff0ec;color:#922f1e}
 .support-message[hidden]{display:none}
 @media (max-width:640px){.support-form{grid-template-columns:1fr}}
+.otp-box{display:grid;gap:8px;padding:12px 14px;border:1px solid #e3eae6;border-radius:8px;background:#f7faf8}
+.otp-help{margin:0;font-size:13px;color:#53605a}
+.otp-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.otp-row input{width:140px!important;border:1px solid #cfd8d6!important;border-radius:6px!important;padding:9px 10px!important}
+.otp-status{margin:0;font-size:13px;min-height:1.2em;color:#1d5b3a}
+.otp-status.error{color:#922f1e}

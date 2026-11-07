@@ -9,6 +9,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 @Controller
 public class WorkspaceController {
+
+    /** When on, checkout asks the buyer to confirm their email with a code before ordering (UC-06). */
+    @org.springframework.beans.factory.annotation.Value("${app.order.email-otp.required:false}")
+    private boolean emailOtpRequired;
+
     private record Link(String label, String href) {}
 
     private final VnPayProperties vnPayProperties;
@@ -91,6 +96,7 @@ public class WorkspaceController {
         model.addAttribute("api", api);
         model.addAttribute("flow", path.substring(1).replace('/', '-'));
         model.addAttribute("vnpayEnabled", vnPayProperties.isConfigured());
+        model.addAttribute("emailOtpRequired", emailOtpRequired);
         return "store/flow";
     }
 }
