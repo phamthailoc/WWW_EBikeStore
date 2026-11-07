@@ -1,5 +1,7 @@
 # Đánh giá mức độ hoàn thành công việc
 
+> **Tài liệu cũ (30/05/2026).** Bản đánh giá này chấm trên giao diện React cũ (`packages/web`), không còn phản ánh ứng dụng hiện tại chạy bằng Thymeleaf. Tình trạng hiện hành nằm ở `KE_HOACH_HOAN_THIEN.md`.
+
 ## Thông tin đánh giá
 
 - Dự án: E-bike Multiplatform
