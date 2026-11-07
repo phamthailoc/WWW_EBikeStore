@@ -65,6 +65,10 @@ public class StorefrontController {
         model.addAttribute("inStock", inStock);
         model.addAttribute("sort", sort);
         model.addAttribute("filterOptions", products.getFilterOptions());
+        model.addAttribute("vehicleTypeLabels", java.util.Map.of(
+            "E_SCOOTER", "Xe tay ga điện", "E_MOTORBIKE", "Xe máy điện", "E_BIKE", "Xe đạp điện", "BATTERY", "Pin", "ACCESSORY", "Phụ kiện"));
+        model.addAttribute("batteryTypeLabels", java.util.Map.of(
+            "LEAD_ACID", "Ắc quy chì", "LITHIUM_ION", "Pin lithium-ion", "LFP", "Pin LFP"));
         model.addAttribute("categories", products.getProducts(null, null, null, null, null, null, null, null, null, null, null, null).stream().filter(p -> p.category() != null).map(p -> p.category()).distinct().toList());
         return "store/products";
     }
