@@ -66,3 +66,13 @@ h1,h2,h3,.brand,.eyebrow,.metric b,.metric small{font-family:'Space Grotesk','Se
 .filter-bar label{display:grid;gap:4px;font-size:12px;color:#53605a;min-width:180px}
 .filter-bar label:has(input[type=search]){flex:1 1 280px}
 .filter-bar select,.filter-bar input{font:14px 'DM Sans',sans-serif;padding:9px 10px;border:1px solid #cfd8d6;border-radius:6px;background:#fff;width:100%;box-sizing:border-box}
+.admin-dialog{border:0;border-radius:12px;padding:24px;max-width:520px;width:calc(100% - 32px);box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.admin-dialog::backdrop{background:rgba(20,30,28,.45)}
+.admin-dialog h2{margin:0 0 4px}
+.admin-dialog .muted{color:#6b7771;font-size:13px;margin:0 0 12px}
+.admin-fields{display:grid;gap:12px}
+.admin-fields label{display:grid;gap:4px;font-size:12px;color:#53605a}
+.admin-fields input,.admin-fields select{font:14px 'DM Sans',sans-serif;padding:9px 10px;border:1px solid #cfd8d6;border-radius:6px;width:100%;box-sizing:border-box}
+.dialog-error{color:#922f1e;background:#fff0ec;padding:10px 12px;border-radius:6px;font-size:13px}
+.dialog-error[hidden]{display:none}
+.dialog-actions{display:flex;gap:10px;margin:16px 0 0}
