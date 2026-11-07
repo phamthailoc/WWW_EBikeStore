@@ -88,3 +88,6 @@ h1,h2,h3,.brand,.eyebrow,.metric b,.metric small{font-family:'Space Grotesk','Se
 .image-grid .image-actions{display:flex;flex-wrap:wrap;gap:6px}
 .image-upload{display:grid;gap:12px;border-top:1px solid #e3eae6;padding-top:16px}
 .image-upload label{display:grid;gap:4px;font-size:12px;color:#53605a}
+.notif-link{position:relative;display:inline-flex;align-items:center;gap:6px}
+.notif-badge{min-width:18px;height:18px;padding:0 5px;box-sizing:border-box;border-radius:9px;background:#c53a31;color:#fff;font-size:11px;font-weight:700;line-height:18px;text-align:center}
+.notif-badge[hidden]{display:none}

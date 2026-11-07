@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <title th:text="${title} + ' | KINETIC'">KINETIC</title>
-  <link rel="stylesheet" th:href="@{/css/store.css(v=20261102-layout1)}"><link rel="stylesheet" th:href="@{/css/workspace.css(v=20261102-layout1)}"><link rel="stylesheet" th:href="@{/css/workspace-overrides.css(v=20261107e)}">
+  <link rel="stylesheet" th:href="@{/css/store.css(v=20261102-layout1)}"><link rel="stylesheet" th:href="@{/css/workspace.css(v=20261102-layout1)}"><link rel="stylesheet" th:href="@{/css/workspace-overrides.css(v=20261107f)}">
 <link rel="stylesheet" href="/css/commerce.css?v=20261102-colors1"><script src="/js/cart.js?v=20261102-cart1"></script></head>
 <body class="workspace" th:attr="data-api=${api},data-mode=${mode},data-role=${workspaceRole},data-page=${activePath},data-secondary-api=${secondaryApi},data-vnpay-enabled=${vnpayEnabled}">
 <header class="top"><a class="brand" th:href="@{/}"><span>K</span> KINETIC</a><nav><a th:href="@{/products}">Cửa hàng</a><a th:href="@{/support}">Hỗ trợ</a><a th:href="@{/chatbot}">Tư vấn</a></nav><div class="actions"><a th:href="@{/favorites}">Đã lưu</a><span class="role-chip" th:text="${workspaceRole}">customer</span><button id="logout" class="link-button">Đăng xuất</button></div></header>
@@ -17,6 +17,7 @@
   </main>
 </div>
 <script th:if="${mode == 'accounts' or mode == 'pricing'}" th:src="@{/js/admin.js(v=20261107-admin1)}"></script>
+<script th:if="${workspaceRole == 'customer'}" th:src="@{/js/notifications.js(v=20261107-notif1)}"></script>
 <script th:if="${mode == 'inventory'}" th:src="@{/js/stock.js(v=20261107-stock1)}"></script>
 <script th:if="${mode == 'inventory'}" th:src="@{/js/images.js(v=20261107-images1)}"></script>
 <script th:src="@{/js/workspace.js(v=20261107-images1)}"></script>
