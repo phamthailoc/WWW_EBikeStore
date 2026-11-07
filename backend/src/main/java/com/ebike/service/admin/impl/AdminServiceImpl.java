@@ -103,8 +103,8 @@ public class AdminServiceImpl implements AdminService {
         PricingRule rule = pricingRuleRepository.findById(id)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Pricing rule not found"));
 
-        if (request.amount() == null || request.amount().compareTo(BigDecimal.ZERO) <= 0) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Amount must be greater than zero");
+        if (request.amount() == null || request.amount().compareTo(BigDecimal.ZERO) < 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Amount must not be negative");
         }
 
         rule.setAmount(request.amount());

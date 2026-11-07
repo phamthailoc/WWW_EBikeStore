@@ -64,11 +64,11 @@ CREATE INDEX IF NOT EXISTS idx_admin_audit_logs_created_at ON ebike_admin.admin_
 
 INSERT INTO ebike_admin.pricing_rules (code, name, description, amount, unit, status, effective_from)
 VALUES
-    ('UNLOCK_FEE', 'Phí mở khóa', 'Thu một lần khi người dùng bắt đầu chuyến đi.', 5000, 'VND/lượt', 'ACTIVE', CURRENT_TIMESTAMP),
-    ('MINUTE_RATE', 'Giá thuê theo phút', 'Áp dụng cho chuyến đi ngắn và tính lũy tiến theo thời gian.', 1800, 'VND/phút', 'ACTIVE', CURRENT_TIMESTAMP),
-    ('HOUR_RATE', 'Gói theo giờ', 'Mức trần cho khách thuê xe trong thời gian dài.', 45000, 'VND/giờ', 'SCHEDULED', CURRENT_TIMESTAMP + INTERVAL '5 days'),
-    ('WRONG_ZONE_FINE', 'Phạt trả sai khu vực', 'Áp dụng khi xe được trả ngoài vùng hợp lệ.', 30000, 'VND/lần', 'ACTIVE', CURRENT_TIMESTAMP),
-    ('OVERDUE_FINE', 'Phạt quá hạn', 'Thu thêm khi chuyến đi vượt thời gian giữ xe cho phép.', 12000, 'VND/15 phút', 'ACTIVE', CURRENT_TIMESTAMP)
+    ('REGISTRATION_SERVICE', 'Phí dịch vụ làm hồ sơ đăng ký xe', 'Phí cửa hàng thu khi làm hộ thủ tục đăng ký xe. Không gồm lệ phí nộp Nhà nước.', 500000, 'VND/xe', 'ACTIVE', CURRENT_TIMESTAMP),
+    ('HOME_DELIVERY_SAME_CITY', 'Phí giao xe tận nhà cùng tỉnh', 'Giao xe đến địa chỉ trong tỉnh, thành phố có showroom.', 200000, 'VND/xe', 'ACTIVE', CURRENT_TIMESTAMP),
+    ('HOME_DELIVERY_OTHER_PROVINCE', 'Phí giao xe tận nhà khác tỉnh', 'Giao xe đến địa chỉ ở tỉnh, thành phố không có showroom.', 800000, 'VND/xe', 'ACTIVE', CURRENT_TIMESTAMP),
+    ('REGISTRATION_TAX_RATE_CENTRAL', 'Tỷ lệ lệ phí trước bạ (thành phố lớn)', 'Chỉ hiển thị ước tính tham khảo, không cộng vào đơn.', 5, '%', 'ACTIVE', CURRENT_TIMESTAMP),
+    ('REGISTRATION_TAX_RATE_OTHER', 'Tỷ lệ lệ phí trước bạ (khu vực khác)', 'Chỉ hiển thị ước tính tham khảo, không cộng vào đơn.', 2, '%', 'ACTIVE', CURRENT_TIMESTAMP)
 ON CONFLICT (code) DO NOTHING;
 
 INSERT INTO ebike_admin.promotions (

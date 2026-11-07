@@ -991,11 +991,11 @@ INSERT INTO showrooms(name,district,address,phone,opening_hours,is_active) VALUE
 INSERT INTO showrooms(name,district,address,phone,opening_hours,is_active) VALUES ('KINETIC Tan Binh - Cong Hoa','Tan Binh','45 Cong Hoa, Phuong 4, Tan Binh, TP. Ho Chi Minh','028 3811 2233','08:00 - 21:00',1);
 
 INSERT INTO pricing_rules(code,name,description,amount,unit,status,effective_from) VALUES
-('UNLOCK_FEE','Phí đăng ký dịch vụ','Phí dịch vụ một lần khi tạo đơn hàng.',5000,'VND/lần','ACTIVE',NOW()),
-('MINUTE_RATE','Phí giao xe','Phí xử lý và giao xe tại cửa hàng.',1800,'VND/phút','ACTIVE',NOW()),
-('HOUR_RATE','Gói bảo hành mở rộng','Gói bảo hành mở rộng theo thời hạn.',45000,'VND/giờ','SCHEDULED',DATE_ADD(NOW(), INTERVAL 5 DAY)),
-('WRONG_ZONE_FINE','Phí giao hàng ngoài khu vực','Áp dụng khi giao hàng ngoài vùng hỗ trợ.',30000,'VND/lần','ACTIVE',NOW()),
-('OVERDUE_FINE','Phí giao trễ','Phí phát sinh khi lịch giao xe bị trễ.',12000,'VND/lần','ACTIVE',NOW());
+('REGISTRATION_SERVICE','Phí dịch vụ làm hồ sơ đăng ký xe','Phí cửa hàng thu khi làm hộ thủ tục đăng ký xe. Không gồm lệ phí nộp Nhà nước.',500000,'VND/xe','ACTIVE',NOW()),
+('HOME_DELIVERY_SAME_CITY','Phí giao xe tận nhà cùng tỉnh','Giao xe đến địa chỉ trong tỉnh, thành phố có showroom.',200000,'VND/xe','ACTIVE',NOW()),
+('HOME_DELIVERY_OTHER_PROVINCE','Phí giao xe tận nhà khác tỉnh','Giao xe đến địa chỉ ở tỉnh, thành phố không có showroom.',800000,'VND/xe','ACTIVE',NOW()),
+('REGISTRATION_TAX_RATE_CENTRAL','Tỷ lệ lệ phí trước bạ (thành phố lớn)','Chỉ hiển thị ước tính tham khảo, không cộng vào đơn.',5,'%','ACTIVE',NOW()),
+('REGISTRATION_TAX_RATE_OTHER','Tỷ lệ lệ phí trước bạ (khu vực khác)','Chỉ hiển thị ước tính tham khảo, không cộng vào đơn.',2,'%','ACTIVE',NOW());
 INSERT INTO promotions(code,campaign_name,discount_type,discount_value,max_discount_amount,usage_count,usage_limit,status,starts_at,ends_at) VALUES
 ('KINETIC20','Chào hè xanh','PERCENTAGE',20,25000,326,800,'LIVE','2026-06-01 00:00:00','2026-06-30 23:59:59'),
 ('STUDENT15','Ưu đãi sinh viên','FIXED_AMOUNT',15000,NULL,1020,2000,'LIVE','2026-05-15 00:00:00','2026-07-15 23:59:59'),
