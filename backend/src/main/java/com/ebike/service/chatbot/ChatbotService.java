@@ -9,6 +9,7 @@ import com.ebike.repository.order.ShowroomRepository;
 import com.ebike.model.entity.product.Product;
 import com.ebike.model.entity.product.ProductSpecification;
 import com.ebike.repository.product.ProductRepository;
+import com.ebike.service.admin.PricingService;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -34,7 +35,6 @@ import org.springframework.web.server.ResponseStatusException;
 @Transactional(readOnly = true)
 public class ChatbotService {
 
-    private static final BigDecimal REGISTRATION_FEE_AMOUNT = new BigDecimal("2500000");
     private static final BigDecimal SHOWROOM_INCENTIVE_AMOUNT = new BigDecimal("1200000");
     private static final Pattern SENTENCE_BOUNDARY = Pattern.compile("(?<=[.!?])\\s+|\\s+-\\s+");
 
@@ -42,6 +42,7 @@ public class ChatbotService {
     private final ShowroomRepository showroomRepository;
     private final GeminiChatClient geminiChatClient;
     private final PdfKnowledgeBaseService pdfKnowledgeBaseService;
+    private final PricingService pricingService;
     private final List<FaqEntry> faqEntries = new ArrayList<>();
     private final Map<String, List<ChatbotRecommendationDto>> recentRecommendationsByChatId = new ConcurrentHashMap<>();
 
@@ -49,12 +50,14 @@ public class ChatbotService {
         ProductRepository productRepository,
         ShowroomRepository showroomRepository,
         GeminiChatClient geminiChatClient,
-        PdfKnowledgeBaseService pdfKnowledgeBaseService
+        PdfKnowledgeBaseService pdfKnowledgeBaseService,
+        PricingService pricingService
     ) {
         this.productRepository = productRepository;
         this.showroomRepository = showroomRepository;
         this.geminiChatClient = geminiChatClient;
         this.pdfKnowledgeBaseService = pdfKnowledgeBaseService;
+        this.pricingService = pricingService;
         loadFaqEntries();
     }
 
@@ -527,10 +530,10 @@ public class ChatbotService {
         return """
             Quy trình đặt hàng: khách hàng đăng nhập rồi nhập họ tên số điện thoại email, xác thực OTP email, chọn showroom nhận xe, địa chỉ cụ thể và ghi chú nếu có. Hệ thống không yêu cầu CCCD khi đặt hàng.
             Nhận xe: hệ thống hiện ưu tiên nhận xe tại showroom đã chọn trong TP.HCM.
-            Báo giá checkout: phí đăng ký %s và ưu đãi showroom %s.
+            Báo giá checkout: phí dịch vụ hỗ trợ hồ sơ đăng ký xe %s mỗi xe (khách tự chọn, không bắt buộc) và ưu đãi showroom %s.
             Thanh toán: hỗ trợ lưu phương thức thanh toán theo đơn và có luồng VNPay. Khi thanh toán VNPay thành công hệ thống cập nhật payment PAID và đơn hàng CONFIRMED.
             VNPay IPN: backend nhận callback tại /api/v1/payments/vnpay/ipn. Return URL dùng để hiển thị kết quả cho khách hàng.
-            """.formatted(formatCurrency(REGISTRATION_FEE_AMOUNT), formatCurrency(SHOWROOM_INCENTIVE_AMOUNT)).trim();
+            """.formatted(formatCurrency(pricingService.registrationServicePerBike()), formatCurrency(SHOWROOM_INCENTIVE_AMOUNT)).trim();
     }
 
     private boolean isOrderPaymentQuestion(String message) {
