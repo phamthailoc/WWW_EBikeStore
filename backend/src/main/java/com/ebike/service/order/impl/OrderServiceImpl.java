@@ -603,10 +603,12 @@ public class OrderServiceImpl implements OrderService {
             subtotal = subtotal.add(unitPrice.multiply(BigDecimal.valueOf(itemRequest.quantity())));
         }
 
-        assertRegistrationServiceOffered(includeRegistrationService);
+        // The quote is only a preview: a tick on a service the admin has since switched off is ignored here
+        // (checkout then unticks and hides it); placing the order still rejects it.
+        boolean registrationServiceOffered = pricingService.registrationServiceOffered();
         BigDecimal promoDiscountAmount = resolvePromoDiscount(discountCode, subtotal);
         BigDecimal registrationServicePerBike = pricingService.registrationServicePerBike();
-        BigDecimal registrationFee = registrationFee(includeRegistrationService, registrationServicePerBike, items);
+        BigDecimal registrationFee = registrationFee(includeRegistrationService && registrationServiceOffered, registrationServicePerBike, items);
         BigDecimal totalDiscountAmount = promoDiscountAmount;
         BigDecimal shippingFee = shippingFee(homeDelivery, province, items);
 
@@ -617,7 +619,7 @@ public class OrderServiceImpl implements OrderService {
             registrationFee,
             calculateTotalAmount(subtotal, shippingFee, totalDiscountAmount, registrationFee),
             registrationServicePerBike,
-            pricingService.registrationServiceOffered(),
+            registrationServiceOffered,
             percentOf(subtotal, pricingService.registrationTaxRateOther()),
             percentOf(subtotal, pricingService.registrationTaxRateCentral())
         );

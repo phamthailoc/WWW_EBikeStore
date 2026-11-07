@@ -140,7 +140,12 @@ class OrderCheckoutTest {
         var without=service.quoteOrder(new OrderQuoteRequest(false,List.of(new OrderCreateItemRequest(1L,1)),null));
         assertFalse(without.registrationServiceAvailable());
         assertEquals(0, without.totalAmount().compareTo(new BigDecimal("20300000")));
-        assertThrows(ResponseStatusException.class,()->service.quoteOrder(new OrderQuoteRequest(true,List.of(new OrderCreateItemRequest(1L,1)),null)));
+        // A buyer who ticked the option before the admin switched it off still gets a quote, without the fee,
+        // so checkout can untick and hide the option instead of showing an error.
+        var ticked=service.quoteOrder(new OrderQuoteRequest(true,List.of(new OrderCreateItemRequest(1L,1)),null));
+        assertFalse(ticked.registrationServiceAvailable());
+        assertEquals(0, ticked.registrationFee().compareTo(BigDecimal.ZERO));
+        assertEquals(0, ticked.totalAmount().compareTo(new BigDecimal("20300000")));
         var req=new OrderCreateRequest(null,"Khách Hàng","0901234567","checkout@example.com",null,
             null,"123 Nguyễn Trãi, Phường Bến Thành","PAY_LATER",null,null,null,true,null,
             List.of(new OrderCreateItemRequest(1L,1)),"HOME_DELIVERY","Hà Nội");

@@ -93,8 +93,9 @@
         box.innerHTML=`<div class="quote-breakdown"><div class="quote-line"><span>Tạm tính</span><strong>${money(q.subtotal)}</strong></div><div class="quote-line"><span>Phí giao xe</span><strong>${awaitingProvince?'Chọn tỉnh để tính phí':money(q.shippingFee)}</strong></div><div class="quote-line quote-discount"><span>Giảm giá khuyến mãi</span><strong>${q.discountAmount?'- ':''}${money(q.discountAmount)}</strong></div><div class="quote-line"><span>Phí hồ sơ</span><strong>${money(q.registrationFee)}</strong></div><div class="quote-line quote-total"><span>Tổng thanh toán</span><strong>${money(q.totalAmount)}</strong></div><p class="quote-status">${code?'Đã áp dụng mã '+e(code)+'.':'Chưa áp dụng mã khuyến mãi.'}</p></div>`;
         form.querySelector('#registrationServicePrice').textContent=`+ ${money(q.registrationServicePerBike)}/xe`;
         form.querySelector('#registrationBlock').hidden=!q.registrationServiceAvailable;
+        if(!q.registrationServiceAvailable)form.elements.includeRegistrationService.checked=false;
         const stateFee=`Lệ phí trước bạ và lệ phí cấp biển số là tiền nộp Nhà nước do chủ xe chịu, không tính vào đơn này (lệ phí trước bạ ước tính ${money(q.registrationTaxLow)} – ${money(q.registrationTaxHigh)} cho xe trong đơn).`;
-        form.querySelector('#registrationNote').textContent=(form.elements.includeRegistrationService.checked?'Phí + ở trên là phí dịch vụ của cửa hàng. ':'Nếu không chọn, bạn tự đăng ký xe: cửa hàng giao hóa đơn và phiếu kiểm tra chất lượng xuất xưởng để bạn làm thủ tục. ')+stateFee;
+        form.querySelector('#registrationNote').textContent=(form.elements.includeRegistrationService.checked?'Khoản cộng thêm ở trên là phí dịch vụ của cửa hàng. ':'Nếu không chọn, bạn tự đăng ký xe: cửa hàng giao hóa đơn và phiếu kiểm tra chất lượng xuất xưởng để bạn làm thủ tục. ')+stateFee;
         quoteValid=true;submit.disabled=submitting;return true;
       }catch(error){if(current===sequence)box.innerHTML=`<p class="commerce-error">${e(error.message)}</p>`;return false;}
     }
