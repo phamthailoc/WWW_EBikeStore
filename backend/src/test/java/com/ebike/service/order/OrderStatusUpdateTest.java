@@ -98,6 +98,25 @@ class OrderStatusUpdateTest {
         assertEquals(5, product.getStockQuantity());
     }
 
+    @Test void cancellingAnOrderThatUsedACodeGivesTheUseBack() {
+        saves();
+        staffMember();
+        var promotion = new com.ebike.model.entity.admin.Promotion();
+        org.springframework.test.util.ReflectionTestUtils.setField(promotion, "id", 7L);
+        order.setPromotion(promotion);
+        move("CONFIRMED");
+        verify(promotions, never()).releaseUsage(any());
+        service.updateOrderStatus(10L, new OrderStatusUpdateRequest("CANCELLED", "Khách đổi ý"), staff);
+        verify(promotions).releaseUsage(7L);
+    }
+
+    @Test void cancellingAnOrderWithoutACodeLeavesPromotionsAlone() {
+        saves();
+        staffMember();
+        service.updateOrderStatus(10L, new OrderStatusUpdateRequest("CANCELLED", "Khách đổi ý"), staff);
+        verify(promotions, never()).releaseUsage(any());
+    }
+
     @Test void staffCancellationReturnsStockClosesPaymentAndKeepsTheReason() {
         saves();
         staffMember();

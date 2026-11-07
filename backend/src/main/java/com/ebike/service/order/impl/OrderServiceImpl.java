@@ -195,8 +195,12 @@ public class OrderServiceImpl implements OrderService {
         order.setRegistrationFee(registrationFee(includeRegistrationService, pricingService.registrationServicePerBike(), items));
         Promotion promotion = findValidPromotion(request.discountCode());
         BigDecimal promoDiscountAmount = promotion == null ? ZERO : calculatePromoDiscount(promotion, subtotal);
-        if (promotion != null && promotionRepository.tryIncrementUsage(promotion.getId()) == 0) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mã giảm giá không hợp lệ hoặc đã hết hạn.");
+        if (promotion != null) {
+            assertCodeNotUsedBefore(promotion, user, order.getCustomerEmail());
+            if (promotionRepository.tryIncrementUsage(promotion.getId()) == 0) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mã giảm giá không hợp lệ hoặc đã hết hạn.");
+            }
+            order.setPromotion(promotion);
         }
         order.setDiscountAmount(promoDiscountAmount);
         order.setTotalAmount(calculateTotalAmount(subtotal, order.getShippingFee(), order.getDiscountAmount(), order.getRegistrationFee()));
@@ -352,6 +356,9 @@ public class OrderServiceImpl implements OrderService {
         order.setCancellationReviewedAt(null);
         cancelPendingPayment(order.getPayment(), paymentNote);
         restoreStock(order);
+        if (order.getPromotion() != null) {
+            promotionRepository.releaseUsage(order.getPromotion().getId());
+        }
     }
 
     private void restoreStock(Order order) {
@@ -690,6 +697,16 @@ public class OrderServiceImpl implements OrderService {
             .subtract(defaultValue(discountAmount));
 
         return totalAmount.signum() < 0 ? ZERO : totalAmount;
+    }
+
+    /** One use per customer: a signed-in customer by account, a guest by email. Cancelled orders do not count. */
+    private void assertCodeNotUsedBefore(Promotion promotion, User user, String email) {
+        boolean used = user != null
+            ? orderRepository.existsByUserIdAndPromotionIdAndStatusNot(user.getId(), promotion.getId(), OrderStatus.CANCELLED)
+            : orderRepository.existsByUserIsNullAndCustomerEmailIgnoreCaseAndPromotionIdAndStatusNot(email, promotion.getId(), OrderStatus.CANCELLED);
+        if (used) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bạn đã dùng mã giảm giá này cho một đơn hàng khác.");
+        }
     }
 
     private BigDecimal resolvePromoDiscount(String discountCode, BigDecimal subtotal) {

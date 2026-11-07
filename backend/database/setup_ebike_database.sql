@@ -391,6 +391,7 @@ CREATE TABLE `admin_audit_logs` (
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 ALTER TABLE users ADD COLUMN account_status VARCHAR(30) NOT NULL DEFAULT 'ACTIVE';
+ALTER TABLE orders ADD COLUMN promotion_id BIGINT NULL, ADD CONSTRAINT fk_orders_promotion FOREIGN KEY (promotion_id) REFERENCES promotions(id) ON DELETE SET NULL;
 CREATE INDEX `idx_pricing_rules_status` ON `pricing_rules` (status);
 CREATE INDEX `idx_promotions_status` ON `promotions` (status);
 CREATE INDEX `idx_promotions_code` ON `promotions` (code);

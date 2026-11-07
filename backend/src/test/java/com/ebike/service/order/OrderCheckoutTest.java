@@ -153,6 +153,56 @@ class OrderCheckoutTest {
         verify(orders,never()).save(any());
     }
 
+    private Promotion liveCode() {
+        Promotion code=new Promotion();org.springframework.test.util.ReflectionTestUtils.setField(code,"id",5L);code.setCode("ONCE10");code.setStatus("LIVE");
+        code.setDiscountType("FIXED_AMOUNT");code.setDiscountValue(new BigDecimal("100000"));
+        code.setUsageCount(0);code.setUsageLimit(0);
+        when(promotions.findByCodeIgnoreCase("ONCE10")).thenReturn(Optional.of(code));
+        return code;
+    }
+    private OrderCreateRequest withCode(String email) {
+        return new OrderCreateRequest(null,"Khách Hàng","0901234567",email,null,
+            1L,null,"PAY_LATER","ONCE10",null,null,false,null,List.of(new OrderCreateItemRequest(1L,1)),"STORE_PICKUP",null);
+    }
+    private void openShowroom() {
+        Showroom showroom=new Showroom();showroom.setId(1L);showroom.setName("KINETIC Trung Tâm");
+        showroom.setAddress("456 Lê Lợi");showroom.setDistrict("Trung Tâm");showroom.setActive(true);
+        when(showrooms.findById(1L)).thenReturn(Optional.of(showroom));
+    }
+
+    @Test void aGuestCannotUseTheSameCodeTwiceWithTheSameEmail() {
+        stock();save();liveCode();openShowroom();
+        when(promotions.tryIncrementUsage(5L)).thenReturn(1);
+        when(orders.existsByUserIsNullAndCustomerEmailIgnoreCaseAndPromotionIdAndStatusNot("khach@example.com",5L,com.ebike.model.entity.order.OrderStatus.CANCELLED))
+            .thenReturn(false, true);
+        var first=service.createOrder(withCode("khach@example.com"),null);
+        assertEquals(0, first.discountAmount().compareTo(new BigDecimal("100000")));
+        var ex=assertThrows(ResponseStatusException.class,()->service.createOrder(withCode("khach@example.com"),null));
+        assertTrue(ex.getReason().contains("đã dùng mã"));
+        verify(promotions,times(1)).tryIncrementUsage(5L);
+        verify(orders,times(1)).save(any());
+    }
+
+    @Test void aSignedInCustomerCannotUseTheSameCodeTwice() {
+        stock();liveCode();openShowroom();
+        var user=new com.ebike.model.entity.auth.User();user.setId(42L);
+        when(users.findByUsername("an")).thenReturn(Optional.of(user));
+        var auth=mock(org.springframework.security.core.Authentication.class);when(auth.getName()).thenReturn("an");
+        when(orders.existsByUserIdAndPromotionIdAndStatusNot(42L,5L,com.ebike.model.entity.order.OrderStatus.CANCELLED)).thenReturn(true);
+        assertThrows(ResponseStatusException.class,()->service.createOrder(withCode("an@example.com"),auth));
+        verify(promotions,never()).tryIncrementUsage(any());
+        verify(orders,never()).save(any());
+    }
+
+    @Test void theOrderRemembersWhichCodeItUsed() {
+        stock();liveCode();openShowroom();
+        when(promotions.tryIncrementUsage(5L)).thenReturn(1);
+        var saved=org.mockito.ArgumentCaptor.forClass(com.ebike.model.entity.order.Order.class);
+        when(orders.save(saved.capture())).thenAnswer(invocation -> invocation.getArgument(0));
+        service.createOrder(withCode("khach@example.com"),null);
+        assertEquals(5L, saved.getValue().getPromotion().getId());
+    }
+
     @Test void registrationServiceIsChargedPerBike() {
         stock(); save(); showroomIn("TP. Ho Chi Minh");
         // 2 bikes x 500.000 registration service (pricing default)

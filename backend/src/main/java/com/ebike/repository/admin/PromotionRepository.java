@@ -19,4 +19,9 @@ public interface PromotionRepository extends JpaRepository<Promotion, Long> {
     @Query("update Promotion p set p.usageCount = p.usageCount + 1 "
         + "where p.id = :id and (p.usageLimit = 0 or p.usageCount < p.usageLimit)")
     int tryIncrementUsage(@Param("id") Long id);
+
+    /** Gives one use back when an order that used the code is cancelled. */
+    @Modifying
+    @Query("update Promotion p set p.usageCount = p.usageCount - 1 where p.id = :id and p.usageCount > 0")
+    int releaseUsage(@Param("id") Long id);
 }

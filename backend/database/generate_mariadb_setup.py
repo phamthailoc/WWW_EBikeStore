@@ -59,6 +59,7 @@ for migration in sorted((DB / "migration").glob("V2_0_[1-9]*.sql")):
         OUT.append("ALTER TABLE orders DROP COLUMN customer_identity_number;\n")
     if migration.name.startswith("V2_0_7"):
         OUT.append("ALTER TABLE users ADD COLUMN account_status VARCHAR(30) NOT NULL DEFAULT 'ACTIVE';\n")
+        OUT.append("ALTER TABLE orders ADD COLUMN promotion_id BIGINT NULL, ADD CONSTRAINT fk_orders_promotion FOREIGN KEY (promotion_id) REFERENCES promotions(id) ON DELETE SET NULL;\n")
     for unique, index_name, table_name, cols in re.findall(r"CREATE (UNIQUE )?INDEX IF NOT EXISTS\s+(\w+)\s+ON\s+([\w.]+)\s*\(([^;]+?)\)\s*(?:WHERE\s+[^;]+)?;", content, re.I | re.S):
         table = table_name.split(".")[-1]
         if index_name.lower() in known_indexes or table.lower() not in created_tables:
