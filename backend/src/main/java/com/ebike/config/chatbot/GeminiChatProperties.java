@@ -6,7 +6,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class GeminiChatProperties {
 
     private String apiKey;
-    private String model = "gemini-2.5-flash";
+    // gemini-2.5-flash is no longer offered to new API keys (404), so default to a model new keys can use.
+    private String model = "gemini-3.1-flash-lite";
     private boolean enabled = true;
     private int connectTimeoutMs = 3000;
     private int readTimeoutMs = 7000;
