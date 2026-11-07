@@ -7,7 +7,6 @@ import com.ebike.dto.manager.response.ManagerCustomerResponse;
 import com.ebike.dto.manager.response.ManagerDashboardResponse;
 import com.ebike.dto.manager.response.ManagerPaymentResponse;
 import com.ebike.dto.manager.response.ManagerRevenueReportResponse;
-import com.ebike.dto.order.request.OrderCancellationRequest;
 import com.ebike.dto.order.response.OrderResponse;
 import com.ebike.dto.product.response.ProductSummaryDto;
 import com.ebike.service.manager.ManagerService;
@@ -64,24 +63,6 @@ public class ManagerController {
         @RequestBody(required = false) ManagerPaymentConfirmationRequest request
     ) {
         return managerService.refundPayment(paymentId, request);
-    }
-
-    @PatchMapping("/orders/{orderId}/cancellation/approve")
-    @PreAuthorize("hasAuthority('" + PermissionConstants.OrderManagement.ORDER_UPDATE_STATUS + "')")
-    public OrderResponse approveOrderCancellation(
-        @PathVariable Long orderId,
-        @RequestBody(required = false) OrderCancellationRequest request
-    ) {
-        return managerService.approveOrderCancellation(orderId, request);
-    }
-
-    @PatchMapping("/orders/{orderId}/cancellation/reject")
-    @PreAuthorize("hasAuthority('" + PermissionConstants.OrderManagement.ORDER_UPDATE_STATUS + "')")
-    public OrderResponse rejectOrderCancellation(
-        @PathVariable Long orderId,
-        @RequestBody(required = false) OrderCancellationRequest request
-    ) {
-        return managerService.rejectOrderCancellation(orderId, request);
     }
 
     @GetMapping("/customers")

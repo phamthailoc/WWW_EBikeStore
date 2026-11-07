@@ -14,7 +14,6 @@ import com.ebike.dto.manager.response.ManagerRevenuePeriodPointResponse;
 import com.ebike.dto.manager.response.ManagerRevenueReportResponse;
 import com.ebike.dto.manager.response.ManagerTopProductResponse;
 import com.ebike.service.manager.ManagerService;
-import com.ebike.dto.order.request.OrderCancellationRequest;
 import com.ebike.dto.order.response.OrderResponse;
 import com.ebike.model.entity.order.Order;
 import com.ebike.model.entity.order.OrderItem;
@@ -159,9 +158,6 @@ public class ManagerServiceImpl implements ManagerService {
         }
 
         Order order = payment.getOrder();
-        if (order.getStatus() == OrderStatus.CANCELLATION_REQUESTED) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Resolve the cancellation request before confirming this payment");
-        }
         if (order.getStatus() == OrderStatus.PENDING) {
             order.setStatus(OrderStatus.CONFIRMED);
         }
@@ -188,39 +184,6 @@ public class ManagerServiceImpl implements ManagerService {
         }
 
         return toPaymentResponse(paymentRepository.save(payment));
-    }
-
-    @Override
-    @Transactional
-    public OrderResponse approveOrderCancellation(Long orderId, OrderCancellationRequest request) {
-        Order order = getPendingCancellationOrder(orderId);
-        Payment payment = order.getPayment();
-        if (payment == null || payment.getPaymentMethod() != PaymentMethod.PAY_LATER || payment.getPaymentStatus() != PaymentStatus.PENDING) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Order is no longer eligible for cancellation approval");
-        }
-
-        order.setStatus(OrderStatus.CANCELLED);
-        order.setCancellationReviewNote(normalizeOptional(request == null ? null : request.reviewNote()));
-        order.setCancellationReviewedAt(LocalDateTime.now());
-        payment.setPaymentStatus(PaymentStatus.CANCELLED);
-        payment.setProviderResponse("Cancelled after manager approval");
-
-        return toOrderResponse(orderRepository.save(order));
-    }
-
-    @Override
-    @Transactional
-    public OrderResponse rejectOrderCancellation(Long orderId, OrderCancellationRequest request) {
-        Order order = getPendingCancellationOrder(orderId);
-        OrderStatus previousStatus = order.getCancellationRequestedFromStatus() == null
-            ? OrderStatus.PENDING
-            : order.getCancellationRequestedFromStatus();
-
-        order.setStatus(previousStatus);
-        order.setCancellationReviewNote(normalizeOptional(request == null ? null : request.reviewNote()));
-        order.setCancellationReviewedAt(LocalDateTime.now());
-
-        return toOrderResponse(orderRepository.save(order));
     }
 
     @Override
@@ -415,17 +378,6 @@ public class ManagerServiceImpl implements ManagerService {
 
     private boolean isCustomer(User user) {
         return user.getRoles().stream().map(Role::getName).anyMatch(ROLE_CUSTOMER::equals);
-    }
-
-    private Order getPendingCancellationOrder(Long orderId) {
-        Order order = orderRepository.findById(orderId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
-
-        if (order.getStatus() != OrderStatus.CANCELLATION_REQUESTED) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Order does not have a pending cancellation request");
-        }
-
-        return order;
     }
 
     private boolean matchesCustomerSearch(User user, String rawSearch) {

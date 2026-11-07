@@ -110,9 +110,6 @@ public class NotificationCreationService {
         if ("CONFIRMED".equals(status)) {
             return "đã xác nhận";
         }
-        if ("CANCELLATION_REQUESTED".equals(status)) {
-            return "đang chờ duyệt hủy";
-        }
         if ("PROCESSING".equals(status)) {
             return "đang xử lý";
         }
