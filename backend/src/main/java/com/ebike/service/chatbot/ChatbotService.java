@@ -533,11 +533,15 @@ public class ChatbotService {
 
         return """
             Quy trình đặt hàng: khách hàng đăng nhập rồi nhập họ tên số điện thoại email, xác thực OTP email, chọn showroom nhận xe, địa chỉ cụ thể và ghi chú nếu có. Hệ thống không yêu cầu CCCD khi đặt hàng.
-            Nhận xe: hệ thống hiện ưu tiên nhận xe tại showroom đã chọn trong TP.HCM.
+            Nhận xe: khách chọn giao xe tận nhà (phí %s mỗi xe nếu tỉnh nhận xe có showroom, %s mỗi xe nếu khác tỉnh) hoặc nhận xe tại cửa hàng (miễn phí).
             Báo giá checkout: phí hỗ trợ đăng ký biển số %s mỗi xe, chỉ khi khách nhận xe tại cửa hàng (khách tự chọn, không bắt buộc); chủ xe cần có mặt và tự kê khai trên VNeID mức 2. Giao tận nhà thì chủ xe tự đăng ký.
             Thanh toán: hỗ trợ lưu phương thức thanh toán theo đơn và có luồng VNPay. Khi thanh toán VNPay thành công hệ thống cập nhật payment PAID và đơn hàng CONFIRMED.
             VNPay IPN: backend nhận callback tại /api/v1/payments/vnpay/ipn. Return URL dùng để hiển thị kết quả cho khách hàng.
-            """.formatted(formatCurrency(pricingService.registrationServicePerBike())).trim();
+            """.formatted(
+                formatCurrency(pricingService.homeDeliveryPerBike(true)),
+                formatCurrency(pricingService.homeDeliveryPerBike(false)),
+                formatCurrency(pricingService.registrationServicePerBike())
+            ).trim();
     }
 
     private boolean isOrderPaymentQuestion(String message) {
@@ -557,7 +561,14 @@ public class ChatbotService {
             "tong thanh toan",
             "otp",
             "giao dịch",
-            "giao dich"
+            "giao dich",
+            "giao xe",
+            "tận nhà",
+            "tan nha",
+            "phí giao",
+            "phi giao",
+            "biển số",
+            "bien so"
         );
     }
 
@@ -581,7 +592,10 @@ public class ChatbotService {
 
     /** FAQ answers name fees as placeholders so the chatbot always quotes what the admin set. */
     private FaqEntry withCurrentFees(FaqEntry entry) {
-        String answer = entry.answer().replace("{REGISTRATION_SERVICE_FEE}", formatCurrency(pricingService.registrationServicePerBike()));
+        String answer = entry.answer()
+            .replace("{REGISTRATION_SERVICE_FEE}", formatCurrency(pricingService.registrationServicePerBike()))
+            .replace("{HOME_DELIVERY_SAME_CITY_FEE}", formatCurrency(pricingService.homeDeliveryPerBike(true)))
+            .replace("{HOME_DELIVERY_OTHER_PROVINCE_FEE}", formatCurrency(pricingService.homeDeliveryPerBike(false)));
         return new FaqEntry(entry.category(), entry.question(), answer, entry.keywords(), entry.priority());
     }
 

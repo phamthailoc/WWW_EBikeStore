@@ -53,6 +53,23 @@ class ChatbotPricingTest {
     }
 
     @Test
+    void deliveryAnswersOfferHomeDeliveryAndKeepRegistrationHelpAtTheStore() {
+        ChatbotService chatbot = chatbotWithRegistrationFee("650000");
+        String sameCity = String.format("%,.0f VND", new BigDecimal("200000"));
+        String otherProvince = String.format("%,.0f VND", new BigDecimal("800000"));
+
+        String faq = chatbot.debug(new ChatbotAskRequest("Có giao hàng tận nhà không?", null, null)).fallbackAnswer();
+        assertTrue(faq.contains("tận nhà") && faq.contains(sameCity) && faq.contains(otherProvince), faq);
+        assertTrue(faq.contains("nhận xe tại cửa hàng"), faq);
+        assertFalse(faq.contains("ưu tiên nhận xe") || faq.contains("{"), faq);
+
+        String context = chatbot.debug(new ChatbotAskRequest("Giao xe tận nhà có làm biển số giúp không?", null, null)).orderPaymentContext();
+        assertTrue(context.contains(sameCity) && context.contains(otherProvince), "delivery fees reach the AI: " + context);
+        assertTrue(context.contains("nhận xe tại cửa hàng") && context.contains("VNeID"), "registration help is pickup only: " + context);
+        assertFalse(context.contains("ưu tiên nhận xe"), "home delivery exists since B6: " + context);
+    }
+
+    @Test
     void faqAnswerQuotesRegistrationFeeFromPricingRules() {
         ChatbotService chatbot = chatbotWithRegistrationFee("650000");
 
