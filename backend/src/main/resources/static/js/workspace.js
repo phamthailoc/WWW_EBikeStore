@@ -146,7 +146,33 @@
     if(!panel){panel=document.createElement('section');panel.id='cancellationDetails';panel.className='data-panel';panel.style.marginTop='20px';document.querySelector('.work-main').appendChild(panel);}
     panel.innerHTML=`<h2>Thông tin hủy đơn</h2><p><strong>Lý do:</strong> ${escape(order.cancellationReason)}</p>${order.cancellationRequestedAt?`<p><strong>Thời điểm hủy:</strong> ${escape(new Date(order.cancellationRequestedAt).toLocaleString('vi-VN'))}</p>`:''}`;
   };
-  const load=async()=>{if(!api){loading.hidden=true;empty.hidden=true;return}loading.hidden=false;empty.hidden=true;try{const data=await get(api);if(secondaryApi)renderPromotions(await get(secondaryApi));if(mode==='dashboard'){renderMetrics(data);if(page==='/manager/reports'){document.querySelector('#panel-title').textContent='Doanh thu theo kỳ';renderTable(data?.breakdown||[]);let extra=document.querySelector('#report-products');if(!extra){extra=document.createElement('section');extra.id='report-products';extra.className='data-panel report-products';document.querySelector('.work-main').appendChild(extra)}extra.innerHTML=`<div class="report-columns"><div><p class="eyebrow">KINETIC / SẢN PHẨM</p><h2>Sản phẩm bán chạy</h2>${reportList(data?.topProducts||[])}</div><div><p class="eyebrow">KINETIC / TỒN KHO</p><h2>Sản phẩm bán chậm</h2>${reportList(data?.slowProducts||[])}</div></div>`;return}const rows=page==='/admin'?(data?.auditLogs||[]):page==='/manager'?(data?.recentOrders||[]):data;document.querySelector('#panel-title').textContent=page==='/admin'?'Nhật ký hoạt động gần đây':'Đơn hàng gần đây';renderTable(Array.isArray(rows)?rows:[])}else if(mode==='profile'){loading.hidden=true;renderProfile(data||{});renderTable([])}else if(mode==='detail'){document.querySelector('#panel-title').textContent='Thông tin đơn hàng';renderTable([data]);renderOrderItems(data);renderPricing(data);renderDelivery(data.shipment);renderManagerControls(data);renderCancellation(data)}else if(page==='/favorites'){document.querySelector('#panel-title').textContent='Xe bạn đã lưu';renderFavorites(data)}else{document.querySelector('#panel-title').textContent=mode==='inventory'?'Danh mục xe và tồn kho':mode==='pricing'?'Quy tắc giá hiện hành':'Danh sách';renderTable(data)}}catch(err){loading.hidden=true;tell(err.message,true)}};
+  // ---- list filters (V5) ---------------------------------------------------------------
+  // The manager's payment and customer lists filter on the server; the bar below only builds the query string.
+  const paymentStatusOptions=[['','Mọi trạng thái'],['PENDING','Chờ thanh toán'],['PAID','Đã thanh toán'],['FAILED','Thất bại'],['CANCELLED','Đã hủy'],['REFUNDED','Đã hoàn tiền']];
+  const paymentMethodOptions=[['','Mọi phương thức'],['PAY_LATER','Thanh toán khi nhận xe'],['VNPAY','VNPay']];
+  const filterBars={
+    '/manager/payments':[{name:'paymentStatus',options:paymentStatusOptions,label:'Trạng thái thanh toán'},{name:'paymentMethod',options:paymentMethodOptions,label:'Phương thức thanh toán'},{name:'search',placeholder:'Tìm mã đơn, email, người nhận hoặc mã giao dịch',label:'Tìm kiếm'}],
+    '/manager/customers':[{name:'search',placeholder:'Tìm theo tên, email hoặc tài khoản',label:'Tìm kiếm'}]
+  };
+  const filterQuery=new URLSearchParams();
+  const withFilters=url=>filterQuery.toString()?url+(url.includes('?')?'&':'?')+filterQuery:url;
+  const setupFilters=()=>{
+    const bar=document.querySelector('#filters'),fields=filterBars[page];
+    if(!bar||!fields)return;
+    bar.innerHTML=fields.map(f=>f.options
+      ?`<label>${escape(f.label)}<select name="${f.name}">${f.options.map(([v,t])=>`<option value="${v}">${escape(t)}</option>`).join('')}</select></label>`
+      :`<label>${escape(f.label)}<input type="search" name="${f.name}" placeholder="${escape(f.placeholder)}" autocomplete="off"></label>`).join('')+'<button type="button" class="button compact ghost" id="clearFilters">Xóa bộ lọc</button>';
+    bar.hidden=false;
+    let timer;
+    const apply=()=>{
+      for(const f of fields){const v=bar.querySelector(`[name="${f.name}"]`).value.trim();if(v)filterQuery.set(f.name,v);else filterQuery.delete(f.name)}
+      load();
+    };
+    bar.addEventListener('change',apply);
+    bar.addEventListener('input',e=>{if(e.target.type==='search'){clearTimeout(timer);timer=setTimeout(apply,300)}});
+    bar.querySelector('#clearFilters').addEventListener('click',()=>{bar.querySelectorAll('select,input').forEach(el=>el.value='');apply()});
+  };
+  const load=async()=>{if(!api){loading.hidden=true;empty.hidden=true;return}loading.hidden=false;empty.hidden=true;try{const data=await get(withFilters(api));if(secondaryApi)renderPromotions(await get(secondaryApi));if(mode==='dashboard'){renderMetrics(data);if(page==='/manager/reports'){document.querySelector('#panel-title').textContent='Doanh thu theo kỳ';renderTable(data?.breakdown||[]);let extra=document.querySelector('#report-products');if(!extra){extra=document.createElement('section');extra.id='report-products';extra.className='data-panel report-products';document.querySelector('.work-main').appendChild(extra)}extra.innerHTML=`<div class="report-columns"><div><p class="eyebrow">KINETIC / SẢN PHẨM</p><h2>Sản phẩm bán chạy</h2>${reportList(data?.topProducts||[])}</div><div><p class="eyebrow">KINETIC / TỒN KHO</p><h2>Sản phẩm bán chậm</h2>${reportList(data?.slowProducts||[])}</div></div>`;return}const rows=page==='/admin'?(data?.auditLogs||[]):page==='/manager'?(data?.recentOrders||[]):data;document.querySelector('#panel-title').textContent=page==='/admin'?'Nhật ký hoạt động gần đây':'Đơn hàng gần đây';renderTable(Array.isArray(rows)?rows:[])}else if(mode==='profile'){loading.hidden=true;renderProfile(data||{});renderTable([])}else if(mode==='detail'){document.querySelector('#panel-title').textContent='Thông tin đơn hàng';renderTable([data]);renderOrderItems(data);renderPricing(data);renderDelivery(data.shipment);renderManagerControls(data);renderCancellation(data)}else if(page==='/favorites'){document.querySelector('#panel-title').textContent='Xe bạn đã lưu';renderFavorites(data)}else{document.querySelector('#panel-title').textContent=mode==='inventory'?'Danh mục xe và tồn kho':mode==='pricing'?'Quy tắc giá hiện hành':'Danh sách';renderTable(data)}}catch(err){loading.hidden=true;tell(err.message,true)}};
   document.querySelector('#refresh')?.addEventListener('click',load);document.querySelector('#logout')?.addEventListener('click',async()=>{try{await send('/api/v1/auth/logout','POST')}finally{location.href='/'}});
   document.querySelector('#create-account')?.addEventListener('click',async()=>{const name=prompt('Họ và tên');if(!name)return;const username=prompt('Tên đăng nhập');if(!username)return;const email=prompt('Email');if(!email)return;const password=prompt('Mật khẩu tạm thời (ít nhất 8 ký tự)');if(!password)return;const role=prompt('Vai trò: CUSTOMER, MANAGER hoặc ADMIN','CUSTOMER');if(!role)return;try{await send('/api/v1/admin/accounts','POST',{name,username,email,password,role,status:'ACTIVE',verified:true});tell('Đã tạo tài khoản.');await load()}catch(err){tell(err.message,true)}});
   const fileInput=document.querySelector('#productImageFile');let imageId=null;fileInput?.addEventListener('change',async()=>{const file=fileInput.files?.[0];if(!file||!imageId)return;const fd=new FormData();fd.append('productId',imageId);fd.append('file',file);fd.append('altText',file.name);try{const r=await fetch('/api/v1/admin/product-images',{method:'POST',credentials:'same-origin',body:fd});if(!r.ok)throw Error(await r.text());tell('Đã tải ảnh sản phẩm lên.')}catch(err){tell(err.message,true)}finally{fileInput.value=''}});
@@ -178,5 +204,5 @@
       finally{linkButton.disabled=false}
     });
   }
-  if(page==='/admin/accounts'){const b=document.querySelector('#create-account');if(b)b.hidden=false}load();
+  if(page==='/admin/accounts'){const b=document.querySelector('#create-account');if(b)b.hidden=false}setupFilters();load();
 })();
