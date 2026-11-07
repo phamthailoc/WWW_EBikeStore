@@ -215,18 +215,21 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         String confirmPassword = trimToNull(request.confirmPassword());
 
         if (currentPassword == null || newPassword == null || confirmPassword == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "currentPassword, newPassword, and confirmPassword are required");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vui lòng nhập mật khẩu hiện tại, mật khẩu mới và nhập lại mật khẩu mới.");
         }
         if (!newPassword.equals(confirmPassword)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "New password confirmation does not match");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mật khẩu nhập lại không khớp.");
         }
         if (newPassword.length() < 6) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "New password must be at least 6 characters");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mật khẩu mới cần ít nhất 6 ký tự.");
+        }
+        if (newPassword.equals(currentPassword)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mật khẩu mới phải khác mật khẩu hiện tại.");
         }
 
         User user = findUser(usernameOrEmail);
         if (!passwordEncoder.matches(currentPassword, user.getPasswordHash())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Current password is incorrect");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mật khẩu hiện tại không đúng.");
         }
 
         user.setPasswordHash(passwordEncoder.encode(newPassword));
