@@ -8,6 +8,8 @@ public class GeminiChatProperties {
     private String apiKey;
     // gemini-2.5-flash is no longer offered to new API keys (404), so default to a model new keys can use.
     private String model = "gemini-3.1-flash-lite";
+    // Tried in order when the main model is busy (503), rate limited (429) or no longer offered (404).
+    private java.util.List<String> fallbackModels = new java.util.ArrayList<>(java.util.List.of("gemini-flash-lite-latest"));
     private boolean enabled = true;
     private int connectTimeoutMs = 3000;
     private int readTimeoutMs = 7000;
@@ -28,6 +30,14 @@ public class GeminiChatProperties {
 
     public void setModel(String model) {
         this.model = model;
+    }
+
+    public java.util.List<String> getFallbackModels() {
+        return fallbackModels;
+    }
+
+    public void setFallbackModels(java.util.List<String> fallbackModels) {
+        this.fallbackModels = fallbackModels == null ? new java.util.ArrayList<>() : fallbackModels;
     }
 
     public boolean isEnabled() {
