@@ -8,8 +8,8 @@ Rà soát ngày 06/11/2026 trên nhánh `MinhTien` (đã merge `develop`, commit
 |---|---|---|
 | V1. VNPay ở checkout (UC-07, UC-12) | ✅ Xong, **đã merge vào `develop`** (07/11) | `feat/vnpay-checkout`, [PR #1](https://github.com/phamthailoc/WWW_EBikeStore/pull/1) vào `develop` |
 | Test Selenium cho VNPay | ✅ 5/5 pass | Trong PR #1: `backend/src/test/java/com/ebike/selenium/VnPayCheckoutSeleniumTest.java` |
-| V2. Hủy đơn đúng Word (UC-14) | ✅ Xong, đã review và test (8/8 Selenium pass), **[PR #3](https://github.com/phamthailoc/WWW_EBikeStore/pull/3) vào `develop`, chờ review** (07/11) | `feat/cancel-order` (4 commit, tách từ `feat/vnpay-checkout`) |
-| V3. Chi tiết đơn đầy đủ (UC-13, UC-16) | ✅ Xong và đã kiểm thử: 18 unit test pass; Selenium 20/20 pass (chạy 2 lần: VNPay 5, hủy đơn 8, chi tiết đơn 7). **3 commit cuối chưa push**, chưa có PR | `feat/order-detail` (4 commit, tách từ `feat/cancel-order`) |
+| V2. Hủy đơn đúng Word (UC-14) | ✅ Xong, đã review và test (8/8 Selenium pass), **[PR #3](https://github.com/phamthailoc/WWW_EBikeStore/pull/3) đã merge vào `develop`** (07/11) | `feat/cancel-order` (4 commit, tách từ `feat/vnpay-checkout`) |
+| V3. Chi tiết đơn đầy đủ (UC-13, UC-16) | ✅ Xong và đã kiểm thử: 18 unit test pass; Selenium 20/20 pass (chạy 2 lần: VNPay 5, hủy đơn 8, chi tiết đơn 7). **[PR #4](https://github.com/phamthailoc/WWW_EBikeStore/pull/4) vào `develop`, chờ review** (07/11) | `feat/order-detail` (4 commit, tách từ `feat/cancel-order`) |
 | B1–B3. Sửa nghiệp vụ P0 | ✅ Xong (06/11): B3 chặn xác nhận thu sai; B1 liên kết đơn vãng lai qua OTP; B2 tự hủy đơn quá hạn và xử lý VNPay báo muộn. Unit test pass; Selenium B1, B3 pass | `fix/business-rules` (tách từ `feat/order-detail`, **chưa push**) |
 | B4. Phí từ bảng giá | ✅ **Xong** (07/11): `PricingService` + báo giá đọc `REGISTRATION_SERVICE`, **tính theo số xe**; nhãn ở checkout và chatbot đọc phí từ bảng giá (bỏ hằng số 2.500.000); dữ liệu mẫu `pricing_rules` đã thay, `update_pricing_rules.sql` đã chạy vào `ebike_db`; Admin nhập phí ≥ 0. Sửa thêm lỗi app không khởi động (`UnpaidOrderExpiryJob` của B2 thiếu `@Autowired`). Test: 64 test, 0 lỗi, Selenium đầy đủ (tài khoản test `selenium.admin`) | `fix/business-rules` |
 | B6. Phí giao xe | ✅ **Xong** (07/11, người dùng tự làm, commit `e90756e`): nhận tại cửa hàng 0đ; giao tận nhà tính theo xe, cùng tỉnh có showroom dùng `HOME_DELIVERY_SAME_CITY`, khác tỉnh dùng `HOME_DELIVERY_OTHER_PROVINCE`; tên tỉnh so khớp bỏ dấu và tiền tố. Test: 72 test, 0 lỗi, có `DeliveryFeeSeleniumTest` | `fix/business-rules` |
@@ -36,7 +36,7 @@ Rà soát ngày 06/11/2026 trên nhánh `MinhTien` (đã merge `develop`, commit
 
 **PR #1 cũng chứa 3 commit của `MinhTien`** chưa có trên `develop`: mã khuyến mãi lấy từ bảng `promotions`, Manager hoàn tiền, hủy đơn cộng lại kho.
 
-**Thứ tự mở PR:** PR #1 (V1, đã merge) → #3 V2 (`feat/cancel-order`, đang mở) → V3 (`feat/order-detail`) → B1–B8 (`fix/business-rules`) → V4–V17 (`feat/profile`). PR #2 (`feat/profile` → `main`, gộp tất cả) đã đóng ngày 07/11 theo lựa chọn của người dùng. Mỗi PR chỉ mở sau khi PR trước đã merge, để không kéo theo commit của nhánh trước.
+**Thứ tự mở PR:** PR #1 (V1, đã merge) → #3 V2 (`feat/cancel-order`, đã merge) → #4 V3 (`feat/order-detail`, đang mở) → B1–B8 (`fix/business-rules`) → V4–V17 (`feat/profile`). PR #2 (`feat/profile` → `main`, gộp tất cả) đã đóng ngày 07/11 theo lựa chọn của người dùng. Mỗi PR chỉ mở sau khi PR trước đã merge, để không kéo theo commit của nhánh trước.
 
 **Việc tiếp theo (cập nhật 07/11 tối):**
 1. B1–B8 và V1–V17 đều đã có code. Từ V4 trở đi (nhánh `feat/profile`) **chưa được chạy thử trên giao diện thật** và không có test mới theo yêu cầu "chỉ viết code".
