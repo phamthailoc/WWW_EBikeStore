@@ -175,6 +175,7 @@ public class OrderServiceImpl implements OrderService {
         order.setOrderNumber(generateOrderNumber());
         order.setStatus(OrderStatus.PENDING);
         boolean includeRegistrationService = shouldIncludeRegistrationService(request.includeRegistrationService());
+        assertRegistrationServiceOffered(includeRegistrationService);
         order.setIncludeRegistrationService(includeRegistrationService);
         validateCheckoutDetails(request);
         if (emailOtpRequired) {
@@ -602,6 +603,7 @@ public class OrderServiceImpl implements OrderService {
             subtotal = subtotal.add(unitPrice.multiply(BigDecimal.valueOf(itemRequest.quantity())));
         }
 
+        assertRegistrationServiceOffered(includeRegistrationService);
         BigDecimal promoDiscountAmount = resolvePromoDiscount(discountCode, subtotal);
         BigDecimal registrationServicePerBike = pricingService.registrationServicePerBike();
         BigDecimal registrationFee = registrationFee(includeRegistrationService, registrationServicePerBike, items);
@@ -614,8 +616,21 @@ public class OrderServiceImpl implements OrderService {
             totalDiscountAmount,
             registrationFee,
             calculateTotalAmount(subtotal, shippingFee, totalDiscountAmount, registrationFee),
-            registrationServicePerBike
+            registrationServicePerBike,
+            pricingService.registrationServiceOffered(),
+            percentOf(subtotal, pricingService.registrationTaxRateOther()),
+            percentOf(subtotal, pricingService.registrationTaxRateCentral())
         );
+    }
+
+    private BigDecimal percentOf(BigDecimal amount, BigDecimal percent) {
+        return amount.multiply(percent).divide(BigDecimal.valueOf(100), 0, java.math.RoundingMode.HALF_UP);
+    }
+
+    private void assertRegistrationServiceOffered(boolean requested) {
+        if (requested && !pricingService.registrationServiceOffered()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cửa hàng hiện không nhận làm hộ thủ tục đăng ký xe.");
+        }
     }
 
     /**

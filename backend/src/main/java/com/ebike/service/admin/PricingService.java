@@ -60,6 +60,21 @@ public class PricingService {
         return amount(REGISTRATION_SERVICE, DEFAULT_REGISTRATION_SERVICE);
     }
 
+    /** The admin switches the service off by setting its rule INACTIVE; a missing rule keeps the default offer. */
+    public boolean registrationServiceOffered() {
+        return pricingRuleRepository.findByCode(REGISTRATION_SERVICE)
+            .map(rule -> !"INACTIVE".equals(rule.getStatus()))
+            .orElse(true);
+    }
+
+    public BigDecimal registrationTaxRateCentral() {
+        return amount(REGISTRATION_TAX_RATE_CENTRAL, DEFAULT_REGISTRATION_TAX_RATE_CENTRAL);
+    }
+
+    public BigDecimal registrationTaxRateOther() {
+        return amount(REGISTRATION_TAX_RATE_OTHER, DEFAULT_REGISTRATION_TAX_RATE_OTHER);
+    }
+
     public BigDecimal homeDeliveryPerBike(boolean provinceHasShowroom) {
         return provinceHasShowroom
             ? amount(HOME_DELIVERY_SAME_CITY, DEFAULT_HOME_DELIVERY_SAME_CITY)

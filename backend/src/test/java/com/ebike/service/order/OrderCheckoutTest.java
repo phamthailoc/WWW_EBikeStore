@@ -121,6 +121,33 @@ class OrderCheckoutTest {
         assertEquals(0, order.totalAmount().compareTo(new BigDecimal("42200000")));
     }
 
+    @Test void quoteShowsStateRegistrationFeesAsAReferenceOnly() {
+        stock();
+        // 20.300.000 x 2% = 406.000 and x 5% = 1.015.000 (pricing defaults); neither is added to the total.
+        var quote=service.quoteOrder(new OrderQuoteRequest(true,List.of(new OrderCreateItemRequest(1L,1)),null));
+        assertEquals(0, quote.registrationTaxLow().compareTo(new BigDecimal("406000")));
+        assertEquals(0, quote.registrationTaxHigh().compareTo(new BigDecimal("1015000")));
+        assertEquals(0, quote.totalAmount().compareTo(new BigDecimal("20800000")));
+        assertTrue(quote.registrationServiceAvailable());
+    }
+
+    @Test void aSwitchedOffRegistrationServiceCannotBeOrdered() {
+        stock();
+        var rule=new com.ebike.model.entity.admin.PricingRule();rule.setCode("REGISTRATION_SERVICE");
+        rule.setAmount(new BigDecimal("500000"));rule.setStatus("INACTIVE");rule.setEffectiveFrom(java.time.LocalDateTime.now().minusDays(1));
+        when(pricingRules.findByCode(org.mockito.ArgumentMatchers.anyString())).thenReturn(Optional.empty());
+        when(pricingRules.findByCode("REGISTRATION_SERVICE")).thenReturn(Optional.of(rule));
+        var without=service.quoteOrder(new OrderQuoteRequest(false,List.of(new OrderCreateItemRequest(1L,1)),null));
+        assertFalse(without.registrationServiceAvailable());
+        assertEquals(0, without.totalAmount().compareTo(new BigDecimal("20300000")));
+        assertThrows(ResponseStatusException.class,()->service.quoteOrder(new OrderQuoteRequest(true,List.of(new OrderCreateItemRequest(1L,1)),null)));
+        var req=new OrderCreateRequest(null,"Khách Hàng","0901234567","checkout@example.com",null,
+            null,"123 Nguyễn Trãi, Phường Bến Thành","PAY_LATER",null,null,null,true,null,
+            List.of(new OrderCreateItemRequest(1L,1)),"HOME_DELIVERY","Hà Nội");
+        assertThrows(ResponseStatusException.class,()->service.createOrder(req,null));
+        verify(orders,never()).save(any());
+    }
+
     @Test void registrationServiceIsChargedPerBike() {
         stock(); save(); showroomIn("TP. Ho Chi Minh");
         // 2 bikes x 500.000 registration service (pricing default)

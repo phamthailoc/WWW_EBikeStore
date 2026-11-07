@@ -1,6 +1,8 @@
 package com.ebike.service.admin;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
 import com.ebike.model.entity.admin.PricingRule;
@@ -76,5 +78,26 @@ class PricingServiceTest {
         when(rules.findByCode("HOME_DELIVERY_OTHER_PROVINCE")).thenReturn(Optional.empty());
         assertEquals(0, new BigDecimal("150000").compareTo(service.homeDeliveryPerBike(true)));
         assertEquals(PricingService.DEFAULT_HOME_DELIVERY_OTHER_PROVINCE, service.homeDeliveryPerBike(false));
+    }
+
+    @Test void registrationServiceIsOfferedUnlessTheAdminSwitchedItOff() {
+        when(rules.findByCode("REGISTRATION_SERVICE")).thenReturn(Optional.empty());
+        assertTrue(service.registrationServiceOffered(), "no rule yet: keep the default offer");
+
+        when(rules.findByCode("REGISTRATION_SERVICE"))
+            .thenReturn(Optional.of(rule("REGISTRATION_SERVICE", "500000", "ACTIVE", NOW.minusDays(1))));
+        assertTrue(service.registrationServiceOffered());
+
+        when(rules.findByCode("REGISTRATION_SERVICE"))
+            .thenReturn(Optional.of(rule("REGISTRATION_SERVICE", "500000", "INACTIVE", NOW.minusDays(1))));
+        assertFalse(service.registrationServiceOffered(), "INACTIVE hides the service");
+    }
+
+    @Test void registrationTaxRatesComeFromRulesWithDefaults() {
+        when(rules.findByCode("REGISTRATION_TAX_RATE_CENTRAL"))
+            .thenReturn(Optional.of(rule("REGISTRATION_TAX_RATE_CENTRAL", "6", "ACTIVE", NOW.minusDays(1))));
+        when(rules.findByCode("REGISTRATION_TAX_RATE_OTHER")).thenReturn(Optional.empty());
+        assertEquals(0, new BigDecimal("6").compareTo(service.registrationTaxRateCentral()));
+        assertEquals(PricingService.DEFAULT_REGISTRATION_TAX_RATE_OTHER, service.registrationTaxRateOther());
     }
 }
