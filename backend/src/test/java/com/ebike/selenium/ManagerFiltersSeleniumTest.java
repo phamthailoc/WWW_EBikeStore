@@ -53,7 +53,8 @@ class ManagerFiltersSeleniumTest extends StorefrontSeleniumTest {
         choose("paymentMethod", "");
         choose("paymentStatus", "");
         fill("search", order);
-        wait.until(d -> listed(order));
+        // The unfiltered list already shows this order, and the search waits 300 ms after typing, so wait for one row.
+        wait.until(d -> d.findElements(ROWS).size() == 1 && listed(order));
         assertTrue(driver.findElements(ROWS).size() == 1, "searching by order number leaves that order only");
 
         click(By.id("clearFilters"));
