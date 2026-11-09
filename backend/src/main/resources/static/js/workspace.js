@@ -5,10 +5,12 @@
   const names = {customerName:'Khách hàng',subject:'Tiêu đề',message:'Nội dung',staffNote:'Ghi chú xử lý',stockStatus:'Tình trạng kho',paymentStatus:'Trạng thái thanh toán',role:'Mã vai trò',title:'Vai trò',permissions:'Quyền',actor:'Người thực hiện',action:'Hành động',target:'Đối tượng',createdAt:'Thời gian',id:'Mã',name:'Tên',slug:'Đường dẫn',description:'Mô tả',price:'Giá',discountPrice:'Giá ưu đãi',rating:'Đánh giá',reviewCount:'Lượt đánh giá',stockQuantity:'Tồn kho',featured:'Nổi bật',category:'Danh mục',images:'Hình ảnh',orderId:'Mã đơn hàng',orderNumber:'Mã đơn hàng',status:'Trạng thái',createdAt:'Ngày tạo',updatedAt:'Cập nhật',totalAmount:'Tổng tiền',paymentMethod:'Phương thức thanh toán',paymentStatus:'Trạng thái thanh toán',customerName:'Khách hàng',customerEmail:'Email khách hàng',email:'Email',phone:'Điện thoại',phoneNumber:'Điện thoại',role:'Vai trò',roles:'Vai trò',username:'Tài khoản',accountType:'Loại tài khoản',amount:'Số tiền',code:'Mã ưu đãi',campaignName:'Chiến dịch',discountType:'Loại ưu đãi',discountValue:'Giá trị ưu đãi',startsAt:'Bắt đầu',endsAt:'Kết thúc',totalOrders:'Tổng đơn hàng',successfulOrders:'Đơn hoàn tất',pendingOrders:'Đơn đang chờ',unpaidPayLaterOrders:'Đơn trả sau chưa thu',todayRevenue:'Doanh thu hôm nay',weekRevenue:'Doanh thu tuần',monthRevenue:'Doanh thu tháng',totalRevenue:'Tổng doanh thu',totalAccounts:'Tổng tài khoản',adminAccounts:'Tài khoản quản trị',customerAccounts:'Tài khoản khách hàng',lockedAccounts:'Tài khoản bị khóa',verified:'Đã xác minh',readAt:'Ngày đã đọc',action:'Thao tác',actor:'Người thực hiện',target:'Mục tiêu',ipAddress:'Địa chỉ IP',type:'Loại',message:'Nội dung',title:'Tiêu đề',quantitySold:'Đã bán',productName:'Sản phẩm',unit:'Đơn vị',effectiveFrom:'Có hiệu lực từ',transactionReference:'Mã giao dịch',paidAt:'Ngày thanh toán',subtotal:'Tạm tính',shippingFee:'Phí giao xe',discountAmount:'Giảm giá',registrationFee:'Phí đăng ký',includeRegistrationService:'Dịch vụ hồ sơ',notes:'Ghi chú',shipment:'Giao nhận',label:'Kỳ báo cáo',orderCount:'Số đơn hàng',revenue:'Doanh thu'};
   const label = key => names[key] || key.replace(/([A-Z])/g, ' $1').replace(/^./, c => c.toUpperCase());
   const escape = value => String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const orderStatusText={PENDING:'Chờ xử lý',CONFIRMED:'Đã xác nhận',PROCESSING:'Đang xử lý',READY_FOR_PICKUP:'Chờ lấy',SHIPPED:'Đang giao',DELIVERED:'Đã giao',CANCELLED:'Đã hủy'};
   const valueText = {
+    orderStatus:orderStatusText,
     paymentStatus:{PENDING:'Chờ thanh toán',AUTHORIZED:'Đã ủy quyền',PAID:'Đã thanh toán',FAILED:'Thất bại',CANCELLED:'Đã hủy',REFUNDED:'Đã hoàn tiền'},
     paymentMethod:{PAY_LATER:'Thanh toán khi nhận xe',VNPAY:'VNPay'},
-    status:{NEW:'Mới',IN_PROGRESS:'Đang xử lý',RESOLVED:'Đã giải quyết'}
+    status:{...orderStatusText,NEW:'Mới',IN_PROGRESS:'Đang xử lý',RESOLVED:'Đã giải quyết'}
   };
   const human = (value,key='') => {
     if (value == null) return '—';
@@ -29,7 +31,7 @@
     const id=row.id??row.orderId??row.paymentId??row.productId, buttons=[];
     if(page==='/manager/payments'&&id!=null&&row.paymentMethod==='PAY_LATER'&&row.paymentStatus==='PENDING'&&row.orderStatus!=='CANCELLED')buttons.push(`<button class="table-action" data-action="confirm-payment" data-id="${id}">Xác nhận đã thu</button>`);
     if(page==='/manager/payments'&&id!=null&&row.paymentStatus==='PAID'&&row.orderStatus==='CANCELLED')buttons.push(`<button class="table-action" data-action="refund-payment" data-id="${id}">Ghi nhận hoàn tiền</button>`);
-    if(page==='/manager/orders'&&id!=null&&(orderSteps[row.status]||[]).length)buttons.push(`<select class="table-action" data-action="order-status" data-id="${id}"><option value="">Cập nhật trạng thái…</option>${orderSteps[row.status].map(s=>`<option value="${s}">${orderStatusText[s]}</option>`).join('')}</select>`);
+    if(page==='/manager/orders'&&id!=null&&orderSteps(row).length)buttons.push(`<select class="table-action" data-action="order-status" data-id="${id}"><option value="">Cập nhật trạng thái…</option>${orderSteps(row).map(s=>`<option value="${s}">${stepText(s,row)}</option>`).join('')}</select>`);
     if(page.startsWith('/manager')&&id!=null&&(page.includes('inventory')||page.includes('products')))buttons.push(`<button class="table-action" data-action="stock" data-id="${id}" data-slug="${escape(row.slug||'')}" data-stock="${row.stockQuantity??0}">Cập nhật tồn kho</button><button class="table-action" data-action="images" data-id="${id}" data-slug="${escape(row.slug||'')}" data-name="${escape(row.name||'')}">Quản lý ảnh</button>`);
     if(page.startsWith('/admin')&&id!=null&&(page.includes('inventory')||page.includes('products')))buttons.push(`<button class="table-action" data-action="stock" data-id="${id}" data-slug="${escape(row.slug||'')}" data-stock="${row.stockQuantity??0}">Cập nhật tồn kho</button><button class="table-action" data-action="images" data-id="${id}" data-slug="${escape(row.slug||'')}" data-name="${escape(row.name||'')}">Quản lý ảnh</button>`);
     if(page==='/admin/accounts'&&id!=null)buttons.push(`<button class="table-action" data-action="role" data-id="${id}">Đổi vai trò</button><button class="table-action" data-action="account-status" data-id="${id}" data-status="${row.status||'ACTIVE'}">${row.status==='ACTIVE'?'Vô hiệu hóa':'Kích hoạt lại'}</button><button class="table-action" data-action="delete-account" data-id="${id}">Xóa</button>`);
@@ -102,8 +104,14 @@
   const renderProfile=data=>{profile.hidden=false;const fields=['firstName','lastName','email','phone','phoneNumber'];profile.innerHTML=`<form id="profileForm"><p class="eyebrow">THÔNG TIN TÀI KHOẢN</p><div class="profile-grid">${fields.filter(f=>f in(data||{})).map(f=>`<label>${escape(label(f))}<input name="${f}" value="${escape(data[f]||'')}"></label>`).join('')}</div><p><button class="button compact">Lưu hồ sơ</button></p></form>`;profile.querySelector('form').addEventListener('submit',async e=>{e.preventDefault();try{await send('/api/v1/auth/profile','PUT',Object.fromEntries(new FormData(e.currentTarget)));tell('Hồ sơ đã được cập nhật.')}catch(err){tell(err.message,true)}})};
   // ---- order detail page -------------------------------------------------------------
   // Mirrors OrderServiceImpl.STATUS_TRANSITIONS: the steps staff may take from each status.
-  const orderSteps={PENDING:['CONFIRMED','CANCELLED'],CONFIRMED:['PROCESSING','CANCELLED'],PROCESSING:['SHIPPED','CANCELLED'],SHIPPED:['DELIVERED']};
-  const orderStatusText={PENDING:'Chờ xử lý',CONFIRMED:'Đã xác nhận',PROCESSING:'Đang xử lý',SHIPPED:'Đang giao',DELIVERED:'Đã giao',CANCELLED:'Đã hủy'};
+  // After PROCESSING, store-pickup orders wait in READY_FOR_PICKUP; home deliveries go through SHIPPED.
+  const isPickup=order=>Boolean(order?.shipment?.pickupShowroom);
+  const orderSteps=order=>{
+    const pickup=isPickup(order);
+    return ({PENDING:['CONFIRMED','CANCELLED'],CONFIRMED:['PROCESSING','CANCELLED'],PROCESSING:[pickup?'READY_FOR_PICKUP':'SHIPPED','CANCELLED'],READY_FOR_PICKUP:['DELIVERED','CANCELLED'],SHIPPED:['DELIVERED']})[order?.status]||[];
+  };
+  // The last step reads "Đã nhận" when the customer collects the bike at the showroom.
+  const stepText=(status,order)=>status==='DELIVERED'&&isPickup(order)?'Đã nhận':orderStatusText[status];
   const shipmentStatusText={PENDING:'Chưa chuẩn bị',PREPARING:'Đang chuẩn bị',SHIPPED:'Đã bàn giao vận chuyển',IN_TRANSIT:'Đang vận chuyển',DELIVERED:'Đã giao',RETURNED:'Hoàn trả'};
   const money=value=>new Intl.NumberFormat('vi-VN').format(value??0)+' ₫';
   const when=value=>value?new Date(value).toLocaleString('vi-VN'):'—';
@@ -145,10 +153,11 @@
   // Order timeline (Task 3). Only three moments are stored: the order date, when it was handed to delivery
   // and when it arrived; the other steps show no time rather than an invented one. A cancelled order
   // keeps the steps it had reached and ends in a "cancelled" step with the reason.
-  const timelineSteps=['PENDING','CONFIRMED','PROCESSING','SHIPPED','DELIVERED'];
+  const timelineFor=order=>['PENDING','CONFIRMED','PROCESSING',isPickup(order)?'READY_FOR_PICKUP':'SHIPPED','DELIVERED'];
   const stamp=iso=>iso?new Date(iso).toLocaleString('vi-VN',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}):'';
   const renderTimeline=order=>{
     const cancelled=order.status==='CANCELLED';
+    const timelineSteps=timelineFor(order);
     const reached=timelineSteps.indexOf(cancelled?(order.cancellationRequestedFromStatus||'PENDING'):order.status);
     const shipment=order.shipment||{};
     const times={PENDING:order.createdAt,SHIPPED:shipment.shippedAt,DELIVERED:shipment.deliveredAt};
@@ -156,7 +165,7 @@
       const state=index<reached||(index===reached&&(step==='DELIVERED'||cancelled))?'done':index===reached?'current':'todo';
       // the current step has no time of its own unless it is one of the three above: show when the order last changed
       const time=times[step]||(state==='current'?order.updatedAt:'');
-      return `<li class="${state}"${state==='current'?' aria-current="step"':''}><span class="dot"></span><div><b>${escape(orderStatusText[step])}</b>${time?`<small>${escape(stamp(time))}</small>`:''}</div></li>`;
+      return `<li class="${state}"${state==='current'?' aria-current="step"':''}><span class="dot"></span><div><b>${escape(stepText(step,order))}</b>${time?`<small>${escape(stamp(time))}</small>`:''}</div></li>`;
     });
     if(cancelled){
       items.push(`<li class="cancelled" aria-current="step"><span class="dot"></span><div><b>${escape(orderStatusText.CANCELLED)}</b>${order.cancellationRequestedAt?`<small>${escape(stamp(order.cancellationRequestedAt))}</small>`:''}${order.cancellationReason?`<small>Lý do: ${escape(order.cancellationReason)}</small>`:''}</div></li>`);
@@ -171,12 +180,12 @@
   // Manager controls: only the valid next order statuses, and the shipment form (UC-16).
   const renderManagerControls=order=>{
     if(!page.startsWith('/manager/orders/')){return}
-    const steps=orderSteps[order.status]||[];
+    const steps=orderSteps(order);
     const shipment=order.shipment;
     const canShip=shipment&&order.status!=='CANCELLED';
     if(!steps.length&&!canShip){removePanel('orderManage');return}
-    const stepForm=steps.length?`<form id="orderStatusForm" class="flow-form"><label>Chuyển đơn sang<select name="status">${steps.map(s=>`<option value="${s}">${escape(orderStatusText[s])}</option>`).join('')}</select></label><button class="button compact">Cập nhật trạng thái</button></form>`:'';
-    const shipForm=canShip?`<form id="shipmentForm" class="flow-form"><label>Trạng thái giao nhận<select name="shipmentStatus">${Object.keys(shipmentStatusText).map(s=>`<option value="${s}"${s===shipment.shipmentStatus?' selected':''}>${escape(shipmentStatusText[s])}</option>`).join('')}</select></label><label>Mã vận đơn<input name="trackingNumber" value="${escape(shipment.trackingNumber||'')}" maxlength="100"></label><button class="button compact">Lưu giao nhận</button></form>`:'';
+    const stepForm=steps.length?`<form id="orderStatusForm" class="flow-form"><label>Chuyển đơn sang<select name="status">${steps.map(s=>`<option value="${s}">${escape(stepText(s,order))}</option>`).join('')}</select></label><button class="button compact">Cập nhật trạng thái</button></form>`:'';
+    const shipForm=canShip?`<form id="shipmentForm" class="flow-form"><label>Trạng thái giao nhận<select name="shipmentStatus">${Object.keys(shipmentStatusText).filter(s=>!isPickup(order)||!['SHIPPED','IN_TRANSIT'].includes(s)).map(s=>`<option value="${s}"${s===shipment.shipmentStatus?' selected':''}>${escape(shipmentStatusText[s])}</option>`).join('')}</select></label><label>Mã vận đơn<input name="trackingNumber" value="${escape(shipment.trackingNumber||'')}" maxlength="100"></label><button class="button compact">Lưu giao nhận</button></form>`:'';
     const panel=detailPanel('orderManage',`<h2>Xử lý đơn hàng</h2><div class="profile-grid">${stepForm}${shipForm}</div>`);
     panel.querySelector('#orderStatusForm')?.addEventListener('submit',async e=>{
       e.preventDefault();

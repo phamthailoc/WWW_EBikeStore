@@ -212,12 +212,19 @@ public class OrderServiceImpl implements OrderService {
     }
 
     // The steps a staff member may take from each status. A cancelled or delivered order is final.
-    private static final Map<OrderStatus, List<OrderStatus>> STATUS_TRANSITIONS = Map.of(
-        OrderStatus.PENDING, List.of(OrderStatus.CONFIRMED, OrderStatus.CANCELLED),
-        OrderStatus.CONFIRMED, List.of(OrderStatus.PROCESSING, OrderStatus.CANCELLED),
-        OrderStatus.PROCESSING, List.of(OrderStatus.SHIPPED, OrderStatus.CANCELLED),
-        OrderStatus.SHIPPED, List.of(OrderStatus.DELIVERED)
-    );
+    // After PROCESSING the path depends on how the customer gets the bike: home delivery goes through SHIPPED,
+    // store pickup waits in READY_FOR_PICKUP until the customer collects it.
+    private static List<OrderStatus> nextStatuses(Order order) {
+        boolean pickup = order.getShipment() != null && order.getShipment().getPickupShowroom() != null;
+        return switch (order.getStatus()) {
+            case PENDING -> List.of(OrderStatus.CONFIRMED, OrderStatus.CANCELLED);
+            case CONFIRMED -> List.of(OrderStatus.PROCESSING, OrderStatus.CANCELLED);
+            case PROCESSING -> List.of(pickup ? OrderStatus.READY_FOR_PICKUP : OrderStatus.SHIPPED, OrderStatus.CANCELLED);
+            case READY_FOR_PICKUP -> List.of(OrderStatus.DELIVERED, OrderStatus.CANCELLED);
+            case SHIPPED -> List.of(OrderStatus.DELIVERED);
+            default -> List.of();
+        };
+    }
 
     @Override
     @Transactional
@@ -240,7 +247,7 @@ public class OrderServiceImpl implements OrderService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid order status");
         }
 
-        if (!STATUS_TRANSITIONS.getOrDefault(order.getStatus(), List.of()).contains(nextStatus)) {
+        if (!nextStatuses(order).contains(nextStatus)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                 "Cannot change an order from " + order.getStatus() + " to " + nextStatus);
         }
@@ -250,6 +257,16 @@ public class OrderServiceImpl implements OrderService {
             cancelOrder(order, request.reason(), getAuthenticatedUserOrNull(authentication), "Cancelled by staff");
         } else {
             order.setStatus(nextStatus);
+            if (nextStatus == OrderStatus.DELIVERED && order.getShipment() != null) {
+                // Pickup orders have no carrier step, so the hand-over time is recorded here.
+                Shipment shipment = order.getShipment();
+                LocalDateTime now = LocalDateTime.now();
+                if (shipment.getShippedAt() == null) {
+                    shipment.setShippedAt(now);
+                }
+                shipment.setDeliveredAt(now);
+                shipment.setShipmentStatus(ShipmentStatus.DELIVERED);
+            }
         }
 
         return toResponse(orderRepository.save(order));

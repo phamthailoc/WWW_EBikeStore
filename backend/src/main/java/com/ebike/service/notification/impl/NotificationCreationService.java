@@ -113,6 +113,9 @@ public class NotificationCreationService {
         if ("PROCESSING".equals(status)) {
             return "đang xử lý";
         }
+        if ("READY_FOR_PICKUP".equals(status)) {
+            return "chờ lấy xe tại cửa hàng";
+        }
         if ("SHIPPED".equals(status)) {
             return "đang giao";
         }

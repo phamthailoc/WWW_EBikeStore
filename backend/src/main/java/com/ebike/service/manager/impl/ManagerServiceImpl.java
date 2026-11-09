@@ -289,12 +289,20 @@ public class ManagerServiceImpl implements ManagerService {
         }
 
         // The shipment must not push the order past a step it has not reached (e.g. a PENDING order straight to DELIVERED).
+        // Store-pickup orders never go through a carrier: they wait in READY_FOR_PICKUP and are handed over at the showroom.
+        boolean pickup = shipment.getPickupShowroom() != null;
         boolean leavingWarehouse = nextStatus == ShipmentStatus.SHIPPED || nextStatus == ShipmentStatus.IN_TRANSIT;
+        if (leavingWarehouse && pickup) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Store-pickup orders are not shipped; mark them ready for pickup instead");
+        }
         if (leavingWarehouse && order.getStatus() != OrderStatus.PROCESSING && order.getStatus() != OrderStatus.SHIPPED) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Only orders being processed can be handed over for shipping");
         }
-        if (nextStatus == ShipmentStatus.DELIVERED && order.getStatus() != OrderStatus.SHIPPED && order.getStatus() != OrderStatus.DELIVERED) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Only orders that are being shipped can be marked as delivered");
+        OrderStatus beforeDelivery = pickup ? OrderStatus.READY_FOR_PICKUP : OrderStatus.SHIPPED;
+        if (nextStatus == ShipmentStatus.DELIVERED && order.getStatus() != beforeDelivery && order.getStatus() != OrderStatus.DELIVERED) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, pickup
+                ? "Only orders that are ready for pickup can be marked as received"
+                : "Only orders that are being shipped can be marked as delivered");
         }
 
         shipment.setShipmentStatus(nextStatus);
