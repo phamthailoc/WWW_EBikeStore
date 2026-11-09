@@ -225,7 +225,7 @@
       }).join('');
       return `<fieldset data-item="${item.id}"><legend>${escape(item.productName||'Xe')}${item.colorName?' · '+escape(item.colorName):''}</legend>${rows}</fieldset>`;
     }).join('');
-    const panel=detailPanel('orderUnits',`<h2>Số khung, số máy</h2><p class="muted">Nhập cho từng xe trước khi bàn giao. Cần đủ mới bấm được "${isPickup(order)?'Đã nhận':'Đã giao'}". Số khung không trùng với xe nào khác.</p><form id="unitsForm" class="flow-form">${blocks}<button class="button compact">Lưu số khung, số máy</button></form>`);
+    const panel=detailPanel('orderUnits',`<h2>Số khung, số máy</h2><p class="muted">Nhập cho từng xe trước khi bàn giao. Cần đủ mới bấm được "${isPickup(order)?'Đã nhận':'Đang giao'}": xe phải có số trước khi rời cửa hàng. Số khung không trùng với xe nào khác.</p><form id="unitsForm" class="flow-form">${blocks}<button class="button compact">Lưu số khung, số máy</button></form>`);
     panel.querySelector('#unitsForm').addEventListener('submit',async e=>{
       e.preventDefault();
       const units=[];
@@ -253,6 +253,7 @@
   const stockStatusText={OUT:'Hết hàng',LOW:'Sắp hết',OK:'Còn hàng'};
   const stockFilter=()=>[{name:'stockStatus',client:true,options:[['','Mọi tình trạng'],['OUT','Hết hàng'],['LOW','Sắp hết (còn 3 xe trở xuống)'],['OK','Còn hàng']],label:'Tình trạng kho'}];
   const filterBars={
+    '/manager/orders':[{name:'search',placeholder:'Tìm mã đơn, email, người nhận, số khung hoặc số máy',label:'Tìm kiếm'}],
     '/manager/payments':[{name:'paymentStatus',options:paymentStatusOptions,label:'Trạng thái thanh toán'},{name:'paymentMethod',options:paymentMethodOptions,label:'Phương thức thanh toán'},{name:'search',placeholder:'Tìm mã đơn, email, người nhận hoặc mã giao dịch',label:'Tìm kiếm'}],
     '/customer/payments':[{name:'paymentStatus',client:true,options:paymentStatusOptions,label:'Trạng thái thanh toán'}],
     '/manager/inventory':stockFilter(),'/manager/products':stockFilter(),'/admin/inventory':stockFilter(),'/admin/products':stockFilter(),

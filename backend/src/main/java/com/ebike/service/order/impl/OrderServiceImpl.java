@@ -74,7 +74,7 @@ public class OrderServiceImpl implements OrderService {
     @Value("${app.order.pickup-hold:P7D}")
     private java.time.Duration pickupHold = java.time.Duration.ofDays(7);
 
-    static final String UNITS_REQUIRED = "Hãy nhập đủ số khung và số máy của từng xe trước khi giao hoặc bàn giao xe.";
+    static final String UNITS_REQUIRED = "Hãy nhập đủ số khung và số máy của từng xe trước khi xe rời cửa hàng (giao đi hoặc bàn giao cho khách).";
 
     private static final BigDecimal ZERO = BigDecimal.ZERO;
     private static final int MAX_ORDER_ITEMS = 20;
@@ -271,7 +271,7 @@ public class OrderServiceImpl implements OrderService {
                 + cancellableAt.format(DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy")));
         }
 
-        if (nextStatus == OrderStatus.DELIVERED && !OrderUnits.isComplete(order)) {
+        if ((nextStatus == OrderStatus.SHIPPED || nextStatus == OrderStatus.DELIVERED) && !OrderUnits.isComplete(order)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, UNITS_REQUIRED);
         }
 
@@ -893,7 +893,20 @@ public class OrderServiceImpl implements OrderService {
         return containsIgnoreCase(order.getOrderNumber(), search)
             || containsIgnoreCase(order.getCustomerEmail(), search)
             || containsIgnoreCase(customerName, search)
-            || containsIgnoreCase(phoneNumber, search);
+            || containsIgnoreCase(phoneNumber, search)
+            || hasUnitMatching(order, squash(search));
+    }
+
+    // V18: find the order a vehicle was sold on from its frame or engine number (warranty, recall, registration).
+    private boolean hasUnitMatching(Order order, String search) {
+        return !search.isEmpty() && order.getItems().stream()
+            .flatMap(item -> item.getUnits().stream())
+            .anyMatch(unit -> squash(unit.getFrameNumber()).contains(search) || squash(unit.getEngineNumber()).contains(search));
+    }
+
+    // Spaces and hyphens are ignored on both sides, so "rlh abc" finds RLH-ABC12345.
+    private static String squash(String value) {
+        return value == null ? "" : value.toUpperCase(Locale.ROOT).replaceAll("[^A-Z0-9]", "");
     }
 
     private boolean matchesShowroom(Order order, Long showroomId) {

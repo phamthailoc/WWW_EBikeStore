@@ -341,9 +341,10 @@ public class ManagerServiceImpl implements ManagerService {
         if (leavingWarehouse && order.getStatus() != OrderStatus.PROCESSING && order.getStatus() != OrderStatus.SHIPPED) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Only orders being processed can be handed over for shipping");
         }
-        if (nextStatus == ShipmentStatus.DELIVERED && order.getStatus() != OrderStatus.DELIVERED && !com.ebike.service.order.OrderUnits.isComplete(order)) {
+        boolean leavesTheStore = leavingWarehouse || nextStatus == ShipmentStatus.DELIVERED;
+        if (leavesTheStore && order.getStatus() != OrderStatus.DELIVERED && order.getStatus() != OrderStatus.SHIPPED && !com.ebike.service.order.OrderUnits.isComplete(order)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                "Hãy nhập đủ số khung và số máy của từng xe trước khi giao hoặc bàn giao xe.");
+                "Hãy nhập đủ số khung và số máy của từng xe trước khi xe rời cửa hàng (giao đi hoặc bàn giao cho khách).");
         }
         OrderStatus beforeDelivery = pickup ? OrderStatus.READY_FOR_PICKUP : OrderStatus.SHIPPED;
         if (nextStatus == ShipmentStatus.DELIVERED && order.getStatus() != beforeDelivery && order.getStatus() != OrderStatus.DELIVERED) {

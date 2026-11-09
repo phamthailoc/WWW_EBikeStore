@@ -36,7 +36,7 @@ class ProductReviewSeleniumTest extends StorefrontSeleniumTest {
         String orderNumber = placePayLaterOrder();
         long id = findOrder(orderNumber).path("id").asLong();
         for (String status : new String[] {"CONFIRMED", "PROCESSING", "SHIPPED", "DELIVERED"}) {
-            if (status.equals("DELIVERED")) enterUnits(manager, id);
+            if (status.equals("SHIPPED")) enterUnits(manager, id);
             call(manager, "PATCH", "/api/v1/orders/" + id + "/status", Map.of("status", status));
         }
 

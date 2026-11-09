@@ -108,7 +108,9 @@ class CancelOrderSeleniumTest extends StorefrontSeleniumTest {
         HttpClient manager = managerApi();
         String orderNumber = placePayLaterOrder();
         long orderId = findOrder(orderNumber).path("id").asLong();
-        moveThrough(manager, orderId, "CONFIRMED", "PROCESSING", "SHIPPED");
+        moveThrough(manager, orderId, "CONFIRMED", "PROCESSING");
+        enterUnits(manager, orderId);
+        moveThrough(manager, orderId, "SHIPPED");
 
         driver.get(baseUrl + "/customer/orders");
         assertTrue(orderRow(orderNumber).findElements(CANCEL_BUTTON).isEmpty());

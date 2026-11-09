@@ -53,7 +53,7 @@ class OrderStatusUpdateTest {
         order.setId(10L);
         order.setStatus(OrderStatus.PENDING);
         order.getItems().add(item);
-        when(orders.findById(10L)).thenReturn(Optional.of(order));
+        org.mockito.Mockito.lenient().when(orders.findById(10L)).thenReturn(Optional.of(order));
     }
 
     private void saves() { when(orders.save(any())).thenAnswer(invocation -> invocation.getArgument(0)); }
@@ -65,15 +65,15 @@ class OrderStatusUpdateTest {
     }
     private void move(String status) { service.updateOrderStatus(10L, new OrderStatusUpdateRequest(status), staff); }
 
-    @Test void aVehicleOrderCannotBeDeliveredWithoutItsFrameAndEngineNumbers() {
+    @Test void aVehicleOrderCannotLeaveTheStoreWithoutItsFrameAndEngineNumbers() {
         saves();
         com.ebike.model.entity.product.ProductSpecification specification = new com.ebike.model.entity.product.ProductSpecification();
         specification.setVehicleType(com.ebike.model.entity.product.VehicleType.E_MOTORBIKE);
         product.setSpecification(specification);
-        order.setStatus(OrderStatus.SHIPPED);
-        var ex = assertThrows(ResponseStatusException.class, () -> move("DELIVERED"));
+        order.setStatus(OrderStatus.PROCESSING);
+        var ex = assertThrows(ResponseStatusException.class, () -> move("SHIPPED"));
         assertEquals(400, ex.getStatusCode().value());
-        assertEquals(OrderStatus.SHIPPED, order.getStatus());
+        assertEquals(OrderStatus.PROCESSING, order.getStatus());
         // two bikes, two entries: now it goes through
         for (String frame : new String[] {"RLHABC12345", "RLHABC12346"}) {
             com.ebike.model.entity.order.OrderItemUnit unit = new com.ebike.model.entity.order.OrderItemUnit();
@@ -81,8 +81,24 @@ class OrderStatusUpdateTest {
             unit.setEngineNumber("M1234567");
             order.getItems().iterator().next().getUnits().add(unit);
         }
+        move("SHIPPED");
+        assertEquals(OrderStatus.SHIPPED, order.getStatus());
         move("DELIVERED");
         assertEquals(OrderStatus.DELIVERED, order.getStatus());
+    }
+
+    @Test void staffFindAnOrderByTheFrameOrEngineNumberOfItsVehicle() {
+        staffMember();
+        org.mockito.Mockito.doReturn(java.util.List.of(new org.springframework.security.core.authority.SimpleGrantedAuthority(
+            com.ebike.common.constants.PermissionConstants.OrderManagement.ORDER_VIEW_ALL))).when(staff).getAuthorities();
+        com.ebike.model.entity.order.OrderItemUnit unit = new com.ebike.model.entity.order.OrderItemUnit();
+        unit.setFrameNumber("RLHABC12345");
+        unit.setEngineNumber("MOTOR-998877");
+        order.getItems().iterator().next().getUnits().add(unit);
+        when(orders.findAll()).thenReturn(java.util.List.of(order));
+        assertEquals(1, service.getOrders(staff, null, null, null, "abc123", null).size());
+        assertEquals(1, service.getOrders(staff, null, null, null, "motor 998877", null).size());
+        assertEquals(0, service.getOrders(staff, null, null, null, "khongco", null).size());
     }
 
     @Test void ordersMoveForwardOneStepAtATime() {
