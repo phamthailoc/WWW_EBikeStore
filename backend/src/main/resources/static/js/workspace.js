@@ -21,8 +21,10 @@
     return String(value);
   };
   const tell = (message,error=false) => { notice.textContent=message; notice.hidden=false; notice.classList.toggle('error',error); };
-  const get = async url => { const r=await fetch(url,{credentials:'same-origin',headers:{Accept:'application/json'}}); if(r.status===401){location.href='/login?returnTo='+encodeURIComponent(location.pathname);throw Error('Vui lòng đăng nhập để tiếp tục.')} if(!r.ok)throw Error((await r.text()).slice(0,240)||'Không tải được dữ liệu.'); return r.status===204?null:r.json(); };
-  const send = async(url,method,data) => { const r=await fetch(url,{method,credentials:'same-origin',headers:{'Content-Type':'application/json',Accept:'application/json'},body:data===undefined?undefined:JSON.stringify(data)});if(r.status===401){location.href='/login';throw Error('Phiên đăng nhập đã hết hạn.')}if(!r.ok)throw Error((await r.text()).slice(0,240)||'Không thể lưu thay đổi.');return r.status===204?null:r.json(); };
+  // Server errors come back as JSON ({status, error, message}); show only the message, not the raw body.
+  const errorText = async(r,fallback) => { const t=await r.text(); try{const j=JSON.parse(t); if(j&&typeof j.message==='string'&&j.message.trim())return j.message.trim()}catch(ignored){} return t.slice(0,240)||fallback; };
+  const get = async url => { const r=await fetch(url,{credentials:'same-origin',headers:{Accept:'application/json'}}); if(r.status===401){location.href='/login?returnTo='+encodeURIComponent(location.pathname);throw Error('Vui lòng đăng nhập để tiếp tục.')} if(!r.ok)throw Error(await errorText(r,'Không tải được dữ liệu.')); return r.status===204?null:r.json(); };
+  const send = async(url,method,data) => { const r=await fetch(url,{method,credentials:'same-origin',headers:{'Content-Type':'application/json',Accept:'application/json'},body:data===undefined?undefined:JSON.stringify(data)});if(r.status===401){location.href='/login';throw Error('Phiên đăng nhập đã hết hạn.')}if(!r.ok)throw Error(await errorText(r,'Không thể lưu thay đổi.'));return r.status===204?null:r.json(); };
   const vnpayEnabled = body.dataset.vnpayEnabled === 'true';
   // VNPay orders have no payment row until the first payment URL is created, so a missing method also means VNPay.
   const awaitsVnPay = row => vnpayEnabled && row.orderNumber != null && row.status !== 'CANCELLED'
