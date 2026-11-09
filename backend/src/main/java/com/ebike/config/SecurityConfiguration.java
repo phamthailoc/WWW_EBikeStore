@@ -102,6 +102,8 @@ public class SecurityConfiguration {
                     PermissionConstants.Customer.PROFILE_VIEW,
                     PermissionConstants.UserManagement.USER_VIEW
                 )
+                // Theme and other display preferences belong to every account, staff included (V4); the service checks ownership.
+                .requestMatchers(HttpMethod.PUT, "/api/v1/users/*/preferences").authenticated()
                 .requestMatchers(HttpMethod.POST, "/api/v1/users/**").hasAuthority(PermissionConstants.Customer.PROFILE_UPDATE)
                 .requestMatchers(HttpMethod.PUT, "/api/v1/users/**").hasAuthority(PermissionConstants.Customer.PROFILE_UPDATE)
                 .requestMatchers(HttpMethod.DELETE, "/api/v1/users/**").hasAuthority(PermissionConstants.Customer.PROFILE_UPDATE)
