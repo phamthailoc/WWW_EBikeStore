@@ -47,13 +47,16 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
 
+    private final com.ebike.service.admin.AuditLogService auditLog;
+
     public AuthenticationServiceImpl(
         UserRepository userRepository,
         RoleRepository roleRepository,
         AuthenticationLogRepository authenticationLogRepository,
         PermissionService permissionService,
         PasswordEncoder passwordEncoder,
-        JwtTokenProvider jwtTokenProvider
+        JwtTokenProvider jwtTokenProvider,
+        com.ebike.service.admin.AuditLogService auditLog
     ) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
@@ -61,6 +64,15 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         this.permissionService = permissionService;
         this.passwordEncoder = passwordEncoder;
         this.jwtTokenProvider = jwtTokenProvider;
+        this.auditLog = auditLog;
+    }
+
+    // Staff sign-ins go to the audit trail (customers would flood it); a refused attempt on a staff account is recorded too.
+    private void auditSignIn(User user, boolean success, String reason) {
+        boolean staff = user.getRoles().stream().anyMatch(role -> !"CUSTOMER".equals(role.getName()));
+        if (staff) {
+            auditLog.recordBy(user.getUsername(), success ? "đăng nhập" : "đăng nhập thất bại", success ? user.getUsername() : reason);
+        }
     }
 
     @Override
@@ -102,11 +114,14 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         User user = findUser(request.usernameOrEmail());
         if (!Boolean.TRUE.equals(user.getActive())) {
+            auditSignIn(user, false, "tài khoản bị khóa");
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User is inactive");
         }
         if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
+            auditSignIn(user, false, "sai mật khẩu");
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials");
         }
+        auditSignIn(user, true, null);
 
         AuthenticationLog log = new AuthenticationLog();
         log.setUser(user);
@@ -126,11 +141,14 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         User user = findUser(request.usernameOrEmail());
         if (!Boolean.TRUE.equals(user.getActive())) {
+            auditSignIn(user, false, "tài khoản bị khóa");
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User is inactive");
         }
         if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
+            auditSignIn(user, false, "sai mật khẩu");
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials");
         }
+        auditSignIn(user, true, null);
 
         AuthenticationLog log = new AuthenticationLog();
         log.setUser(user);

@@ -51,6 +51,7 @@ class AdminAccountGuardTest {
     @Mock com.ebike.repository.user.UserPreferenceRepository preferences;
     @Mock com.ebike.repository.notification.NotificationRepository notifications;
     @Mock com.ebike.service.product.ProductReviewService reviews;
+    @Mock com.ebike.service.admin.AuditLogService auditLog;
     AdminServiceImpl service;
     User me;
     User otherAdmin;
@@ -58,7 +59,8 @@ class AdminAccountGuardTest {
 
     @BeforeEach void setup() {
         service = new AdminServiceImpl(pricingRules, promotions, audits, users, roles, encoder, orders,
-            new AccountErasure(addresses, favorites, preferences, notifications, reviews, encoder));
+            new AccountErasure(addresses, favorites, preferences, notifications, reviews, encoder),
+            auditLog);
         me = account(1L, "admin.user", "ADMIN");
         otherAdmin = account(2L, "second.admin", "ADMIN");
         customer = account(3L, "khach", "CUSTOMER");
@@ -127,6 +129,7 @@ class AdminAccountGuardTest {
         verify(favorites).deleteAll(any());
         verify(notifications).deleteAll(any());
         verify(reviews).removeReviewsOf(3L);
+        verify(auditLog).record("xóa tài khoản (ẩn danh hóa)", "tài khoản #3");
     }
 
     @Test void deletingNeedsTheExactEmailTyped() {

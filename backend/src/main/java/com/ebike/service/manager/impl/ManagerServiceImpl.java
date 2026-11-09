@@ -61,19 +61,22 @@ public class ManagerServiceImpl implements ManagerService {
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
     private final ProductService productService;
+    private final com.ebike.service.admin.AuditLogService auditLog;
 
     public ManagerServiceImpl(
         OrderRepository orderRepository,
         PaymentRepository paymentRepository,
         UserRepository userRepository,
         ProductRepository productRepository,
-        ProductService productService
+        ProductService productService,
+        com.ebike.service.admin.AuditLogService auditLog
     ) {
         this.orderRepository = orderRepository;
         this.paymentRepository = paymentRepository;
         this.userRepository = userRepository;
         this.productRepository = productRepository;
         this.productService = productService;
+        this.auditLog = auditLog;
     }
 
     @Override
@@ -163,7 +166,9 @@ public class ManagerServiceImpl implements ManagerService {
             order.setStatus(OrderStatus.CONFIRMED);
         }
 
-        return toPaymentResponse(paymentRepository.save(payment));
+        ManagerPaymentResponse confirmed = toPaymentResponse(paymentRepository.save(payment));
+        auditLog.record("xác nhận đã thu tiền", order.getOrderNumber());
+        return confirmed;
     }
 
     @Override
@@ -184,7 +189,9 @@ public class ManagerServiceImpl implements ManagerService {
             payment.setProviderResponse(request.note().trim());
         }
 
-        return toPaymentResponse(paymentRepository.save(payment));
+        ManagerPaymentResponse refunded = toPaymentResponse(paymentRepository.save(payment));
+        auditLog.record("ghi nhận hoàn tiền", payment.getOrder().getOrderNumber());
+        return refunded;
     }
 
     @Override
@@ -284,6 +291,7 @@ public class ManagerServiceImpl implements ManagerService {
         }
         order.setPickupDeadlineAt(request.pickupDeadlineAt());
         Order saved = orderRepository.save(order);
+        auditLog.record("đổi hạn giữ xe", order.getOrderNumber() + " đến " + request.pickupDeadlineAt());
         if (saved.getUser() != null) {
             Payment payment = saved.getPayment();
             com.ebike.listener.notification.NotificationEventBridge.publish(new com.ebike.event.notification.PickupDeadlineChangedEvent(
@@ -358,7 +366,9 @@ public class ManagerServiceImpl implements ManagerService {
         }
 
         syncOrderStatusWithShipment(order, nextStatus);
-        return toOrderResponse(orderRepository.save(order));
+        OrderResponse updated = toOrderResponse(orderRepository.save(order));
+        auditLog.record("cập nhật giao nhận", order.getOrderNumber() + ": " + nextStatus);
+        return updated;
     }
 
     @Override
@@ -386,6 +396,7 @@ public class ManagerServiceImpl implements ManagerService {
         }
 
         product.setStockQuantity(request.stockQuantity());
+        auditLog.record("sửa tồn kho", product.getName() + ": " + request.stockQuantity());
         return productService.toSummaryDto(productRepository.save(product));
     }
 
@@ -416,6 +427,7 @@ public class ManagerServiceImpl implements ManagerService {
             .filter(candidate -> Boolean.TRUE.equals(candidate.getActive()))
             .mapToInt(candidate -> candidate.getStockQuantity() == null ? 0 : candidate.getStockQuantity())
             .sum());
+        auditLog.record("sửa tồn kho theo màu", product.getName() + " / " + variant.getColorName() + ": " + request.stockQuantity());
         return productService.toSummaryDto(productRepository.save(product));
     }
 

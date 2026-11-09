@@ -20,6 +20,7 @@ import com.ebike.repository.admin.PricingRuleRepository;
 import com.ebike.repository.admin.PromotionRepository;
 import com.ebike.repository.order.OrderRepository;
 import com.ebike.service.admin.AccountErasure;
+import com.ebike.service.admin.AuditLogService;
 import com.ebike.service.admin.AdminService;
 import com.ebike.model.entity.auth.Permission;
 import com.ebike.model.entity.auth.Role;
@@ -58,6 +59,7 @@ public class AdminServiceImpl implements AdminService {
     private final PasswordEncoder passwordEncoder;
     private final OrderRepository orderRepository;
     private final AccountErasure accountErasure;
+    private final AuditLogService auditLog;
 
     public AdminServiceImpl(
         PricingRuleRepository pricingRuleRepository,
@@ -67,7 +69,8 @@ public class AdminServiceImpl implements AdminService {
         RoleRepository roleRepository,
         PasswordEncoder passwordEncoder,
         OrderRepository orderRepository,
-        AccountErasure accountErasure
+        AccountErasure accountErasure,
+        AuditLogService auditLog
     ) {
         this.pricingRuleRepository = pricingRuleRepository;
         this.promotionRepository = promotionRepository;
@@ -77,6 +80,7 @@ public class AdminServiceImpl implements AdminService {
         this.passwordEncoder = passwordEncoder;
         this.orderRepository = orderRepository;
         this.accountErasure = accountErasure;
+        this.auditLog = auditLog;
     }
 
     @Override
@@ -402,12 +406,7 @@ public class AdminServiceImpl implements AdminService {
     }
 
     private void writeAudit(String action, String target) {
-        AdminAuditLog log = new AdminAuditLog();
-        log.setActor(currentActor());
-        log.setAction(action);
-        log.setTarget(target);
-        log.setIpAddress("system");
-        auditLogRepository.save(log);
+        auditLog.record(action, target);
     }
 
     private String currentActor() {

@@ -89,6 +89,8 @@ public class OrderServiceImpl implements OrderService {
     private final OrderEmailVerificationService orderEmailVerificationService;
     private final PricingService pricingService;
 
+    private final com.ebike.service.admin.AuditLogService auditLog;
+
     public OrderServiceImpl(
         OrderRepository orderRepository,
         UserRepository userRepository,
@@ -96,7 +98,8 @@ public class OrderServiceImpl implements OrderService {
         ShowroomRepository showroomRepository,
         PromotionRepository promotionRepository,
         OrderEmailVerificationService orderEmailVerificationService,
-        PricingService pricingService
+        PricingService pricingService,
+        com.ebike.service.admin.AuditLogService auditLog
     ) {
         this.orderRepository = orderRepository;
         this.userRepository = userRepository;
@@ -105,6 +108,7 @@ public class OrderServiceImpl implements OrderService {
         this.promotionRepository = promotionRepository;
         this.orderEmailVerificationService = orderEmailVerificationService;
         this.pricingService = pricingService;
+        this.auditLog = auditLog;
     }
 
     @Override
@@ -250,6 +254,7 @@ public class OrderServiceImpl implements OrderService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid order status");
         }
 
+        OrderStatus previousStatus = order.getStatus();
         if (!nextStatuses(order).contains(nextStatus)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                 "Cannot change an order from " + order.getStatus() + " to " + nextStatus);
@@ -282,7 +287,9 @@ public class OrderServiceImpl implements OrderService {
             }
         }
 
-        return toResponse(orderRepository.save(order));
+        OrderResponse updated = toResponse(orderRepository.save(order));
+        auditLog.record("đổi trạng thái đơn", order.getOrderNumber() + ": " + previousStatus + " → " + nextStatus);
+        return updated;
     }
 
     @Override

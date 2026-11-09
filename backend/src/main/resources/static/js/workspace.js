@@ -48,7 +48,7 @@
   const columnsForPage = {
     '/admin/accounts':['id','name','username','email','role','status','verified','createdAt'],
     '/admin/roles':['role','title','description','permissions'],
-    '/admin/audit-logs':['createdAt','actor','action','target'],
+    '/admin/audit-logs':['createdAt','actor','action','target','ipAddress'],
     '/admin/users':['id','name','username','email','role','status','verified','createdAt'],
     '/admin/pricing':['id','code','name','amount','unit','status','effectiveFrom'],
     '/manager':['id','orderNumber','status','totalAmount','paymentMethod','paymentStatus','createdAt'],
