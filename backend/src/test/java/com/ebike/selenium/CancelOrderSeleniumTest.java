@@ -122,6 +122,7 @@ class CancelOrderSeleniumTest extends StorefrontSeleniumTest {
         String orderNumber = placePayLaterOrder();
         long orderId = findOrder(orderNumber).path("id").asLong();
         moveThrough(manager, orderId, "CONFIRMED", "PROCESSING");
+        enterUnits(manager, orderId); // V18: the bike needs its numbers before it can be sent out
         call(manager, "PATCH", "/api/v1/manager/orders/" + orderId + "/shipment", Map.of("shipmentStatus", "IN_TRANSIT"));
 
         driver.get(baseUrl + "/customer/orders");
