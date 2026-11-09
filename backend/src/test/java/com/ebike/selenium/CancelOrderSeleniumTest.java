@@ -42,7 +42,7 @@ class CancelOrderSeleniumTest extends StorefrontSeleniumTest {
         answerPrompt("Đổi ý, muốn chọn màu khác");
 
         assertEquals("Đã hủy đơn hàng.", notice());
-        wait.until(d -> orderRow(orderNumber).getText().contains("CANCELLED"));
+        wait.until(d -> orderRow(orderNumber).getText().contains("Đã hủy"));
         assertTrue(orderRow(orderNumber).findElements(CANCEL_BUTTON).isEmpty(), "a cancelled order must not offer cancel again");
         assertEquals(stockAfterOrder + 1, productStock(), "cancelling must put the bike back in stock");
     }
