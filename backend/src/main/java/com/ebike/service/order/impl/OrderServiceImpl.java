@@ -255,7 +255,7 @@ public class OrderServiceImpl implements OrderService {
                 "Cannot change an order from " + order.getStatus() + " to " + nextStatus);
         }
 
-        LocalDateTime cancellableAt = order.pickupCancellableAt(pickupHold);
+        LocalDateTime cancellableAt = order.getStatus() == OrderStatus.READY_FOR_PICKUP ? order.getPickupDeadlineAt() : null;
         if (nextStatus == OrderStatus.CANCELLED && cancellableAt != null && LocalDateTime.now().isBefore(cancellableAt)) {
             // The customer was told the bike is ready; give them the full hold period before the store gives it up.
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Đơn đang chờ khách lấy xe, chỉ được hủy sau "
@@ -268,7 +268,7 @@ public class OrderServiceImpl implements OrderService {
         } else {
             order.setStatus(nextStatus);
             if (nextStatus == OrderStatus.READY_FOR_PICKUP) {
-                order.setReadyForPickupAt(LocalDateTime.now());
+                order.setPickupDeadlineAt(LocalDateTime.now().plus(pickupHold));
             }
             if (nextStatus == OrderStatus.DELIVERED && order.getShipment() != null) {
                 // Pickup orders have no carrier step, so the hand-over time is recorded here.
@@ -972,7 +972,7 @@ public class OrderServiceImpl implements OrderService {
             order.getCancellationReviewedAt(),
             order.getCreatedAt(),
             order.getUpdatedAt(),
-            order.pickupCancellableAt(pickupHold),
+            order.getPickupDeadlineAt(),
             order.getItems().stream()
                 .sorted(Comparator.comparing(OrderItem::getId))
                 .map(item -> new OrderItemResponse(

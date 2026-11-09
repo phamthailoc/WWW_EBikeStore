@@ -81,6 +81,15 @@ public class ManagerController {
         return managerService.getRevenueReport(period, from, to);
     }
 
+    @PatchMapping("/orders/{orderId}/pickup-deadline")
+    @PreAuthorize("hasAuthority('" + PermissionConstants.OrderManagement.ORDER_UPDATE_STATUS + "')")
+    public OrderResponse updatePickupDeadline(
+        @PathVariable Long orderId,
+        @RequestBody com.ebike.dto.manager.request.ManagerPickupDeadlineRequest request
+    ) {
+        return managerService.updatePickupDeadline(orderId, request);
+    }
+
     @PatchMapping("/orders/{orderId}/shipment")
     @PreAuthorize("hasAuthority('" + PermissionConstants.OrderManagement.ORDER_UPDATE_STATUS + "')")
     public OrderResponse updateOrderShipment(

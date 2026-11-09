@@ -52,9 +52,6 @@ import org.springframework.web.server.ResponseStatusException;
 @Service
 public class ManagerServiceImpl implements ManagerService {
 
-    @org.springframework.beans.factory.annotation.Value("${app.order.pickup-hold:P7D}")
-    private java.time.Duration pickupHold = java.time.Duration.ofDays(7);
-
 
     private static final BigDecimal ZERO = BigDecimal.ZERO;
     private static final String ROLE_CUSTOMER = "CUSTOMER";
@@ -264,6 +261,25 @@ public class ManagerServiceImpl implements ManagerService {
             topProducts,
             slowProducts
         );
+    }
+
+    // The customer may ask to collect the bike on another day; staff then move the hold deadline to match.
+    @Override
+    @Transactional
+    public OrderResponse updatePickupDeadline(Long orderId, com.ebike.dto.manager.request.ManagerPickupDeadlineRequest request) {
+        if (request == null || request.pickupDeadlineAt() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "pickupDeadlineAt is required");
+        }
+        Order order = orderRepository.findById(orderId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
+        if (order.getStatus() != OrderStatus.READY_FOR_PICKUP) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Only orders waiting for pickup have a pickup deadline");
+        }
+        if (!request.pickupDeadlineAt().isAfter(LocalDateTime.now())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The pickup deadline must be in the future");
+        }
+        order.setPickupDeadlineAt(request.pickupDeadlineAt());
+        return toOrderResponse(orderRepository.save(order));
     }
 
     @Override
@@ -533,7 +549,7 @@ public class ManagerServiceImpl implements ManagerService {
             order.getCancellationReviewedAt(),
             order.getCreatedAt(),
             order.getUpdatedAt(),
-            order.pickupCancellableAt(pickupHold),
+            order.getPickupDeadlineAt(),
             order.getItems().stream()
                 .sorted(Comparator.comparing(OrderItem::getId))
                 .map(item -> new com.ebike.dto.order.response.OrderItemResponse(
