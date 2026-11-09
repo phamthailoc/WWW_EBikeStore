@@ -271,7 +271,12 @@ public class OrderServiceImpl implements OrderService {
                 + cancellableAt.format(DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy")));
         }
 
-        if ((nextStatus == OrderStatus.SHIPPED || nextStatus == OrderStatus.DELIVERED) && !OrderUnits.isComplete(order)) {
+        // The numbers are needed before the bike leaves the store: when it ships, or when a pickup customer collects it.
+        // An order already SHIPPED has left (one shipped before V18 has no numbers), so delivering it is not blocked,
+        // the same as the shipment form in ManagerServiceImpl.
+        boolean leavesTheStore = nextStatus == OrderStatus.SHIPPED
+            || (nextStatus == OrderStatus.DELIVERED && order.getStatus() != OrderStatus.SHIPPED);
+        if (leavesTheStore && !OrderUnits.isComplete(order)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, UNITS_REQUIRED);
         }
 

@@ -87,6 +87,16 @@ class OrderStatusUpdateTest {
         assertEquals(OrderStatus.DELIVERED, order.getStatus());
     }
 
+    @Test void anOrderShippedBeforeTheNumbersExistedCanStillBeDelivered() {
+        saves();
+        com.ebike.model.entity.product.ProductSpecification specification = new com.ebike.model.entity.product.ProductSpecification();
+        specification.setVehicleType(com.ebike.model.entity.product.VehicleType.E_MOTORBIKE);
+        product.setSpecification(specification);
+        order.setStatus(OrderStatus.SHIPPED); // left the store before V18, so no numbers were recorded
+        move("DELIVERED");
+        assertEquals(OrderStatus.DELIVERED, order.getStatus());
+    }
+
     @Test void staffFindAnOrderByTheFrameOrEngineNumberOfItsVehicle() {
         staffMember();
         org.mockito.Mockito.doReturn(java.util.List.of(new org.springframework.security.core.authority.SimpleGrantedAuthority(
