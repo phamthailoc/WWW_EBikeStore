@@ -79,6 +79,10 @@ public class Order {
     @Column(name = "customer_email", length = 255)
     private String customerEmail;
 
+    // When the order became READY_FOR_PICKUP, i.e. when the customer was told to come and collect the bike.
+    @Column(name = "ready_for_pickup_at")
+    private LocalDateTime readyForPickupAt;
+
     @Column(name = "cancellation_reason", columnDefinition = "TEXT")
     private String cancellationReason;
 
@@ -277,6 +281,19 @@ public class Order {
 
     public void setCancellationRequestedAt(LocalDateTime cancellationRequestedAt) {
         this.cancellationRequestedAt = cancellationRequestedAt;
+    }
+
+    /** Earliest time staff may cancel a READY_FOR_PICKUP order, or null when the rule does not apply. */
+    public LocalDateTime pickupCancellableAt(java.time.Duration hold) {
+        return status == OrderStatus.READY_FOR_PICKUP && readyForPickupAt != null ? readyForPickupAt.plus(hold) : null;
+    }
+
+    public LocalDateTime getReadyForPickupAt() {
+        return readyForPickupAt;
+    }
+
+    public void setReadyForPickupAt(LocalDateTime readyForPickupAt) {
+        this.readyForPickupAt = readyForPickupAt;
     }
 
     public LocalDateTime getCancellationReviewedAt() {

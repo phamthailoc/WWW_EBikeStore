@@ -108,7 +108,9 @@
   const isPickup=order=>Boolean(order?.shipment?.pickupShowroom);
   const orderSteps=order=>{
     const pickup=isPickup(order);
-    return ({PENDING:['CONFIRMED','CANCELLED'],CONFIRMED:['PROCESSING','CANCELLED'],PROCESSING:[pickup?'READY_FOR_PICKUP':'SHIPPED','CANCELLED'],READY_FOR_PICKUP:['DELIVERED','CANCELLED'],SHIPPED:['DELIVERED']})[order?.status]||[];
+    // A waiting pickup order may only be cancelled once the hold period after notifying the customer is over.
+    const holdOver=!order?.pickupCancellableAt||new Date(order.pickupCancellableAt)<=new Date();
+    return ({PENDING:['CONFIRMED','CANCELLED'],CONFIRMED:['PROCESSING','CANCELLED'],PROCESSING:[pickup?'READY_FOR_PICKUP':'SHIPPED','CANCELLED'],READY_FOR_PICKUP:holdOver?['DELIVERED','CANCELLED']:['DELIVERED'],SHIPPED:['DELIVERED']})[order?.status]||[];
   };
   // The last step reads "Đã nhận" when the customer collects the bike at the showroom.
   const stepText=(status,order)=>status==='DELIVERED'&&isPickup(order)?'Đã nhận':orderStatusText[status];

@@ -69,6 +69,9 @@ public class OrderServiceImpl implements OrderService {
     @Value("${app.order.pay-later-expiry:PT72H}")
     private java.time.Duration payLaterExpiry = java.time.Duration.ofHours(72);
 
+    @Value("${app.order.pickup-hold:P7D}")
+    private java.time.Duration pickupHold = java.time.Duration.ofDays(7);
+
     private static final BigDecimal ZERO = BigDecimal.ZERO;
     private static final int MAX_ORDER_ITEMS = 20;
     private static final int MAX_ITEM_QUANTITY = 10;
@@ -252,11 +255,21 @@ public class OrderServiceImpl implements OrderService {
                 "Cannot change an order from " + order.getStatus() + " to " + nextStatus);
         }
 
+        LocalDateTime cancellableAt = order.pickupCancellableAt(pickupHold);
+        if (nextStatus == OrderStatus.CANCELLED && cancellableAt != null && LocalDateTime.now().isBefore(cancellableAt)) {
+            // The customer was told the bike is ready; give them the full hold period before the store gives it up.
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Đơn đang chờ khách lấy xe, chỉ được hủy sau "
+                + cancellableAt.format(DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy")));
+        }
+
         if (nextStatus == OrderStatus.CANCELLED) {
             // Same effects as a customer cancelling: reason saved, pending payment closed, stock returned.
             cancelOrder(order, request.reason(), getAuthenticatedUserOrNull(authentication), "Cancelled by staff");
         } else {
             order.setStatus(nextStatus);
+            if (nextStatus == OrderStatus.READY_FOR_PICKUP) {
+                order.setReadyForPickupAt(LocalDateTime.now());
+            }
             if (nextStatus == OrderStatus.DELIVERED && order.getShipment() != null) {
                 // Pickup orders have no carrier step, so the hand-over time is recorded here.
                 Shipment shipment = order.getShipment();
@@ -959,6 +972,7 @@ public class OrderServiceImpl implements OrderService {
             order.getCancellationReviewedAt(),
             order.getCreatedAt(),
             order.getUpdatedAt(),
+            order.pickupCancellableAt(pickupHold),
             order.getItems().stream()
                 .sorted(Comparator.comparing(OrderItem::getId))
                 .map(item -> new OrderItemResponse(

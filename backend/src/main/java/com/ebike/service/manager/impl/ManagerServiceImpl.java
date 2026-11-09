@@ -52,6 +52,10 @@ import org.springframework.web.server.ResponseStatusException;
 @Service
 public class ManagerServiceImpl implements ManagerService {
 
+    @org.springframework.beans.factory.annotation.Value("${app.order.pickup-hold:P7D}")
+    private java.time.Duration pickupHold = java.time.Duration.ofDays(7);
+
+
     private static final BigDecimal ZERO = BigDecimal.ZERO;
     private static final String ROLE_CUSTOMER = "CUSTOMER";
 
@@ -529,6 +533,7 @@ public class ManagerServiceImpl implements ManagerService {
             order.getCancellationReviewedAt(),
             order.getCreatedAt(),
             order.getUpdatedAt(),
+            order.pickupCancellableAt(pickupHold),
             order.getItems().stream()
                 .sorted(Comparator.comparing(OrderItem::getId))
                 .map(item -> new com.ebike.dto.order.response.OrderItemResponse(
