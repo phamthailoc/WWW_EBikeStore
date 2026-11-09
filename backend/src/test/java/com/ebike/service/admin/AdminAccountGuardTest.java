@@ -36,7 +36,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.server.ResponseStatusException;
 
-/** V6: an admin cannot lock themselves or the last admin out, and accounts with history are kept, not deleted. */
+/** V6: an admin cannot lock themselves or the last admin out, and a deleted account is anonymised, never removed. */
 @ExtendWith(MockitoExtension.class)
 class AdminAccountGuardTest {
     @Mock PricingRuleRepository pricingRules;
@@ -46,13 +46,18 @@ class AdminAccountGuardTest {
     @Mock RoleRepository roles;
     @Mock PasswordEncoder encoder;
     @Mock OrderRepository orders;
+    @Mock com.ebike.repository.user.UserAddressRepository addresses;
+    @Mock com.ebike.repository.user.UserFavoriteRepository favorites;
+    @Mock com.ebike.repository.user.UserPreferenceRepository preferences;
+    @Mock com.ebike.repository.notification.NotificationRepository notifications;
     AdminServiceImpl service;
     User me;
     User otherAdmin;
     User customer;
 
     @BeforeEach void setup() {
-        service = new AdminServiceImpl(pricingRules, promotions, audits, users, roles, encoder, orders);
+        service = new AdminServiceImpl(pricingRules, promotions, audits, users, roles, encoder, orders,
+            new AccountErasure(addresses, favorites, preferences, notifications, encoder));
         me = account(1L, "admin.user", "ADMIN");
         otherAdmin = account(2L, "second.admin", "ADMIN");
         customer = account(3L, "khach", "CUSTOMER");
@@ -69,6 +74,7 @@ class AdminAccountGuardTest {
     private User account(long id, String username, String roleName) {
         User user = new User();
         ReflectionTestUtils.setField(user, "id", id);
+        ReflectionTestUtils.setField(user, "createdAt", java.time.LocalDateTime.now().minusDays(id));
         user.setUsername(username);
         user.setEmail(username + "@example.com");
         user.setActive(true);
@@ -104,17 +110,30 @@ class AdminAccountGuardTest {
         assertEquals("INACTIVE", otherAdmin.getAccountStatus());
     }
 
-    @Test void anAccountWithOrdersIsKeptNotDeleted() {
-        when(orders.existsByUserId(3L)).thenReturn(true);
-        var ex = assertThrows(ResponseStatusException.class, () -> service.deleteAccount(3L));
-        assertEquals(400, ex.getStatusCode().value());
+    @Test void deletingAnAccountWithOrdersAnonymisesItAndKeepsTheRow() {
+        customer.setEmail("khach@example.com");
+        customer.setFirstName("Nguyễn");
+        when(encoder.encode(any())).thenReturn("random-hash");
+        service.deleteAccount(3L);
+        assertEquals("DELETED", customer.getAccountStatus());
+        assertEquals(false, customer.getActive());
+        assertEquals("deleted_3", customer.getUsername());
+        assertEquals("deleted_3@deleted.invalid", customer.getEmail());
+        assertEquals("Tài khoản", customer.getFirstName());
+        verify(users).save(customer);
         verify(users, never()).delete(any());
+        verify(addresses).deleteAll(any());
+        verify(favorites).deleteAll(any());
+        verify(notifications).deleteAll(any());
     }
 
-    @Test void anAccountWithoutOrdersCanBeDeleted() {
-        when(orders.existsByUserId(3L)).thenReturn(false);
+    @Test void aDeletedAccountCannotBeChangedAgainAndIsHiddenFromTheList() {
+        when(encoder.encode(any())).thenReturn("random-hash");
         service.deleteAccount(3L);
-        verify(users).delete(customer);
+        assertEquals(400, assertThrows(ResponseStatusException.class, () -> service.deleteAccount(3L)).getStatusCode().value());
+        assertThrows(ResponseStatusException.class, () -> service.updateAccountStatus(3L, new AdminAccountStatusUpdateRequest("ACTIVE")));
+        assertThrows(ResponseStatusException.class, () -> service.updateAccountRole(3L, new AdminAccountRoleUpdateRequest("ADMIN")));
+        assertEquals(2, service.getAccounts(null).size());
     }
 
     @Test void managersCanBeCreatedAndNeedAPassword() {

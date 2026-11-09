@@ -38,7 +38,7 @@ class AdminPricingRuleTest {
     PricingRule rule;
 
     @BeforeEach void setup() {
-        service = new AdminServiceImpl(pricingRules, promotions, audits, users, roles, encoder, mock(com.ebike.repository.order.OrderRepository.class));
+        service = new AdminServiceImpl(pricingRules, promotions, audits, users, roles, encoder, mock(com.ebike.repository.order.OrderRepository.class), mock(com.ebike.service.admin.AccountErasure.class));
         rule = new PricingRule();
         rule.setCode("REGISTRATION_SERVICE");
         rule.setName("Phí hỗ trợ đăng ký biển số tại cửa hàng");

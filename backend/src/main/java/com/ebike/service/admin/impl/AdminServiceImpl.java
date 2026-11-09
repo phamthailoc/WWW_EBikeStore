@@ -19,6 +19,7 @@ import com.ebike.repository.admin.AdminAuditLogRepository;
 import com.ebike.repository.admin.PricingRuleRepository;
 import com.ebike.repository.admin.PromotionRepository;
 import com.ebike.repository.order.OrderRepository;
+import com.ebike.service.admin.AccountErasure;
 import com.ebike.service.admin.AdminService;
 import com.ebike.model.entity.auth.Permission;
 import com.ebike.model.entity.auth.Role;
@@ -56,6 +57,7 @@ public class AdminServiceImpl implements AdminService {
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final OrderRepository orderRepository;
+    private final AccountErasure accountErasure;
 
     public AdminServiceImpl(
         PricingRuleRepository pricingRuleRepository,
@@ -64,7 +66,8 @@ public class AdminServiceImpl implements AdminService {
         UserRepository userRepository,
         RoleRepository roleRepository,
         PasswordEncoder passwordEncoder,
-        OrderRepository orderRepository
+        OrderRepository orderRepository,
+        AccountErasure accountErasure
     ) {
         this.pricingRuleRepository = pricingRuleRepository;
         this.promotionRepository = promotionRepository;
@@ -73,6 +76,7 @@ public class AdminServiceImpl implements AdminService {
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
         this.orderRepository = orderRepository;
+        this.accountErasure = accountErasure;
     }
 
     @Override
@@ -200,7 +204,9 @@ public class AdminServiceImpl implements AdminService {
     public List<AdminAccountResponse> getAccounts(String type) {
         String normalizedType = normalizeNullable(type);
 
+        // Accounts the customer asked to delete (DELETED) are hidden: only an anonymised shell remains for the orders.
         return userRepository.findAll().stream()
+            .filter(user -> !AccountErasure.DELETED.equals(user.getAccountStatus()))
             .map(this::toAccountResponse)
             .filter(account -> normalizedType == null || normalizedType.equals(account.accountType()))
             .sorted(Comparator.comparing(AdminAccountResponse::createdAt).reversed())
@@ -246,6 +252,7 @@ public class AdminServiceImpl implements AdminService {
     public AdminAccountResponse updateAccountRole(Long id, AdminAccountRoleUpdateRequest request) {
         User user = userRepository.findById(id)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Account not found"));
+        assertNotDeleted(user);
         String normalizedRole = normalizeRole(request.role());
         Role role = roleRepository.findByName(normalizedRole)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Role not found: " + normalizedRole));
@@ -265,6 +272,7 @@ public class AdminServiceImpl implements AdminService {
     public AdminAccountResponse updateAccountStatus(Long id, AdminAccountStatusUpdateRequest request) {
         User user = userRepository.findById(id)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Account not found"));
+        assertNotDeleted(user);
         String status = normalizeOrDefault(request.status(), "ACTIVE", ACCOUNT_STATUSES);
 
         if (!"ACTIVE".equals(status)) {
@@ -285,14 +293,18 @@ public class AdminServiceImpl implements AdminService {
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Account not found"));
         assertNotSelf(user, "Bạn không thể tự xóa tài khoản của chính mình.");
         assertNotLastAdmin(user, "Đây là quản trị viên cuối cùng đang hoạt động, không thể xóa.");
-        // Orders and payments are the shop's accounting record; keep the account and switch it off instead.
-        if (orderRepository.existsByUserId(id)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                "Tài khoản này đã có đơn hàng nên không thể xóa. Hãy vô hiệu hóa tài khoản.");
+        assertNotDeleted(user);
+        // Orders and payments are the shop's accounting record, so the account is anonymised, not removed.
+        accountErasure.erase(user);
+        userRepository.save(user);
+        // The audit entry must not keep the personal data that was just erased.
+        writeAudit("xóa tài khoản (ẩn danh hóa)", "tài khoản #" + id);
+    }
+
+    private void assertNotDeleted(User user) {
+        if (AccountErasure.DELETED.equals(user.getAccountStatus())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tài khoản này đã bị xóa và không thể thay đổi.");
         }
-        String target = displayName(user);
-        userRepository.delete(user);
-        writeAudit("xóa tài khoản", target);
     }
 
     @Override

@@ -124,7 +124,7 @@
   }
 
   async function deleteAccount(id) {
-    if (!confirm('Xóa tài khoản này? Chỉ xóa được tài khoản chưa có đơn hàng; nếu đã có đơn, hãy vô hiệu hóa.')) return;
+    if (!confirm('Xóa tài khoản này theo yêu cầu của khách? Họ tên, địa chỉ đã lưu, yêu thích và thông báo sẽ bị xóa, tài khoản không đăng nhập được nữa và không khôi phục được. Đơn hàng cũ vẫn được giữ. Nếu chỉ muốn chặn tài khoản, hãy chọn Vô hiệu hóa.')) return;
     await api(`/api/v1/admin/accounts/${id}`, 'DELETE');
     tell('Đã xóa tài khoản.');
     reload();

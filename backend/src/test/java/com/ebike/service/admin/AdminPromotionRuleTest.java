@@ -43,7 +43,7 @@ class AdminPromotionRuleTest {
     LocalDateTime now = LocalDateTime.of(2026, 11, 7, 10, 0);
 
     @BeforeEach void setup() {
-        service = new AdminServiceImpl(pricingRules, promotions, audits, users, roles, encoder, mock(OrderRepository.class));
+        service = new AdminServiceImpl(pricingRules, promotions, audits, users, roles, encoder, mock(OrderRepository.class), mock(com.ebike.service.admin.AccountErasure.class));
     }
 
     private PromotionCreateRequest create(String type, String value, LocalDateTime start, LocalDateTime end) {

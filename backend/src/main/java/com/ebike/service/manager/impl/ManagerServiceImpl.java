@@ -194,6 +194,7 @@ public class ManagerServiceImpl implements ManagerService {
 
         return userRepository.findAll().stream()
             .filter(this::isCustomer)
+            .filter(user -> !"DELETED".equals(user.getAccountStatus()))
             .filter(user -> matchesCustomerSearch(user, search))
             .sorted(Comparator.comparing(User::getCreatedAt).reversed())
             .map(user -> toCustomerResponse(user, orders))
