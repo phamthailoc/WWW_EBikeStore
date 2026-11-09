@@ -101,6 +101,10 @@ public class NotificationCreationService {
         Long orderId,
         Long paymentId
     ) {
+        // An erased account (V6) gets nothing new: the shop may still close its old orders, but no data is added to it.
+        if ("DELETED".equals(user.getAccountStatus())) {
+            return;
+        }
         // A customer who switched notifications off in the profile gets none; no saved setting means on.
         boolean optedOut = userPreferenceRepository.findByUserId(user.getId())
             .map(preference -> Boolean.FALSE.equals(preference.getNotificationsEnabled()))
