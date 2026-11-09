@@ -278,8 +278,22 @@ public class ManagerServiceImpl implements ManagerService {
         if (!request.pickupDeadlineAt().isAfter(LocalDateTime.now())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The pickup deadline must be in the future");
         }
+        if (request.pickupDeadlineAt().equals(order.getPickupDeadlineAt())) {
+            return toOrderResponse(order);
+        }
         order.setPickupDeadlineAt(request.pickupDeadlineAt());
-        return toOrderResponse(orderRepository.save(order));
+        Order saved = orderRepository.save(order);
+        if (saved.getUser() != null) {
+            Payment payment = saved.getPayment();
+            com.ebike.listener.notification.NotificationEventBridge.publish(new com.ebike.event.notification.PickupDeadlineChangedEvent(
+                saved.getUser().getId(),
+                saved.getId(),
+                payment == null ? null : payment.getId(),
+                saved.getOrderNumber(),
+                saved.getPickupDeadlineAt()
+            ));
+        }
+        return toOrderResponse(saved);
     }
 
     @Override

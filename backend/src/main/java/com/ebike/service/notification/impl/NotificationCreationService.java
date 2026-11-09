@@ -6,6 +6,7 @@ import com.ebike.model.entity.notification.Notification;
 import com.ebike.model.entity.notification.NotificationType;
 import com.ebike.event.notification.OrderCreatedEvent;
 import com.ebike.event.notification.OrderStatusChangedEvent;
+import com.ebike.event.notification.PickupDeadlineChangedEvent;
 import com.ebike.event.notification.PaymentStatusChangedEvent;
 import com.ebike.repository.notification.NotificationRepository;
 import com.ebike.repository.user.UserPreferenceRepository;
@@ -57,6 +58,22 @@ public class NotificationCreationService {
             NotificationType.ORDER_STATUS,
             "Cập nhật đơn hàng",
             "Đơn hàng " + event.orderNumber() + " đã chuyển sang trạng thái " + formatOrderStatus(event.status()) + ".",
+            event.orderId(),
+            event.paymentId()
+        ));
+    }
+
+    // The store moved the day it keeps the bike; the customer asked for it, and this lets them confirm it is right.
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void handlePickupDeadlineChanged(PickupDeadlineChangedEvent event) {
+        userRepository.findById(event.userId()).ifPresent(user -> createNotification(
+            user,
+            NotificationType.ORDER_STATUS,
+            "Đổi lịch lấy xe",
+            "Cửa hàng sẽ giữ xe của đơn hàng " + event.orderNumber() + " đến "
+                + event.pickupDeadlineAt().format(java.time.format.DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy"))
+                + ". Nếu chưa đúng với lịch bạn đã hẹn, vui lòng liên hệ cửa hàng.",
             event.orderId(),
             event.paymentId()
         ));
