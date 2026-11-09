@@ -87,7 +87,8 @@ class ReadyForPickupSeleniumTest extends StorefrontSeleniumTest {
         assertTrue(customerHold.getText().contains("vui lòng liên hệ cửa hàng"), customerHold.getText());
         assertTrue(driver.findElements(By.id("pickupDeadlineForm")).isEmpty(), "customers cannot move the deadline");
 
-        // The customer comes in: "Đã nhận" delivers the order and records the hand-over time.
+        // The customer comes in: "Đã nhận" delivers the order and records the hand-over time (numbers are recorded first).
+        enterUnits(managerApi(), orderId);
         openAsManager(orderId);
         new Select(driver.findElement(STATUS_SELECT)).selectByValue("DELIVERED");
         click(By.cssSelector("#orderStatusForm button"));
@@ -114,6 +115,7 @@ class ReadyForPickupSeleniumTest extends StorefrontSeleniumTest {
         assertThrows(IllegalStateException.class, () -> status(manager, pickup, "CANCELLED", "Khách không tới"),
             "no cancelling during the hold");
         // The shipment form may also finish it, once it is waiting.
+        enterUnits(manager, pickup);
         call(manager, "PATCH", "/api/v1/manager/orders/" + pickup + "/shipment", Map.of("shipmentStatus", "DELIVERED"));
         assertEquals("DELIVERED", orderById(pickup).path("status").asText());
 

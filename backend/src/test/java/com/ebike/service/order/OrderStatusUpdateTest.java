@@ -65,6 +65,26 @@ class OrderStatusUpdateTest {
     }
     private void move(String status) { service.updateOrderStatus(10L, new OrderStatusUpdateRequest(status), staff); }
 
+    @Test void aVehicleOrderCannotBeDeliveredWithoutItsFrameAndEngineNumbers() {
+        saves();
+        com.ebike.model.entity.product.ProductSpecification specification = new com.ebike.model.entity.product.ProductSpecification();
+        specification.setVehicleType(com.ebike.model.entity.product.VehicleType.E_MOTORBIKE);
+        product.setSpecification(specification);
+        order.setStatus(OrderStatus.SHIPPED);
+        var ex = assertThrows(ResponseStatusException.class, () -> move("DELIVERED"));
+        assertEquals(400, ex.getStatusCode().value());
+        assertEquals(OrderStatus.SHIPPED, order.getStatus());
+        // two bikes, two entries: now it goes through
+        for (String frame : new String[] {"RLHABC12345", "RLHABC12346"}) {
+            com.ebike.model.entity.order.OrderItemUnit unit = new com.ebike.model.entity.order.OrderItemUnit();
+            unit.setFrameNumber(frame);
+            unit.setEngineNumber("M1234567");
+            order.getItems().iterator().next().getUnits().add(unit);
+        }
+        move("DELIVERED");
+        assertEquals(OrderStatus.DELIVERED, order.getStatus());
+    }
+
     @Test void ordersMoveForwardOneStepAtATime() {
         saves();
         move("CONFIRMED");

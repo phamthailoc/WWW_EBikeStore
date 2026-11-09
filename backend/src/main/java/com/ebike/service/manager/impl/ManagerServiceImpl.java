@@ -341,6 +341,10 @@ public class ManagerServiceImpl implements ManagerService {
         if (leavingWarehouse && order.getStatus() != OrderStatus.PROCESSING && order.getStatus() != OrderStatus.SHIPPED) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Only orders being processed can be handed over for shipping");
         }
+        if (nextStatus == ShipmentStatus.DELIVERED && order.getStatus() != OrderStatus.DELIVERED && !com.ebike.service.order.OrderUnits.isComplete(order)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                "Hãy nhập đủ số khung và số máy của từng xe trước khi giao hoặc bàn giao xe.");
+        }
         OrderStatus beforeDelivery = pickup ? OrderStatus.READY_FOR_PICKUP : OrderStatus.SHIPPED;
         if (nextStatus == ShipmentStatus.DELIVERED && order.getStatus() != beforeDelivery && order.getStatus() != OrderStatus.DELIVERED) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, pickup
@@ -585,7 +589,11 @@ public class ManagerServiceImpl implements ManagerService {
                     item.getProductName(),
                     item.getUnitPrice(),
                     item.getQuantity(),
-                    item.getLineTotal()
+                    item.getLineTotal(),
+                    item.getProductVariant() == null ? null : item.getProductVariant().getId(),
+                    item.getProductVariant() == null ? null : item.getProductVariant().getColorName(),
+                    com.ebike.service.order.OrderUnits.requiresNumbers(item),
+                    item.getUnits().stream().map(unit -> new com.ebike.dto.order.response.OrderItemUnitResponse(unit.getId(), unit.getFrameNumber(), unit.getEngineNumber())).toList()
                 ))
                 .toList(),
             shipment == null ? null : new com.ebike.dto.order.response.ShipmentResponse(

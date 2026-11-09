@@ -45,6 +45,15 @@ public class OrderItem {
     @Column(name = "line_total", nullable = false, precision = 12, scale = 2)
     private BigDecimal lineTotal;
 
+    // V18: frame and engine numbers of the vehicles in this line. Removing a unit here deletes its row.
+    @jakarta.persistence.OneToMany(mappedBy = "orderItem", cascade = jakarta.persistence.CascadeType.ALL, orphanRemoval = true)
+    @jakarta.persistence.OrderBy("id")
+    private java.util.Set<OrderItemUnit> units = new java.util.LinkedHashSet<>();
+
+    public java.util.Set<OrderItemUnit> getUnits() {
+        return units;
+    }
+
     public Long getId() {
         return id;
     }

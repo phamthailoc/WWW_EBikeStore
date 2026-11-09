@@ -51,6 +51,7 @@ class AccountErasureSeleniumTest extends StorefrontSeleniumTest {
         // A delivered order, which also lets the customer review the bike.
         long orderId = placePickupOrder(customer);
         for (String status : List.of("CONFIRMED", "PROCESSING", "READY_FOR_PICKUP", "DELIVERED")) {
+            if (status.equals("DELIVERED")) enterUnits(manager, orderId);
             call(manager, "PATCH", "/api/v1/orders/" + orderId + "/status", Map.of("status", status));
         }
         int reviewsBefore = reviewCount();

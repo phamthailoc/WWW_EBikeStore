@@ -9,6 +9,8 @@ import com.ebike.dto.order.request.OrderCreateRequest;
 import com.ebike.dto.order.request.OrderQuoteRequest;
 import com.ebike.dto.order.request.OrderStatusUpdateRequest;
 import com.ebike.dto.order.response.OrderItemResponse;
+import com.ebike.dto.order.response.OrderItemUnitResponse;
+import com.ebike.service.order.OrderUnits;
 import com.ebike.dto.order.response.GuestOrderLinkResponse;
 import com.ebike.dto.order.response.OrderQuoteResponse;
 import com.ebike.dto.order.response.OrderResponse;
@@ -71,6 +73,8 @@ public class OrderServiceImpl implements OrderService {
 
     @Value("${app.order.pickup-hold:P7D}")
     private java.time.Duration pickupHold = java.time.Duration.ofDays(7);
+
+    static final String UNITS_REQUIRED = "Hãy nhập đủ số khung và số máy của từng xe trước khi giao hoặc bàn giao xe.";
 
     private static final BigDecimal ZERO = BigDecimal.ZERO;
     private static final int MAX_ORDER_ITEMS = 20;
@@ -267,6 +271,10 @@ public class OrderServiceImpl implements OrderService {
                 + cancellableAt.format(DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy")));
         }
 
+        if (nextStatus == OrderStatus.DELIVERED && !OrderUnits.isComplete(order)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, UNITS_REQUIRED);
+        }
+
         if (nextStatus == OrderStatus.CANCELLED) {
             // Same effects as a customer cancelling: reason saved, pending payment closed, stock returned.
             cancelOrder(order, request.reason(), getAuthenticatedUserOrNull(authentication), "Cancelled by staff");
@@ -392,6 +400,8 @@ public class OrderServiceImpl implements OrderService {
         order.setCancellationRequestedAt(java.time.LocalDateTime.now());
         order.setCancellationReviewNote(null);
         order.setCancellationReviewedAt(null);
+        // the vehicles go back on sale, so their frame numbers must be free to record on another order
+        order.getItems().forEach(item -> item.getUnits().clear());
         cancelPendingPayment(order.getPayment(), paymentNote);
         restoreStock(order);
         if (order.getPromotion() != null) {
@@ -990,7 +1000,9 @@ public class OrderServiceImpl implements OrderService {
                     item.getQuantity(),
                     item.getLineTotal(),
                     item.getProductVariant() == null ? null : item.getProductVariant().getId(),
-                    item.getProductVariant() == null ? null : item.getProductVariant().getColorName()
+                    item.getProductVariant() == null ? null : item.getProductVariant().getColorName(),
+                    OrderUnits.requiresNumbers(item),
+                    item.getUnits().stream().map(unit -> new OrderItemUnitResponse(unit.getId(), unit.getFrameNumber(), unit.getEngineNumber())).toList()
                 ))
                 .toList(),
             shipment == null ? null : new ShipmentResponse(

@@ -41,6 +41,7 @@ Mặc định ứng dụng kết nối MariaDB ở `localhost:3306`. Thông tin 
 - `update_pricing_rules.sql`: biểu phí của cửa hàng bán xe
 - `update_orders_promotion.sql`: cột `orders.promotion_id` (mỗi khách dùng một mã một lần)
 - `update_orders_pickup_deadline.sql`: cột `orders.pickup_deadline_at` (hạn giữ xe do cửa hàng đặt cho đơn "Chờ lấy")
+- `update_order_item_units.sql`: bảng `order_item_units` (số khung, số máy từng xe)
 - `update_user_preferences_defaults.sql`: giao diện mặc định theo thiết bị (`system`), ngôn ngữ mặc định `vi`
 - `update_vehicle_types.sql`: xe trên 25 km/h hoặc 250 W là xe máy điện
 - `update_product_stock_totals.sql`: tồn kho sản phẩm bằng tổng tồn kho các màu
