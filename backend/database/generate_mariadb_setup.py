@@ -61,6 +61,7 @@ for migration in sorted((DB / "migration").glob("V2_0_[1-9]*.sql")):
         OUT.append("ALTER TABLE users ADD COLUMN account_status VARCHAR(30) NOT NULL DEFAULT 'ACTIVE';\n")
         OUT.append("ALTER TABLE orders ADD COLUMN promotion_id BIGINT NULL, ADD CONSTRAINT fk_orders_promotion FOREIGN KEY (promotion_id) REFERENCES promotions(id) ON DELETE SET NULL;\n")
         OUT.append("ALTER TABLE orders ADD COLUMN pickup_deadline_at DATETIME NULL;\n")
+        OUT.append("ALTER TABLE user_preferences ALTER COLUMN theme SET DEFAULT 'system', ALTER COLUMN language SET DEFAULT 'vi';\n")
         OUT.append("""
 DROP TABLE IF EXISTS `support_requests`;
 CREATE TABLE `support_requests` (

@@ -59,7 +59,8 @@
       </form>
     </section>
     <section class="data-panel profile-extra" id="preferencePanel">
-      <p class="eyebrow">TÙY CHỌN</p><h2>Thông báo</h2>
+      <p class="eyebrow">TÙY CHỌN</p><h2>Giao diện và thông báo</h2>
+      <label>Giao diện<select id="themeChoice"><option value="system">Theo thiết bị</option><option value="light">Sáng</option><option value="dark">Tối</option></select></label>
       <label class="inline-check"><input type="checkbox" id="notificationsEnabled"> Nhận thông báo về đơn hàng và thanh toán</label>
     </section>`;
 
@@ -169,6 +170,16 @@
       tell(error.message, true);
     }
   });
+
+  // theme.js applies and saves the choice (also to this account); the select only mirrors it.
+  const themeChoice = host.querySelector('#themeChoice');
+  if (window.ebikeTheme) {
+    themeChoice.value = window.ebikeTheme.get();
+    themeChoice.addEventListener('change', () => window.ebikeTheme.set(themeChoice.value));
+    document.addEventListener('ebike-theme', event => { themeChoice.value = event.detail; });
+  } else {
+    themeChoice.closest('label').hidden = true;
+  }
 
   host.querySelector('#notificationsEnabled').addEventListener('change', async event => {
     const checkbox = event.currentTarget;

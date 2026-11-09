@@ -393,6 +393,7 @@ CREATE TABLE `admin_audit_logs` (
 ALTER TABLE users ADD COLUMN account_status VARCHAR(30) NOT NULL DEFAULT 'ACTIVE';
 ALTER TABLE orders ADD COLUMN promotion_id BIGINT NULL, ADD CONSTRAINT fk_orders_promotion FOREIGN KEY (promotion_id) REFERENCES promotions(id) ON DELETE SET NULL;
 ALTER TABLE orders ADD COLUMN pickup_deadline_at DATETIME NULL;
+ALTER TABLE user_preferences ALTER COLUMN theme SET DEFAULT 'system', ALTER COLUMN language SET DEFAULT 'vi';
 
 DROP TABLE IF EXISTS `support_requests`;
 CREATE TABLE `support_requests` (

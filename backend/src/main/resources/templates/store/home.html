@@ -1,6 +1,6 @@
 <!doctype html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>KINETIC | Di chuyển xanh</title><link rel="stylesheet" th:href="@{/css/store.css(v=20261102-layout1)}"><link rel="stylesheet" href="/css/commerce.css?v=20261102-colors1"><script src="/js/cart.js?v=20261102-cart1"></script><link rel="stylesheet" href="/css/home.css?v=20261102-layout1"></head>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" th:attr="data-theme=${userTheme},data-theme-user=${userTheme != null ? 'true' : null}">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light dark"><link rel="stylesheet" href="/css/theme.css?v=20261109-theme1"><script src="/js/theme.js?v=20261109-theme3"></script><title>KINETIC | Di chuyển xanh</title><link rel="stylesheet" th:href="@{/css/store.css(v=20261109-theme1)}"><link rel="stylesheet" href="/css/commerce.css?v=20261109-theme1"><script src="/js/cart.js?v=20261102-cart1"></script><link rel="stylesheet" href="/css/home.css?v=20261109-theme1"></head>
 <body class="storefront-home">
 <header class="top"><a class="brand" th:href="@{/}"><span>K</span> KINETIC</a><nav><a th:href="@{/shop}">Sản phẩm</a><a href="#technology">Công nghệ</a><a href="#contact">Liên hệ</a></nav><div class="actions"><form th:action="@{/shop}" method="get"><input name="q" placeholder="Tìm mẫu xe" th:value="${query}"></form><a class="login" th:href="@{/login}">Đăng nhập ↗</a><a class="register-link" th:href="@{/signup}">T&#7841;o t&#224;i kho&#7843;n</a></div></header>
 <main>

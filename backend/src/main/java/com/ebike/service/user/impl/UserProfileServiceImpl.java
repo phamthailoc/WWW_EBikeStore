@@ -178,7 +178,11 @@ public class UserProfileServiceImpl implements UserProfileService {
             });
 
         if (request != null && request.theme() != null && !request.theme().isBlank()) {
-            preference.setTheme(request.theme().trim());
+            String theme = request.theme().trim().toLowerCase(java.util.Locale.ROOT);
+            if (!java.util.List.of("system", "light", "dark").contains(theme)) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "theme must be system, light or dark");
+            }
+            preference.setTheme(theme);
         }
         if (request != null && request.language() != null && !request.language().isBlank()) {
             preference.setLanguage(request.language().trim());
