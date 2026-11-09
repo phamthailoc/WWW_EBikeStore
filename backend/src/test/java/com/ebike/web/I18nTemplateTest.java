@@ -40,7 +40,7 @@ class I18nTemplateTest {
         var exchange = application.buildExchange(new MockHttpServletRequest(), new MockHttpServletResponse());
         WebContext context = new WebContext(exchange, locale);
         Map<String, String> js = new TreeMap<>();
-        ResourceBundle bundle = ResourceBundle.getBundle("messages", locale);
+        ResourceBundle bundle = ResourceBundle.getBundle("messages", locale, ResourceBundle.Control.getNoFallbackControl(ResourceBundle.Control.FORMAT_PROPERTIES));
         bundle.keySet().stream().filter(key -> key.startsWith("js.")).forEach(key -> js.put(key, bundle.getString(key)));
         context.setVariable("jsMessages", js);
         model.forEach(context::setVariable);

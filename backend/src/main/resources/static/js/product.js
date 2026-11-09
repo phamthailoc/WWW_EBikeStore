@@ -18,7 +18,7 @@
     document.querySelector('#buyNow').disabled=max < 1;
     document.querySelector('#quantityMinus').disabled=item.quantity <= 1;
     document.querySelector('#quantityPlus').disabled=item.quantity >= max;
-    document.querySelector('#stockHint').textContent=max ? `Còn ${item.stock} xe · Tối đa ${max} xe mỗi đơn` : 'Màu xe này đã hết hàng';
+    document.querySelector('#stockHint').textContent=max ? `${t('Còn')} ${item.stock} ${t('xe · Tối đa')} ${max} ${t('xe mỗi đơn')}` : t('Màu xe này đã hết hàng');
   }
   function pickVariant(button) {
     document.querySelectorAll('.variant-option').forEach(node => {node.classList.remove('selected'); node.setAttribute('aria-pressed','false');});
@@ -31,14 +31,14 @@
     function showPhoto(index){
       const image=document.querySelector('#productImage');
       image.src=cart.safeImage(photos[index]);
-      image.alt=`${item.name} - ${item.colorName} - Ảnh ${index+1}`;
-      document.querySelector('#photoCaption').textContent=`${item.colorName} · Ảnh ${index+1}/${photos.length}`;
+      image.alt=`${item.name} - ${item.colorName} ${t('- Ảnh')} ${index+1}`;
+      document.querySelector('#photoCaption').textContent=`${item.colorName} ${t('· Ảnh')} ${index+1}/${photos.length}`;
       gallery.querySelectorAll('button').forEach((node,i)=>{node.classList.toggle('selected',i===index);node.setAttribute('aria-pressed',String(i===index));});
     }
     gallery.replaceChildren();
     photos.forEach((photo,index)=>{
       const thumbnail=document.createElement('button');thumbnail.type='button';
-      thumbnail.setAttribute('aria-label',`Xem ảnh ${index+1} màu ${item.colorName}`);
+      thumbnail.setAttribute('aria-label',`${t('Xem ảnh')} ${index+1} ${t('màu')} ${item.colorName}`);
       const image=document.createElement('img');image.src=cart.safeImage(photo);image.alt='';thumbnail.append(image);
       thumbnail.onclick=()=>showPhoto(index);gallery.append(thumbnail);
     });
@@ -54,14 +54,14 @@
   const selected=document.querySelector('.variant-option.selected');
   if(selected) pickVariant(selected); else {
     updateQuantity(1);document.querySelector('#addToCart').disabled=true;document.querySelector('#buyNow').disabled=true;
-    document.querySelector('#stockHint').textContent='Màu xe và hình ảnh đang được cập nhật.';
+    document.querySelector('#stockHint').textContent=t('Màu xe và hình ảnh đang được cập nhật.');
   }
   document.querySelector('#quantityMinus').onclick=()=>updateQuantity(item.quantity-1);
   document.querySelector('#quantityPlus').onclick=()=>updateQuantity(item.quantity+1);
   quantity.addEventListener('change',()=>updateQuantity(quantity.value));
   document.querySelector('#addToCart').onclick=()=>{
     updateQuantity(quantity.value);
-    try{cart.add(item); message(`Đã thêm ${item.quantity} xe ${item.name}${item.colorName ? ' · '+item.colorName : ''} vào giỏ hàng.`);}catch(error){message(error.message,true);}
+    try{cart.add(item); message(`${t('Đã thêm')} ${item.quantity} xe ${item.name}${item.colorName ? ' · '+item.colorName : ''} ${t('vào giỏ hàng.')}`);}catch(error){message(error.message,true);}
   };
   document.querySelector('#buyNow').onclick=()=>{
     updateQuantity(quantity.value);
@@ -70,7 +70,7 @@
     location.href='/checkout?buyNow=1';
   };
   document.querySelector('#addFavorite').onclick=async()=>{
-    try{await cart.request('/api/v1/favorites',{productId:item.id});message('Đã thêm xe vào danh sách yêu thích.');}
+    try{await cart.request('/api/v1/favorites',{productId:item.id});message(t('Đã thêm xe vào danh sách yêu thích.'));}
     catch(error){if(/Unauthorized|401/i.test(error.message)){location.href='/login?returnTo='+encodeURIComponent(location.pathname);return;}message(error.message,true);}
   };
   document.querySelector('#addCompare').onclick=()=>{

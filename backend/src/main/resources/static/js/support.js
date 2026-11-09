@@ -12,12 +12,12 @@ window.KineticSupport = (() => {
     if (!response.ok) {
       let message = '';
       try { message = (await response.json()).message || ''; } catch (ignored) { /* not JSON */ }
-      throw Error(message || 'Không gửi được yêu cầu. Vui lòng thử lại sau.');
+      throw Error(message || t('Không gửi được yêu cầu. Vui lòng thử lại sau.'));
     }
   }
 
   function faqHtml(faq) {
-    if (!faq.length) return '<p class="muted">Chưa có câu hỏi thường gặp.</p>';
+    if (!faq.length) return '<p class="muted">' + t('Chưa có câu hỏi thường gặp.') + '</p>';
     const groups = new Map();
     faq.forEach(item => {
       if (!groups.has(item.category)) groups.set(item.category, []);
@@ -31,21 +31,21 @@ window.KineticSupport = (() => {
 
   function render(target, showrooms, faq) {
     target.innerHTML = `
-      <section class="support-section"><p class="eyebrow">KINETIC / CÂU HỎI THƯỜNG GẶP</p><h2>Câu hỏi thường gặp</h2>${faqHtml(faq)}</section>
-      <section class="support-section"><p class="eyebrow">KINETIC / LIÊN HỆ</p><h2>Gửi yêu cầu hỗ trợ</h2>
-        <p class="muted">Không tìm thấy câu trả lời? Gửi câu hỏi hoặc phản ánh, cửa hàng sẽ trả lời qua email.</p>
+      <section class="support-section"><p class="eyebrow">${t('KINETIC / CÂU HỎI THƯỜNG GẶP')}</p><h2>${t('Câu hỏi thường gặp')}</h2>${faqHtml(faq)}</section>
+      <section class="support-section"><p class="eyebrow">${t('KINETIC / LIÊN HỆ')}</p><h2>${t('Gửi yêu cầu hỗ trợ')}</h2>
+        <p class="muted">${t('Không tìm thấy câu trả lời? Gửi câu hỏi hoặc phản ánh, cửa hàng sẽ trả lời qua email.')}</p>
         <form class="support-form" id="supportForm" novalidate>
-          <label>Họ và tên <b>*</b><input name="customerName" required maxlength="100" autocomplete="name"></label>
+          <label>${t('Họ và tên')} <b>*</b><input name="customerName" required maxlength="100" autocomplete="name"></label>
           <label>Email <b>*</b><input name="email" type="email" required maxlength="255" autocomplete="email"></label>
-          <label>Số điện thoại (không bắt buộc)<input name="phone" inputmode="tel" maxlength="30" autocomplete="tel" placeholder="0901234567"></label>
-          <label>Tiêu đề <b>*</b><input name="subject" required maxlength="150"></label>
-          <label class="wide">Nội dung <b>*</b><textarea name="message" required rows="5" minlength="10" maxlength="3000" placeholder="Mô tả vấn đề của bạn (ít nhất 10 ký tự)"></textarea></label>
+          <label>${t('Số điện thoại (không bắt buộc)')}<input name="phone" inputmode="tel" maxlength="30" autocomplete="tel" placeholder="0901234567"></label>
+          <label>${t('Tiêu đề')} <b>*</b><input name="subject" required maxlength="150"></label>
+          <label class="wide">${t('Nội dung')} <b>*</b><textarea name="message" required rows="5" minlength="10" maxlength="3000" placeholder="${t('Mô tả vấn đề của bạn (ít nhất 10 ký tự)')}"></textarea></label>
           <p class="support-message" role="status" hidden></p>
-          <p class="wide"><button class="button compact" type="submit">Gửi yêu cầu</button></p>
+          <p class="wide"><button class="button compact" type="submit">${t('Gửi yêu cầu')}</button></p>
         </form>
       </section>
-      <section class="support-section"><p class="eyebrow">KINETIC / SHOWROOM</p><h2>Cửa hàng của chúng tôi</h2>
-        ${showrooms.length ? `<div class="flow-cards">${showrooms.map(s => `<article class="flow-card"><p class="eyebrow">KINETIC / SHOWROOM</p><h3>${esc(s.name)}</h3><p>${esc(s.address || '')}${s.district ? ` · ${esc(s.district)}` : ''}</p><p>${esc(s.phone || '')}</p></article>`).join('')}</div>` : '<p class="empty">Chưa có cửa hàng nhận xe.</p>'}
+      <section class="support-section"><p class="eyebrow">KINETIC / SHOWROOM</p><h2>${t('Cửa hàng của chúng tôi')}</h2>
+        ${showrooms.length ? `<div class="flow-cards">${showrooms.map(s => `<article class="flow-card"><p class="eyebrow">KINETIC / SHOWROOM</p><h3>${esc(s.name)}</h3><p>${esc(s.address || '')}${s.district ? ` · ${esc(s.district)}` : ''}</p><p>${esc(s.phone || '')}</p></article>`).join('')}</div>` : '<p class="empty">' + t('Chưa có cửa hàng nhận xe.') + '</p>'}
       </section>`;
 
     const form = target.querySelector('#supportForm');
@@ -85,7 +85,7 @@ window.KineticSupport = (() => {
         });
         form.subject.value = '';
         form.message.value = '';
-        show('Đã gửi yêu cầu. Cửa hàng sẽ phản hồi qua email của bạn.', false);
+        show(t('Đã gửi yêu cầu. Cửa hàng sẽ phản hồi qua email của bạn.'), false);
       } catch (failure) {
         show(failure.message, true);
       } finally {
