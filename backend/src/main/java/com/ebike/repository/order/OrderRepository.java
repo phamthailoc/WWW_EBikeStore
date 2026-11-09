@@ -16,6 +16,8 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     boolean existsByUserId(Long userId);
 
+    boolean existsByUserIdAndStatusIn(Long userId, java.util.Collection<com.ebike.model.entity.order.OrderStatus> statuses);
+
     /** True when the customer has had the product delivered, which is what entitles them to review it. */
     @Query("select count(o) > 0 from Order o join o.items i where o.user.id = :userId and i.product.id = :productId "
         + "and o.status = com.ebike.model.entity.order.OrderStatus.DELIVERED")

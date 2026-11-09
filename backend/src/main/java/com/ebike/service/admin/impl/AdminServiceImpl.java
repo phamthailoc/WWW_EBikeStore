@@ -298,6 +298,12 @@ public class AdminServiceImpl implements AdminService {
         assertNotSelf(user, "Bạn không thể tự xóa tài khoản của chính mình.");
         assertNotLastAdmin(user, "Đây là quản trị viên cuối cùng đang hoạt động, không thể xóa.");
         assertNotDeleted(user);
+        // Staff who appear in the audit trail are kept: the trail must keep saying who did what. Lock them instead.
+        boolean staff = user.getRoles().stream().anyMatch(role -> !"CUSTOMER".equals(role.getName()));
+        if (staff && auditLogRepository.existsByActorIn(java.util.List.of(user.getUsername(), user.getEmail()))) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                "Tài khoản nhân viên này đã có thao tác trong nhật ký nên không thể xóa. Hãy vô hiệu hóa tài khoản.");
+        }
         // Erasing is irreversible, so the admin must type the account's email to confirm (checked here, not only in the form).
         if (confirmEmail == null || !confirmEmail.trim().equalsIgnoreCase(user.getEmail())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email xác nhận không khớp với tài khoản cần xóa.");

@@ -52,8 +52,23 @@ public class AuthController {
 
     private final AuthenticationService authenticationService;
 
-    public AuthController(AuthenticationService authenticationService) {
+    private final com.ebike.service.user.OwnAccountService ownAccountService;
+
+    public AuthController(AuthenticationService authenticationService, com.ebike.service.user.OwnAccountService ownAccountService) {
         this.authenticationService = authenticationService;
+        this.ownAccountService = ownAccountService;
+    }
+
+    /** A customer erases their own account and is signed out. */
+    @org.springframework.web.bind.annotation.DeleteMapping("/account")
+    @org.springframework.web.bind.annotation.ResponseStatus(org.springframework.http.HttpStatus.NO_CONTENT)
+    public void deleteOwnAccount(
+        @RequestBody com.ebike.dto.auth.request.DeleteOwnAccountRequest request,
+        org.springframework.security.core.Authentication authentication,
+        HttpServletResponse httpServletResponse
+    ) {
+        ownAccountService.deleteOwnAccount(authentication, request);
+        clearAuthCookie(httpServletResponse);
     }
 
     @PostMapping("/register")

@@ -132,6 +132,14 @@ class AdminAccountGuardTest {
         verify(auditLog).record("xóa tài khoản (ẩn danh hóa)", "tài khoản #3");
     }
 
+    @Test void aStaffAccountWithAuditEntriesCannotBeDeletedOnlyLocked() {
+        when(audits.existsByActorIn(any())).thenReturn(true);
+        var ex = assertThrows(ResponseStatusException.class, () -> service.deleteAccount(2L, "second.admin@example.com"));
+        assertEquals(400, ex.getStatusCode().value());
+        assertEquals("ACTIVE", otherAdmin.getAccountStatus());
+        verify(users, never()).save(any());
+    }
+
     @Test void deletingNeedsTheExactEmailTyped() {
         for (String typed : new String[] {null, "", "khach", "someone.else@example.com"}) {
             var ex = assertThrows(ResponseStatusException.class, () -> service.deleteAccount(3L, typed));

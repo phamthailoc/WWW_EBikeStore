@@ -64,6 +64,31 @@
       <label class="inline-check"><input type="checkbox" id="notificationsEnabled"> Nhận thông báo về đơn hàng và thanh toán</label>
     </section>`;
 
+  // Customers can erase their own account (staff accounts are managed by an admin).
+  if (document.body.dataset.role === 'customer') {
+    host.insertAdjacentHTML('beforeend', `
+    <section class="data-panel profile-extra" id="deletePanel">
+      <p class="eyebrow">TÀI KHOẢN</p><h2>Xóa tài khoản</h2>
+      <p class="muted">Họ tên, địa chỉ đã lưu, yêu thích, thông báo và đánh giá của bạn sẽ bị xóa; bạn không đăng nhập lại được và <b>không khôi phục được</b>. Đơn hàng đã đặt vẫn được cửa hàng lưu theo quy định kế toán. Không xóa được khi còn đơn chưa hoàn tất.</p>
+      <form id="deleteForm" class="profile-grid" autocomplete="off">
+        <label>Mật khẩu hiện tại<input type="password" name="password" autocomplete="current-password" required></label>
+        <label>Gõ lại email tài khoản để xác nhận<input type="email" name="confirmEmail" autocomplete="off" required></label>
+        <p><button class="button compact" type="submit">Xóa tài khoản của tôi</button></p>
+      </form>
+    </section>`);
+    host.querySelector('#deleteForm').addEventListener('submit', async event => {
+      event.preventDefault();
+      if (!confirm('Xóa vĩnh viễn tài khoản của bạn?')) return;
+      const form = event.currentTarget;
+      try {
+        await api('/api/v1/auth/account', 'DELETE', Object.fromEntries(new FormData(form)));
+        location.href = '/';
+      } catch (error) {
+        tell(error.message, true);
+      }
+    });
+  }
+
   const addressForm = host.querySelector('#addressForm');
   const list = host.querySelector('#addressList');
 
