@@ -70,12 +70,18 @@
   // account link is wrapped in one, so the button sits next to it instead of floating in the middle of the bar.
   function mount() {
     if (!document.querySelector('.top .actions')) {
+      var top = document.querySelector('.top');
       var login = document.querySelector('.top > .login');
-      if (login) {
+      if (top) {
         var group = document.createElement('div');
         group.className = 'actions';
-        login.parentNode.insertBefore(group, login);
-        group.appendChild(login);
+        if (login) {
+          login.parentNode.insertBefore(group, login);
+          group.appendChild(login);
+        } else {
+          // Login and sign-up have no account link: start the group at the right end; cart.js adds the cart to it.
+          top.appendChild(group);
+        }
       }
     }
     mountButton();

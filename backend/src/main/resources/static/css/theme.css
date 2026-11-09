@@ -8,3 +8,15 @@
 .theme-toggle{border:1px solid var(--c-dfe3dd);background:transparent;color:inherit;width:36px;height:36px;border-radius:50%;font:600 15px/1 "Space Grotesk",sans-serif;cursor:pointer;display:inline-grid;place-items:center;padding:0}
 .theme-toggle:hover{border-color:var(--c-737976)}
 .theme-toggle:focus-visible{outline:2px solid var(--c-087d98);outline-offset:2px}
+
+/* Product photos have a white background baked in. In the dark theme their frames take one soft light tone and the
+   photos are dimmed by 8%, which turns the baked-in white into the same tone (255 x .92 = #ebebeb), so each photo reads
+   as one even light tile instead of a glaring white block with a dark band around it. The light theme is unchanged. */
+:root[data-theme="dark"] .product-image,:root[data-theme="dark"] .detail-photo,:root[data-theme="dark"] .product-gallery button{background:#ebebeb}
+:root[data-theme="dark"] .product-image img,:root[data-theme="dark"] .detail-photo img,:root[data-theme="dark"] .product-gallery img,:root[data-theme="dark"] .cart-item-photo img,:root[data-theme="dark"] .checkout-item img,:root[data-theme="dark"] .image-grid img,:root[data-theme="dark"] .variant-option .color-preview{background:#fff;filter:brightness(.92)}
+:root[data-theme="dark"] .cart-item-photo img,:root[data-theme="dark"] .checkout-item img,:root[data-theme="dark"] .variant-option .color-preview{border-radius:6px}
+@media (prefers-color-scheme:dark){
+:root:not([data-theme="light"]):not([data-theme="dark"]) .product-image,:root:not([data-theme="light"]):not([data-theme="dark"]) .detail-photo,:root:not([data-theme="light"]):not([data-theme="dark"]) .product-gallery button{background:#ebebeb}
+:root:not([data-theme="light"]):not([data-theme="dark"]) .product-image img,:root:not([data-theme="light"]):not([data-theme="dark"]) .detail-photo img,:root:not([data-theme="light"]):not([data-theme="dark"]) .product-gallery img,:root:not([data-theme="light"]):not([data-theme="dark"]) .cart-item-photo img,:root:not([data-theme="light"]):not([data-theme="dark"]) .checkout-item img,:root:not([data-theme="light"]):not([data-theme="dark"]) .image-grid img,:root:not([data-theme="light"]):not([data-theme="dark"]) .variant-option .color-preview{background:#fff;filter:brightness(.92)}
+:root:not([data-theme="light"]):not([data-theme="dark"]) .cart-item-photo img,:root:not([data-theme="light"]):not([data-theme="dark"]) .checkout-item img,:root:not([data-theme="light"]):not([data-theme="dark"]) .variant-option .color-preview{border-radius:6px}
+}
