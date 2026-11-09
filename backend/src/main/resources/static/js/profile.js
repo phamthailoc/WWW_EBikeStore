@@ -60,6 +60,7 @@
     </section>
     <section class="data-panel profile-extra" id="preferencePanel">
       <p class="eyebrow">TÙY CHỌN</p><h2>Giao diện và thông báo</h2>
+      <label>Ngôn ngữ / Language<select id="langChoice"><option value="vi">Tiếng Việt</option><option value="en">English</option></select></label>
       <label>Giao diện<select id="themeChoice"><option value="system">Theo thiết bị</option><option value="light">Sáng</option><option value="dark">Tối</option></select></label>
       <label class="inline-check"><input type="checkbox" id="notificationsEnabled"> Nhận thông báo về đơn hàng và thanh toán</label>
     </section>`;
@@ -197,6 +198,14 @@
   });
 
   // theme.js applies and saves the choice (also to this account); the select only mirrors it.
+  // i18n.js stores the choice (cookie and account) and reloads this page in the new language.
+  const langChoice = host.querySelector('#langChoice');
+  if (window.ebikeLang) {
+    langChoice.value = window.ebikeLang.get();
+    langChoice.addEventListener('change', () => window.ebikeLang.set(langChoice.value));
+  } else {
+    langChoice.closest('label').hidden = true;
+  }
   const themeChoice = host.querySelector('#themeChoice');
   if (window.ebikeTheme) {
     themeChoice.value = window.ebikeTheme.get();

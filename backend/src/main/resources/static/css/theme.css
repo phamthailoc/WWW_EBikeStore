@@ -20,3 +20,6 @@
 :root:not([data-theme="light"]):not([data-theme="dark"]) .product-image img,:root:not([data-theme="light"]):not([data-theme="dark"]) .detail-photo img,:root:not([data-theme="light"]):not([data-theme="dark"]) .product-gallery img,:root:not([data-theme="light"]):not([data-theme="dark"]) .cart-item-photo img,:root:not([data-theme="light"]):not([data-theme="dark"]) .checkout-item img,:root:not([data-theme="light"]):not([data-theme="dark"]) .image-grid img,:root:not([data-theme="light"]):not([data-theme="dark"]) .variant-option .color-preview{background:#fff;filter:brightness(.92)}
 :root:not([data-theme="light"]):not([data-theme="dark"]) .cart-item-photo img,:root:not([data-theme="light"]):not([data-theme="dark"]) .checkout-item img,:root:not([data-theme="light"]):not([data-theme="dark"]) .variant-option .color-preview{border-radius:6px}
 }
+.lang-switch{border:1px solid var(--c-dfe3dd);border-radius:999px;min-width:36px;height:36px;display:inline-grid;place-items:center;padding:0 10px;font:600 12px/1 "Space Grotesk",sans-serif;letter-spacing:.06em;color:inherit;text-decoration:none}
+.lang-switch:hover{border-color:var(--c-737976)}
+.lang-switch:focus-visible{outline:2px solid var(--c-087d98);outline-offset:2px}

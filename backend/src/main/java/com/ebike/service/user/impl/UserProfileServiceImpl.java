@@ -185,7 +185,11 @@ public class UserProfileServiceImpl implements UserProfileService {
             preference.setTheme(theme);
         }
         if (request != null && request.language() != null && !request.language().isBlank()) {
-            preference.setLanguage(request.language().trim());
+            String language = request.language().trim().toLowerCase(java.util.Locale.ROOT);
+            if (!java.util.List.of("vi", "en").contains(language)) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "language must be vi or en");
+            }
+            preference.setLanguage(language);
         }
         if (request != null && request.notificationsEnabled() != null) {
             preference.setNotificationsEnabled(request.notificationsEnabled());

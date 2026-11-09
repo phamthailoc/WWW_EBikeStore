@@ -17,9 +17,16 @@ public class WorkspaceController {
     private record Link(String label, String href) {}
 
     private final VnPayProperties vnPayProperties;
+    private final org.springframework.context.MessageSource messages;
 
-    public WorkspaceController(VnPayProperties vnPayProperties) {
+    public WorkspaceController(VnPayProperties vnPayProperties, org.springframework.context.MessageSource messages) {
         this.vnPayProperties = vnPayProperties;
+        this.messages = messages;
+    }
+
+    /** The text for a key in the page language; staff pages have no English yet and keep the Vietnamese default. */
+    private String m(String key, String defaultText) {
+        return messages.getMessage(key, null, defaultText, org.springframework.context.i18n.LocaleContextHolder.getLocale());
     }
 
     @GetMapping({"/customer", "/customer/**", "/manager", "/manager/**", "/admin", "/admin/**"})
@@ -33,11 +40,11 @@ public class WorkspaceController {
         String description;
         String mode = "table";
         switch (section) {
-            case "customer" -> { title = "Tổng quan tài khoản"; api = "/api/v1/orders"; description = "Đơn hàng và hoạt động gần đây của bạn."; mode = "dashboard"; }
-            case "customer/orders" -> { title = "Đơn hàng của tôi"; api = "/api/v1/orders"; description = "Theo dõi trạng thái và thông tin giao nhận."; }
-            case "customer/payments" -> { title = "Lịch sử thanh toán"; api = "/api/v1/payments/history"; description = "Các giao dịch thanh toán của bạn."; }
-            case "customer/notifications" -> { title = "Thông báo"; api = "/api/v1/notifications"; description = "Cập nhật về đơn hàng và tài khoản."; }
-            case "customer/profile" -> { title = "Hồ sơ cá nhân"; api = "/api/v1/auth/profile"; description = "Thông tin liên hệ và tùy chọn tài khoản."; mode = "profile"; }
+            case "customer" -> { title = m("page.customer", "Tổng quan tài khoản"); api = "/api/v1/orders"; description = m("page.customerDesc", "Đơn hàng và hoạt động gần đây của bạn."); mode = "dashboard"; }
+            case "customer/orders" -> { title = m("page.orders", "Đơn hàng của tôi"); api = "/api/v1/orders"; description = m("page.ordersDesc", "Theo dõi trạng thái và thông tin giao nhận."); }
+            case "customer/payments" -> { title = m("page.payments", "Lịch sử thanh toán"); api = "/api/v1/payments/history"; description = m("page.paymentsDesc", "Các giao dịch thanh toán của bạn."); }
+            case "customer/notifications" -> { title = m("page.notifications", "Thông báo"); api = "/api/v1/notifications"; description = m("page.notificationsDesc", "Cập nhật về đơn hàng và tài khoản."); }
+            case "customer/profile" -> { title = m("page.profile", "Hồ sơ cá nhân"); api = "/api/v1/auth/profile"; description = m("page.profileDesc", "Thông tin liên hệ và tùy chọn tài khoản."); mode = "profile"; }
             case "manager" -> { title = "Tổng quan cửa hàng"; api = "/api/v1/manager/dashboard"; description = "Đơn hàng, thanh toán và doanh thu cửa hàng."; mode = "dashboard"; }
             case "manager/orders" -> { title = "Quản lý đơn hàng"; api = "/api/v1/orders"; description = "Theo dõi và cập nhật các đơn xe."; }
             case "manager/payments" -> { title = "Thanh toán"; api = "/api/v1/manager/payments"; description = "Xác nhận giao dịch và thanh toán sau."; }
@@ -52,15 +59,15 @@ public class WorkspaceController {
             case "admin/audit-logs" -> { title = "Nhật ký hoạt động"; api = "/api/v1/admin/audit-logs"; description = "100 thao tác quản trị gần nhất."; }
             case "admin/users" -> { title = "Người dùng"; api = "/api/v1/admin/accounts?type=CUSTOMER"; description = "Danh sách tài khoản khách hàng."; }
             default -> {
-                if (path.startsWith("/customer/orders/")) { title = "Chi tiết đơn hàng"; api = "/api/v1/orders/" + id; description = "Chi tiết và tiến trình đơn hàng."; mode = "detail"; }
+                if (path.startsWith("/customer/orders/")) { title = m("page.orderDetail", "Chi tiết đơn hàng"); api = "/api/v1/orders/" + id; description = m("page.orderDetailDesc", "Chi tiết và tiến trình đơn hàng."); mode = "detail"; }
                 else if (path.startsWith("/manager/orders/")) { title = "Chi tiết đơn hàng"; api = "/api/v1/orders/" + id; description = "Cập nhật đơn hàng và giao nhận."; mode = "detail"; }
-                else { title = "Không tìm thấy trang"; api = ""; description = "Đường dẫn không tồn tại."; }
+                else { title = m("page.notFound", "Không tìm thấy trang"); api = ""; description = m("page.notFoundDesc", "Đường dẫn không tồn tại."); }
             }
         }
         List<Link> links = switch (role) {
             case "admin" -> List.of(new Link("Tổng quan", "/admin"), new Link("Sản phẩm", "/admin/products"), new Link("Kho hàng", "/admin/inventory"), new Link("Giá & khuyến mãi", "/admin/pricing"), new Link("Tài khoản", "/admin/accounts"), new Link("Vai trò", "/admin/roles"), new Link("Nhật ký", "/admin/audit-logs"), new Link("Người dùng", "/admin/users"));
             case "manager" -> List.of(new Link("Tổng quan", "/manager"), new Link("Đơn hàng", "/manager/orders"), new Link("Thanh toán", "/manager/payments"), new Link("Khách hàng", "/manager/customers"), new Link("Hỗ trợ", "/manager/support"), new Link("Kho hàng", "/manager/inventory"), new Link("Sản phẩm", "/manager/products"), new Link("Báo cáo", "/manager/reports"));
-            default -> List.of(new Link("Tổng quan", "/customer"), new Link("Đơn hàng", "/customer/orders"), new Link("Thanh toán", "/customer/payments"), new Link("Thông báo", "/customer/notifications"), new Link("Hồ sơ", "/customer/profile"), new Link("Yêu thích", "/favorites"));
+            default -> List.of(new Link(m("menu.overview", "Tổng quan"), "/customer"), new Link(m("menu.orders", "Đơn hàng"), "/customer/orders"), new Link(m("menu.payments", "Thanh toán"), "/customer/payments"), new Link(m("menu.notifications", "Thông báo"), "/customer/notifications"), new Link(m("menu.profile", "Hồ sơ"), "/customer/profile"), new Link(m("menu.favourites", "Yêu thích"), "/favorites"));
         };
         model.addAttribute("workspaceRole", role);
         model.addAttribute("title", title);
@@ -78,14 +85,14 @@ public class WorkspaceController {
     public String customerFlow(HttpServletRequest request, Model model) {
         String path = request.getRequestURI();
         String title = switch (path) {
-            case "/cart" -> "Giỏ hàng của bạn";
-            case "/favorites" -> "Sản phẩm yêu thích";
-            case "/checkout" -> "Thanh toán đơn hàng";
-            case "/checkout/success" -> "Đặt hàng thành công";
-            case "/payment/return" -> "Kết quả thanh toán";
-            case "/support" -> "Hỗ trợ khách hàng";
-            case "/compare" -> "So sánh xe";
-            default -> "Trợ lý KINETIC";
+            case "/cart" -> m("flow.cart", "Giỏ hàng của bạn");
+            case "/favorites" -> m("flow.favourites", "Sản phẩm yêu thích");
+            case "/checkout" -> m("flow.checkout", "Thanh toán đơn hàng");
+            case "/checkout/success" -> m("flow.success", "Đặt hàng thành công");
+            case "/payment/return" -> m("flow.paymentResult", "Kết quả thanh toán");
+            case "/support" -> m("flow.support", "Hỗ trợ khách hàng");
+            case "/compare" -> m("flow.compare", "So sánh xe");
+            default -> m("flow.assistant", "Trợ lý KINETIC");
         };
         String api = switch (path) {
             case "/favorites" -> "/api/v1/favorites";
