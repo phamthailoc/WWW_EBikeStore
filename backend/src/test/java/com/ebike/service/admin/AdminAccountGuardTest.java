@@ -50,6 +50,7 @@ class AdminAccountGuardTest {
     @Mock com.ebike.repository.user.UserFavoriteRepository favorites;
     @Mock com.ebike.repository.user.UserPreferenceRepository preferences;
     @Mock com.ebike.repository.notification.NotificationRepository notifications;
+    @Mock com.ebike.service.product.ProductReviewService reviews;
     AdminServiceImpl service;
     User me;
     User otherAdmin;
@@ -57,7 +58,7 @@ class AdminAccountGuardTest {
 
     @BeforeEach void setup() {
         service = new AdminServiceImpl(pricingRules, promotions, audits, users, roles, encoder, orders,
-            new AccountErasure(addresses, favorites, preferences, notifications, encoder));
+            new AccountErasure(addresses, favorites, preferences, notifications, reviews, encoder));
         me = account(1L, "admin.user", "ADMIN");
         otherAdmin = account(2L, "second.admin", "ADMIN");
         customer = account(3L, "khach", "CUSTOMER");
@@ -88,7 +89,7 @@ class AdminAccountGuardTest {
     private void onlyAdmin() { lenient().when(users.findAll()).thenReturn(List.of(me, customer)); }
 
     @Test void anAdminCannotDeleteOrDeactivateOrDemoteThemselves() {
-        assertThrows(ResponseStatusException.class, () -> service.deleteAccount(1L));
+        assertThrows(ResponseStatusException.class, () -> service.deleteAccount(1L, "admin.user@example.com"));
         assertThrows(ResponseStatusException.class, () -> service.updateAccountStatus(1L, new AdminAccountStatusUpdateRequest("INACTIVE")));
         assertThrows(ResponseStatusException.class, () -> service.updateAccountRole(1L, new AdminAccountRoleUpdateRequest("CUSTOMER")));
         verify(users, never()).delete(any());
@@ -99,7 +100,7 @@ class AdminAccountGuardTest {
         // "me" is the only admin; a second admin session (not "me") tries to remove them
         SecurityContextHolder.getContext().setAuthentication(new TestingAuthenticationToken("someone.else", "x"));
         onlyAdmin();
-        assertThrows(ResponseStatusException.class, () -> service.deleteAccount(1L));
+        assertThrows(ResponseStatusException.class, () -> service.deleteAccount(1L, "admin.user@example.com"));
         assertThrows(ResponseStatusException.class, () -> service.updateAccountStatus(1L, new AdminAccountStatusUpdateRequest("LOCKED")));
         assertThrows(ResponseStatusException.class, () -> service.updateAccountRole(1L, new AdminAccountRoleUpdateRequest("CUSTOMER")));
         verify(users, never()).delete(any());
@@ -114,7 +115,7 @@ class AdminAccountGuardTest {
         customer.setEmail("khach@example.com");
         customer.setFirstName("Nguyễn");
         when(encoder.encode(any())).thenReturn("random-hash");
-        service.deleteAccount(3L);
+        service.deleteAccount(3L, "KHACH@example.com");
         assertEquals("DELETED", customer.getAccountStatus());
         assertEquals(false, customer.getActive());
         assertEquals("deleted_3", customer.getUsername());
@@ -125,12 +126,23 @@ class AdminAccountGuardTest {
         verify(addresses).deleteAll(any());
         verify(favorites).deleteAll(any());
         verify(notifications).deleteAll(any());
+        verify(reviews).removeReviewsOf(3L);
+    }
+
+    @Test void deletingNeedsTheExactEmailTyped() {
+        for (String typed : new String[] {null, "", "khach", "someone.else@example.com"}) {
+            var ex = assertThrows(ResponseStatusException.class, () -> service.deleteAccount(3L, typed));
+            assertEquals(400, ex.getStatusCode().value());
+        }
+        assertEquals("ACTIVE", customer.getAccountStatus());
+        verify(users, never()).save(any());
+        verify(reviews, never()).removeReviewsOf(any());
     }
 
     @Test void aDeletedAccountCannotBeChangedAgainAndIsHiddenFromTheList() {
         when(encoder.encode(any())).thenReturn("random-hash");
-        service.deleteAccount(3L);
-        assertEquals(400, assertThrows(ResponseStatusException.class, () -> service.deleteAccount(3L)).getStatusCode().value());
+        service.deleteAccount(3L, "khach@example.com");
+        assertEquals(400, assertThrows(ResponseStatusException.class, () -> service.deleteAccount(3L, "khach@example.com")).getStatusCode().value());
         assertThrows(ResponseStatusException.class, () -> service.updateAccountStatus(3L, new AdminAccountStatusUpdateRequest("ACTIVE")));
         assertThrows(ResponseStatusException.class, () -> service.updateAccountRole(3L, new AdminAccountRoleUpdateRequest("ADMIN")));
         assertEquals(2, service.getAccounts(null).size());

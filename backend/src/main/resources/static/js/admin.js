@@ -123,11 +123,21 @@
     });
   }
 
-  async function deleteAccount(id) {
-    if (!confirm('Xóa tài khoản này theo yêu cầu của khách? Họ tên, địa chỉ đã lưu, yêu thích và thông báo sẽ bị xóa, tài khoản không đăng nhập được nữa và không khôi phục được. Đơn hàng cũ vẫn được giữ. Nếu chỉ muốn chặn tài khoản, hãy chọn Vô hiệu hóa.')) return;
-    await api(`/api/v1/admin/accounts/${id}`, 'DELETE');
-    tell('Đã xóa tài khoản.');
-    reload();
+  // Erasing an account cannot be undone, so the admin has to type its email before the button works.
+  function deleteAccount(id, email) {
+    formDialog({
+      title: 'Xóa tài khoản',
+      intro: 'Chỉ làm khi khách yêu cầu xóa. Họ tên, địa chỉ đã lưu, yêu thích, thông báo và <b>đánh giá</b> của tài khoản này sẽ bị xóa; tài khoản không đăng nhập được nữa và <b>không khôi phục được</b>. Đơn hàng cũ vẫn được giữ. Nếu chỉ muốn chặn tài khoản, hãy chọn Vô hiệu hóa.',
+      fields: `<label>Gõ đúng email <b>${esc(email)}</b> để xác nhận<input name="confirmEmail" autocomplete="off" required></label>`,
+      submitLabel: 'Xóa vĩnh viễn',
+      submit: async form => {
+        const typed = new FormData(form).get('confirmEmail').trim();
+        if (typed.toLowerCase() !== String(email).toLowerCase()) throw Error('Email chưa khớp với tài khoản cần xóa.');
+        await api(`/api/v1/admin/accounts/${id}?confirmEmail=${encodeURIComponent(typed)}`, 'DELETE');
+        tell('Đã xóa tài khoản.');
+        reload();
+      }
+    });
   }
 
   // ---- discount codes -----------------------------------------------------------------
@@ -183,7 +193,7 @@
   // ---- wiring -------------------------------------------------------------------------
   const handlers = {
     'role': id => changeRole(id),
-    'delete-account': id => deleteAccount(id),
+    'delete-account': (id, button) => deleteAccount(id, button.dataset.email),
     'promotion': id => editPromotion(id)
   };
 
@@ -202,7 +212,7 @@
     const handler = button && handlers[button.dataset.action];
     if (handler) {
       event.stopImmediatePropagation();
-      Promise.resolve(handler(button.dataset.id)).catch(error => tell(error.message, true));
+      Promise.resolve(handler(button.dataset.id, button)).catch(error => tell(error.message, true));
     }
   }, true);
 })();

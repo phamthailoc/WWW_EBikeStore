@@ -36,7 +36,7 @@ public interface AdminService {
 
     AdminAccountResponse updateAccountStatus(Long id, AdminAccountStatusUpdateRequest request);
 
-    void deleteAccount(Long id);
+    void deleteAccount(Long id, String confirmEmail);
 
     List<RolePermissionResponse> getRoles();
 

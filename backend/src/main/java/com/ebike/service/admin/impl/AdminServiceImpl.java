@@ -288,12 +288,16 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     @Transactional
-    public void deleteAccount(Long id) {
+    public void deleteAccount(Long id, String confirmEmail) {
         User user = userRepository.findById(id)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Account not found"));
         assertNotSelf(user, "Bạn không thể tự xóa tài khoản của chính mình.");
         assertNotLastAdmin(user, "Đây là quản trị viên cuối cùng đang hoạt động, không thể xóa.");
         assertNotDeleted(user);
+        // Erasing is irreversible, so the admin must type the account's email to confirm (checked here, not only in the form).
+        if (confirmEmail == null || !confirmEmail.trim().equalsIgnoreCase(user.getEmail())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email xác nhận không khớp với tài khoản cần xóa.");
+        }
         // Orders and payments are the shop's accounting record, so the account is anonymised, not removed.
         accountErasure.erase(user);
         userRepository.save(user);
