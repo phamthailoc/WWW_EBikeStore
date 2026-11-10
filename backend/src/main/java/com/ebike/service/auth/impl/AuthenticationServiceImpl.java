@@ -1,12 +1,10 @@
 package com.ebike.service.auth.impl;
 
 import com.ebike.dto.auth.response.AuthResponse;
-import com.ebike.dto.auth.response.EnhancedAuthResponse;
 import com.ebike.dto.auth.request.ChangePasswordRequest;
 import com.ebike.dto.auth.request.LoginRequest;
 import com.ebike.dto.auth.request.RegisterRequest;
 import com.ebike.dto.auth.request.UpdateProfileRequest;
-import com.ebike.dto.auth.response.RoleSpecificLoginResponse;
 import com.ebike.dto.auth.response.UserProfileResponse;
 import com.ebike.model.entity.auth.AuthenticationLog;
 import com.ebike.model.entity.auth.Role;
@@ -18,13 +16,10 @@ import com.ebike.service.auth.AuthenticationService;
 import com.ebike.service.auth.JwtTokenProvider;
 import com.ebike.service.auth.PermissionService;
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -36,9 +31,6 @@ import org.springframework.web.server.ResponseStatusException;
 public class AuthenticationServiceImpl implements AuthenticationService {
 
     private static final String DEFAULT_CUSTOMER_ROLE = "CUSTOMER";
-
-    @Value("${jwt.expiration:86400000}")
-    private long jwtExpirationMs;
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
@@ -134,57 +126,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     @Override
-    public EnhancedAuthResponse enhancedLogin(LoginRequest request, String ipAddress, String userAgent) {
-        if (request == null || isBlank(request.usernameOrEmail()) || isBlank(request.password())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "usernameOrEmail and password are required");
-        }
-
-        User user = findUser(request.usernameOrEmail());
-        if (!Boolean.TRUE.equals(user.getActive())) {
-            auditSignIn(user, false, "tài khoản bị khóa");
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User is inactive");
-        }
-        if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
-            auditSignIn(user, false, "sai mật khẩu");
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials");
-        }
-        auditSignIn(user, true, null);
-
-        AuthenticationLog log = new AuthenticationLog();
-        log.setUser(user);
-        log.setLoginTime(LocalDateTime.now());
-        log.setIpAddress(trimToNull(ipAddress));
-        log.setUserAgent(trimToNull(userAgent));
-        authenticationLogRepository.save(log);
-
-        return toEnhancedAuthResponse(user);
-    }
-
-    @Override
-    public RoleSpecificLoginResponse roleSpecificLogin(
-        LoginRequest request,
-        String requiredRole,
-        String ipAddress,
-        String userAgent
-    ) {
-        EnhancedAuthResponse authResponse = enhancedLogin(request, ipAddress, userAgent);
-
-        User user = findUser(request.usernameOrEmail());
-        Set<String> roles = extractRoleNames(user);
-        String normalizedRequiredRole = requiredRole.toUpperCase(Locale.ROOT);
-        if (!roles.contains(normalizedRequiredRole)) {
-            throw new ResponseStatusException(
-                HttpStatus.FORBIDDEN,
-                "User does not have required role: " + normalizedRequiredRole
-            );
-        }
-
-        Object roleData = buildRoleSpecificData(user, normalizedRequiredRole);
-
-        return new RoleSpecificLoginResponse(normalizedRequiredRole, roleData, authResponse);
-    }
-
-    @Override
     @Transactional(readOnly = true)
     public UserProfileResponse getProfile(String usernameOrEmail) {
         if (isBlank(usernameOrEmail)) {
@@ -254,16 +195,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         userRepository.save(user);
     }
 
-    @Override
-    public boolean validateToken(String token) {
-        return jwtTokenProvider.validateToken(token);
-    }
-
-    @Override
-    public String extractUsernameFromToken(String token) {
-        return jwtTokenProvider.extractUsername(token);
-    }
-
     private User findUser(String usernameOrEmail) {
         String trimmed = usernameOrEmail.trim();
         return userRepository.findByEmail(trimmed.toLowerCase(Locale.ROOT))
@@ -296,30 +227,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         );
     }
 
-    private EnhancedAuthResponse toEnhancedAuthResponse(User user) {
-        Set<String> roles = extractRoleNames(user);
-        if (roles.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User does not have any assigned roles");
-        }
-
-        String jwtToken = jwtTokenProvider.generateToken(user);
-        LocalDateTime issuedAt = LocalDateTime.now();
-        LocalDateTime expiresAt = issuedAt.plusNanos(jwtExpirationMs * 1_000_000L);
-
-        return new EnhancedAuthResponse(
-            user.getId(),
-            user.getUsername(),
-            user.getEmail(),
-            buildFullName(user),
-            jwtToken,
-            roles,
-            user.getActive(),
-            user.getVerified(),
-            issuedAt,
-            expiresAt
-        );
-    }
-
     private UserProfileResponse toUserProfileResponse(User user) {
         return new UserProfileResponse(
             user.getId(),
@@ -332,32 +239,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             extractRoleNames(user),
             permissionService.resolvePermissionCodes(user)
         );
-    }
-
-    private Object buildRoleSpecificData(User user, String role) {
-        Map<String, Object> roleData = new HashMap<>();
-        roleData.put("role", role);
-        roleData.put("userId", user.getId());
-        roleData.put("permissions", permissionService.resolvePermissionCodes(user));
-
-        switch (role.toUpperCase()) {
-            case "CUSTOMER":
-                roleData.put("type", "Individual Customer");
-                roleData.put("memberSince", user.getCreatedAt());
-                break;
-            case "MANAGER":
-                roleData.put("type", "Store Manager");
-                roleData.put("authority", "Full Store Management");
-                break;
-            case "ADMIN":
-                roleData.put("type", "System Administrator");
-                roleData.put("authority", "System-wide Management");
-                break;
-            default:
-                roleData.put("type", "Standard User");
-        }
-
-        return roleData;
     }
 
     private Set<String> extractRoleNames(User user) {

@@ -1,5 +1,5 @@
 ﻿-- KINETIC E-Bike Store: MariaDB single-database setup
--- Source: backend/database/schema-source and backend/database/catalog/products.json
+-- Edited by hand; every change also needs an update_*.sql for existing databases (see README.md).
 -- Run this file in HeidiSQL. Images are referenced by relative local paths.
 CREATE DATABASE IF NOT EXISTS ebike_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE ebike_db;

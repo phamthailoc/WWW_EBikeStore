@@ -243,52 +243,6 @@ public class ChatbotService {
         return answer.toString();
     }
 
-    private String buildGeminiPrompt(ChatbotAnalysis analysis) {
-        StringBuilder context = new StringBuilder();
-        if (analysis.faqMatch() != null) {
-            context.append("FAQ liên quan:\n")
-                .append("- Câu hỏi: ").append(analysis.faqMatch().question()).append('\n')
-                .append("- Trả lời: ").append(analysis.faqMatch().answer()).append("\n\n");
-        }
-        if (!analysis.recommendations().isEmpty()) {
-            context.append("Sản phẩm gợi ý từ database:\n");
-            for (ChatbotRecommendationDto recommendation : analysis.recommendations()) {
-                context.append("- ")
-                    .append(recommendation.name())
-                    .append(" | Gia: ")
-                    .append(recommendation.price())
-                    .append(" VND | Lý do: ")
-                    .append(recommendation.reason())
-                    .append('\n');
-            }
-            context.append('\n');
-        }
-        if (!analysis.showroomContext().isBlank()) {
-            context.append("Showroom đang hoạt động:\n").append(analysis.showroomContext()).append("\n\n");
-        }
-        if (!analysis.orderPaymentContext().isBlank()) {
-            context.append("Thông tin đặt hàng và thanh toán:\n").append(analysis.orderPaymentContext()).append("\n\n");
-        }
-        context.append("Câu trả lời fallback nếu thiếu dữ liệu: ").append(analysis.ruleBasedResponse().answer());
-
-        return """
-            Bạn là trợ lý tư vấn xe điện của Kinetic E-Bike.
-            %s
-            Chỉ dựa trên CONTEXT được cung cấp. Nếu không đủ thông tin, hãy nói rõ và gợi ý khách xem sản phẩm hoặc liên hệ showroom.
-            Không bịa đặt thông số, giá, khuyến mãi hoặc chính sách ngoài context.
-
-            CONTEXT:
-            %s
-
-            CÂU HỎI KHÁCH HÀNG:
-            %s
-            """.formatted(
-                tr("Hãy luôn trả lời bằng tiếng Việt có dấu, tự nhiên, thân thiện, ngắn gọn và đúng vai trò tư vấn bán hàng.",
-                    "Always answer in English, in a natural, friendly and concise tone, as a sales advisor."),
-                context,
-                analysis.userMessage());
-    }
-
     private List<ChatbotRecommendationDto> findProductRecommendations(String message) {
         if (isCatalogQuestion(message)) {
             return productRepository.findAll().stream()

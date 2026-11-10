@@ -228,19 +228,29 @@ Ký hiệu: ✅ đủ · 🟡 một phần · ❌ chưa có
 
 ### Dọn dẹp và tài liệu (làm song song)
 
-**Xóa khi hoàn thành dự án (rà soát 07/11, người dùng chốt để cuối cùng mới xóa).** Đã kiểm tra không còn chỗ nào dùng; xóa xong chạy lại toàn bộ test, mọi file vẫn lấy lại được từ lịch sử git.
-- [ ] Nhóm A — xóa không ảnh hưởng:
+**Xóa khi hoàn thành dự án (rà soát 07/11; đã xóa 10/11 theo yêu cầu audit của người dùng).** Mọi file vẫn lấy lại được từ lịch sử git (trước commit dọn dẹp). Sau khi xóa, chạy app và toàn bộ test kèm Selenium: 198 test, 0 lỗi, 1 test tự bỏ qua (`OrderUnitsSeleniumTest`, thiếu tồn kho).
+- [x] Nhóm A — xóa không ảnh hưởng:
   - `EMAIL_OTP_FLOW.md` (tài liệu của dự án khác, "Zalo Lite"; các lớp `AuthService`, `EmailService` không có trong dự án này).
   - `archive/legacy-deployment/`, `archive/legacy-project/` (Docker/EC2/GitHub Actions và client React Native/Electron/PostgreSQL cũ).
   - `backend/tests/ui/` (script Playwright 02/11 đã lỗi thời: `checkout-smoke.cjs` còn đòi phí hồ sơ 2.500.000đ; Selenium đã thay).
   - `backend/src/main/java/com/ebike/dto/auth/response/ErrorResponse.java` (không dùng; lỗi trả về qua `ApiErrorResponse`).
   - 6 repository không ai gọi (bảng được đọc/ghi qua entity cha): `PermissionRepository`, `UserPermissionRepository`, `OrderItemRepository`, `ShipmentRepository`, `CategoryRepository`, `ProductSpecificationRepository`. Kế hoạch còn lại (V18, V19, các mục lệch) không cần tới; V18 sẽ có repository riêng cho bảng số khung/số máy.
   - Thư mục rỗng `backend/src/main/resources/templates/email/`.
-- [ ] Nhóm B — cân nhắc trước khi xóa:
+- [x] Nhóm B — đã xóa, trừ `HUONG_DAN_SUA_CODE.md` (còn giữ):
   - `archive/catalog-before-correction/` (220 MB): nguồn duy nhất của `materialize_catalog.py`; xóa thì không dựng lại được danh mục từ dữ liệu crawl (app vẫn chạy).
   - `packages/web/` (giao diện React cũ): xóa thì sửa các dòng nhắc tới nó trong `README.md`, `backend/ARCHITECTURE.md`.
   - `Đánh giá các task.md` (đã ghi là tài liệu cũ), `backend/TEST_REPORT_CART.md`, `TEST_REPORT_CATALOG.md`, `TEST_REPORT_HOME_LAYOUT.md` (biên bản 02/11).
-  - `HUONG_DAN_SUA_CODE.md` (việc 1–3 đã xong; xác nhận việc 4 — rà Word — trước khi bỏ).
+  - `HUONG_DAN_SUA_CODE.md` (việc 1–3 đã xong; xác nhận việc 4 — rà Word — trước khi bỏ). **Chưa xóa.**
+- [x] Audit 10/11 — xóa thêm (người dùng chốt từng nhóm):
+  - Bộ sinh SQL: `generate_mariadb_setup.py`, `crawl_catalog.py`, `materialize_catalog.py`, `database/schema-source/`. `setup_ebike_database.sql` + `update_*.sql` là nguồn duy nhất.
+  - Redis (thư viện, `RedisCacheConfiguration`, kiểm tra Redis trong `/api/v1/health/ready`) và Flyway (thư viện, cấu hình). Cache sản phẩm chạy trong bộ nhớ như trước; tên cache nằm ở `CacheNames`.
+  - API chỉ giao diện React cũ dùng: `/api/v1/auth/login/enhanced`, `/login/customer|manager|admin`, `/session`, `/verify-token`, `/user-from-token`, `/api/v1/media/image` (proxy ảnh không cần đăng nhập, gọi được URL bất kỳ), cấu hình CORS cho `localhost:3000/5173…`.
+  - Tham số `usernameOrEmail` của `GET /api/v1/auth/profile`: ai đăng nhập cũng đọc được hồ sơ người khác. Giờ chỉ trả hồ sơ của chính mình.
+  - Mã không ai gọi: các hàm repository thừa, `JwtTokenProvider.extractUserId/extractRoles/extractEmail`, `PermissionService.hasPermission`, `ChatbotService.buildGeminiPrompt`.
+- [x] Audit 10/11 — sửa: `ServerRateLimitFilter` chưa từng chặn request nào (luật ghi `/auth/login`, đường dẫn thật là `/api/v1/auth/login`). Đã thêm tiền tố `/api/v1`; trang đăng nhập báo riêng khi bị giới hạn (429). **Selenium phải chạy app với `APP_RATE_LIMIT_ENABLED=false`.**
+- [x] Kiểm thử 10/11 — ba lỗi có sẵn lộ ra khi chạy Selenium, đã sửa: biểu thức Thymeleaf sai trong `workspace.html` (V19) làm mọi trang `/customer`, `/manager`, `/admin` lỗi 500; ô tìm kiếm của Manager bị kết quả cũ ghi đè khi gõ nhanh (`workspace.js`); ngưỡng khoảng cách trong `ThemeSeleniumTest` chưa tính nút đổi ngôn ngữ.
+- [ ] **Ảnh sản phẩm 404 trên máy dev (phát hiện 10/11, chưa sửa, chờ người dùng đồng ý).** `ebike_db` trên máy này vẫn là danh mục cũ: 42 sản phẩm (có xe xăng 50cc), 168 dòng ảnh trỏ tới `/images/products/...`, thư mục đã rời khỏi app từ commit `9c34f60` (02/11). Ảnh đang dùng (181 file ở `static/images/catalog/`) còn nguyên. Script chuyển danh mục `backend/database/updates/20261102_verified_electric_catalog.sql` bị xóa ở `b483c27` với ghi chú "đã áp dụng" nhưng chưa từng chạy trên máy này. Cách sửa: sao lưu `ebike_db`; lấy lại script bằng `git show b483c27^:backend/database/updates/20261102_verified_electric_catalog.sql`; chạy vào `ebike_db`; chạy lại `update_vehicle_types.sql` và `update_product_stock_totals.sql`; đưa script trở lại `backend/database/` (đặt tên `update_*.sql`, thêm vào README) để máy khác không gặp lại; chạy lại Selenium vì lần 10/11 chạy trên danh mục cũ.
+- [ ] Audit 10/11 — còn mở, chưa làm (cần người dùng quyết): xem báo cáo audit (khóa JWT và mật khẩu DB mặc định trong `application.properties`; cache danh sách sản phẩm không giới hạn theo từ khóa tìm kiếm; cookie đăng nhập hỏng trả JSON 401 cho cả trang chủ; `E-Bike-Login-API.postman_collection.json` còn các request đã xóa; S3 chưa dùng được ở máy dev).
 
 - [x] (07/11, `ee6241d`) Xóa mã chết: `/manager/orders/{id}/cancellation/approve` và `/reject`, trạng thái `CANCELLATION_REQUESTED`, phần liên quan trong `NotificationCreationService` (luồng hủy hiện không còn tạo trạng thái này).
 - [ ] ~~Thêm test~~ (từ 07/11 người dùng bảo chỉ viết code, không viết test; còn thiếu test cho V4–V16 và các mục dưới đây): hoàn tiền (`ManagerServiceImpl.refundPayment`), hủy đơn cộng lại tồn kho, mã khuyến mãi hết lượt hoặc WAITING bị từ chối.
@@ -361,7 +371,7 @@ Thứ tự làm: B3 → B1 → B2 → B4 → B6 → B5 → B7 → B8 (việc nh�
 
 **Test:** unit (đọc đúng quy tắc đang hiệu lực, bỏ qua `SCHEDULED`); Selenium: Admin đổi phí, rồi trang checkout hiện phí mới.
 
-**Lưu ý:** `generate_mariadb_setup.py` sinh lại file setup từ `schema-source/`, nhưng máy này chưa cài Python. Sửa tay file setup, đồng thời sửa nguồn tương ứng để lần sinh sau không mất thay đổi.
+**Lưu ý:** (cập nhật 10/11) `generate_mariadb_setup.py` và `schema-source/` đã bị xóa; file setup được sửa tay và là nguồn duy nhất, kèm một file `update_*.sql` cho database đang chạy.
 
 #### B5. Đăng ký xe là thủ tục của chủ xe; cửa hàng chỉ bán dịch vụ hỗ trợ (P1, sau B4) — khoảng ½ ngày
 
@@ -438,5 +448,5 @@ Thứ tự làm: B3 → B1 → B2 → B4 → B6 → B5 → B7 → B8 (việc nh�
 1. Tạo nhánh từ `MinhTien`, ví dụ `git checkout -b feat/vnpay-checkout`.
 2. Sửa tối thiểu, giữ nguyên URL API đang có.
 3. Build và test: `cd backend` rồi `mvn test`.
-4. Chạy app, thử tay theo mục "Kiểm tra" của việc đó. Nếu có giao diện thì chạy thêm UI test trong `backend/tests/ui/`.
+4. Chạy app, thử tay theo mục "Kiểm tra" của việc đó. Nếu có giao diện thì chạy thêm Selenium (`backend/src/test/java/com/ebike/selenium/`).
 5. Commit với message ghi rõ UC/Task, ví dụ `UC-07: thêm thanh toán VNPay ở checkout`, rồi mở PR vào `develop`.

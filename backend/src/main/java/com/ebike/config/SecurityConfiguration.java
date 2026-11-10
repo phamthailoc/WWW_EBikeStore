@@ -28,7 +28,6 @@ public class SecurityConfiguration {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .cors(cors -> {})
             .csrf(AbstractHttpConfigurer::disable)
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .anonymous(anonymous -> anonymous.authorities(
@@ -41,7 +40,6 @@ public class SecurityConfiguration {
                 PermissionConstants.ChatbotManagement.CHATBOT_USE
             ))
             .authorizeHttpRequests(authorize -> authorize
-                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers("/", "/shop", "/products", "/models", "/bike/**", "/product/**", "/models/**", "/login", "/auth", "/signup", "/lang/*", "/checkout", "/checkout/success", "/payment/return", "/support", "/compare", "/chatbot", "/css/**", "/js/**", "/images/**", "/favicon.ico").permitAll()
                 .requestMatchers("/cart", "/data/**").permitAll()
                 .requestMatchers("/favorites").authenticated()
@@ -56,11 +54,8 @@ public class SecurityConfiguration {
                 .requestMatchers(
                     "/api/v1/auth/register",
                     "/api/v1/auth/login",
-                    "/api/v1/auth/login/**",
                     "/api/v1/auth/logout",
-                    "/api/v1/auth/session",
                     "/api/v1/health/**",
-                    "/api/v1/media/**",
                     "/error"
                 ).permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/products/**").hasAuthority(PermissionConstants.Guest.PRODUCT_VIEW)
@@ -76,8 +71,6 @@ public class SecurityConfiguration {
                 .requestMatchers(HttpMethod.GET, "/api/v1/showrooms").hasAuthority(PermissionConstants.Guest.PRODUCT_VIEW)
                 .requestMatchers(HttpMethod.POST, "/api/v1/chatbot/ask").hasAuthority(PermissionConstants.ChatbotManagement.CHATBOT_USE)
                 .requestMatchers(HttpMethod.POST, "/api/v1/chatbot/debug").hasAuthority(PermissionConstants.ChatbotManagement.CHATBOT_CONFIGURE)
-                .requestMatchers(HttpMethod.GET, "/api/v1/auth/profile").authenticated()
-                .requestMatchers(HttpMethod.PUT, "/api/v1/auth/profile").authenticated()
                 .requestMatchers("/api/v1/auth/**").authenticated()
                 .requestMatchers(HttpMethod.GET, "/api/v1/orders", "/api/v1/orders/*").hasAnyAuthority(
                     PermissionConstants.Customer.ORDER_VIEW_OWN,

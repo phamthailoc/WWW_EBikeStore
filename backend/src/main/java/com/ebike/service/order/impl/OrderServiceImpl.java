@@ -167,8 +167,8 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     @CacheEvict(cacheNames = {
-        com.ebike.config.RedisCacheConfiguration.PRODUCT_LIST_CACHE,
-        com.ebike.config.RedisCacheConfiguration.PRODUCT_DETAIL_CACHE
+        com.ebike.config.CacheNames.PRODUCT_LIST_CACHE,
+        com.ebike.config.CacheNames.PRODUCT_DETAIL_CACHE
     }, allEntries = true)
     public OrderResponse createOrder(OrderCreateRequest request, Authentication authentication) {
         if (request == null) {
@@ -240,8 +240,8 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     @CacheEvict(cacheNames = {
-        com.ebike.config.RedisCacheConfiguration.PRODUCT_LIST_CACHE,
-        com.ebike.config.RedisCacheConfiguration.PRODUCT_DETAIL_CACHE
+        com.ebike.config.CacheNames.PRODUCT_LIST_CACHE,
+        com.ebike.config.CacheNames.PRODUCT_DETAIL_CACHE
     }, allEntries = true)
     public OrderResponse updateOrderStatus(Long id, OrderStatusUpdateRequest request, Authentication authentication) {
         if (request == null || request.status() == null || request.status().isBlank()) {
@@ -308,8 +308,8 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     @CacheEvict(cacheNames = {
-        com.ebike.config.RedisCacheConfiguration.PRODUCT_LIST_CACHE,
-        com.ebike.config.RedisCacheConfiguration.PRODUCT_DETAIL_CACHE
+        com.ebike.config.CacheNames.PRODUCT_LIST_CACHE,
+        com.ebike.config.CacheNames.PRODUCT_DETAIL_CACHE
     }, allEntries = true)
     public int expireUnpaidOrders(LocalDateTime now) {
         LocalDateTime vnpayCutoff = now.minus(vnpayExpiry);
@@ -356,8 +356,8 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     @CacheEvict(cacheNames = {
-        com.ebike.config.RedisCacheConfiguration.PRODUCT_LIST_CACHE,
-        com.ebike.config.RedisCacheConfiguration.PRODUCT_DETAIL_CACHE
+        com.ebike.config.CacheNames.PRODUCT_LIST_CACHE,
+        com.ebike.config.CacheNames.PRODUCT_DETAIL_CACHE
     }, allEntries = true)
     public OrderResponse requestCancellation(Long id, OrderCancellationRequest request, Authentication authentication) {
         User currentUser = getAuthenticatedUser(authentication);

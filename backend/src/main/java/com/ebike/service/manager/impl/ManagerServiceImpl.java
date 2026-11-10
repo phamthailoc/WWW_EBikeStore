@@ -3,7 +3,7 @@ package com.ebike.service.manager.impl;
 import com.ebike.model.entity.auth.Role;
 import com.ebike.model.entity.auth.User;
 import com.ebike.repository.auth.UserRepository;
-import com.ebike.config.RedisCacheConfiguration;
+import com.ebike.config.CacheNames;
 import com.ebike.dto.manager.request.ManagerPaymentConfirmationRequest;
 import com.ebike.dto.manager.request.ManagerProductStockUpdateRequest;
 import com.ebike.dto.manager.request.ManagerShipmentUpdateRequest;
@@ -23,7 +23,6 @@ import com.ebike.model.entity.order.PaymentMethod;
 import com.ebike.model.entity.order.PaymentStatus;
 import com.ebike.model.entity.order.Shipment;
 import com.ebike.model.entity.order.ShipmentStatus;
-import com.ebike.model.entity.order.Showroom;
 import com.ebike.repository.order.OrderRepository;
 import com.ebike.repository.order.PaymentRepository;
 import com.ebike.dto.product.response.ProductSummaryDto;
@@ -379,8 +378,8 @@ public class ManagerServiceImpl implements ManagerService {
     @Override
     @Transactional
     @Caching(evict = {
-        @CacheEvict(cacheNames = RedisCacheConfiguration.PRODUCT_LIST_CACHE, allEntries = true),
-        @CacheEvict(cacheNames = RedisCacheConfiguration.PRODUCT_DETAIL_CACHE, allEntries = true)
+        @CacheEvict(cacheNames = CacheNames.PRODUCT_LIST_CACHE, allEntries = true),
+        @CacheEvict(cacheNames = CacheNames.PRODUCT_DETAIL_CACHE, allEntries = true)
     })
     public ProductSummaryDto updateProductStock(Long productId, ManagerProductStockUpdateRequest request) {
         if (request == null || request.stockQuantity() == null) {
@@ -408,8 +407,8 @@ public class ManagerServiceImpl implements ManagerService {
     @Override
     @Transactional
     @Caching(evict = {
-        @CacheEvict(cacheNames = RedisCacheConfiguration.PRODUCT_LIST_CACHE, allEntries = true),
-        @CacheEvict(cacheNames = RedisCacheConfiguration.PRODUCT_DETAIL_CACHE, allEntries = true)
+        @CacheEvict(cacheNames = CacheNames.PRODUCT_LIST_CACHE, allEntries = true),
+        @CacheEvict(cacheNames = CacheNames.PRODUCT_DETAIL_CACHE, allEntries = true)
     })
     public ProductSummaryDto updateVariantStock(Long productId, Long variantId, ManagerProductStockUpdateRequest request) {
         if (request == null || request.stockQuantity() == null) {

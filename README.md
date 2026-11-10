@@ -6,11 +6,11 @@
 
 - `backend/src/main/java/com/ebike/`: mã Java được tổ chức theo các lớp MVC; xem `backend/ARCHITECTURE.md`.
 - `backend/src/main/resources/`: templates Thymeleaf, CSS/JavaScript, ảnh, tài liệu chatbot và cấu hình.
-- `backend/database/`: SQL MariaDB dùng để nạp database, script sinh SQL và schema nguồn.
-- `backend/database/catalog/`: dữ liệu xe điện, màu và nguồn ảnh đã kiểm tra. Ảnh hiển thị ở `backend/src/main/resources/static/images/catalog/`.
+- `backend/database/`: SQL MariaDB dùng để tạo database mới (`setup_ebike_database.sql`) và cập nhật database đang chạy (`update_*.sql`).
+- `backend/database/catalog/`: hồ sơ nguồn gốc của danh mục xe điện, màu và ảnh đã kiểm tra. Ảnh hiển thị ở `backend/src/main/resources/static/images/catalog/`.
 - `backend/database/setup_ebike_database.sql`: tạo và nạp dữ liệu mẫu cho schema MariaDB `ebike_db`.
-- `packages/web/`: bản giao diện React cũ, giữ làm tham chiếu thiết kế/chức năng.
-- `archive/`: các client, cấu hình triển khai và build cũ không dùng để chạy Spring Boot.
+
+Giao diện React cũ (`packages/web`), các client và cấu hình triển khai cũ (`archive/`) đã được xóa khỏi nhánh làm việc; khi cần vẫn xem lại được trong lịch sử git.
 
 ## Chạy ứng dụng
 
@@ -31,7 +31,7 @@ Mặc định ứng dụng kết nối MariaDB ở `localhost:3306`. Thông tin 
 | Email | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `ORDER_EMAIL_OTP_FROM` | Gửi mã xác minh email (đặt hàng, liên kết đơn đã đặt) |
 | Xác minh email | `ORDER_EMAIL_OTP_REQUIRED` | `true` thì đặt hàng phải xác minh email bằng mã (mặc định `false`) |
 | Hủy đơn quá hạn | `APP_ORDER_VNPAY_EXPIRY`, `APP_ORDER_PAY_LATER_EXPIRY` | Thời hạn giữ xe cho đơn VNPay (mặc định 30 phút) và đơn trả sau (72 giờ) |
-| Cache | `REDIS_HOST`, `REDIS_PORT`, `REDIS_PASSWORD` | Redis cho cache sản phẩm |
+| Giới hạn tần suất | `APP_RATE_LIMIT_ENABLED` | Mặc định `true`: mỗi địa chỉ IP được 5 lần đăng nhập/phút, 3 lần gửi mã email/5 phút, 20 câu hỏi chatbot/phút, 10 lần tạo thanh toán VNPay/phút. Đặt `false` khi chạy kiểm thử tự động (Selenium) |
 | Ảnh | `APP_STORAGE_S3_BUCKET`, `APP_STORAGE_S3_REGION`, `APP_STORAGE_S3_PUBLIC_BASE_URL` | Lưu ảnh sản phẩm |
 
 ## Cập nhật database đang chạy

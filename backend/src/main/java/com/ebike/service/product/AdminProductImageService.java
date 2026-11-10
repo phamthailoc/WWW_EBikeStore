@@ -1,6 +1,6 @@
 package com.ebike.service.product;
 
-import com.ebike.config.RedisCacheConfiguration;
+import com.ebike.config.CacheNames;
 import com.ebike.dto.product.response.AdminProductImageDto;
 import com.ebike.model.entity.product.Product;
 import com.ebike.model.entity.product.ProductImage;
@@ -54,8 +54,8 @@ public class AdminProductImageService {
     }
 
     @Caching(evict = {
-        @CacheEvict(cacheNames = RedisCacheConfiguration.PRODUCT_LIST_CACHE, allEntries = true),
-        @CacheEvict(cacheNames = RedisCacheConfiguration.PRODUCT_DETAIL_CACHE, allEntries = true)
+        @CacheEvict(cacheNames = CacheNames.PRODUCT_LIST_CACHE, allEntries = true),
+        @CacheEvict(cacheNames = CacheNames.PRODUCT_DETAIL_CACHE, allEntries = true)
     })
     public AdminProductImageDto uploadImage(
         Long productId,
@@ -102,8 +102,8 @@ public class AdminProductImageService {
     }
 
     @Caching(evict = {
-        @CacheEvict(cacheNames = RedisCacheConfiguration.PRODUCT_LIST_CACHE, allEntries = true),
-        @CacheEvict(cacheNames = RedisCacheConfiguration.PRODUCT_DETAIL_CACHE, allEntries = true)
+        @CacheEvict(cacheNames = CacheNames.PRODUCT_LIST_CACHE, allEntries = true),
+        @CacheEvict(cacheNames = CacheNames.PRODUCT_DETAIL_CACHE, allEntries = true)
     })
     public AdminProductImageDto updateImage(
         Long imageId,
@@ -176,8 +176,8 @@ public class AdminProductImageService {
 
     @Transactional(noRollbackFor = ResponseStatusException.class)
     @Caching(evict = {
-        @CacheEvict(cacheNames = RedisCacheConfiguration.PRODUCT_LIST_CACHE, allEntries = true),
-        @CacheEvict(cacheNames = RedisCacheConfiguration.PRODUCT_DETAIL_CACHE, allEntries = true)
+        @CacheEvict(cacheNames = CacheNames.PRODUCT_LIST_CACHE, allEntries = true),
+        @CacheEvict(cacheNames = CacheNames.PRODUCT_DETAIL_CACHE, allEntries = true)
     })
     public void deleteImage(Long imageId) {
         ProductImage image = findImage(imageId);
