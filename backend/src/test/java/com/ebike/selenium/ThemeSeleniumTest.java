@@ -146,11 +146,11 @@ class ThemeSeleniumTest extends StorefrontSeleniumTest {
                 driver.get(baseUrl + page);
                 assertEquals("dark", theme(), page);
                 assertTrue(!lightBackground(), page + " has a dark page: " + background());
-                // The button sits at the right end next to the cart, not in the middle of the bar.
+                // The button sits at the right end after the cart and the language switch (V19), not in the middle of the bar.
                 WebElement toggle = wait.until(ExpectedConditions.presenceOfElementLocated(TOGGLE));
                 WebElement cart = wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector(".top .cart-link")));
                 long gap = (Long) js("return Math.round(arguments[0].getBoundingClientRect().left-arguments[1].getBoundingClientRect().right)", toggle, cart);
-                assertTrue(gap >= 0 && gap < 60, page + ": the theme button follows the cart, gap " + gap + "px");
+                assertTrue(gap >= 0 && gap < 120, page + ": the theme button follows the cart, gap " + gap + "px");
                 screenshot("theme-dark" + page.replaceAll("[^a-z0-9]+", "-"));
             }
         } finally {
