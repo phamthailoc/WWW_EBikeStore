@@ -8,6 +8,8 @@
   var KEY = 'ebike-theme';
   var CHOICES = ['system', 'light', 'dark'];
   var TEXT = {system: 'Giao diện: theo thiết bị', light: 'Giao diện: sáng', dark: 'Giao diện: tối'};
+  // i18n.js loads after this file; by the time the button is painted window.t exists on pages that have it.
+  function tr(text) { return typeof window.t === 'function' ? window.t(text) : text; }
   var ICON = {system: '◐', light: '☀', dark: '☾'};
   var signedIn = root.getAttribute('data-theme-user') === 'true';
 
@@ -55,8 +57,8 @@
     button.className = 'theme-toggle';
     function paint() {
       button.textContent = ICON[choice];
-      button.title = TEXT[choice] + ' (bấm để đổi)';
-      button.setAttribute('aria-label', TEXT[choice]);
+      button.title = tr(TEXT[choice]) + ' ' + tr('(bấm để đổi)');
+      button.setAttribute('aria-label', tr(TEXT[choice]));
     }
     button.addEventListener('click', function () {
       set(CHOICES[(CHOICES.indexOf(choice) + 1) % CHOICES.length]);

@@ -1,4 +1,5 @@
 {
+ "(bấm để đổi)": "(click to change)",
  "(mặc định)": "(default)",
  ", theo tồn kho của màu xe.": ", based on the stock of the colour.",
  "- Ảnh": "- Photo",
@@ -95,6 +96,9 @@
  "Ghi chú:": "Note:",
  "Ghi nhận hoàn tiền": "Record refund",
  "Giao diện": "Appearance",
+ "Giao diện: sáng": "Appearance: light",
+ "Giao diện: theo thiết bị": "Appearance: follow device",
+ "Giao diện: tối": "Appearance: dark",
  "Giao diện và thông báo": "Appearance and notifications",
  "Giao dịch bị nghi ngờ gian lận.": "The transaction is suspected of fraud.",
  "Giao hàng tại nhà": "Home delivery",

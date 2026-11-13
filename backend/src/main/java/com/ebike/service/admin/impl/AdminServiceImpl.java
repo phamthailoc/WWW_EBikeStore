@@ -522,7 +522,7 @@ public class AdminServiceImpl implements AdminService {
             case "SUPPORT" -> "Support";
             case "MAINTENANCE" -> "Maintenance";
             case "MANAGER" -> "Manager";
-            case "CUSTOMER" -> "Người dùng";
+            case "CUSTOMER" -> "Customer";
             default -> role;
         };
     }
