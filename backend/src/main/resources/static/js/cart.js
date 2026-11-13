@@ -17,15 +17,15 @@
   function add(item) {
     const items = read(), existing = items.find(i => key(i) === key(item));
     const quantity = (existing?.quantity || 0) + item.quantity;
-    if (quantity > limit(item)) throw Error(`Chỉ có thể mua tối đa ${limit(item)} xe cho màu đã chọn.`);
-    if (!existing && items.length >= 20) throw Error('Giỏ hàng tối đa 20 mẫu/màu xe.');
+    if (quantity > limit(item)) throw Error(`${t('Chỉ có thể mua tối đa')} ${limit(item)} ${t('xe cho màu đã chọn.')}`);
+    if (!existing && items.length >= 20) throw Error(t('Giỏ hàng tối đa 20 mẫu/màu xe.'));
     if (existing) Object.assign(existing, item, {quantity}); else items.push({...item});
     write(items);
   }
   async function request(url, data) {
     const response = await fetch(url, {credentials:'same-origin', method:data === undefined ? 'GET' : 'POST', headers:{Accept:'application/json', ...(data === undefined ? {} : {'Content-Type':'application/json'})}, ...(data === undefined ? {} : {body:JSON.stringify(data)})});
     const body = await response.json().catch(() => null);
-    if (!response.ok) throw Error(body?.detail || body?.message || body?.error || `Yêu cầu thất bại (${response.status}).`);
+    if (!response.ok) throw Error(body?.detail || body?.message || body?.error || `${t('Yêu cầu thất bại (')}${response.status}).`);
     return body;
   }
   async function refresh(items) {
@@ -49,8 +49,8 @@
     document.querySelectorAll('header.top').forEach(header => {
       if (header.querySelector('.cart-link')) return;
       const link = document.createElement('a');
-      link.href = '/cart'; link.className = 'cart-link'; link.setAttribute('aria-label', 'Mở giỏ hàng');
-      link.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M3 3h2l2 12h12l2-9H6"/><circle cx="9" cy="20" r="1"/><circle cx="18" cy="20" r="1"/></svg><span>Giỏ hàng</span><b data-cart-count>0</b>';
+      link.href = '/cart'; link.className = 'cart-link'; link.setAttribute('aria-label', t('Mở giỏ hàng'));
+      link.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M3 3h2l2 12h12l2-9H6"/><circle cx="9" cy="20" r="1"/><circle cx="18" cy="20" r="1"/></svg><span>' + t('Giỏ hàng') + '</span><b data-cart-count>0</b>';
       const actions = header.querySelector('.actions');
       if (actions) actions.prepend(link); else header.append(link);
     });

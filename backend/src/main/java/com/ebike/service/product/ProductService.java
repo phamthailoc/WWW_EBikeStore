@@ -14,7 +14,7 @@ import com.ebike.model.entity.product.ProductVariant;
 import com.ebike.model.entity.product.BatteryType;
 import com.ebike.model.entity.product.VehicleType;
 import com.ebike.repository.product.ProductRepository;
-import com.ebike.config.RedisCacheConfiguration;
+import com.ebike.config.CacheNames;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -43,7 +43,7 @@ public class ProductService {
         this.productRepository = productRepository;
     }
 
-    @Cacheable(cacheNames = RedisCacheConfiguration.PRODUCT_LIST_CACHE)
+    @Cacheable(cacheNames = CacheNames.PRODUCT_LIST_CACHE)
     public List<ProductSummaryDto> getProducts(
         String query,
         Integer categoryId,
@@ -131,7 +131,7 @@ public class ProductService {
         );
     }
 
-    @Cacheable(cacheNames = RedisCacheConfiguration.PRODUCT_DETAIL_CACHE, key = "#slug")
+    @Cacheable(cacheNames = CacheNames.PRODUCT_DETAIL_CACHE, key = "#slug")
     public ProductDetailDto getProductBySlug(String slug) {
         Product product = productRepository.findDetailBySlug(slug)
             .filter(item -> Boolean.TRUE.equals(item.getActive()))

@@ -22,12 +22,12 @@
     });
     if (response.status === 401) {
       location.href = '/login?returnTo=' + encodeURIComponent(location.pathname);
-      throw Error('Phiên đăng nhập đã hết hạn.');
+      throw Error(t('Phiên đăng nhập đã hết hạn.'));
     }
     if (!response.ok) {
       let message = '';
       try { message = (await response.json()).message || ''; } catch (ignored) { /* not JSON */ }
-      throw Error(message || 'Không thể lưu thay đổi.');
+      throw Error(message || t('Không thể lưu thay đổi.'));
     }
     if (response.status === 204) return null;
     try { return await response.json(); } catch (ignored) { return null; }
@@ -45,7 +45,7 @@
         <p class="dialog-error" role="alert" hidden></p>
         <p class="dialog-actions">
           <button type="submit" class="button compact">${esc(submitLabel)}</button>
-          <button type="button" class="button compact ghost" data-cancel>Hủy</button>
+          <button type="button" class="button compact ghost" data-cancel>${t('Hủy')}</button>
         </p>
       </form>`;
     document.body.appendChild(dialog);
@@ -85,13 +85,13 @@
   async function createAccount() {
     const roles = await assignableRoles();
     formDialog({
-      title: 'Tạo tài khoản',
-      fields: field('Họ và tên', '<input name="name" required maxlength="150">')
-        + field('Email', '<input name="email" type="email" required maxlength="255">')
-        + field('Tên đăng nhập (để trống sẽ lấy phần trước @ của email)', '<input name="username" maxlength="100">')
-        + field('Mật khẩu tạm thời (ít nhất 6 ký tự)', '<input name="password" type="password" minlength="6" required autocomplete="new-password">')
-        + field('Vai trò', `<select name="role">${options(roles, 'CUSTOMER')}</select>`),
-      submitLabel: 'Tạo tài khoản',
+      title: t('Tạo tài khoản'),
+      fields: field(t('Họ và tên'), '<input name="name" required maxlength="150">')
+        + field(t('Email'), '<input name="email" type="email" required maxlength="255">')
+        + field(t('Tên đăng nhập (để trống sẽ lấy phần trước @ của email)'), '<input name="username" maxlength="100">')
+        + field(t('Mật khẩu tạm thời (ít nhất 6 ký tự)'), '<input name="password" type="password" minlength="6" required autocomplete="new-password">')
+        + field(t('Vai trò'), `<select name="role">${options(roles, 'CUSTOMER')}</select>`),
+      submitLabel: t('Tạo tài khoản'),
       submit: async form => {
         await api('/api/v1/admin/accounts', 'POST', {
           name: form.name.value.trim(),
@@ -102,7 +102,7 @@
           status: 'ACTIVE',
           verified: true
         });
-        tell('Đã tạo tài khoản.');
+        tell(t('Đã tạo tài khoản.'));
         reload();
       }
     });
@@ -111,46 +111,56 @@
   async function changeRole(id) {
     const roles = await assignableRoles();
     formDialog({
-      title: 'Đổi vai trò',
-      intro: 'Vai trò quyết định các trang và thao tác tài khoản này được dùng.',
-      fields: field('Vai trò mới', `<select name="role">${options(roles, 'CUSTOMER')}</select>`),
-      submitLabel: 'Lưu vai trò',
+      title: t('Đổi vai trò'),
+      intro: t('Vai trò quyết định các trang và thao tác tài khoản này được dùng.'),
+      fields: field(t('Vai trò mới'), `<select name="role">${options(roles, 'CUSTOMER')}</select>`),
+      submitLabel: t('Lưu vai trò'),
       submit: async form => {
         await api(`/api/v1/admin/accounts/${id}/role`, 'PATCH', {role: form.role.value});
-        tell('Đã đổi vai trò.');
+        tell(t('Đã đổi vai trò.'));
         reload();
       }
     });
   }
 
-  async function deleteAccount(id) {
-    if (!confirm('Xóa tài khoản này? Chỉ xóa được tài khoản chưa có đơn hàng; nếu đã có đơn, hãy vô hiệu hóa.')) return;
-    await api(`/api/v1/admin/accounts/${id}`, 'DELETE');
-    tell('Đã xóa tài khoản.');
-    reload();
+  // Erasing an account cannot be undone, so the admin has to type its email before the button works.
+  function deleteAccount(id, email) {
+    formDialog({
+      title: t('Xóa tài khoản'),
+      intro: t('Chỉ làm khi khách yêu cầu xóa. Họ tên, địa chỉ đã lưu, yêu thích, thông báo và <b>đánh giá</b> của tài khoản này sẽ bị xóa; tài khoản không đăng nhập được nữa và <b>không khôi phục được</b>. Đơn hàng cũ vẫn được giữ. Nếu chỉ muốn chặn tài khoản, hãy chọn Vô hiệu hóa.'),
+      fields: `<label>${t('Gõ đúng email {email} để xác nhận', {email: `<b>${esc(email)}</b>`})}<input name="confirmEmail" autocomplete="off" required></label>`,
+      submitLabel: t('Xóa vĩnh viễn'),
+      submit: async form => {
+        const typed = new FormData(form).get('confirmEmail').trim();
+        if (typed.toLowerCase() !== String(email).toLowerCase()) throw Error(t('Email chưa khớp với tài khoản cần xóa.'));
+        await api(`/api/v1/admin/accounts/${id}?confirmEmail=${encodeURIComponent(typed)}`, 'DELETE');
+        tell(t('Đã xóa tài khoản.'));
+        reload();
+      }
+    });
   }
 
   // ---- discount codes -----------------------------------------------------------------
   const toInput = iso => (iso || '').slice(0, 16);
   const toApi = value => (value ? value + ':00' : null);
-  const statusOptions = [['WAITING', 'Chờ áp dụng'], ['LIVE', 'Đang chạy'], ['EXPIRED', 'Hết hạn'], ['DISABLED', 'Tắt']];
+  const statusOptions = [['WAITING', t('Chờ áp dụng')], ['LIVE', t('Đang chạy')], ['EXPIRED', t('Hết hạn')], ['DISABLED', t('Tắt')]];
 
   function promotionDialog(promotion) {
     const editing = Boolean(promotion);
     const p = promotion || {discountType: 'PERCENTAGE', status: 'WAITING', usageLimit: 0};
     formDialog({
-      title: editing ? `Sửa mã ${p.code}` : 'Tạo mã khuyến mãi',
-      intro: 'Mỗi khách chỉ dùng một mã một lần; đơn bị hủy thì được dùng lại.',
-      fields: field('Mã (chữ và số, không dấu cách)', `<input name="code" required maxlength="40" value="${esc(p.code || '')}"${editing ? ' disabled' : ''}>`)
-        + field('Tên chương trình', `<input name="campaignName" required maxlength="150" value="${esc(p.campaignName || '')}">`)
-        + field('Loại giảm', `<select name="discountType">${options([['PERCENTAGE', 'Theo phần trăm (%)'], ['FIXED_AMOUNT', 'Số tiền cố định (₫)']], p.discountType)}</select>`)
-        + field('Giá trị giảm', `<input name="discountValue" type="number" min="1" step="any" required value="${esc(p.discountValue ?? '')}">`)
-        + field('Giảm tối đa (₫, để 0 nếu không giới hạn)', `<input name="maxDiscountAmount" type="number" min="0" step="1000" value="${esc(p.maxDiscountAmount ?? 0)}">`)
-        + field('Số lượt dùng tối đa (0 = không giới hạn)', `<input name="usageLimit" type="number" min="0" step="1" value="${esc(p.usageLimit ?? 0)}">`)
-        + field('Bắt đầu', `<input name="startsAt" type="datetime-local" value="${esc(toInput(p.startsAt))}">`)
-        + field('Kết thúc', `<input name="endsAt" type="datetime-local" value="${esc(toInput(p.endsAt))}">`)
-        + field('Trạng thái', `<select name="status">${options(statusOptions, p.status)}</select>`),
-      submitLabel: editing ? 'Lưu thay đổi' : 'Tạo mã',
+      title: editing ? t('Sửa mã {code}', {code: p.code}) : t('Tạo mã khuyến mãi'),
+      intro: t('Mỗi khách chỉ dùng một mã một lần; đơn bị hủy thì được dùng lại.'),
+      fields: field(t('Mã (chữ và số, không dấu cách)'), `<input name="code" required maxlength="40" value="${esc(p.code || '')}"${editing ? ' disabled' : ''}>`)
+        + field(t('Tên chương trình'), `<input name="campaignName" required maxlength="150" value="${esc(p.campaignName || '')}">`)
+        + field(t('Loại giảm'), `<select name="discountType">${options([['PERCENTAGE', t('Theo phần trăm (%)')], ['FIXED_AMOUNT', t('Số tiền cố định (₫)')]], p.discountType)}</select>`)
+        + field(t('Giá trị giảm'), `<input name="discountValue" type="number" min="1" step="any" required value="${esc(p.discountValue ?? '')}">`)
+        + field(t('Giảm tối đa (₫, để 0 nếu không giới hạn)'), `<input name="maxDiscountAmount" type="number" min="0" step="1000" value="${esc(p.maxDiscountAmount ?? 0)}">`)
+        + field(t('Số lượt dùng tối đa (0 = không giới hạn)'), `<input name="usageLimit" type="number" min="0" step="1" value="${esc(p.usageLimit ?? 0)}">`)
+        + field(t('Bắt đầu'), `<input name="startsAt" type="datetime-local" value="${esc(toInput(p.startsAt))}">`)
+        + field(t('Kết thúc'), `<input name="endsAt" type="datetime-local" value="${esc(toInput(p.endsAt))}">`)
+        + field(t('Trạng thái'), `<select name="status">${options(statusOptions, p.status)}</select>`),
+      submitLabel: editing ? t('Lưu thay đổi') : t('Tạo mã'),
       submit: async form => {
         const body = {
           campaignName: form.campaignName.value.trim(),
@@ -164,10 +174,10 @@
         };
         if (editing) {
           await api(`/api/v1/admin/promotions/${p.id}`, 'PATCH', body);
-          tell('Đã cập nhật mã khuyến mãi.');
+          tell(t('Đã cập nhật mã khuyến mãi.'));
         } else {
           await api('/api/v1/admin/promotions', 'POST', {...body, code: form.code.value.trim().toUpperCase()});
-          tell('Đã tạo mã khuyến mãi.');
+          tell(t('Đã tạo mã khuyến mãi.'));
         }
         reload();
       }
@@ -183,7 +193,7 @@
   // ---- wiring -------------------------------------------------------------------------
   const handlers = {
     'role': id => changeRole(id),
-    'delete-account': id => deleteAccount(id),
+    'delete-account': (id, button) => deleteAccount(id, button.dataset.email),
     'promotion': id => editPromotion(id)
   };
 
@@ -202,7 +212,7 @@
     const handler = button && handlers[button.dataset.action];
     if (handler) {
       event.stopImmediatePropagation();
-      Promise.resolve(handler(button.dataset.id)).catch(error => tell(error.message, true));
+      Promise.resolve(handler(button.dataset.id, button)).catch(error => tell(error.message, true));
     }
   }, true);
 })();

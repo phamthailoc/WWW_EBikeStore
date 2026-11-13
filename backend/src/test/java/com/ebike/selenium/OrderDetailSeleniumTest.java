@@ -135,6 +135,7 @@ class OrderDetailSeleniumTest extends StorefrontSeleniumTest {
         long orderId = findOrder(orderNumber).path("id").asLong();
         call(manager, "PATCH", "/api/v1/orders/" + orderId + "/status", Map.of("status", "CONFIRMED"));
         call(manager, "PATCH", "/api/v1/orders/" + orderId + "/status", Map.of("status", "PROCESSING"));
+        enterUnits(manager, orderId);
 
         openAsManager(orderId);
         new Select(driver.findElement(By.cssSelector("#shipmentForm select"))).selectByValue("IN_TRANSIT");

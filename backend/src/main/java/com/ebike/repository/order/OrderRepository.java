@@ -5,16 +5,13 @@ import com.ebike.model.entity.order.OrderStatus;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface OrderRepository extends JpaRepository<Order, Long> {
 
-    Optional<Order> findByOrderNumber(String orderNumber);
-
-    boolean existsByUserId(Long userId);
+    boolean existsByUserIdAndStatusIn(Long userId, Collection<OrderStatus> statuses);
 
     /** True when the customer has had the product delivered, which is what entitles them to review it. */
     @Query("select count(o) > 0 from Order o join o.items i where o.user.id = :userId and i.product.id = :productId "
@@ -35,6 +32,4 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     boolean existsByUserIdAndPromotionIdAndStatusNot(Long userId, Long promotionId, OrderStatus status);
 
     boolean existsByUserIsNullAndCustomerEmailIgnoreCaseAndPromotionIdAndStatusNot(String email, Long promotionId, OrderStatus status);
-
-    List<Order> findByIdIn(Collection<Long> ids);
 }

@@ -2,19 +2,19 @@
   'use strict';
   const C=window.KineticCart;
   const {escape:e,money,request,safeImage,key}=C;
-  const empty=()=>'<div class="commerce-empty"><span class="empty-bag" aria-hidden="true">＋</span><h2>Giỏ hàng đang trống</h2><p>Chọn mẫu xe và màu bạn yêu thích để bắt đầu hành trình.</p><a class="commerce-button" href="/products">Khám phá các mẫu xe</a></div>';
-  const line=item=>`<div class="checkout-item"><img src="${e(safeImage(item.image))}" alt="${e(item.name)}"><div><a href="/product/${encodeURIComponent(item.slug)}">${e(item.name)}</a><small>${e(item.colorName||'Màu tiêu chuẩn')} · ${item.quantity} xe</small><strong>${money(item.price*item.quantity)}</strong></div></div>`;
+  const empty=()=>'<div class="commerce-empty"><span class="empty-bag" aria-hidden="true">＋</span><h2>' + t('Giỏ hàng đang trống') + '</h2><p>' + t('Chọn mẫu xe và màu bạn yêu thích để bắt đầu hành trình.') + '</p><a class="commerce-button" href="/products">' + t('Khám phá các mẫu xe') + '</a></div>';
+  const line=item=>`<div class="checkout-item"><img src="${e(safeImage(item.image))}" alt="${e(item.name)}"><div><a href="/product/${encodeURIComponent(item.slug)}">${e(item.name)}</a><small>${e(item.colorName||t('Màu tiêu chuẩn'))} · ${tBikes(item.quantity)}</small><strong>${money(item.price*item.quantity)}</strong></div></div>`;
   const validItems=items=>items.length>0 && items.every(i=>!i.unavailable && i.quantity<=C.limit(i) && C.limit(i)>0);
   const vnpayEnabled=document.body.dataset.vnpayEnabled==='true';
   const emailOtpRequired=document.body.dataset.emailOtpRequired==='true';
-  async function startVnPay(orderId){const payment=await request('/api/v1/payments/vnpay/create',{orderId,language:'vn'});if(!payment?.paymentUrl)throw Error('VNPay không trả về đường dẫn thanh toán.');location.href=payment.paymentUrl;}
+  async function startVnPay(orderId){const payment=await request('/api/v1/payments/vnpay/create',{orderId,language:'vn'});if(!payment?.paymentUrl)throw Error(t('VNPay không trả về đường dẫn thanh toán.'));location.href=payment.paymentUrl;}
   const normalizeSearch=value=>value.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').toLowerCase();
 
   async function renderCart(target,finish,tell){
     let items=C.read();
     finish();
     if(!items.length){target.innerHTML=empty();return;}
-    target.innerHTML='<p class="loading">Đang cập nhật giá và tồn kho...</p>';
+    target.innerHTML='<p class="loading">' + t('Đang cập nhật giá và tồn kho...') + '</p>';
     items=await C.refresh(items); C.write(items);
     let rendering=false;
     function render(){
@@ -23,7 +23,7 @@
       try{
       if(!items.length){target.innerHTML=empty();return;}
       const valid=validItems(items);
-      target.innerHTML=`<div class="commerce-layout"><section class="commerce-card cart-products"><div class="commerce-card-heading"><h2>Sản phẩm đã chọn</h2><span>${items.length} mẫu / màu xe</span></div>${items.map(item=>`<article class="cart-item" data-cart-key="${key(item)}"><a class="cart-item-photo" href="/product/${encodeURIComponent(item.slug)}"><img src="${e(safeImage(item.image))}" alt="${e(item.name)}"></a><div class="cart-item-info"><a href="/product/${encodeURIComponent(item.slug)}"><h3>${e(item.name)}</h3></a><p>Màu: ${e(item.colorName||'Tiêu chuẩn')}</p><strong>${money(item.price)}</strong><div class="quantity-control"><button type="button" data-quantity="minus" aria-label="Giảm số lượng ${e(item.name)}" ${item.quantity<=1?'disabled':''}>−</button><input type="number" class="cart-quantity" aria-label="Số lượng ${e(item.name)}" min="1" max="${Math.max(1,C.limit(item))}" value="${item.quantity}"><button type="button" data-quantity="plus" aria-label="Tăng số lượng ${e(item.name)}" ${item.quantity>=C.limit(item)?'disabled':''}>+</button></div>${item.unavailable||item.quantity>C.limit(item)||!C.limit(item)?'<p class="commerce-error">Xe/màu không đủ tồn kho. Vui lòng giảm số lượng hoặc xóa sản phẩm.</p>':''}</div><div class="cart-item-total"><strong>${money(item.price*item.quantity)}</strong><button type="button" class="text-button remove-cart-item" aria-label="Xóa ${e(item.name)}">Xóa</button></div></article>`).join('')}<a class="continue-shopping" href="/products">← Tiếp tục mua sắm</a></section><aside class="commerce-card cart-summary"><h2>Tóm tắt giỏ hàng</h2><div class="total-line"><span>Số lượng</span><strong>${items.reduce((sum,i)=>sum+i.quantity,0)} xe</strong></div><div class="total-line grand-total"><span>Tạm tính</span><strong>${money(items.reduce((sum,i)=>sum+i.price*i.quantity,0))}</strong></div><p>Mã khuyến mãi và dịch vụ hồ sơ sẽ được tính ở bước thanh toán.</p><button id="checkoutCart" class="commerce-button" ${valid?'':'disabled'}>Tiến hành thanh toán →</button>${!valid?'<p class="commerce-error">Kiểm tra lại các sản phẩm trong giỏ trước khi thanh toán.</p>':''}</aside></div>`;
+      target.innerHTML=`<div class="commerce-layout"><section class="commerce-card cart-products"><div class="commerce-card-heading"><h2>${t('Sản phẩm đã chọn')}</h2><span>${items.length} ${t('mẫu / màu xe')}</span></div>${items.map(item=>`<article class="cart-item" data-cart-key="${key(item)}"><a class="cart-item-photo" href="/product/${encodeURIComponent(item.slug)}"><img src="${e(safeImage(item.image))}" alt="${e(item.name)}"></a><div class="cart-item-info"><a href="/product/${encodeURIComponent(item.slug)}"><h3>${e(item.name)}</h3></a><p>${t('Màu:')} ${e(item.colorName||t('Tiêu chuẩn'))}</p><strong>${money(item.price)}</strong><div class="quantity-control"><button type="button" data-quantity="minus" aria-label="${t('Giảm số lượng')} ${e(item.name)}" ${item.quantity<=1?'disabled':''}>−</button><input type="number" class="cart-quantity" aria-label="${t('Số lượng')} ${e(item.name)}" min="1" max="${Math.max(1,C.limit(item))}" value="${item.quantity}"><button type="button" data-quantity="plus" aria-label="${t('Tăng số lượng')} ${e(item.name)}" ${item.quantity>=C.limit(item)?'disabled':''}>+</button></div>${item.unavailable||item.quantity>C.limit(item)||!C.limit(item)?'<p class="commerce-error">' + t('Xe/màu không đủ tồn kho. Vui lòng giảm số lượng hoặc xóa sản phẩm.') + '</p>':''}</div><div class="cart-item-total"><strong>${money(item.price*item.quantity)}</strong><button type="button" class="text-button remove-cart-item" aria-label="${t('Xóa')} ${e(item.name)}">${t('Xóa')}</button></div></article>`).join('')}<a class="continue-shopping" href="/products">${t('← Tiếp tục mua sắm')}</a></section><aside class="commerce-card cart-summary"><h2>${t('Tóm tắt giỏ hàng')}</h2><div class="total-line"><span>${t('Số lượng')}</span><strong>${tBikes(items.reduce((sum,i)=>sum+i.quantity,0))}</strong></div><div class="total-line grand-total"><span>${t('Tạm tính')}</span><strong>${money(items.reduce((sum,i)=>sum+i.price*i.quantity,0))}</strong></div><p>${t('Mã khuyến mãi và dịch vụ hồ sơ sẽ được tính ở bước thanh toán.')}</p><button id="checkoutCart" class="commerce-button" ${valid?'':'disabled'}>${t('Tiến hành thanh toán →')}</button>${!valid?'<p class="commerce-error">' + t('Kiểm tra lại các sản phẩm trong giỏ trước khi thanh toán.') + '</p>':''}</aside></div>`;
       document.querySelector('#checkoutCart').onclick=()=>location.href='/checkout';
       }finally{rendering=false;}
     }
@@ -34,7 +34,7 @@
       const item=items.find(i=>key(i)===row.dataset.cartKey);
       if(!item)return;
       const max=C.limit(item);
-      if(!Number.isInteger(value)||value<1||value>max){tell(`Số lượng phải từ 1 đến ${max||1}, theo tồn kho của màu xe.`,true);render();return;}
+      if(!Number.isInteger(value)||value<1||value>max){tell(`${t('Số lượng phải từ 1 đến')} ${max||1}${t(', theo tồn kho của màu xe.')}`,true);render();return;}
       item.quantity=value; C.write(items); render();
     }
     target.addEventListener('click',event=>{
@@ -53,20 +53,20 @@
     let items;
     try{items=buyNow?JSON.parse(sessionStorage.getItem('kinetic_buy_now')||'[]'):C.read();}catch{items=[];}
     if(!Array.isArray(items)||!items.length){finish();target.innerHTML=empty();return;}
-    target.innerHTML='<p class="loading">Đang chuẩn bị đơn hàng...</p>';finish();
+    target.innerHTML='<p class="loading">' + t('Đang chuẩn bị đơn hàng...') + '</p>';finish();
     const [refreshed,showrooms,provinces]=await Promise.all([C.refresh(items),request('/api/v1/showrooms'),request('/data/vietnam-provinces.json')]);
     items=refreshed;
-    if(!validItems(items)){target.innerHTML='<div class="commerce-empty"><h2>Cần kiểm tra lại giỏ hàng</h2><p>Một số xe hoặc màu không còn đủ số lượng bạn chọn.</p><a class="commerce-button" href="/cart">Xem giỏ hàng</a><a href="/products">Chọn lại mẫu xe</a></div>';return;}
+    if(!validItems(items)){target.innerHTML='<div class="commerce-empty"><h2>' + t('Cần kiểm tra lại giỏ hàng') + '</h2><p>' + t('Một số xe hoặc màu không còn đủ số lượng bạn chọn.') + '</p><a class="commerce-button" href="/cart">' + t('Xem giỏ hàng') + '</a><a href="/products">' + t('Chọn lại mẫu xe') + '</a></div>';return;}
     if(!buyNow)C.write(items);
     const stores=showrooms.filter(s=>s.active!==false);
-    target.innerHTML=`<form id="checkoutForm" class="commerce-layout checkout-layout"><div class="checkout-forms"><section class="commerce-card"><h2>Thông tin người nhận</h2><div class="contact-grid"><label><span class="field-label">Họ và tên <b>*</b></span><input name="customerName" autocomplete="name" maxlength="100" required placeholder="Họ và tên người nhận"></label><label><span class="field-label">Số điện thoại <b>*</b></span><input name="phoneNumber" type="tel" autocomplete="tel" pattern="0[0-9]{9,10}" required placeholder="Số điện thoại liên hệ"></label><label class="wide-field"><span class="field-label">Email <b>*</b></span><input name="customerEmail" type="email" autocomplete="email" required placeholder="Email nhận thông tin đơn hàng"></label></div></section><section class="commerce-card delivery-card"><h2>Yêu cầu nhận hàng</h2><div class="delivery-options"><label><input type="radio" name="deliveryMethod" value="HOME_DELIVERY" checked> Giao hàng tại nhà</label><label><input type="radio" name="deliveryMethod" value="STORE_PICKUP"> Nhận tại cửa hàng</label></div><div id="homeDeliveryFields" class="delivery-fields"><label id="savedAddressRow" hidden><span class="field-label">Địa chỉ đã lưu</span><select id="savedAddress"></select></label><label><span class="field-label">Tỉnh/Thành phố <b>*</b></span><select name="province" required><option value="">Chọn Tỉnh/Thành phố</option>${provinces.map(p=>`<option value="${e(p)}">${e(p)}</option>`).join('')}</select></label><label><span class="field-label">Địa chỉ nhận hàng <b>*</b></span><input name="detailedAddress" autocomplete="street-address" minlength="10" maxlength="500" required placeholder="Số nhà, tên đường, phường/xã"></label></div><div id="storePickupFields" class="delivery-fields" hidden><label class="showroom-search"><span class="sr-only">Tìm cửa hàng nhận xe</span><input id="showroomSearch" type="search" placeholder="Tìm kiếm cửa hàng, địa chỉ..." aria-label="Tìm cửa hàng nhận xe"></label><div id="showroomResults" class="showroom-results" role="group" aria-label="Danh sách cửa hàng"></div></div><label class="seller-note">Ghi chú cho người bán<textarea name="notes" maxlength="1000" placeholder="Ghi chú cho người bán"></textarea></label></section><section class="commerce-card"><h2>Thanh toán và dịch vụ</h2><label>Phương thức thanh toán<select name="paymentMethod"><option value="PAY_LATER">Thanh toán khi nhận xe</option>${vnpayEnabled?'<option value="VNPAY">Thanh toán online qua VNPay</option>':''}</select></label><div id="registrationBlock"><label class="registration-option"><input type="checkbox" name="includeRegistrationService"> Hỗ trợ đăng ký biển số tại cửa hàng <strong id="registrationServicePrice"></strong></label><p class="registration-note" id="registrationNote"></p></div></section></div><aside class="commerce-card checkout-summary"><div class="commerce-card-heading"><h2>Đơn hàng của bạn</h2><a href="${buyNow?'/product/'+encodeURIComponent(items[0].slug):'/cart'}">Chỉnh sửa</a></div>${items.map(line).join('')}<div class="promo-field"><label for="discountCode">Mã khuyến mãi</label><div><input id="discountCode" name="discountCode" autocomplete="off" placeholder="Nhập mã khuyến mãi"><button type="button" id="applyPromo">Áp dụng</button></div></div><div id="checkoutQuote" aria-live="polite"></div><button type="submit" id="placeOrder" class="commerce-button" disabled>Đặt hàng</button><p class="checkout-confirmation">Kiểm tra thông tin và hình thức nhận hàng trước khi đặt đơn.</p><div id="checkoutError" class="commerce-error" role="alert" hidden></div></aside></form>`;
+    target.innerHTML=`<form id="checkoutForm" class="commerce-layout checkout-layout"><div class="checkout-forms"><section class="commerce-card"><h2>${t('Thông tin người nhận')}</h2><div class="contact-grid"><label><span class="field-label">${t('Họ và tên')} <b>*</b></span><input name="customerName" autocomplete="name" maxlength="100" required placeholder="${t('Họ và tên người nhận')}"></label><label><span class="field-label">${t('Số điện thoại')} <b>*</b></span><input name="phoneNumber" type="tel" autocomplete="tel" pattern="0[0-9]{9,10}" required placeholder="${t('Số điện thoại liên hệ')}"></label><label class="wide-field"><span class="field-label">Email <b>*</b></span><input name="customerEmail" type="email" autocomplete="email" required placeholder="${t('Email nhận thông tin đơn hàng')}"></label></div></section><section class="commerce-card delivery-card"><h2>${t('Yêu cầu nhận hàng')}</h2><div class="delivery-options"><label><input type="radio" name="deliveryMethod" value="HOME_DELIVERY" checked> ${t('Giao hàng tại nhà')}</label><label><input type="radio" name="deliveryMethod" value="STORE_PICKUP"> ${t('Nhận tại cửa hàng')}</label></div><div id="homeDeliveryFields" class="delivery-fields"><label id="savedAddressRow" hidden><span class="field-label">${t('Địa chỉ đã lưu')}</span><select id="savedAddress"></select></label><label><span class="field-label">${t('Tỉnh/Thành phố')} <b>*</b></span><select name="province" required><option value="">${t('Chọn Tỉnh/Thành phố')}</option>${provinces.map(p=>`<option value="${e(p)}">${e(p)}</option>`).join('')}</select></label><label><span class="field-label">${t('Địa chỉ nhận hàng')} <b>*</b></span><input name="detailedAddress" autocomplete="street-address" minlength="10" maxlength="500" required placeholder="${t('Số nhà, tên đường, phường/xã')}"></label></div><div id="storePickupFields" class="delivery-fields" hidden><label class="showroom-search"><span class="sr-only">${t('Tìm cửa hàng nhận xe')}</span><input id="showroomSearch" type="search" placeholder="${t('Tìm kiếm cửa hàng, địa chỉ...')}" aria-label="${t('Tìm cửa hàng nhận xe')}"></label><div id="showroomResults" class="showroom-results" role="group" aria-label="${t('Danh sách cửa hàng')}"></div></div><label class="seller-note">${t('Ghi chú cho người bán')}<textarea name="notes" maxlength="1000" placeholder="${t('Ghi chú cho người bán')}"></textarea></label></section><section class="commerce-card"><h2>${t('Thanh toán và dịch vụ')}</h2><label>${t('Phương thức thanh toán')}<select name="paymentMethod"><option value="PAY_LATER">${t('Thanh toán khi nhận xe')}</option>${vnpayEnabled?'<option value="VNPAY">' + t('Thanh toán online qua VNPay') + '</option>':''}</select></label><div id="registrationBlock"><label class="registration-option"><input type="checkbox" name="includeRegistrationService"> ${t('Hỗ trợ đăng ký biển số tại cửa hàng')} <strong id="registrationServicePrice"></strong></label><p class="registration-note" id="registrationNote"></p></div></section></div><aside class="commerce-card checkout-summary"><div class="commerce-card-heading"><h2>${t('Đơn hàng của bạn')}</h2><a href="${buyNow?'/product/'+encodeURIComponent(items[0].slug):'/cart'}">${t('Chỉnh sửa')}</a></div>${items.map(line).join('')}<div class="promo-field"><label for="discountCode">${t('Mã khuyến mãi')}</label><div><input id="discountCode" name="discountCode" autocomplete="off" placeholder="${t('Nhập mã khuyến mãi')}"><button type="button" id="applyPromo">${t('Áp dụng')}</button></div></div><div id="checkoutQuote" aria-live="polite"></div><button type="submit" id="placeOrder" class="commerce-button" disabled>${t('Đặt hàng')}</button><p class="checkout-confirmation">${t('Kiểm tra thông tin và hình thức nhận hàng trước khi đặt đơn.')}</p><div id="checkoutError" class="commerce-error" role="alert" hidden></div></aside></form>`;
     const form=document.querySelector('#checkoutForm'),submit=form.querySelector('#placeOrder');
     let selectedStore=null,sequence=0,quoteValid=false,submitting=false,redirecting=false;
     function renderStores(){
       const search=normalizeSearch(form.querySelector('#showroomSearch').value);
       const matches=stores.filter(s=>normalizeSearch([s.name,s.city,s.district,s.address].join(' ')).includes(search));
       if(selectedStore&&!matches.some(s=>s.id===selectedStore))selectedStore=null;
-      form.querySelector('#showroomResults').innerHTML=matches.length?matches.map(s=>`<label class="showroom-option"><input type="radio" name="pickupShowroomId" value="${s.id}" ${Number(selectedStore)===s.id?'checked':''}><span><strong>${e(s.name)}</strong><small>${e(s.address)} · ${e(s.city)}<br>${e(s.phone||'')} ${s.openingHours?'· '+e(s.openingHours):''}</small></span></label>`).join(''):'<p class="showroom-empty">Không tìm thấy cửa hàng phù hợp.</p>';
+      form.querySelector('#showroomResults').innerHTML=matches.length?matches.map(s=>`<label class="showroom-option"><input type="radio" name="pickupShowroomId" value="${s.id}" ${Number(selectedStore)===s.id?'checked':''}><span><strong>${e(s.name)}</strong><small>${e(s.address)} · ${e(s.city)}<br>${e(s.phone||'')} ${s.openingHours?'· '+e(s.openingHours):''}</small></span></label>`).join(''):'<p class="showroom-empty">' + t('Không tìm thấy cửa hàng phù hợp.') + '</p>';
     }
     function updateDelivery(){
       const home=form.elements.deliveryMethod.value==='HOME_DELIVERY';
@@ -83,14 +83,14 @@
       const emailInput=form.elements.customerEmail;
       const box=document.createElement('div');
       box.className='otp-box wide-field';
-      box.innerHTML='<p class="otp-help">Để bảo vệ đơn hàng, vui lòng xác minh email trước khi đặt.</p><div class="otp-row"><button type="button" class="button compact ghost" id="otpSend">Gửi mã xác minh</button><input id="otpCode" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="Nhập mã" aria-label="Mã xác minh email" hidden><button type="button" class="button compact" id="otpVerify" hidden>Xác minh</button></div><p class="otp-status" id="otpStatus" role="status"></p>';
+      box.innerHTML='<p class="otp-help">' + t('Để bảo vệ đơn hàng, vui lòng xác minh email trước khi đặt.') + '</p><div class="otp-row"><button type="button" class="button compact ghost" id="otpSend">' + t('Gửi mã xác minh') + '</button><input id="otpCode" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="' + t('Nhập mã') + '" aria-label="' + t('Mã xác minh email') + '" hidden><button type="button" class="button compact" id="otpVerify" hidden>' + t('Xác minh') + '</button></div><p class="otp-status" id="otpStatus" role="status"></p>';
       emailInput.closest('label').after(box);
       const send=box.querySelector('#otpSend'),code=box.querySelector('#otpCode'),verify=box.querySelector('#otpVerify'),status=box.querySelector('#otpStatus');
       let pending=null,timer=null;
       const say=(text,error)=>{status.textContent=text;status.classList.toggle('error',Boolean(error))};
-      const countdown=seconds=>{clearInterval(timer);let left=seconds;send.disabled=true;const tick=()=>{send.textContent=left>0?'Gửi lại mã sau '+left+'s':'Gửi lại mã';if(left<=0){clearInterval(timer);send.disabled=false}left--};tick();timer=setInterval(tick,1000)};
-      const reset=()=>{clearInterval(timer);verification=null;pending=null;send.disabled=false;send.textContent='Gửi mã xác minh';code.hidden=true;code.value='';verify.hidden=true};
-      emailInput.addEventListener('input',()=>{if(verification||pending){reset();say('Email đã thay đổi, vui lòng xác minh lại.',false)}});
+      const countdown=seconds=>{clearInterval(timer);let left=seconds;send.disabled=true;const tick=()=>{send.textContent=left>0?'' + t('Gửi lại mã sau') + ' '+left+'s':t('Gửi lại mã');if(left<=0){clearInterval(timer);send.disabled=false}left--};tick();timer=setInterval(tick,1000)};
+      const reset=()=>{clearInterval(timer);verification=null;pending=null;send.disabled=false;send.textContent=t('Gửi mã xác minh');code.hidden=true;code.value='';verify.hidden=true};
+      emailInput.addEventListener('input',()=>{if(verification||pending){reset();say(t('Email đã thay đổi, vui lòng xác minh lại.'),false)}});
       send.addEventListener('click',async()=>{
         const email=emailInput.value.trim();
         if(!emailInput.checkValidity()||!email){emailInput.reportValidity();return}
@@ -99,19 +99,19 @@
           const sent=await request('/api/v1/orders/email-verification/send',{email});
           pending={id:sent.verificationSessionId,email};verification=null;
           code.hidden=false;verify.hidden=false;code.value='';code.focus();
-          say('Đã gửi mã tới '+email+'. Mã có hiệu lực trong ít phút.',false);
+          say('' + t('Đã gửi mã tới') + ' '+email+t('. Mã có hiệu lực trong ít phút.'),false);
           countdown(Number(sent.resendAfterSeconds)||60);
         }catch(error){send.disabled=false;say(error.message,true)}
       });
       verify.addEventListener('click',async()=>{
-        if(!pending||!code.value.trim()){say('Vui lòng nhập mã đã gửi tới email.',true);return}
+        if(!pending||!code.value.trim()){say(t('Vui lòng nhập mã đã gửi tới email.'),true);return}
         verify.disabled=true;
         try{
           const result=await request('/api/v1/orders/email-verification/verify',{verificationSessionId:pending.id,code:code.value.trim()});
-          if(!result.verified)throw Error('Mã chưa đúng.');
+          if(!result.verified)throw Error(t('Mã chưa đúng.'));
           verification={id:pending.id,email:pending.email};
           clearInterval(timer);send.hidden=true;code.hidden=true;verify.hidden=true;
-          say('Email đã được xác minh ✓',false);
+          say(t('Email đã được xác minh ✓'),false);
         }catch(error){say(error.message,true)}
         finally{verify.disabled=false}
       });
@@ -125,7 +125,7 @@
         const saved=((await asJson('/api/v1/users/'+profile.userId+'/addresses'))||[]).filter(a=>provinces.includes(a.city));
         if(!saved.length)return;
         const pick=form.querySelector('#savedAddress');
-        pick.innerHTML='<option value="">Nhập địa chỉ khác</option>'+saved.map((a,i)=>'<option value="'+i+'">'+e(a.street)+', '+e(a.city)+(a.isDefault?' (mặc định)':'')+'</option>').join('');
+        pick.innerHTML='<option value="">' + t('Nhập địa chỉ khác') + '</option>'+saved.map((a,i)=>'<option value="'+i+'">'+e(a.street)+', '+e(a.city)+(a.isDefault?' ' + t('(mặc định)') + '':'')+'</option>').join('');
         form.querySelector('#savedAddressRow').hidden=false;
         const apply=a=>{
           form.elements.province.value=a?a.city:'';
@@ -146,25 +146,25 @@
     async function updateQuote(){
       const current=++sequence,box=form.querySelector('#checkoutQuote');
       quoteValid=false;submit.disabled=true;
-      box.innerHTML='<p class="quote-status">Đang tính tổng tiền...</p>';
+      box.innerHTML='<p class="quote-status">' + t('Đang tính tổng tiền...') + '</p>';
       try{
         const code=form.elements.discountCode.value.trim();
         const awaitingProvince=form.elements.deliveryMethod.value==='HOME_DELIVERY'&&!form.elements.province.value;
         const q=await request('/api/v1/orders/quote',{items:items.map(i=>({productId:i.id,quantity:i.quantity,productVariantId:i.variantId||null})),discountCode:code||null,includeRegistrationService:form.elements.includeRegistrationService.checked,deliveryMethod:form.elements.deliveryMethod.value,province:form.elements.province.value||null});
         if(current!==sequence)return false;
-        box.innerHTML=`<div class="quote-breakdown"><div class="quote-line"><span>Tạm tính</span><strong>${money(q.subtotal)}</strong></div><div class="quote-line"><span>Phí giao xe</span><strong>${awaitingProvince?'Chọn tỉnh để tính phí':money(q.shippingFee)}</strong></div><div class="quote-line quote-discount"><span>Giảm giá khuyến mãi</span><strong>${q.discountAmount?'- ':''}${money(q.discountAmount)}</strong></div><div class="quote-line"><span>Phí hồ sơ</span><strong>${money(q.registrationFee)}</strong></div><div class="quote-line quote-total"><span>Tổng thanh toán</span><strong>${money(q.totalAmount)}</strong></div><p class="quote-status">${code?'Đã áp dụng mã '+e(code)+'.':'Chưa áp dụng mã khuyến mãi.'}</p></div>`;
-        form.querySelector('#registrationServicePrice').textContent=`+ ${money(q.registrationServicePerBike)}/xe`;
+        box.innerHTML=`<div class="quote-breakdown"><div class="quote-line"><span>${t('Tạm tính')}</span><strong>${money(q.subtotal)}</strong></div><div class="quote-line"><span>${t('Phí giao xe')}</span><strong>${awaitingProvince?t('Chọn tỉnh để tính phí'):money(q.shippingFee)}</strong></div><div class="quote-line quote-discount"><span>${t('Giảm giá khuyến mãi')}</span><strong>${q.discountAmount?'- ':''}${money(q.discountAmount)}</strong></div><div class="quote-line"><span>${t('Phí hồ sơ')}</span><strong>${money(q.registrationFee)}</strong></div><div class="quote-line quote-total"><span>${t('Tổng thanh toán')}</span><strong>${money(q.totalAmount)}</strong></div><p class="quote-status">${code?'' + t('Đã áp dụng mã') + ' '+e(code)+'.':t('Chưa áp dụng mã khuyến mãi.')}</p></div>`;
+        form.querySelector('#registrationServicePrice').textContent=`+ ${money(q.registrationServicePerBike)}${t('/xe')}`;
         // The note shows whenever a bike needs a plate; the option only when the store can help (pickup, service on).
         form.querySelector('#registrationBlock').hidden=!q.registrationRequired;
         form.querySelector('.registration-option').hidden=!q.registrationServiceAvailable;
         if(!q.registrationServiceAvailable)form.elements.includeRegistrationService.checked=false;
-        const stateFee=`Lệ phí trước bạ và lệ phí cấp biển số là tiền nộp Nhà nước do chủ xe chịu, không tính vào đơn này (lệ phí trước bạ ước tính ${money(q.registrationTaxLow)} – ${money(q.registrationTaxHigh)} cho xe trong đơn).`;
-        const selfService='chủ xe tự đăng ký trên VNeID (tài khoản định danh mức 2) với hóa đơn và phiếu kiểm tra chất lượng xuất xưởng cửa hàng giao kèm xe. ';
+        const stateFee=`${t('Lệ phí trước bạ và lệ phí cấp biển số là tiền nộp Nhà nước do chủ xe chịu, không tính vào đơn này (lệ phí trước bạ ước tính')} ${money(q.registrationTaxLow)} – ${money(q.registrationTaxHigh)} ${t('cho xe trong đơn).')}`;
+        const selfService='' + t('chủ xe tự đăng ký trên VNeID (tài khoản định danh mức 2) với hóa đơn và phiếu kiểm tra chất lượng xuất xưởng cửa hàng giao kèm xe.') + ' ';
         const how=form.elements.includeRegistrationService.checked
-          ?'Khi bạn đến nhận xe, nhân viên hỗ trợ đăng ký biển số. Chủ xe cần có mặt và có tài khoản VNeID mức 2 để tự kê khai. Khoản cộng thêm ở trên là phí dịch vụ của cửa hàng. '
+          ?'' + t('Khi bạn đến nhận xe, nhân viên hỗ trợ đăng ký biển số. Chủ xe cần có mặt và có tài khoản VNeID mức 2 để tự kê khai. Khoản cộng thêm ở trên là phí dịch vụ của cửa hàng.') + ' '
           :form.elements.deliveryMethod.value==='HOME_DELIVERY'
-            ?'Giao tận nhà: '+selfService+'Cửa hàng chỉ hỗ trợ đăng ký khi bạn nhận xe tại cửa hàng. '
-            :(q.registrationServiceAvailable?'Nếu không chọn, ':'Xe cần đăng ký biển số: ')+selfService;
+            ?'' + t('Giao tận nhà:') + ' '+selfService+'' + t('Cửa hàng chỉ hỗ trợ đăng ký khi bạn nhận xe tại cửa hàng.') + ' '
+            :(q.registrationServiceAvailable?'' + t('Nếu không chọn,') + ' ':'' + t('Xe cần đăng ký biển số:') + ' ')+selfService;
         form.querySelector('#registrationNote').textContent=how+stateFee;
         quoteValid=true;submit.disabled=submitting;return true;
       }catch(error){if(current===sequence)box.innerHTML=`<p class="commerce-error">${e(error.message)}</p>`;return false;}
@@ -176,8 +176,8 @@
       event.preventDefault();if(submitting||!form.reportValidity())return;
       const home=form.elements.deliveryMethod.value==='HOME_DELIVERY';
       const errorBox=form.querySelector('#checkoutError');errorBox.hidden=true;
-      if(!home && (!selectedStore || !stores.some(s=>s.id===selectedStore))){errorBox.textContent='Vui lòng chọn cửa hàng nhận xe.';errorBox.hidden=false;return;}
-      if(emailOtpRequired&&(!verification||verification.email!==form.elements.customerEmail.value.trim())){errorBox.textContent='Vui lòng xác minh email trước khi đặt hàng.';errorBox.hidden=false;return;}
+      if(!home && (!selectedStore || !stores.some(s=>s.id===selectedStore))){errorBox.textContent=t('Vui lòng chọn cửa hàng nhận xe.');errorBox.hidden=false;return;}
+      if(emailOtpRequired&&(!verification||verification.email!==form.elements.customerEmail.value.trim())){errorBox.textContent=t('Vui lòng xác minh email trước khi đặt hàng.');errorBox.hidden=false;return;}
       submitting=true;submit.disabled=true;
       try{
         if(!await updateQuote())return;
@@ -197,18 +197,18 @@
   }
   function renderSuccess(target,finish){
     finish();let order=null;try{order=JSON.parse(localStorage.getItem('kinetic_last_order')||'null')}catch{}
-    if(!order){target.innerHTML='<div class="commerce-empty"><h2>Chưa có đơn hàng mới</h2><a class="commerce-button" href="/products">Về cửa hàng</a></div>';return;}
+    if(!order){target.innerHTML='<div class="commerce-empty"><h2>' + t('Chưa có đơn hàng mới') + '</h2><a class="commerce-button" href="/products">' + t('Về cửa hàng') + '</a></div>';return;}
     const shipment=order.shipment;
     const awaitingVnPay=order.checkoutPaymentMethod==='VNPAY'&&order.paymentStatus!=='PAID';
     const intro=awaitingVnPay
-      ?`<p>Đơn hàng đã được tạo nhưng chưa thanh toán. Bấm nút bên dưới để thanh toán qua VNPay.</p>${order.vnpayError?`<p class="commerce-error" id="vnpayError">Chưa mở được trang VNPay: ${e(order.vnpayError)}</p>`:'<p class="commerce-error" id="vnpayError" hidden></p>'}<p><button type="button" class="commerce-button" id="payVnPay">Thanh toán qua VNPay</button></p>`
-      :'<p>Cảm ơn bạn đã chọn KINETIC. Đơn hàng đang chờ xác nhận.</p>';
-    target.innerHTML=`<section class="commerce-card order-success"><div class="success-check" aria-hidden="true">✓</div><h2>Đặt hàng thành công</h2>${intro}<strong class="order-number">${e(order.orderNumber)}</strong><div class="order-success-details"><p><span>Nhận hàng</span><strong>${shipment?.pickupShowroom?'Nhận tại cửa hàng':'Giao hàng tại nhà'}</strong></p><p><span>Người nhận</span><strong>${e(shipment?.recipientName||'')}</strong></p><p><span>Địa chỉ</span><strong>${e(shipment?.shippingAddress||'')}</strong></p>${order.items.map(item=>`<p><span>${e(item.productName)} · ${e(item.colorName||'')} × ${item.quantity}</span><strong>${money(item.lineTotal)}</strong></p>`).join('')}<p><span>Tổng thanh toán</span><strong>${money(order.totalAmount)}</strong></p></div><div class="success-actions"><a class="commerce-button" href="/products">Tiếp tục mua sắm</a><a href="/cart">Xem giỏ hàng</a></div></section>`;
+      ?`<p>${t('Đơn hàng đã được tạo nhưng chưa thanh toán. Bấm nút bên dưới để thanh toán qua VNPay.')}</p>${order.vnpayError?`<p class="commerce-error" id="vnpayError">${t('Chưa mở được trang VNPay:')} ${e(order.vnpayError)}</p>`:'<p class="commerce-error" id="vnpayError" hidden></p>'}<p><button type="button" class="commerce-button" id="payVnPay">${t('Thanh toán qua VNPay')}</button></p>`
+      :'<p>' + t('Cảm ơn bạn đã chọn KINETIC. Đơn hàng đang chờ xác nhận.') + '</p>';
+    target.innerHTML=`<section class="commerce-card order-success"><div class="success-check" aria-hidden="true">✓</div><h2>${t('Đặt hàng thành công')}</h2>${intro}<strong class="order-number">${e(order.orderNumber)}</strong><div class="order-success-details"><p><span>${t('Nhận hàng')}</span><strong>${shipment?.pickupShowroom?t('Nhận tại cửa hàng'):t('Giao hàng tại nhà')}</strong></p><p><span>${t('Người nhận')}</span><strong>${e(shipment?.recipientName||'')}</strong></p><p><span>${t('Địa chỉ')}</span><strong>${e(shipment?.shippingAddress||'')}</strong></p>${order.items.map(item=>`<p><span>${e(item.productName)} · ${e(item.colorName||'')} × ${item.quantity}</span><strong>${money(item.lineTotal)}</strong></p>`).join('')}<p><span>${t('Tổng thanh toán')}</span><strong>${money(order.totalAmount)}</strong></p></div><div class="success-actions"><a class="commerce-button" href="/products">${t('Tiếp tục mua sắm')}</a><a href="/cart">${t('Xem giỏ hàng')}</a></div></section>`;
     const payButton=target.querySelector('#payVnPay');
     payButton?.addEventListener('click',async()=>{
       const errorBox=target.querySelector('#vnpayError');errorBox.hidden=true;payButton.disabled=true;
       try{await startVnPay(order.id);}
-      catch(error){errorBox.textContent=`Chưa mở được trang VNPay: ${error.message}`;errorBox.hidden=false;payButton.disabled=false;}
+      catch(error){errorBox.textContent=`${t('Chưa mở được trang VNPay:')} ${error.message}`;errorBox.hidden=false;payButton.disabled=false;}
     });
   }
   window.KineticCommerce={init:async(flow,target,finish,tell)=>{
@@ -216,6 +216,6 @@
     document.querySelector('#data-table')?.remove();
     document.querySelector('#empty').hidden=true;
     try{if(flow==='cart')await renderCart(target,finish,tell);else if(flow==='checkout')await renderCheckout(target,finish,tell);else renderSuccess(target,finish);}
-    catch(error){finish();tell(error.message,true);target.innerHTML='<div class="commerce-empty"><p>Chưa thể tải thông tin. Vui lòng tải lại trang.</p><a href="/cart">Về giỏ hàng</a></div>';}
+    catch(error){finish();tell(error.message,true);target.innerHTML='<div class="commerce-empty"><p>' + t('Chưa thể tải thông tin. Vui lòng tải lại trang.') + '</p><a href="/cart">' + t('Về giỏ hàng') + '</a></div>';}
   }};
 })();

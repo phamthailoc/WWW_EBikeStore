@@ -68,7 +68,6 @@ Ví dụ:
 - `OrderService` / `OrderServiceImpl`
 - `AuthenticationService` / `AuthenticationServiceImpl`
 - `VnPayService` / `VnPayServiceImpl`
-- `MediaProxyService` / `MediaProxyServiceImpl`
 - `NotificationService` / `NotificationServiceImpl`
 
 ### Ý nghĩa
@@ -146,7 +145,6 @@ Ví dụ:
 - `GeminiChatClient`
 - `JwtAuthenticationFilter`
 - `ServerRateLimitFilter`
-- `RedisCacheConfiguration`
 
 ### Ý nghĩa
 
@@ -164,7 +162,7 @@ Dự án chưa có custom factory class riêng, nhưng có sử dụng Factory P
 
 Ví dụ:
 
-- `RedisCacheConfiguration` tạo cache configuration, key generator, cache error handler.
+- `ApplicationConfiguration` tạo `PasswordEncoder` và cấu hình Web MVC.
 - `SecurityConfiguration` tạo security filter chain.
 - `StorageConfiguration` tạo cấu hình storage.
 - `RestTemplateBuilder` trong `GeminiChatClient` tạo `RestTemplate`.
@@ -186,7 +184,6 @@ Dự án dùng interface và implementation cho nhiều nghiệp vụ:
 - `AuthenticationService` / `AuthenticationServiceImpl`
 - `OrderService` / `OrderServiceImpl`
 - `VnPayService` / `VnPayServiceImpl`
-- `MediaProxyService` / `MediaProxyServiceImpl`
 - `NotificationService` / `NotificationServiceImpl`
 
 Ngoài ra, phần lọc sản phẩm bằng Specification cũng có tính chất strategy vì mỗi điều kiện lọc là một chiến lược truy vấn có thể ghép lại.
@@ -249,7 +246,6 @@ Một số service đóng vai trò bọc hệ thống hoặc thư viện bên ng
 
 - `GeminiChatClient`: bọc API Gemini.
 - `VnPayServiceImpl`: bọc logic tạo URL và xác thực callback VNPay.
-- `MediaProxyServiceImpl`: bọc việc gọi remote image.
 - `ProductImageStorageService`: bọc việc lưu ảnh/storage.
 
 ### Ý nghĩa
@@ -284,7 +280,7 @@ Khi có sự kiện nghiệp vụ như thay đổi trạng thái đơn hàng ho�
 
 ### Áp dụng trong dự án
 
-ProductService dùng Redis cache cho:
+ProductService dùng Spring Cache (lưu trong bộ nhớ của ứng dụng) cho:
 
 - danh sách sản phẩm theo query/category/minPrice/maxPrice
 - chi tiết sản phẩm theo slug
@@ -293,11 +289,11 @@ Cache được evict khi có thao tác thay đổi sản phẩm, ảnh sản ph�
 
 ### Ý nghĩa
 
-Khi đọc dữ liệu, hệ thống kiểm tra cache trước. Nếu cache miss thì lấy từ database và lưu lại vào Redis. Khi dữ liệu thay đổi thì xóa cache để tránh trả dữ liệu cũ.
+Khi đọc dữ liệu, hệ thống kiểm tra cache trước. Nếu cache miss thì lấy từ database và lưu lại vào cache. Khi dữ liệu thay đổi thì xóa cache để tránh trả dữ liệu cũ.
 
 ### Cách trả lời
 
-> Dự án áp dụng Cache-aside Pattern với Redis cho ProductService. Khi đọc danh sách hoặc chi tiết sản phẩm, hệ thống lấy từ Redis nếu có. Nếu chưa có thì truy vấn database rồi cache lại. Khi sản phẩm, ảnh hoặc review thay đổi, cache sẽ bị evict để đảm bảo dữ liệu đúng.
+> Dự án áp dụng Cache-aside Pattern với Spring Cache cho ProductService (`@Cacheable`, `@CacheEvict`; cache nằm trong bộ nhớ ứng dụng vì hệ thống chạy một instance). Khi đọc danh sách hoặc chi tiết sản phẩm, hệ thống lấy từ cache nếu có. Nếu chưa có thì truy vấn database rồi cache lại. Khi sản phẩm, ảnh hoặc review thay đổi, cache sẽ bị evict để đảm bảo dữ liệu đúng.
 
 ## 14. Builder Pattern
 
@@ -305,10 +301,10 @@ Khi đọc dữ liệu, hệ thống kiểm tra cache trước. Nếu cache miss
 
 Dự án có sử dụng builder-style API từ thư viện:
 
-- `HttpClient.newBuilder()` trong `MediaProxyServiceImpl`
-- `HttpRequest.newBuilder()` trong `MediaProxyServiceImpl`
+- `S3Client.builder()` trong `StorageConfiguration`, `PutObjectRequest.builder()` trong `ProductImageStorageService`
+- `ResponseCookie.from(...)` trong `AuthController`
 - `RestTemplateBuilder` trong `GeminiChatClient`
-- `Jwts.parserBuilder()` trong JWT processing
+- `Jwts.builder()` và `Jwts.parserBuilder()` trong `JwtTokenProvider`
 
 ### Ý nghĩa
 
@@ -316,13 +312,13 @@ Builder giúp tạo object có nhiều cấu hình một cách rõ ràng, dễ �
 
 ### Cách trả lời
 
-> Dự án có sử dụng Builder Pattern thông qua các builder API của Java và Spring, ví dụ `HttpClient.newBuilder`, `HttpRequest.newBuilder`, `RestTemplateBuilder`. Các builder này giúp cấu hình object như timeout, header, redirect một cách rõ ràng.
+> Dự án có sử dụng Builder Pattern thông qua các builder API của Java và Spring, ví dụ `S3Client.builder`, `ResponseCookie.from`, `RestTemplateBuilder`, `Jwts.builder`. Các builder này giúp cấu hình object như timeout, cookie, claim của token một cách rõ ràng.
 
 ## Câu trả lời tổng hợp ngắn
 
 Nếu cần trả lời nhanh trong buổi bảo vệ:
 
-> Dự án áp dụng nhiều design pattern. Về kiến trúc, backend dùng Layered Architecture với Controller-Service-Repository. Về dữ liệu, dự án dùng Repository Pattern qua Spring Data JPA và DTO Pattern cho request/response. Về quản lý object, dự án dùng Dependency Injection, Singleton bean và Bean Factory của Spring. Với nghiệp vụ mở rộng, dự án dùng Strategy thông qua service interface và implementation. Với lọc sản phẩm, dự án dùng Specification Pattern. Với security và rate limit, dự án dùng Filter Chain/Chain of Responsibility. Với tích hợp Gemini, VNPay và storage, dự án dùng Adapter/Facade. Với notification có hướng Event-driven/Observer. Với Redis product cache, dự án dùng Cache-aside Pattern.
+> Dự án áp dụng nhiều design pattern. Về kiến trúc, backend dùng Layered Architecture với Controller-Service-Repository. Về dữ liệu, dự án dùng Repository Pattern qua Spring Data JPA và DTO Pattern cho request/response. Về quản lý object, dự án dùng Dependency Injection, Singleton bean và Bean Factory của Spring. Với nghiệp vụ mở rộng, dự án dùng Strategy thông qua service interface và implementation. Với lọc sản phẩm, dự án dùng Specification Pattern. Với security và rate limit, dự án dùng Filter Chain/Chain of Responsibility. Với tích hợp Gemini, VNPay và storage, dự án dùng Adapter/Facade. Với notification có hướng Event-driven/Observer. Với cache sản phẩm (Spring Cache), dự án dùng Cache-aside Pattern.
 
 ## Lưu ý khi bị hỏi sâu
 

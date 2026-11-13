@@ -79,6 +79,10 @@ public class Order {
     @Column(name = "customer_email", length = 255)
     private String customerEmail;
 
+    // When the order became READY_FOR_PICKUP, i.e. when the customer was told to come and collect the bike.
+    @Column(name = "pickup_deadline_at")
+    private LocalDateTime pickupDeadlineAt;
+
     @Column(name = "cancellation_reason", columnDefinition = "TEXT")
     private String cancellationReason;
 
@@ -277,6 +281,15 @@ public class Order {
 
     public void setCancellationRequestedAt(LocalDateTime cancellationRequestedAt) {
         this.cancellationRequestedAt = cancellationRequestedAt;
+    }
+
+
+    public LocalDateTime getPickupDeadlineAt() {
+        return pickupDeadlineAt;
+    }
+
+    public void setPickupDeadlineAt(LocalDateTime pickupDeadlineAt) {
+        this.pickupDeadlineAt = pickupDeadlineAt;
     }
 
     public LocalDateTime getCancellationReviewedAt() {

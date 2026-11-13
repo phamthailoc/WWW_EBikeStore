@@ -7,8 +7,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.sql.DataSource;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.connection.RedisConnection;
-import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,11 +24,9 @@ public class HealthController {
     private String instanceId;
 
     private final DataSource dataSource;
-    private final RedisConnectionFactory redisConnectionFactory;
 
-    public HealthController(DataSource dataSource, RedisConnectionFactory redisConnectionFactory) {
+    public HealthController(DataSource dataSource) {
         this.dataSource = dataSource;
-        this.redisConnectionFactory = redisConnectionFactory;
     }
 
     @GetMapping
@@ -47,7 +43,6 @@ public class HealthController {
     public ResponseEntity<HealthResponse> readiness() {
         Map<String, String> dependencies = new LinkedHashMap<>();
         dependencies.put("database", checkDatabase());
-        dependencies.put("redis", checkRedis());
 
         boolean ready = dependencies.values().stream().allMatch("UP"::equals);
         HealthResponse response = new HealthResponse(
@@ -68,15 +63,6 @@ public class HealthController {
              Statement statement = connection.createStatement()) {
             statement.execute("SELECT 1");
             return "UP";
-        } catch (Exception exception) {
-            return "DOWN";
-        }
-    }
-
-    private String checkRedis() {
-        try (RedisConnection connection = redisConnectionFactory.getConnection()) {
-            String pong = connection.ping();
-            return "PONG".equalsIgnoreCase(pong) ? "UP" : "DOWN";
         } catch (Exception exception) {
             return "DOWN";
         }

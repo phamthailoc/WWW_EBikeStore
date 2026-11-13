@@ -27,10 +27,10 @@ public class ServerRateLimitFilter extends OncePerRequestFilter {
     private final AntPathMatcher pathMatcher = new AntPathMatcher();
     private final Map<String, TokenBucket> buckets = new ConcurrentHashMap<>();
     private final List<RateLimitRule> rules = List.of(
-        new RateLimitRule("auth-login", HttpMethod.POST.name(), "/auth/login", 5, Duration.ofMinutes(1)),
-        new RateLimitRule("email-otp-send", HttpMethod.POST.name(), "/orders/email-verification/send", 3, Duration.ofMinutes(5)),
-        new RateLimitRule("chatbot-ask", HttpMethod.POST.name(), "/chatbot/ask", 20, Duration.ofMinutes(1)),
-        new RateLimitRule("vnpay-create", HttpMethod.POST.name(), "/payments/vnpay/create", 10, Duration.ofMinutes(1))
+        new RateLimitRule("auth-login", HttpMethod.POST.name(), "/api/v1/auth/login", 5, Duration.ofMinutes(1)),
+        new RateLimitRule("email-otp-send", HttpMethod.POST.name(), "/api/v1/orders/email-verification/send", 3, Duration.ofMinutes(5)),
+        new RateLimitRule("chatbot-ask", HttpMethod.POST.name(), "/api/v1/chatbot/ask", 20, Duration.ofMinutes(1)),
+        new RateLimitRule("vnpay-create", HttpMethod.POST.name(), "/api/v1/payments/vnpay/create", 10, Duration.ofMinutes(1))
     );
 
     private final boolean enabled;
@@ -78,22 +78,17 @@ public class ServerRateLimitFilter extends OncePerRequestFilter {
     }
 
     private String clientIdentity(HttpServletRequest request) {
-        String forwardedFor = request.getHeader("X-Forwarded-For");
-        if (forwardedFor != null && !forwardedFor.isBlank()) {
-            return forwardedFor.split(",")[0].trim();
-        }
-        String realIp = request.getHeader("X-Real-IP");
-        if (realIp != null && !realIp.isBlank()) {
-            return realIp.trim();
-        }
+        // Never read X-Forwarded-For here: any client can send it and get a fresh limit with every request.
+        // Behind a proxy, Tomcat (server.forward-headers-strategy=native in the prod profile) replaces the address
+        // with the real client only when the proxy is a trusted internal one.
         return request.getRemoteAddr();
     }
 
     private void writeTooManyRequests(HttpServletResponse response, long retryAfterSeconds) throws IOException {
         response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
-        response.setContentType("application/json");
+        response.setContentType("application/json;charset=UTF-8");
         response.setHeader("Retry-After", String.valueOf(Math.max(1, retryAfterSeconds)));
-        response.getWriter().write("{\"message\":\"Too many requests. Please retry later.\"}");
+        response.getWriter().write("{\"message\":\"Bạn thao tác quá nhanh. Vui lòng thử lại sau ít phút.\"}");
     }
 
     private void cleanupStaleBuckets() {

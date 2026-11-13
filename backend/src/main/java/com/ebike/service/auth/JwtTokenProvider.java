@@ -2,7 +2,6 @@ package com.ebike.service.auth;
 
 import com.ebike.model.entity.auth.User;
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
@@ -16,7 +15,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class JwtTokenProvider {
 
-    @Value("${jwt.secret:your-super-secret-jwt-key-change-this-in-production-with-a-secure-random-key-at-least-32-characters}")
+    @Value("${jwt.secret}")
     private String jwtSecret;
 
     @Value("${jwt.expiration:86400000}")
@@ -45,30 +44,6 @@ public class JwtTokenProvider {
     public String extractUsername(String token) {
         try {
             return getClaims(token).getSubject();
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    public Long extractUserId(String token) {
-        try {
-            return getClaims(token).get("userId", Long.class);
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    public String extractRoles(String token) {
-        try {
-            return (String) getClaims(token).get("roles");
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    public String extractEmail(String token) {
-        try {
-            return (String) getClaims(token).get("email");
         } catch (Exception e) {
             return null;
         }

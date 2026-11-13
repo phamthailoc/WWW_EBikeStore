@@ -1,5 +1,5 @@
 ﻿-- KINETIC E-Bike Store: MariaDB single-database setup
--- Source: backend/database/schema-source and backend/database/catalog/products.json
+-- Edited by hand; every change also needs an update_*.sql for existing databases (see README.md).
 -- Run this file in HeidiSQL. Images are referenced by relative local paths.
 CREATE DATABASE IF NOT EXISTS ebike_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE ebike_db;
@@ -392,6 +392,8 @@ CREATE TABLE `admin_audit_logs` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 ALTER TABLE users ADD COLUMN account_status VARCHAR(30) NOT NULL DEFAULT 'ACTIVE';
 ALTER TABLE orders ADD COLUMN promotion_id BIGINT NULL, ADD CONSTRAINT fk_orders_promotion FOREIGN KEY (promotion_id) REFERENCES promotions(id) ON DELETE SET NULL;
+ALTER TABLE orders ADD COLUMN pickup_deadline_at DATETIME NULL;
+ALTER TABLE user_preferences ALTER COLUMN theme SET DEFAULT 'system', ALTER COLUMN language SET DEFAULT 'vi';
 
 DROP TABLE IF EXISTS `support_requests`;
 CREATE TABLE `support_requests` (
@@ -410,6 +412,17 @@ CREATE TABLE `support_requests` (
     CONSTRAINT chk_support_requests_status CHECK (status IN ('NEW', 'IN_PROGRESS', 'RESOLVED'))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 CREATE INDEX `idx_support_requests_status` ON `support_requests` (status, created_at);
+
+DROP TABLE IF EXISTS `order_item_units`;
+CREATE TABLE `order_item_units` (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    order_item_id BIGINT NOT NULL,
+    frame_number VARCHAR(30) NOT NULL,
+    engine_number VARCHAR(30) NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_order_item_units_item FOREIGN KEY (order_item_id) REFERENCES order_items(id) ON DELETE CASCADE,
+    CONSTRAINT uq_order_item_units_frame UNIQUE (frame_number)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 CREATE INDEX `idx_pricing_rules_status` ON `pricing_rules` (status);
 CREATE INDEX `idx_promotions_status` ON `promotions` (status);
 CREATE INDEX `idx_promotions_code` ON `promotions` (code);

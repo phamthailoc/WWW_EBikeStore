@@ -102,8 +102,8 @@ public class AdminController {
 
     @DeleteMapping("/accounts/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteAccount(@PathVariable Long id) {
-        adminService.deleteAccount(id);
+    public void deleteAccount(@PathVariable Long id, @RequestParam String confirmEmail) {
+        adminService.deleteAccount(id, confirmEmail);
     }
 
     @GetMapping("/roles")

@@ -20,17 +20,12 @@ com.ebike
 ## Data and resources
 
 - `database/setup_ebike_database.sql` is the MariaDB setup script used for `ebike_db`.
-- `database/generate_mariadb_setup.py` regenerates the setup SQL from `database/schema-source/` and `database/catalog/products.json`.
-- `database/schema-source/` contains PostgreSQL schema history used only as input to that converter; it is not loaded at application startup.
-- Earlier PostgreSQL migration history and generated product SQL outputs are kept in the top-level `archive/legacy-project/backend/`.
-- `database/catalog/` stores the reviewed electric models, color/photo assignments and manufacturer provenance.
+- `database/update_*.sql` bring an existing database up to date; every schema change goes into both the setup script and a new update script.
+- `database/catalog/` records where the reviewed electric models, color/photo assignments and photographs came from.
 - `src/main/resources/static/images/catalog/` stores original manufacturer photographs used by the storefront and color galleries.
-- The previous mixed gasoline/electric data, fabricated color generators and images are archived at `archive/catalog-before-correction/`, outside the backend.
 - `src/main/resources/templates/` contains Thymeleaf pages.
 - `src/main/resources/static/` contains CSS, JavaScript, and browser images.
 - `src/main/resources/docs/` and `faq-data/` are used by the chatbot knowledge service.
-
-The archived `chatbot-model-scaffold` contains empty planning directories and metadata that had no runtime references.
 
 ## Cart and delivery
 
@@ -38,10 +33,16 @@ The browser cart is saved in `kinetic_cart` localStorage. Lines are keyed by pro
 
 For home delivery, `shipments.pickup_showroom_id` is null, `pickup_district` holds the selected province, and the delivery address is stored in `detailed_address`/`shipping_address`. For store pickup, the selected showroom supplies the address. The response exposes `deliveryMethod` and `province`; existing schema and historical orders remain compatible.
 
-UI test instructions: `tests/ui/README.md`.
+Browser tests are the Selenium classes under `src/test/java/com/ebike/selenium/`; they run only when `-Dselenium.baseUrl` is given.
 
 ## Product colors
 
 Only active variants with active photos are exposed as selectable colors. The product API includes a separate `images` gallery for each variant. Selecting a different view keeps the chosen color, while switching colors replaces the gallery and updates the cart's variant/photo reference. Two-tone colors render a split swatch alongside the actual product thumbnail.
 
-Source data/rebuild instructions: `database/catalog/README.md`. Catalog/photo verification: `node tests/ui/catalog-colors.cjs` (application running first).
+Catalog provenance: `database/catalog/README.md`.
+
+## Caching and request limits
+
+Product lists and product details are cached in the application's memory (`CacheNames`); every change to stock, photos, reviews or orders evicts both caches. The cache is per process, so the application is meant to run as a single instance.
+
+`ServerRateLimitFilter` limits, per client IP, sign-in attempts, email-code requests, chatbot questions and VNPay payment creation. It reads the client address from `X-Forwarded-For`, so it is only as trustworthy as the proxy in front of the application.

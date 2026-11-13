@@ -28,7 +28,6 @@ public class SecurityConfiguration {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .cors(cors -> {})
             .csrf(AbstractHttpConfigurer::disable)
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .anonymous(anonymous -> anonymous.authorities(
@@ -41,8 +40,7 @@ public class SecurityConfiguration {
                 PermissionConstants.ChatbotManagement.CHATBOT_USE
             ))
             .authorizeHttpRequests(authorize -> authorize
-                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                .requestMatchers("/", "/shop", "/products", "/models", "/bike/**", "/product/**", "/models/**", "/login", "/auth", "/signup", "/checkout", "/checkout/success", "/payment/return", "/support", "/compare", "/chatbot", "/css/**", "/js/**", "/images/**", "/favicon.ico").permitAll()
+                .requestMatchers("/", "/shop", "/products", "/models", "/bike/**", "/product/**", "/models/**", "/login", "/auth", "/signup", "/lang/*", "/checkout", "/checkout/success", "/payment/return", "/support", "/compare", "/chatbot", "/css/**", "/js/**", "/images/**", "/favicon.ico").permitAll()
                 .requestMatchers("/cart", "/data/**").permitAll()
                 .requestMatchers("/favorites").authenticated()
                 .requestMatchers("/customer/**").hasAnyAuthority(PermissionConstants.Customer.PROFILE_VIEW, PermissionConstants.OrderManagement.ORDER_VIEW_ALL)
@@ -56,11 +54,8 @@ public class SecurityConfiguration {
                 .requestMatchers(
                     "/api/v1/auth/register",
                     "/api/v1/auth/login",
-                    "/api/v1/auth/login/**",
                     "/api/v1/auth/logout",
-                    "/api/v1/auth/session",
                     "/api/v1/health/**",
-                    "/api/v1/media/**",
                     "/error"
                 ).permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/products/**").hasAuthority(PermissionConstants.Guest.PRODUCT_VIEW)
@@ -76,8 +71,6 @@ public class SecurityConfiguration {
                 .requestMatchers(HttpMethod.GET, "/api/v1/showrooms").hasAuthority(PermissionConstants.Guest.PRODUCT_VIEW)
                 .requestMatchers(HttpMethod.POST, "/api/v1/chatbot/ask").hasAuthority(PermissionConstants.ChatbotManagement.CHATBOT_USE)
                 .requestMatchers(HttpMethod.POST, "/api/v1/chatbot/debug").hasAuthority(PermissionConstants.ChatbotManagement.CHATBOT_CONFIGURE)
-                .requestMatchers(HttpMethod.GET, "/api/v1/auth/profile").authenticated()
-                .requestMatchers(HttpMethod.PUT, "/api/v1/auth/profile").authenticated()
                 .requestMatchers("/api/v1/auth/**").authenticated()
                 .requestMatchers(HttpMethod.GET, "/api/v1/orders", "/api/v1/orders/*").hasAnyAuthority(
                     PermissionConstants.Customer.ORDER_VIEW_OWN,
@@ -102,6 +95,8 @@ public class SecurityConfiguration {
                     PermissionConstants.Customer.PROFILE_VIEW,
                     PermissionConstants.UserManagement.USER_VIEW
                 )
+                // Theme and other display preferences belong to every account, staff included (V4); the service checks ownership.
+                .requestMatchers(HttpMethod.PUT, "/api/v1/users/*/preferences").authenticated()
                 .requestMatchers(HttpMethod.POST, "/api/v1/users/**").hasAuthority(PermissionConstants.Customer.PROFILE_UPDATE)
                 .requestMatchers(HttpMethod.PUT, "/api/v1/users/**").hasAuthority(PermissionConstants.Customer.PROFILE_UPDATE)
                 .requestMatchers(HttpMethod.DELETE, "/api/v1/users/**").hasAuthority(PermissionConstants.Customer.PROFILE_UPDATE)
@@ -116,10 +111,11 @@ public class SecurityConfiguration {
                 .requestMatchers(HttpMethod.PATCH, "/api/v1/admin/pricing-rules/*").hasAnyRole(ADMIN_CONSOLE_ROLES)
                 .requestMatchers(HttpMethod.POST, "/api/v1/admin/promotions").hasAnyRole(ADMIN_CONSOLE_ROLES)
                 .requestMatchers(HttpMethod.PATCH, "/api/v1/admin/promotions/*").hasAnyRole(ADMIN_CONSOLE_ROLES)
-                .requestMatchers(HttpMethod.POST, "/api/v1/admin/accounts").hasAnyRole(ADMIN_CONSOLE_ROLES)
-                .requestMatchers(HttpMethod.PATCH, "/api/v1/admin/accounts/*/role").hasAnyRole(ADMIN_CONSOLE_ROLES)
-                .requestMatchers(HttpMethod.PATCH, "/api/v1/admin/accounts/*/status").hasAnyRole(ADMIN_CONSOLE_ROLES)
-                .requestMatchers(HttpMethod.DELETE, "/api/v1/admin/accounts/*").hasAnyRole(ADMIN_CONSOLE_ROLES)
+                // Creating, re-roling, locking and erasing accounts is for ADMIN only; the other console roles may view.
+                .requestMatchers(HttpMethod.POST, "/api/v1/admin/accounts").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PATCH, "/api/v1/admin/accounts/*/role").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PATCH, "/api/v1/admin/accounts/*/status").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/v1/admin/accounts/*").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.POST, "/api/v1/admin/product-images").hasAuthority(PermissionConstants.ProductManagement.PRODUCT_CREATE)
                 .requestMatchers(HttpMethod.GET, "/api/v1/admin/product-images/**").hasAuthority(PermissionConstants.ProductManagement.PRODUCT_UPDATE)
                 .requestMatchers(HttpMethod.PUT, "/api/v1/admin/product-images/**").hasAuthority(PermissionConstants.ProductManagement.PRODUCT_UPDATE)
