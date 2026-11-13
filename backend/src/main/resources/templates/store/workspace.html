@@ -16,10 +16,10 @@
     <section id="promo-panel" class="data-panel" hidden><div class="panel-heading"><div><p class="eyebrow"><th:block th:text="#{ws.offers}">KINETIC / ƯU ĐÃI</th:block></p><h2><th:block th:text="#{ws.promotions}">Chương trình khuyến mãi</th:block></h2></div><button id="addPromotion" class="button compact"><th:block th:text="#{ws.createOffer}">+ Tạo ưu đãi</th:block></button></div><div class="table-scroll"><table id="promo-table"><thead></thead><tbody></tbody></table></div></section>
   </main>
 </div>
-<script th:if="${mode == 'accounts' or mode == 'pricing'}" th:src="@{/js/admin.js(v=20261107-admin1)}"></script>
+<script th:if="${mode == 'accounts' or mode == 'pricing'}" th:src="@{/js/admin.js(v=20261114-i18n3)}"></script>
 <script th:if="${workspaceRole == 'customer'}" th:src="@{/js/notifications.js(v=20261110-i18n2)}"></script>
-<script th:if="${mode == 'inventory'}" th:src="@{/js/stock.js(v=20261107-stock2)}"></script>
-<script th:if="${mode == 'inventory'}" th:src="@{/js/images.js(v=20261107-images1)}"></script>
-<script th:src="@{/js/workspace.js(v=20261110-search1)}"></script>
+<script th:if="${mode == 'inventory'}" th:src="@{/js/stock.js(v=20261114-i18n3)}"></script>
+<script th:if="${mode == 'inventory'}" th:src="@{/js/images.js(v=20261114-i18n3)}"></script>
+<script th:src="@{/js/workspace.js(v=20261114-i18n3)}"></script>
 <script th:if="${mode == 'profile'}" th:src="@{/js/profile.js(v=20261110-i18n2)}"></script>
 </body></html>

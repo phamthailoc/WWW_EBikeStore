@@ -42,7 +42,7 @@
     if(page==='/customer/notifications'&&id!=null&&!row.readAt)buttons.push(`<button class="table-action" data-action="read" data-id="${id}">${t('Đánh dấu đã đọc')}</button>`);
     if(page.startsWith('/customer/orders')&&id!=null&&awaitsVnPay(row))buttons.push(`<button class="table-action" data-action="pay-vnpay" data-id="${id}">${t('Thanh toán VNPay')}</button>`);
     if(page.startsWith('/customer/orders')&&id!=null&&['PENDING','CONFIRMED','PROCESSING'].includes(row.status))buttons.push(`<button class="table-action" data-action="cancel-order" data-id="${id}">${t('Hủy đơn')}</button>`);
-    if(page==='/favorites'&&id!=null)buttons.push(`<a class="table-action" href="/product/${encodeURIComponent(row.slug||'')}">Xem xe</a><button class="table-action" data-action="remove-favorite" data-id="${id}">${t('Bỏ yêu thích')}</button>`);
+    if(page==='/favorites'&&id!=null)buttons.push(`<a class="table-action" href="/product/${encodeURIComponent(row.slug||'')}">${t('Xem xe')}</a><button class="table-action" data-action="remove-favorite" data-id="${id}">${t('Bỏ yêu thích')}</button>`);
     if((page==='/customer/orders'||page==='/manager/orders'||page==='/manager')&&id!=null)buttons.push(`<a class="table-action" href="${page.startsWith('/manager')?'/manager':'/customer'}/orders/${id}">${t('Chi tiết')}</a>`);
     return buttons.length?`<div class="product-action">${buttons.join('')}</div>`:'';
   };
@@ -89,18 +89,18 @@
   const renderRevenueChart=points=>{
     let panel=document.querySelector('#report-chart');
     if(!panel){panel=document.createElement('section');panel.id='report-chart';panel.className='data-panel report-chart';document.querySelector('#data-panel').before(panel)}
-    if(!points.length||points.every(p=>!Number(p.revenue))){panel.innerHTML='<p class="eyebrow">KINETIC / DOANH THU</p><h2>' + t('Biểu đồ doanh thu') + '</h2><p>' + t('Chưa có doanh thu trong khoảng thời gian này.') + '</p>';return}
+    if(!points.length||points.every(p=>!Number(p.revenue))){panel.innerHTML='<p class="eyebrow">KINETIC / ' + t('DOANH THU') + '</p><h2>' + t('Biểu đồ doanh thu') + '</h2><p>' + t('Chưa có doanh thu trong khoảng thời gian này.') + '</p>';return}
     const W=720,H=260,left=64,bottom=44,top=16,right=12,plotW=W-left-right,plotH=H-top-bottom;
     const max=Math.max(...points.map(p=>Number(p.revenue)||0));
     const step=Math.pow(10,Math.floor(Math.log10(max)));const niceMax=Math.ceil(max/step)*step;
     const slot=plotW/points.length,barW=Math.min(48,slot*0.64);
-    const short=v=>v>=1e9?(v/1e9).toFixed(1).replace('.0','')+' ' + t('tỷ') + '':v>=1e6?(v/1e6).toFixed(1).replace('.0','')+' tr':new Intl.NumberFormat('vi-VN').format(v);
+    const short=v=>v>=1e9?(v/1e9).toFixed(1).replace('.0','')+' ' + t('tỷ') + '':v>=1e6?(v/1e6).toFixed(1).replace('.0','')+' '+t('tr'):new Intl.NumberFormat('vi-VN').format(v);
     const grid=[0,0.5,1].map(t=>{const y=top+plotH*(1-t);return `<line x1="${left}" x2="${W-right}" y1="${y}" y2="${y}" class="grid"/><text x="${left-8}" y="${y+4}" text-anchor="end">${short(niceMax*t)}</text>`}).join('');
     const bars=points.map((p,i)=>{const v=Number(p.revenue)||0,h=plotH*v/niceMax,x=left+slot*i+(slot-barW)/2,y=top+plotH-h;
       const every=Math.ceil(points.length/12);
       return `<g><rect x="${x}" y="${y}" width="${barW}" height="${Math.max(h,0)}" rx="3"><title>${escape(p.label)}: ${escape(human(v,'revenue'))} (${p.orderCount} ${t('đơn)')}</title></rect>${i%every===0?`<text x="${x+barW/2}" y="${H-bottom+18}" text-anchor="middle">${escape(String(p.label).slice(0,10))}</text>`:''}</g>`}).join('');
     const total=points.reduce((sum,p)=>sum+(Number(p.revenue)||0),0);
-    panel.innerHTML=`<p class="eyebrow">KINETIC / DOANH THU</p><h2>${t('Biểu đồ doanh thu')}</h2><svg viewBox="0 0 ${W} ${H}" class="revenue-chart" role="img" aria-label="${t('Biểu đồ cột doanh thu theo kỳ, tổng')} ${escape(human(total,'revenue'))}">${grid}${bars}</svg>`;
+    panel.innerHTML=`<p class="eyebrow">KINETIC / ${t('DOANH THU')}</p><h2>${t('Biểu đồ doanh thu')}</h2><svg viewBox="0 0 ${W} ${H}" class="revenue-chart" role="img" aria-label="${t('Biểu đồ cột doanh thu theo kỳ, tổng')} ${escape(human(total,'revenue'))}">${grid}${bars}</svg>`;
   };
   const reportList=rows=>rows.length?`<ol class="report-list">${rows.map(r=>`<li><span><b>${escape(r.productName||t('Sản phẩm'))}</b><small>${escape(human(r.quantitySold,'quantitySold'))} ${t('xe đã bán')}</small></span><strong>${escape(human(r.revenue,'revenue'))}</strong></li>`).join('')}</ol>`:'<p class="empty">' + t('Chưa có dữ liệu trong kỳ này.') + '</p>';
   const renderProfile=data=>{profile.hidden=false;const fields=['firstName','lastName','email','phone','phoneNumber'];profile.innerHTML=`<form id="profileForm"><p class="eyebrow">${t('THÔNG TIN TÀI KHOẢN')}</p><div class="profile-grid">${fields.filter(f=>f in(data||{})).map(f=>`<label>${escape(label(f))}<input name="${f}" value="${escape(data[f]||'')}"></label>`).join('')}</div><p><button class="button compact">${t('Lưu hồ sơ')}</button></p></form>`;profile.querySelector('form').addEventListener('submit',async e=>{e.preventDefault();try{await send('/api/v1/auth/profile','PUT',Object.fromEntries(new FormData(e.currentTarget)));tell(t('Hồ sơ đã được cập nhật.'))}catch(err){tell(err.message,true)}})};
@@ -143,7 +143,7 @@
     if(!items.length){removePanel('orderItems');return}
     const unitsOf=item=>(item.units||[]).map(u=>`<small class="unit-numbers">${t('Số khung')} ${escape(u.frameNumber)} ${t('· Số máy')} ${escape(u.engineNumber)}</small>`).join('');
     const rows=items.map(item=>`<tr><td>${escape(item.productName||'—')}${unitsOf(item)}</td><td>${escape(item.colorName||'—')}</td><td>${escape(item.quantity??0)}</td><td>${escape(money(item.unitPrice))}</td><td>${escape(money(item.lineTotal))}</td></tr>`).join('');
-    detailPanel('orderItems',`<h2>${t('Xe trong đơn hàng')}</h2><div class="table-scroll"><table><thead><tr><th>Xe</th><th>${t('Màu')}</th><th>${t('Số lượng')}</th><th>${t('Đơn giá')}</th><th>${t('Thành tiền')}</th></tr></thead><tbody>${rows}</tbody></table></div>`);
+    detailPanel('orderItems',`<h2>${t('Xe trong đơn hàng')}</h2><div class="table-scroll"><table><thead><tr><th>${t('Xe')}</th><th>${t('Màu')}</th><th>${t('Số lượng')}</th><th>${t('Đơn giá')}</th><th>${t('Thành tiền')}</th></tr></thead><tbody>${rows}</tbody></table></div>`);
   };
   const renderPricing=order=>{
     const line=(name,value)=>`<tr><td>${name}</td><td data-price="${escape(name)}">${escape(value)}</td></tr>`;
@@ -223,7 +223,7 @@
     const blocks=tracked.map(item=>{
       const rows=Array.from({length:item.quantity||0},(_,i)=>{
         const unit=(item.units||[])[i]||{};
-        return `<div class="unit-row"><span>Xe ${i+1}</span><input name="frame" placeholder="${t('Số khung')}" value="${escape(unit.frameNumber||'')}" maxlength="30" autocomplete="off"><input name="engine" placeholder="${t('Số máy')}" value="${escape(unit.engineNumber||'')}" maxlength="30" autocomplete="off"></div>`;
+        return `<div class="unit-row"><span>${t('Xe {n}', {n:i+1})}</span><input name="frame" placeholder="${t('Số khung')}" value="${escape(unit.frameNumber||'')}" maxlength="30" autocomplete="off"><input name="engine" placeholder="${t('Số máy')}" value="${escape(unit.engineNumber||'')}" maxlength="30" autocomplete="off"></div>`;
       }).join('');
       return `<fieldset data-item="${item.id}"><legend>${escape(item.productName||'Xe')}${item.colorName?' · '+escape(item.colorName):''}</legend>${rows}</fieldset>`;
     }).join('');

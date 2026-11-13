@@ -45,28 +45,28 @@ public class WorkspaceController {
             case "customer/payments" -> { title = m("page.payments", "Lịch sử thanh toán"); api = "/api/v1/payments/history"; description = m("page.paymentsDesc", "Các giao dịch thanh toán của bạn."); }
             case "customer/notifications" -> { title = m("page.notifications", "Thông báo"); api = "/api/v1/notifications"; description = m("page.notificationsDesc", "Cập nhật về đơn hàng và tài khoản."); }
             case "customer/profile" -> { title = m("page.profile", "Hồ sơ cá nhân"); api = "/api/v1/auth/profile"; description = m("page.profileDesc", "Thông tin liên hệ và tùy chọn tài khoản."); mode = "profile"; }
-            case "manager" -> { title = "Tổng quan cửa hàng"; api = "/api/v1/manager/dashboard"; description = "Đơn hàng, thanh toán và doanh thu cửa hàng."; mode = "dashboard"; }
-            case "manager/orders" -> { title = "Quản lý đơn hàng"; api = "/api/v1/orders"; description = "Theo dõi và cập nhật các đơn xe."; }
-            case "manager/payments" -> { title = "Thanh toán"; api = "/api/v1/manager/payments"; description = "Xác nhận giao dịch và thanh toán sau."; }
-            case "manager/support" -> { title = "Yêu cầu hỗ trợ"; api = "/api/v1/manager/support-requests"; description = "Câu hỏi và khiếu nại khách gửi từ trang Hỗ trợ."; }
-            case "manager/customers" -> { title = "Khách hàng"; api = "/api/v1/manager/customers"; description = "Danh sách khách hàng và lịch sử mua."; }
-            case "manager/inventory", "manager/products", "admin/inventory", "admin/products" -> { title = "Kho sản phẩm"; api = "/api/v1/products"; description = "Theo dõi tồn kho và tình trạng xe."; mode = "inventory"; }
-            case "manager/reports" -> { title = "Báo cáo doanh thu"; api = "/api/v1/manager/revenue-report"; description = "Tổng hợp hoạt động kinh doanh."; mode = "dashboard"; }
-            case "admin" -> { title = "Bảng điều khiển quản trị"; api = "/api/v1/admin/overview"; description = "Tài khoản, chương trình giá và hoạt động hệ thống."; mode = "dashboard"; }
-            case "admin/pricing" -> { title = "Giá và khuyến mãi"; api = "/api/v1/admin/pricing-rules"; description = "Quản lý phí dịch vụ và chiến dịch ưu đãi."; mode = "pricing"; }
-            case "admin/accounts" -> { title = "Tài khoản và phân quyền"; api = "/api/v1/admin/accounts"; description = "Quản lý tài khoản và vai trò truy cập."; mode = "accounts"; }
-            case "admin/roles" -> { title = "Vai trò và quyền"; api = "/api/v1/admin/roles"; description = "Mỗi vai trò được làm những gì trong hệ thống."; }
-            case "admin/audit-logs" -> { title = "Nhật ký hoạt động"; api = "/api/v1/admin/audit-logs"; description = "100 thao tác quản trị gần nhất."; }
-            case "admin/users" -> { title = "Người dùng"; api = "/api/v1/admin/accounts?type=CUSTOMER"; description = "Danh sách tài khoản khách hàng."; }
+            case "manager" -> { title = m("staff.1", "Tổng quan cửa hàng"); api = "/api/v1/manager/dashboard"; description = m("staff.2", "Đơn hàng, thanh toán và doanh thu cửa hàng."); mode = "dashboard"; }
+            case "manager/orders" -> { title = m("staff.3", "Quản lý đơn hàng"); api = "/api/v1/orders"; description = m("staff.4", "Theo dõi và cập nhật các đơn xe."); }
+            case "manager/payments" -> { title = m("staff.5", "Thanh toán"); api = "/api/v1/manager/payments"; description = m("staff.6", "Xác nhận giao dịch và thanh toán sau."); }
+            case "manager/support" -> { title = m("staff.7", "Yêu cầu hỗ trợ"); api = "/api/v1/manager/support-requests"; description = m("staff.8", "Câu hỏi và khiếu nại khách gửi từ trang Hỗ trợ."); }
+            case "manager/customers" -> { title = m("staff.9", "Khách hàng"); api = "/api/v1/manager/customers"; description = m("staff.10", "Danh sách khách hàng và lịch sử mua."); }
+            case "manager/inventory", "manager/products", "admin/inventory", "admin/products" -> { title = m("staff.11", "Kho sản phẩm"); api = "/api/v1/products"; description = m("staff.12", "Theo dõi tồn kho và tình trạng xe."); mode = "inventory"; }
+            case "manager/reports" -> { title = m("staff.13", "Báo cáo doanh thu"); api = "/api/v1/manager/revenue-report"; description = m("staff.14", "Tổng hợp hoạt động kinh doanh."); mode = "dashboard"; }
+            case "admin" -> { title = m("staff.15", "Bảng điều khiển quản trị"); api = "/api/v1/admin/overview"; description = m("staff.16", "Tài khoản, chương trình giá và hoạt động hệ thống."); mode = "dashboard"; }
+            case "admin/pricing" -> { title = m("staff.17", "Giá và khuyến mãi"); api = "/api/v1/admin/pricing-rules"; description = m("staff.18", "Quản lý phí dịch vụ và chiến dịch ưu đãi."); mode = "pricing"; }
+            case "admin/accounts" -> { title = m("staff.19", "Tài khoản và phân quyền"); api = "/api/v1/admin/accounts"; description = m("staff.20", "Quản lý tài khoản và vai trò truy cập."); mode = "accounts"; }
+            case "admin/roles" -> { title = m("staff.21", "Vai trò và quyền"); api = "/api/v1/admin/roles"; description = m("staff.22", "Mỗi vai trò được làm những gì trong hệ thống."); }
+            case "admin/audit-logs" -> { title = m("staff.23", "Nhật ký hoạt động"); api = "/api/v1/admin/audit-logs"; description = m("staff.24", "100 thao tác quản trị gần nhất."); }
+            case "admin/users" -> { title = m("staff.25", "Người dùng"); api = "/api/v1/admin/accounts?type=CUSTOMER"; description = m("staff.26", "Danh sách tài khoản khách hàng."); }
             default -> {
                 if (path.startsWith("/customer/orders/")) { title = m("page.orderDetail", "Chi tiết đơn hàng"); api = "/api/v1/orders/" + id; description = m("page.orderDetailDesc", "Chi tiết và tiến trình đơn hàng."); mode = "detail"; }
-                else if (path.startsWith("/manager/orders/")) { title = "Chi tiết đơn hàng"; api = "/api/v1/orders/" + id; description = "Cập nhật đơn hàng và giao nhận."; mode = "detail"; }
+                else if (path.startsWith("/manager/orders/")) { title = m("staff.27", "Chi tiết đơn hàng"); api = "/api/v1/orders/" + id; description = m("staff.28", "Cập nhật đơn hàng và giao nhận."); mode = "detail"; }
                 else { title = m("page.notFound", "Không tìm thấy trang"); api = ""; description = m("page.notFoundDesc", "Đường dẫn không tồn tại."); }
             }
         }
         List<Link> links = switch (role) {
-            case "admin" -> List.of(new Link("Tổng quan", "/admin"), new Link("Sản phẩm", "/admin/products"), new Link("Kho hàng", "/admin/inventory"), new Link("Giá & khuyến mãi", "/admin/pricing"), new Link("Tài khoản", "/admin/accounts"), new Link("Vai trò", "/admin/roles"), new Link("Nhật ký", "/admin/audit-logs"), new Link("Người dùng", "/admin/users"));
-            case "manager" -> List.of(new Link("Tổng quan", "/manager"), new Link("Đơn hàng", "/manager/orders"), new Link("Thanh toán", "/manager/payments"), new Link("Khách hàng", "/manager/customers"), new Link("Hỗ trợ", "/manager/support"), new Link("Kho hàng", "/manager/inventory"), new Link("Sản phẩm", "/manager/products"), new Link("Báo cáo", "/manager/reports"));
+            case "admin" -> List.of(new Link(m("staff.29", "Tổng quan"), "/admin"), new Link(m("staff.30", "Sản phẩm"), "/admin/products"), new Link(m("staff.31", "Kho hàng"), "/admin/inventory"), new Link(m("staff.32", "Giá & khuyến mãi"), "/admin/pricing"), new Link(m("staff.33", "Tài khoản"), "/admin/accounts"), new Link(m("staff.34", "Vai trò"), "/admin/roles"), new Link(m("staff.35", "Nhật ký"), "/admin/audit-logs"), new Link(m("staff.25", "Người dùng"), "/admin/users"));
+            case "manager" -> List.of(new Link(m("staff.29", "Tổng quan"), "/manager"), new Link(m("staff.36", "Đơn hàng"), "/manager/orders"), new Link(m("staff.5", "Thanh toán"), "/manager/payments"), new Link(m("staff.9", "Khách hàng"), "/manager/customers"), new Link(m("staff.37", "Hỗ trợ"), "/manager/support"), new Link(m("staff.31", "Kho hàng"), "/manager/inventory"), new Link(m("staff.30", "Sản phẩm"), "/manager/products"), new Link(m("staff.38", "Báo cáo"), "/manager/reports"));
             default -> List.of(new Link(m("menu.overview", "Tổng quan"), "/customer"), new Link(m("menu.orders", "Đơn hàng"), "/customer/orders"), new Link(m("menu.payments", "Thanh toán"), "/customer/payments"), new Link(m("menu.notifications", "Thông báo"), "/customer/notifications"), new Link(m("menu.profile", "Hồ sơ"), "/customer/profile"), new Link(m("menu.favourites", "Yêu thích"), "/favorites"));
         };
         model.addAttribute("workspaceRole", role);
