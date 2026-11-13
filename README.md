@@ -43,6 +43,7 @@ Mặc định ứng dụng kết nối MariaDB ở `localhost:3306`. Thông tin 
 - `update_orders_pickup_deadline.sql`: cột `orders.pickup_deadline_at` (hạn giữ xe do cửa hàng đặt cho đơn "Chờ lấy")
 - `update_order_item_units.sql`: bảng `order_item_units` (số khung, số máy từng xe)
 - `update_user_preferences_defaults.sql`: giao diện mặc định theo thiết bị (`system`), ngôn ngữ mặc định `vi`
+- `update_verified_electric_catalog.sql`: chuyển danh mục cũ (có xe xăng 50cc, ảnh `/images/products/`) sang danh mục xe điện, ảnh ở `/images/catalog/`. Chạy **một lần**, trước `update_vehicle_types.sql` và `update_product_stock_totals.sql`
 - `update_vehicle_types.sql`: xe trên 25 km/h hoặc 250 W là xe máy điện
 - `update_product_stock_totals.sql`: tồn kho sản phẩm bằng tổng tồn kho các màu
 - `update_support_requests.sql`: bảng `support_requests` của trang Hỗ trợ
