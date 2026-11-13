@@ -127,7 +127,18 @@ abstract class EnglishPageSeleniumTest extends StorefrontSeleniumTest {
             leftovers.put(label, List.of("(not opened: no " + opener + " on the page)"));
             return;
         }
-        click(buttons.get(0));
+        // Closing the previous dialog may reload the table, so the button found a moment ago can go stale.
+        for (int attempt = 1; ; attempt++) {
+            try {
+                click(driver.findElements(opener).get(0));
+                break;
+            } catch (org.openqa.selenium.StaleElementReferenceException | IndexOutOfBoundsException e) {
+                if (attempt == 5) {
+                    throw e;
+                }
+                pause(500);
+            }
+        }
         WebElement dialog = wait.until(ExpectedConditions.visibilityOfElementLocated(OPEN_DIALOG));
         pause(800); // dialogs fill their lists (roles, colours, images) after opening
         scan(label, dialog);
