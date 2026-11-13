@@ -78,14 +78,9 @@ public class ServerRateLimitFilter extends OncePerRequestFilter {
     }
 
     private String clientIdentity(HttpServletRequest request) {
-        String forwardedFor = request.getHeader("X-Forwarded-For");
-        if (forwardedFor != null && !forwardedFor.isBlank()) {
-            return forwardedFor.split(",")[0].trim();
-        }
-        String realIp = request.getHeader("X-Real-IP");
-        if (realIp != null && !realIp.isBlank()) {
-            return realIp.trim();
-        }
+        // Never read X-Forwarded-For here: any client can send it and get a fresh limit with every request.
+        // Behind a proxy, Tomcat (server.forward-headers-strategy=native in the prod profile) replaces the address
+        // with the real client only when the proxy is a trusted internal one.
         return request.getRemoteAddr();
     }
 

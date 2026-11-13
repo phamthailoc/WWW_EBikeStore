@@ -59,6 +59,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         String token = extractTokenFromRequest(request);
+        boolean fromCookie = token != null && !hasBearerHeader(request);
 
         if (token != null && jwtTokenProvider.validateToken(token)) {
             String username = jwtTokenProvider.extractUsername(token);
@@ -68,6 +69,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             if (user == null) {
                 SecurityContextHolder.clearContext();
+                if (fromCookie) {
+                    dropStaleCookie(response);
+                    filterChain.doFilter(request, response);
+                    return;
+                }
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 response.setContentType("application/json");
                 response.getWriter().write("{\"message\":\"Authenticated user is inactive or missing\"}");
@@ -91,6 +97,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             SecurityContextHolder.getContext().setAuthentication(authentication);
         } else if (token != null) {
             SecurityContextHolder.clearContext();
+            if (fromCookie) {
+                // A browser keeps sending an expired or revoked cookie. Treat it as signed out and clear it, so pages
+                // (including /login) still open instead of answering every request with a JSON 401.
+                dropStaleCookie(response);
+                filterChain.doFilter(request, response);
+                return;
+            }
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("application/json");
             response.getWriter().write("{\"message\":\"Invalid JWT token\"}");
@@ -98,6 +111,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    private static boolean hasBearerHeader(HttpServletRequest request) {
+        String header = request.getHeader("Authorization");
+        return header != null && header.startsWith("Bearer ");
+    }
+
+    private static void dropStaleCookie(HttpServletResponse response) {
+        response.addHeader("Set-Cookie", ACCESS_TOKEN_COOKIE_NAME + "=; Path=/; Max-Age=0; HttpOnly");
     }
 
     private Optional<User> findUserWithPermissions(String usernameOrEmail) {
