@@ -61,7 +61,7 @@
   quantity.addEventListener('change',()=>updateQuantity(quantity.value));
   document.querySelector('#addToCart').onclick=()=>{
     updateQuantity(quantity.value);
-    try{cart.add(item); message(`${t('Đã thêm')} ${item.quantity} xe ${item.name}${item.colorName ? ' · '+item.colorName : ''} ${t('vào giỏ hàng.')}`);}catch(error){message(error.message,true);}
+    try{cart.add(item); message(`${t('Đã thêm')} ${tBikes(item.quantity)} ${item.name}${item.colorName ? ' · '+item.colorName : ''} ${t('vào giỏ hàng.')}`);}catch(error){message(error.message,true);}
   };
   document.querySelector('#buyNow').onclick=()=>{
     updateQuantity(quantity.value);

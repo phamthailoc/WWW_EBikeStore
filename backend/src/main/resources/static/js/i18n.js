@@ -16,6 +16,10 @@
     }
     return text;
   };
+  // "1 bike" / "3 bikes" in English, "3 xe" in Vietnamese.
+  window.tBikes = function (n) {
+    return window.t(Number(n) === 1 ? '1 xe' : '{n} xe', {n: n});
+  };
   window.ebikeLang = {
     get: function () { return lang; },
     // The server stores the choice (cookie, and the account when signed in) and sends us back to the same page.

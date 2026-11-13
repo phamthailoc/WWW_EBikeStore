@@ -66,7 +66,7 @@
   function renderForm(eligibility) {
     if (!editing && !eligibility.canReview) {
       const needsLogin = /Đăng nhập/.test(eligibility.reason || '');
-      formArea.innerHTML = `<p class="muted">${esc(eligibility.reason || '')}${needsLogin ? ` <a href="/login?returnTo=${encodeURIComponent(location.pathname)}">${t('Đăng nhập')}</a>` : ''}</p>`;
+      formArea.innerHTML = `<p class="muted">${esc(t(eligibility.reason || ''))}${needsLogin ? ` <a href="/login?returnTo=${encodeURIComponent(location.pathname)}">${t('Đăng nhập')}</a>` : ''}</p>`;
       return;
     }
     const r = editing || {rating: 5, title: '', comment: ''};
