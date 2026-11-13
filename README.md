@@ -24,8 +24,8 @@ Mặc định ứng dụng kết nối MariaDB ở `localhost:3306`. Thông tin 
 
 | Nhóm | Biến | Ý nghĩa |
 |---|---|---|
-| Database | `SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME`, `SPRING_DATASOURCE_PASSWORD` | Kết nối MariaDB `ebike_db` |
-| Đăng nhập | `APP_JWT_SECRET` | Khóa ký JWT, bắt buộc đổi khi chạy thật (≥ 32 ký tự) |
+| Database | `SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME`, `SPRING_DATASOURCE_PASSWORD` | Kết nối MariaDB `ebike_db`. Profile `prod` bắt buộc đặt mật khẩu; profile dev mặc định `123` |
+| Đăng nhập | `APP_JWT_SECRET` | Khóa ký JWT (≥ 32 ký tự). Chạy thật (profile `prod`) bắt buộc đặt, không đặt thì app không khởi động; máy dev có khóa riêng trong `application-dev.properties` |
 | VNPay | `VNPAY_TMN_CODE`, `VNPAY_HASH_SECRET`, `VNPAY_RETURN_URL`, `VNPAY_IPN_URL` | Thanh toán VNPay; chưa đặt `TMN_CODE` và `HASH_SECRET` thì checkout ẩn lựa chọn VNPay |
 | Chatbot | `GEMINI_AI_KEY`, `GEMINI_AI_ENABLED`, `GEMINI_AI_MODEL` (mặc định `gemini-3.1-flash-lite`), `GEMINI_AI_FALLBACK_MODELS` (mặc định `gemini-flash-lite-latest`, dùng khi model chính quá tải hoặc không còn cấp) | Trả lời bằng Gemini; không có khóa thì chatbot dùng câu trả lời có sẵn |
 | Email | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `ORDER_EMAIL_OTP_FROM` | Gửi mã xác minh email (đặt hàng, liên kết đơn đã đặt) |

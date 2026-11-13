@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class JwtTokenProvider {
 
-    @Value("${jwt.secret:your-super-secret-jwt-key-change-this-in-production-with-a-secure-random-key-at-least-32-characters}")
+    @Value("${jwt.secret}")
     private String jwtSecret;
 
     @Value("${jwt.expiration:86400000}")
