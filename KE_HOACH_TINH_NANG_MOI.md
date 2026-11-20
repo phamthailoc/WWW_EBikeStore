@@ -8,7 +8,7 @@ Mỗi mục ghi: vì sao nên làm, làm gì, dùng lại phần nào đã có, 
 
 | Việc | Ưu tiên | Ước lượng | Trạng thái | Nhánh / PR |
 |---|---|---|---|---|
-| V20. Sổ bảo hành điện tử và nhắc bảo dưỡng | P1 | 2–3 ngày | ⬜ Chưa làm | – |
+| V20. Sổ bảo hành điện tử và nhắc bảo dưỡng | P1 | 2–3 ngày | 🟡 Code xong, chưa kiểm thử Selenium (20/11): sổ bảo hành `/customer/warranty`, tra cứu `/warranty`, hàng đợi `/manager/warranty`, job nhắc bảo dưỡng (mốc `P1M,P6M,P12M`); xe hết hạn vẫn được gửi yêu cầu, đánh dấu sửa có tính phí; chạy `update_warranty_book.sql` trước | `feat/warranty-book` |
 | V21. Chạy test tự động trên GitHub Actions (CI) | P1 | 1 ngày | 🟡 Đã viết workflow, **chưa chạy thử trên GitHub** (20/11): job Unit test + job Selenium (MariaDB trong Docker, tài khoản thử tạo bằng SQL, app nền, Selenium headless); mặc định chạy Selenium cho mọi PR vào `develop` hoặc `main`; bỏ qua `ChatbotMemorySeleniumTest` nếu chưa có secret `GEMINI_AI_KEY` | `feat/ci-github-actions` (`.github/workflows/test.yml`) |
 | V22. Báo khi có hàng lại | P1 | 1 ngày | 🟡 Code xong (20/11), chưa kiểm thử Selenium: bảng `stock_alerts`, `POST/GET/DELETE /api/v1/stock-alerts`, nút ở trang xe, danh sách ở trang yêu thích, thông báo (bấm được) + email khi tồn kho 0 lên >0, kể cả khi hủy đơn trả hàng về kho; đã viết `StockAlertSeleniumTest`, chưa chạy | `feat/back-in-stock-alerts` |
 | V23. Đặt lịch lái thử | P2 | 1–2 ngày | ⬜ Chưa làm | – |
