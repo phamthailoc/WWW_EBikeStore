@@ -81,13 +81,32 @@ public class StockAlertService {
         }
         alert.setNotifiedAt(null);
         try {
-            return toResponse(alertRepository.save(alert));
+            return toResponse(tellIfRestockedMeanwhile(alertRepository.save(alert), user.getId(), variant.getId()));
         } catch (DataIntegrityViolationException duplicate) {
             // another request created the same (customer, colour) row first: answer with that one
             return alertRepository.findByUserIdAndVariantId(user.getId(), variant.getId())
                 .map(this::toResponse)
                 .orElseThrow(() -> duplicate);
         }
+    }
+
+    /**
+     * A manager may commit a restock between the moment this customer read "sold out" and the moment the row became
+     * visible, so the restock never saw the row. Reading the stock again after saving closes that gap: if the colour is
+     * back on sale already, the customer is told right away instead of waiting for the periodic sweep.
+     */
+    private StockAlert tellIfRestockedMeanwhile(StockAlert saved, Long userId, Long variantId) {
+        boolean backOnSale = variantRepository.findWithProductById(variantId)
+            .filter(fresh -> StockAlertRules.canNotify(
+                Boolean.TRUE.equals(fresh.getActive()),
+                fresh.getProduct() != null && Boolean.TRUE.equals(fresh.getProduct().getActive()),
+                fresh.getStockQuantity()))
+            .isPresent();
+        if (!backOnSale) {
+            return saved;
+        }
+        tellWaiting(variantId);
+        return alertRepository.findByUserIdAndVariantId(userId, variantId).orElse(saved);
     }
 
     @Transactional

@@ -117,6 +117,24 @@ class StockAlertServiceTest {
         }
     }
 
+    @Test void aRestockCommittedWhileSubscribingTellsTheCustomerAtOnce() {
+        ProductVariant restocked = new ProductVariant();
+        restocked.setId(11L);
+        restocked.setActive(true);
+        restocked.setStockQuantity(5);
+        restocked.setProduct(variant.getProduct());
+        when(variants.findWithProductById(11L)).thenReturn(Optional.of(variant), Optional.of(restocked));
+        when(alerts.findByUserIdAndVariantId(7L, 11L)).thenReturn(Optional.empty());
+        service.subscribe("an", 11L);
+        verify(delivery).deliver(11L);
+    }
+
+    @Test void subscribingToAColourThatStaysSoldOutTellsNobody() {
+        when(alerts.findByUserIdAndVariantId(7L, 11L)).thenReturn(Optional.empty());
+        service.subscribe("an", 11L);
+        verify(delivery, never()).deliver(any(Long.class));
+    }
+
     @Test void listHidesRetiredColoursAndInactiveBikes() {
         StockAlert live = new StockAlert();
         live.setUser(user);

@@ -6,8 +6,10 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 /**
- * V22: catches the cases the stock update itself cannot see, such as a colour put back on sale (by a script or a future
- * admin screen) while it already has stock. Customers still waiting for an in-stock, on-sale colour are told.
+ * V22: catches the cases the stock update itself cannot see: a colour put back on sale (by a script or a future
+ * admin screen) while it already has stock, and a customer whose request was saved just as a restock committed (the
+ * request also checks the stock again after saving, so this is only the safety net). Customers still waiting for an
+ * in-stock, on-sale colour are told. The first run is delayed after start-up and later runs follow the configured interval.
  */
 @Component
 public class StockAlertSweepJob {
