@@ -40,7 +40,7 @@ public class SecurityConfiguration {
                 PermissionConstants.ChatbotManagement.CHATBOT_USE
             ))
             .authorizeHttpRequests(authorize -> authorize
-                .requestMatchers("/", "/shop", "/products", "/models", "/bike/**", "/product/**", "/models/**", "/login", "/auth", "/signup", "/lang/*", "/checkout", "/checkout/success", "/payment/return", "/support", "/compare", "/chatbot", "/css/**", "/js/**", "/images/**", "/favicon.ico").permitAll()
+                .requestMatchers("/", "/shop", "/products", "/models", "/bike/**", "/product/**", "/models/**", "/login", "/auth", "/signup", "/lang/*", "/checkout", "/checkout/success", "/payment/return", "/support", "/warranty", "/compare", "/chatbot", "/css/**", "/js/**", "/images/**", "/favicon.ico").permitAll()
                 .requestMatchers("/cart", "/data/**").permitAll()
                 .requestMatchers("/favorites").authenticated()
                 .requestMatchers("/customer/**").hasAnyAuthority(PermissionConstants.Customer.PROFILE_VIEW, PermissionConstants.OrderManagement.ORDER_VIEW_ALL)
@@ -83,6 +83,8 @@ public class SecurityConfiguration {
                 .requestMatchers(HttpMethod.GET, "/api/v1/favorites").hasAuthority(PermissionConstants.Customer.FAVORITE_VIEW)
                 .requestMatchers(HttpMethod.POST, "/api/v1/favorites").hasAuthority(PermissionConstants.Customer.FAVORITE_UPDATE)
                 .requestMatchers(HttpMethod.DELETE, "/api/v1/favorites/*").hasAuthority(PermissionConstants.Customer.FAVORITE_UPDATE)
+                .requestMatchers(HttpMethod.GET, "/api/v1/warranty/lookup").permitAll()
+                .requestMatchers("/api/v1/warranty/**").hasAuthority(PermissionConstants.Customer.PROFILE_VIEW)
                 .requestMatchers(HttpMethod.GET, "/api/v1/stock-alerts").hasAuthority(PermissionConstants.Customer.FAVORITE_VIEW)
                 .requestMatchers(HttpMethod.POST, "/api/v1/stock-alerts").hasAuthority(PermissionConstants.Customer.FAVORITE_UPDATE)
                 .requestMatchers(HttpMethod.DELETE, "/api/v1/stock-alerts/*").hasAuthority(PermissionConstants.Customer.FAVORITE_UPDATE)
