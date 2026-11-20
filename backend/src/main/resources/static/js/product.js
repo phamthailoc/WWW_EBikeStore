@@ -108,23 +108,31 @@
     }
     finally{notifyButton.disabled=false;}
   };
-  if(notifyButton){
-    notifyButton.onclick=()=>sendNotify(false);
-    // Which colours does this customer already wait for? Guests and staff just get the plain button.
-    // Only for a signed-in customer and only when a colour is sold out; guests and staff would just get 401/403.
-    const soldOutColour=[...document.querySelectorAll('.variant-option')].some(o=>Number(o.dataset.stock)<1);
-    if(root.dataset.customer==='true'&&soldOutColour)fetch('/api/v1/stock-alerts',{credentials:'same-origin',headers:{Accept:'application/json'}})
+  const isCustomer=root.dataset.customer==='true';
+  // Back from the login page after pressing the button as a guest: finish what the customer asked for, or say why it cannot be done.
+  const finishWanted=()=>{
+    const wanted=Number(new URLSearchParams(location.search).get('notify'));
+    if(!wanted)return;
+    try{history.replaceState(null,'',location.pathname);}catch{}
+    const option=document.querySelector(`.variant-option[data-variant-id="${wanted}"]`);
+    if(!option){message(t('Không tìm thấy màu xe này.'),true);return;}
+    pickVariant(option);
+    if(!notifyButton){message(t('Chỉ tài khoản khách hàng mới đăng ký báo hàng được. Hãy đăng nhập bằng tài khoản khách hàng.'),true);return;}
+    if(!isCustomer)return; // still a guest: nothing was asked for
+    if(notifyButton.hidden){message(t('Màu xe này đang còn hàng, bạn có thể đặt mua ngay.'));return;}
+    if(!waiting.has(wanted))sendNotify(true);
+  };
+  if(notifyButton)notifyButton.onclick=()=>sendNotify(false);
+  // Which colours does this customer already wait for? Only for a signed-in customer and only when a colour is sold out;
+  // guests and staff would just get 401/403.
+  const soldOutColour=[...document.querySelectorAll('.variant-option')].some(o=>Number(o.dataset.stock)<1);
+  if(notifyButton&&isCustomer&&soldOutColour){
+    fetch('/api/v1/stock-alerts',{credentials:'same-origin',headers:{Accept:'application/json'}})
       .then(r=>r.ok?r.json():[])
-      .then(rows=>{(rows||[]).forEach(r=>{if(!r.notifiedAt&&r.stockQuantity<1)waiting.add(r.variantId);});notifyLabel();
-        // Back from the login page after pressing the button as a guest: finish what the customer asked for.
-        const wanted=Number(new URLSearchParams(location.search).get('notify'));
-        if(wanted){
-          try{history.replaceState(null,'',location.pathname);}catch{}
-          const option=document.querySelector(`.variant-option[data-variant-id="${wanted}"]`);
-          if(option){pickVariant(option);if(!notifyButton.hidden&&!waiting.has(wanted))sendNotify(true);}
-        }})
-      .catch(()=>{});
-  }
+      .then(rows=>{(rows||[]).forEach(r=>{if(!r.notifiedAt&&r.stockQuantity<1)waiting.add(r.variantId);});notifyLabel();})
+      .catch(()=>{})
+      .then(finishWanted);
+  }else finishWanted();
   document.querySelector('#addCompare').onclick=()=>{
     let ids=[];try{ids=JSON.parse(localStorage.getItem('kinetic_compare')||'[]')}catch{}
     if(!ids.includes(item.id))ids.push(item.id);
