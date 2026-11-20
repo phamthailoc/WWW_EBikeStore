@@ -77,6 +77,11 @@ public class StorefrontController {
     public String detail(@PathVariable String slug, Model model) {
         model.addAttribute("product", products.getProductBySlug(slug));
         model.addAttribute("related", products.getRelatedProducts(slug, 4));
+        // V22: "Notify me" is for visitors (who are sent to sign in) and customers; staff accounts do not get the button.
+        var authentication = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        boolean visitor = authentication == null || !authentication.isAuthenticated()
+            || authentication instanceof org.springframework.security.authentication.AnonymousAuthenticationToken;
+        model.addAttribute("canNotifyStock", visitor || authentication.getAuthorities().stream().anyMatch(a -> "ROLE_CUSTOMER".equals(a.getAuthority())));
         return "store/detail";
     }
 

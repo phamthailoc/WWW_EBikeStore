@@ -77,8 +77,16 @@
   };
   const notifyButton=document.querySelector('#notifyStock');
   if(notifyButton)notifyButton.onclick=async()=>{
+    if(notifyButton.disabled)return;
+    notifyButton.disabled=true;
     try{await cart.request('/api/v1/stock-alerts',{variantId:item.variantId});message(t('Đã đăng ký. Chúng tôi sẽ báo khi màu này có hàng lại.'));}
-    catch(error){if(/Unauthorized|401/i.test(error.message)){location.href='/login?returnTo='+encodeURIComponent(location.pathname);return;}message(error.message,true);}
+    catch(error){
+      if(/Unauthorized|401/i.test(error.message)){location.href='/login?returnTo='+encodeURIComponent(location.pathname);return;}
+      // 403: a staff account (Manager, Admin...) is signed in; only customers can ask to be told.
+      if(/\b403\b|Forbidden/i.test(error.message)){message(t('Chỉ tài khoản khách hàng mới đăng ký báo hàng được. Hãy đăng nhập bằng tài khoản khách hàng.'),true);}
+      else message(t(error.message),true);
+    }
+    finally{notifyButton.disabled=false;}
   };
   document.querySelector('#addCompare').onclick=()=>{
     let ids=[];try{ids=JSON.parse(localStorage.getItem('kinetic_compare')||'[]')}catch{}
