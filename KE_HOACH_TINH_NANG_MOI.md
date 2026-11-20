@@ -9,7 +9,7 @@ Mỗi mục ghi: vì sao nên làm, làm gì, dùng lại phần nào đã có, 
 | Việc | Ưu tiên | Ước lượng | Trạng thái | Nhánh / PR |
 |---|---|---|---|---|
 | V20. Sổ bảo hành điện tử và nhắc bảo dưỡng | P1 | 2–3 ngày | ⬜ Chưa làm | – |
-| V21. Chạy test tự động trên GitHub Actions (CI) | P1 | 1 ngày | ⬜ Chưa làm | – |
+| V21. Chạy test tự động trên GitHub Actions (CI) | P1 | 1 ngày | 🟡 Đã viết workflow, **chưa chạy thử trên GitHub** (20/11): job Unit test + job Selenium (MariaDB trong Docker, tài khoản thử tạo bằng SQL, app nền, Selenium headless); mặc định chạy Selenium cho mọi PR vào /; bỏ qua  nếu chưa có secret  | `feat/ci-github-actions` (`.github/workflows/test.yml`) |
 | V22. Báo khi có hàng lại | P1 | 1 ngày | ⬜ Chưa làm | – |
 | V23. Đặt lịch lái thử | P2 | 1–2 ngày | ⬜ Chưa làm | – |
 | V24. Trả góp (mô phỏng) | P2 | 2 ngày | ⬜ Chưa làm | – |
