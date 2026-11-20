@@ -66,6 +66,8 @@ class StockAlertDeliveryTest {
         variant.setProduct(product);
         lenient().when(users.findAllById(any())).thenReturn(List.of(user));
         lenient().when(preferences.findByUserIdIn(any())).thenReturn(List.of());
+        // everyone in the test is a customer unless a test says otherwise
+        lenient().when(users.findCustomerIds(any())).thenAnswer(invocation -> new java.util.ArrayList<Long>(invocation.<java.util.Collection<Long>>getArgument(0)));
     }
 
     /** The publisher is a static on the bridge: put it back so other test classes see an untouched state. */
@@ -149,6 +151,17 @@ class StockAlertDeliveryTest {
         StockAlert row = waitingRow(1L, user);
         when(alerts.lockWaitingByVariantId(11L)).thenReturn(List.of(row));
         assertEquals(0, delivery.deliver(variant));
+        assertNull(row.getNotifiedAt());
+        verify(publisher, never()).publishEvent(any(Object.class));
+    }
+
+    @Test void aCustomerWhoBecameStaffLosesTheRowAndIsNotTold() {
+        org.mockito.Mockito.doReturn(List.of()).when(users).findCustomerIds(any());
+        StockAlert row = waitingRow(1L, user);
+        when(alerts.lockWaitingByVariantId(11L)).thenReturn(List.of(row));
+        assertEquals(0, delivery.deliver(variant));
+        verify(alerts).deleteAll(List.of(row));
+        verify(alerts).saveAll(List.of());
         assertNull(row.getNotifiedAt());
         verify(publisher, never()).publishEvent(any(Object.class));
     }

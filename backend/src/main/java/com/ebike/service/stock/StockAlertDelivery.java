@@ -99,9 +99,19 @@ public class StockAlertDelivery {
         Product product = variant.getProduct();
         String colour = variant.getColorName() != null ? variant.getColorName() : variant.getVariantName();
         LocalDateTime now = LocalDateTime.now();
+        // Only customers can see and cancel their rows (the API is closed to staff): a customer whose role was changed
+        // since (for example promoted to Manager) loses the row instead of getting notices they cannot manage.
+        Set<Long> customerIds = new java.util.HashSet<>(userRepository.findCustomerIds(userIds));
+        List<StockAlert> toTell = new java.util.ArrayList<>(waiting);
+        List<StockAlert> noLongerCustomers = new java.util.ArrayList<>();
         int told = 0;
         for (StockAlert alert : waiting) {
             User user = alert.getUser() == null ? null : users.get(alert.getUser().getId());
+            if (user != null && !customerIds.contains(user.getId())) {
+                noLongerCustomers.add(alert);
+                toTell.remove(alert);
+                continue;
+            }
             if (user == null || !StockAlertRules.canReceive(user.getAccountStatus(), user.getActive())) {
                 // not a working account (erased or disabled by an admin): the row stays armed in case the account comes back
                 continue;
@@ -116,7 +126,10 @@ public class StockAlertDelivery {
             ));
             told++;
         }
-        alertRepository.saveAll(waiting);
+        if (!noLongerCustomers.isEmpty()) {
+            alertRepository.deleteAll(noLongerCustomers);
+        }
+        alertRepository.saveAll(toTell);
         if (told > 0) {
             evictProductPages();
         }
