@@ -31,3 +31,9 @@ CREATE TABLE IF NOT EXISTS `maintenance_reminders` (
     CONSTRAINT fk_maintenance_reminders_unit FOREIGN KEY (order_item_unit_id) REFERENCES order_item_units(id) ON DELETE CASCADE,
     CONSTRAINT uk_maintenance_reminders_unit_milestone UNIQUE (order_item_unit_id, milestone)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Delivered orders from before V20 may have no delivery time; pin it now, so the warranty start does not move
+-- every time the order row is saved again (the code falls back to orders.updated_at only when this is empty).
+UPDATE `shipments` s JOIN `orders` o ON o.id = s.order_id
+SET s.delivered_at = o.updated_at
+WHERE o.status = 'DELIVERED' AND s.delivered_at IS NULL;
