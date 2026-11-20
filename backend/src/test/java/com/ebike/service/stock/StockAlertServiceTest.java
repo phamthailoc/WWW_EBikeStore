@@ -135,6 +135,22 @@ class StockAlertServiceTest {
         verify(delivery, never()).deliver(any(Long.class));
     }
 
+    @Test void unsubscribingDeletesOnlyTheCallersOwnRow() {
+        StockAlert mine = new StockAlert();
+        mine.setUser(user);
+        mine.setVariant(variant);
+        when(alerts.findByUserIdAndVariantId(7L, 11L)).thenReturn(Optional.of(mine));
+        service.unsubscribe("an", 11L);
+        verify(alerts).delete(mine);
+    }
+
+    @Test void unsubscribingWithoutARowOfYourOwnDeletesNothing() {
+        when(alerts.findByUserIdAndVariantId(7L, 11L)).thenReturn(Optional.empty());
+        service.unsubscribe("an", 11L);
+        verify(alerts, never()).delete(any());
+        verify(alerts, never()).deleteByUserId(any());
+    }
+
     @Test void listKeepsRetiredColoursButMarksThemNotOnSale() {
         StockAlert live = new StockAlert();
         live.setUser(user);

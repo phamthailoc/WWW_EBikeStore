@@ -1,0 +1,36 @@
+package com.ebike.controller.user;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import com.ebike.service.stock.StockAlertService;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.junit.jupiter.api.Test;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+
+/** V22: a malformed request body gets a readable Vietnamese message, not "Bad Request". */
+class StockAlertEndpointTest {
+    StockAlertService service = mock(StockAlertService.class);
+    MockMvc mvc = MockMvcBuilders.standaloneSetup(new StockAlertController(service)).build();
+    UsernamePasswordAuthenticationToken an = new UsernamePasswordAuthenticationToken("an", "x");
+
+    @Test void aVariantIdThatIsNotANumberIsAskedAgainInPlainWords() throws Exception {
+        mvc.perform(post("/api/v1/stock-alerts").principal(an).contentType(MediaType.APPLICATION_JSON).content("{\"variantId\":\"red\"}"))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.message").value("Vui lòng chọn màu xe."));
+        verify(service, never()).subscribe(any(), any());
+    }
+
+    @Test void aValidRequestSubscribesTheSignedInCustomer() throws Exception {
+        mvc.perform(post("/api/v1/stock-alerts").principal(an).contentType(MediaType.APPLICATION_JSON).content("{\"variantId\":11}"))
+            .andExpect(status().isCreated());
+        verify(service).subscribe("an", 11L);
+    }
+}
