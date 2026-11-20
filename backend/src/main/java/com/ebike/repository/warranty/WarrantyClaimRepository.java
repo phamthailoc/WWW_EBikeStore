@@ -5,6 +5,9 @@ import java.util.Collection;
 import java.util.List;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 public interface WarrantyClaimRepository extends JpaRepository<WarrantyClaim, Long> {
 
@@ -27,5 +30,8 @@ public interface WarrantyClaimRepository extends JpaRepository<WarrantyClaim, Lo
 
     List<WarrantyClaim> findByUnitIdIn(Collection<Long> unitIds);
 
-    void deleteByUserId(Long userId);
+    /** Account erasure: the store keeps its repair history, the customer's own words go. */
+    @Modifying
+    @Query("update WarrantyClaim c set c.description = :text where c.user.id = :userId")
+    int clearDescriptionsOf(@Param("userId") Long userId, @Param("text") String text);
 }
