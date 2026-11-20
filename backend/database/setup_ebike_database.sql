@@ -435,6 +435,7 @@ CREATE TABLE `stock_alerts` (
     CONSTRAINT uk_stock_alerts_user_variant UNIQUE (user_id, variant_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 CREATE INDEX `idx_stock_alerts_variant_pending` ON `stock_alerts` (variant_id, notified_at);
+CREATE INDEX `idx_stock_alerts_pending` ON `stock_alerts` (notified_at, variant_id);
 CREATE INDEX `idx_pricing_rules_status` ON `pricing_rules` (status);
 CREATE INDEX `idx_promotions_status` ON `promotions` (status);
 CREATE INDEX `idx_promotions_code` ON `promotions` (code);

@@ -28,8 +28,13 @@ public interface StockAlertRepository extends JpaRepository<StockAlert, Long> {
 
     void deleteByUserId(Long userId);
 
-    /** Colours someone is still waiting for that can be bought right now (on sale and in stock). */
+    /**
+     * Colours someone is still waiting for that can be bought right now (on sale and in stock). Rows of erased or
+     * disabled accounts are left out: nobody would be told, so the colour would be picked again at every sweep.
+     * When such an account comes back, its row is picked up at the next sweep or restock.
+     */
     @Query("select distinct a.variant.id from StockAlert a where a.notifiedAt is null and a.variant.stockQuantity > 0 "
-        + "and a.variant.active = true and a.variant.product.active = true")
+        + "and a.variant.active = true and a.variant.product.active = true "
+        + "and a.user.accountStatus = 'ACTIVE' and (a.user.active is null or a.user.active = true)")
     List<Long> findWaitingVariantIdsInStock();
 }
