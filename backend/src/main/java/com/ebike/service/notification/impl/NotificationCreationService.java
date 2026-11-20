@@ -82,6 +82,8 @@ public class NotificationCreationService {
     }
 
     // V22: a colour the customer asked to be told about is back; the link opens the bike page, not the orders page.
+    // Runs on its own pool so a restock with hundreds of waiting customers does not hold up the manager's request.
+    @org.springframework.scheduling.annotation.Async(com.ebike.config.AsyncConfiguration.NOTIFICATION_EXECUTOR)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void handleStockAlertTriggered(StockAlertTriggeredEvent event) {

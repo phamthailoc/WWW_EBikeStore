@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -17,12 +16,6 @@ import com.ebike.model.entity.product.StockAlert;
 import com.ebike.repository.auth.UserRepository;
 import com.ebike.repository.product.ProductVariantRepository;
 import com.ebike.repository.product.StockAlertRepository;
-import com.ebike.repository.user.UserPreferenceRepository;
-import com.ebike.model.entity.user.UserPreference;
-import com.ebike.event.notification.StockAlertTriggeredEvent;
-import com.ebike.listener.notification.NotificationEventBridge;
-import org.mockito.ArgumentCaptor;
-import org.springframework.context.ApplicationEventPublisher;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,15 +32,13 @@ class StockAlertServiceTest {
     @Mock StockAlertRepository alerts;
     @Mock UserRepository users;
     @Mock ProductVariantRepository variants;
-    @Mock UserPreferenceRepository preferences;
-    @Mock ApplicationEventPublisher publisher;
+    @Mock StockAlertDelivery delivery;
     StockAlertService service;
     User user;
     ProductVariant variant;
 
     @BeforeEach void setup() {
-        service = new StockAlertService(alerts, users, variants, preferences);
-        new NotificationEventBridge().setApplicationEventPublisher(publisher);
+        service = new StockAlertService(alerts, users, variants, delivery);
         user = new User();
         user.setId(7L);
         Product product = new Product();
@@ -97,72 +88,6 @@ class StockAlertServiceTest {
         assertNull(used.getNotifiedAt());
     }
 
-    private StockAlert waitingRow(long id) {
-        StockAlert row = new StockAlert();
-        ReflectionTestUtils.setField(row, "id", id);
-        row.setUser(user);
-        row.setVariant(variant);
-        return row;
-    }
-
-    private StockAlertTriggeredEvent publishedEvent() {
-        ArgumentCaptor<Object> captor = ArgumentCaptor.forClass(Object.class);
-        verify(publisher).publishEvent(captor.capture());
-        return (StockAlertTriggeredEvent) captor.getValue();
-    }
-
-    @Test void restockTellsEveryWaitingCustomerOnce() {
-        variant.setStockQuantity(3);
-        when(alerts.findByVariantIdAndNotifiedAtIsNull(11L)).thenReturn(List.of(waitingRow(1L)));
-        when(alerts.claim(eq(1L), any())).thenReturn(1);
-        assertEquals(1, service.notifyRestocked(variant));
-        StockAlertTriggeredEvent event = publishedEvent();
-        assertEquals(7L, event.userId());
-        assertEquals("kinetic-x", event.productSlug());
-        assertEquals("vi", event.language(), "no saved preference means Vietnamese");
-    }
-
-    @Test void restockUsesTheLanguageSavedInTheProfile() {
-        variant.setStockQuantity(3);
-        UserPreference preference = new UserPreference();
-        preference.setLanguage("en");
-        when(preferences.findByUserId(7L)).thenReturn(Optional.of(preference));
-        when(alerts.findByVariantIdAndNotifiedAtIsNull(11L)).thenReturn(List.of(waitingRow(1L)));
-        when(alerts.claim(eq(1L), any())).thenReturn(1);
-        service.notifyRestocked(variant);
-        assertEquals("en", publishedEvent().language());
-    }
-
-    @Test void aRowAlreadyClaimedByAnotherRequestIsNotNotifiedAgain() {
-        variant.setStockQuantity(3);
-        when(alerts.findByVariantIdAndNotifiedAtIsNull(11L)).thenReturn(List.of(waitingRow(1L)));
-        when(alerts.claim(eq(1L), any())).thenReturn(0);
-        assertEquals(0, service.notifyRestocked(variant));
-        verify(publisher, never()).publishEvent(any(Object.class));
-    }
-
-    @Test void erasedAccountsAreSkipped() {
-        variant.setStockQuantity(3);
-        user.setAccountStatus("DELETED");
-        when(alerts.findByVariantIdAndNotifiedAtIsNull(11L)).thenReturn(List.of(waitingRow(1L)));
-        assertEquals(0, service.notifyRestocked(variant));
-        verify(alerts, never()).claim(any(), any());
-    }
-
-    @Test void aColourWithNoStockNotifiesNobody() {
-        variant.setStockQuantity(0);
-        assertEquals(0, service.notifyRestocked(variant));
-        verify(alerts, never()).findByVariantIdAndNotifiedAtIsNull(any());
-    }
-
-    @Test void sweepByIdNotifiesAColourPutBackOnSale() {
-        variant.setStockQuantity(4);
-        when(variants.findWithProductById(11L)).thenReturn(Optional.of(variant));
-        when(alerts.findByVariantIdAndNotifiedAtIsNull(11L)).thenReturn(List.of(waitingRow(1L)));
-        when(alerts.claim(eq(1L), any())).thenReturn(1);
-        assertEquals(1, service.notifyRestockedById(11L));
-    }
-
     @Test void aRaceOnTheUniqueKeyReturnsTheRowTheOtherRequestCreated() {
         StockAlert winner = new StockAlert();
         winner.setUser(user);
@@ -170,18 +95,6 @@ class StockAlertServiceTest {
         when(alerts.findByUserIdAndVariantId(7L, 11L)).thenReturn(Optional.empty(), Optional.of(winner));
         when(alerts.save(any())).thenThrow(new org.springframework.dao.DataIntegrityViolationException("duplicate"));
         assertNotNull(service.subscribe("an", 11L));
-    }
-
-    @Test void restockOfARetiredColourNotifiesNobodyAndKeepsRowsArmed() {
-        variant.setActive(false);
-        assertEquals(0, service.notifyRestocked(variant));
-        verify(alerts, never()).findByVariantIdAndNotifiedAtIsNull(any());
-    }
-
-    @Test void restockOfAnInactiveBikeNotifiesNobody() {
-        variant.getProduct().setActive(false);
-        assertEquals(0, service.notifyRestocked(variant));
-        verify(alerts, never()).findByVariantIdAndNotifiedAtIsNull(any());
     }
 
     @Test void listHidesRetiredColoursAndInactiveBikes() {

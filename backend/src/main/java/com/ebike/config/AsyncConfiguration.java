@@ -18,6 +18,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 public class AsyncConfiguration {
 
     public static final String MAIL_EXECUTOR = "mailExecutor";
+    public static final String NOTIFICATION_EXECUTOR = "notificationExecutor";
     private static final Logger log = LoggerFactory.getLogger(AsyncConfiguration.class);
 
     @Bean(MAIL_EXECUTOR)
@@ -30,6 +31,21 @@ public class AsyncConfiguration {
         executor.setRejectedExecutionHandler((task, pool) ->
             log.warn("Mail queue is full ({} waiting); one email was dropped", pool.getQueue().size()));
         executor.setWaitForTasksToCompleteOnShutdown(false);
+        return executor;
+    }
+
+    /**
+     * In-app notifications of a large restock. The queue is bounded but a full queue is never dropped: the thread that
+     * published the event runs the task itself, which slows the sender down instead of losing the notification.
+     */
+    @Bean(NOTIFICATION_EXECUTOR)
+    public Executor notificationExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setThreadNamePrefix("notify-");
+        executor.setCorePoolSize(2);
+        executor.setMaxPoolSize(4);
+        executor.setQueueCapacity(1000);
+        executor.setRejectedExecutionHandler(new java.util.concurrent.ThreadPoolExecutor.CallerRunsPolicy());
         return executor;
     }
 }
