@@ -81,7 +81,10 @@ public class StorefrontController {
         var authentication = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
         boolean visitor = authentication == null || !authentication.isAuthenticated()
             || authentication instanceof org.springframework.security.authentication.AnonymousAuthenticationToken;
-        model.addAttribute("canNotifyStock", visitor || authentication.getAuthorities().stream().anyMatch(a -> "ROLE_CUSTOMER".equals(a.getAuthority())));
+        boolean customer = !visitor && authentication.getAuthorities().stream().anyMatch(a -> "ROLE_CUSTOMER".equals(a.getAuthority()));
+        model.addAttribute("canNotifyStock", visitor || customer);
+        // only a signed-in customer has a waiting list to ask for; guests and staff would just get 401/403
+        model.addAttribute("stockAlertCustomer", customer);
         return "store/detail";
     }
 

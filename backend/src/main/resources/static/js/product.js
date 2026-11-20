@@ -110,8 +110,10 @@
   };
   if(notifyButton){
     notifyButton.onclick=()=>sendNotify(false);
-    // Which colours does this customer already wait for? Guests (401) and staff (403) just get the plain button.
-    fetch('/api/v1/stock-alerts',{credentials:'same-origin',headers:{Accept:'application/json'}})
+    // Which colours does this customer already wait for? Guests and staff just get the plain button.
+    // Only for a signed-in customer and only when a colour is sold out; guests and staff would just get 401/403.
+    const soldOutColour=[...document.querySelectorAll('.variant-option')].some(o=>Number(o.dataset.stock)<1);
+    if(root.dataset.customer==='true'&&soldOutColour)fetch('/api/v1/stock-alerts',{credentials:'same-origin',headers:{Accept:'application/json'}})
       .then(r=>r.ok?r.json():[])
       .then(rows=>{(rows||[]).forEach(r=>{if(!r.notifiedAt&&r.stockQuantity<1)waiting.add(r.variantId);});notifyLabel();
         // Back from the login page after pressing the button as a guest: finish what the customer asked for.
