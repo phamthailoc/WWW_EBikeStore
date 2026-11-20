@@ -27,6 +27,15 @@ class StockAlertRulesTest {
     }
 
     @Test
+    void onlyOnSaleColoursWithStockAreAnnounced() {
+        assertTrue(StockAlertRules.canNotify(true, true, 1));
+        assertFalse(StockAlertRules.canNotify(false, true, 5), "colour withdrawn from sale");
+        assertFalse(StockAlertRules.canNotify(true, false, 5), "bike withdrawn from sale");
+        assertFalse(StockAlertRules.canNotify(true, true, 0));
+        assertFalse(StockAlertRules.canNotify(true, true, null));
+    }
+
+    @Test
     void onlySoldOutColoursCanBeWaitedFor() {
         assertTrue(StockAlertRules.canSubscribe(0));
         assertTrue(StockAlertRules.canSubscribe(null));
