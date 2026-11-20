@@ -46,6 +46,7 @@
     if(flow==='compare'){let ids=[];try{ids=JSON.parse(localStorage.getItem('kinetic_compare')||'[]')}catch{}if(!ids.length){renderProducts([],t('Chưa có mẫu xe để so sánh. Thêm xe từ danh mục sản phẩm.'));return}const all=await get('/api/v1/products');const selected=all.filter(p=>ids.includes(p.id)||ids.includes(String(p.id))||ids.includes(p.slug));const detail=await Promise.all(selected.map(p=>get(`/api/v1/products/${encodeURIComponent(p.slug)}`)));renderCompare(detail);return}
     if(flow==='favorites'){try{const data=await get(api);renderProducts(data||[],t('Bạn chưa lưu mẫu xe yêu thích nào. Hãy khám phá cửa hàng để chọn xe.'))}catch(e){tell(e.message,true);finish()}loadStockAlerts();return}
     if(flow==='support'){try{const [rows,faq]=await Promise.all([get(api),get('/api/v1/faq').catch(()=>[])]);finish();window.KineticSupport.render(target,Array.isArray(rows)?rows:[],Array.isArray(faq)?faq:[])}catch(e){tell(e.message,true);finish()}return}
+    if(flow==='warranty'){window.KineticWarranty.renderLookup(target,finish);return}
     if(flow==='payment-return'){await renderPaymentReturn();return}
     finish();
   };

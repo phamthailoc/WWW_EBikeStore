@@ -53,6 +53,9 @@ h1,h2,h3,.brand,.eyebrow,.metric b,.metric small{font-family:'Space Grotesk','Se
 .address-list .row-actions{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}
 .address-list .badge{font-size:11px;background:var(--c-e4eade);padding:2px 8px;border-radius:99px}
 .address-list .empty-line{color:var(--c-6b7771)}
+.warranty-dialog textarea{width:100%;box-sizing:border-box;margin-top:6px}
+.warranty-dialog .dialog-actions{display:flex;gap:8px;margin:12px 0 0}
+.warranty-card p{display:flex;justify-content:space-between;gap:16px;margin:6px 0}
 .stock-dialog{border:0;border-radius:12px;padding:24px;max-width:480px;width:calc(100% - 32px);box-shadow:0 20px 60px rgba(0,0,0,.25)}
 .stock-dialog::backdrop{background:rgba(20,30,28,.45)}
 .stock-dialog h2{margin:0 0 4px}
