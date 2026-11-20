@@ -42,12 +42,14 @@ class StockAlertDeliveryTest {
     @Mock UserPreferenceRepository preferences;
     @Mock ApplicationEventPublisher publisher;
     @Mock jakarta.persistence.EntityManager entityManager;
+    @Mock org.springframework.cache.CacheManager cacheManager;
+    @Mock org.springframework.cache.Cache cache;
     StockAlertDelivery delivery;
     User user;
     ProductVariant variant;
 
     @BeforeEach void setup() {
-        delivery = new StockAlertDelivery(alerts, users, variants, preferences, entityManager);
+        delivery = new StockAlertDelivery(alerts, users, variants, preferences, entityManager, cacheManager);
         new NotificationEventBridge().setApplicationEventPublisher(publisher);
         user = new User();
         user.setId(7L);
@@ -95,6 +97,20 @@ class StockAlertDeliveryTest {
         assertEquals("vi", event.language(), "no saved preference means Vietnamese");
         assertNotNull(row.getNotifiedAt(), "the row is marked as used");
         verify(alerts).saveAll(List.of(row));
+    }
+
+    @Test void tellingCustomersClearsTheProductPageCaches() {
+        when(cacheManager.getCache(com.ebike.config.CacheNames.PRODUCT_LIST_CACHE)).thenReturn(cache);
+        when(cacheManager.getCache(com.ebike.config.CacheNames.PRODUCT_DETAIL_CACHE)).thenReturn(cache);
+        when(alerts.lockWaitingByVariantId(11L)).thenReturn(List.of(waitingRow(1L, user)));
+        delivery.deliver(variant);
+        verify(cache, times(2)).clear();
+    }
+
+    @Test void tellingNobodyLeavesTheCachesAlone() {
+        when(alerts.lockWaitingByVariantId(11L)).thenReturn(List.of());
+        delivery.deliver(variant);
+        verify(cacheManager, never()).getCache(any());
     }
 
     @Test void restockUsesTheLanguageSavedInTheProfile() {

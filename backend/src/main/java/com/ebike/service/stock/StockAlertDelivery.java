@@ -1,5 +1,6 @@
 package com.ebike.service.stock;
 
+import com.ebike.config.CacheNames;
 import com.ebike.event.notification.StockAlertTriggeredEvent;
 import com.ebike.listener.notification.NotificationEventBridge;
 import com.ebike.model.entity.auth.User;
@@ -18,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,19 +37,22 @@ public class StockAlertDelivery {
     private final ProductVariantRepository variantRepository;
     private final UserPreferenceRepository preferenceRepository;
     private final EntityManager entityManager;
+    private final CacheManager cacheManager;
 
     public StockAlertDelivery(
         StockAlertRepository alertRepository,
         UserRepository userRepository,
         ProductVariantRepository variantRepository,
         UserPreferenceRepository preferenceRepository,
-        EntityManager entityManager
+        EntityManager entityManager,
+        CacheManager cacheManager
     ) {
         this.alertRepository = alertRepository;
         this.userRepository = userRepository;
         this.variantRepository = variantRepository;
         this.preferenceRepository = preferenceRepository;
         this.entityManager = entityManager;
+        this.cacheManager = cacheManager;
     }
 
     // A new transaction even when called from an after-commit hook, where the finished stock transaction is still bound to the thread.
@@ -112,6 +117,23 @@ public class StockAlertDelivery {
             told++;
         }
         alertRepository.saveAll(waiting);
+        if (told > 0) {
+            evictProductPages();
+        }
         return told;
+    }
+
+    /**
+     * The customer follows the link in the notice to the bike page, which must not still say "sold out". The stock
+     * update evicts these caches too, but only after this code ran, and a colour put back on sale by the sweep never
+     * had an eviction. The cache manager is transaction aware: this clears after this transaction commits.
+     */
+    private void evictProductPages() {
+        for (String name : List.of(CacheNames.PRODUCT_LIST_CACHE, CacheNames.PRODUCT_DETAIL_CACHE)) {
+            org.springframework.cache.Cache cache = cacheManager.getCache(name);
+            if (cache != null) {
+                cache.clear();
+            }
+        }
     }
 }
