@@ -60,6 +60,22 @@ class StockAlertSeleniumTest extends StorefrontSeleniumTest {
         return count;
     }
 
+    /** Notifications titled "Back in stock" (the English title) that open this bike's page. */
+    private static int englishNotificationsFor(String slug) {
+        try {
+            int count = 0;
+            for (JsonNode row : listOf(call(api, "GET", "/api/v1/notifications", null))) {
+                if ("STOCK_ALERT".equals(row.path("type").asText()) && "Back in stock".equals(row.path("title").asText())
+                    && ("/product/" + slug).equals(row.path("targetUrl").asText())) {
+                    count++;
+                }
+            }
+            return count;
+        } catch (Exception e) {
+            return -1;
+        }
+    }
+
     private static int alertsOrZero(long variantId) {
         try {
             return alertsForVariant(variantId);
@@ -143,6 +159,16 @@ class StockAlertSeleniumTest extends StorefrontSeleniumTest {
             // "a top-up of a colour already in stock tells nobody" is covered by ManagerStockTest, not here: by now the
             // customer's row is already used and the notification is created asynchronously, so a check here proves nothing.
 
+            // sold out again after the notice: the row says so and offers to wait once more
+            setStock(manager, productId, variantId, 0);
+            driver.get(baseUrl + "/favorites");
+            WebElement again = wait.until(ExpectedConditions.visibilityOfElementLocated(row));
+            wait.until(d -> d.findElement(row).findElement(By.cssSelector(".stock-tag")).getAttribute("class").contains("out"));
+            assertTrue(driver.findElement(row).getText().contains("Đã hết hàng lại"), again.getText());
+            click(By.cssSelector("#stock-alerts li[data-variant-id='" + variantId + "'] [data-renew-alert]"));
+            wait.until(d -> alertsOrZero(variantId) == 1);
+            wait.until(d -> d.findElement(row).findElement(By.cssSelector(".stock-tag")).getAttribute("class").contains("low"));
+
             // cancelling removes the row from the list
             click(By.cssSelector("#stock-alerts li[data-variant-id='" + variantId + "'] [data-cancel-alert]"));
             wait.until(d -> alertsOrZero(variantId) == 0);
@@ -198,17 +224,33 @@ class StockAlertSeleniumTest extends StorefrontSeleniumTest {
     @Test
     void staffDoNotSeeTheNotifyButtonEvenOnASoldOutColour() throws Exception {
         HttpClient manager = managerApi();
+        assertNoNotifyButtonFor(manager, System.getProperty("selenium.managerUser"), System.getProperty("selenium.managerPassword"), true);
+    }
+
+    @Test
+    void adminDoesNotSeeTheNotifyButtonEither() throws Exception {
+        HttpClient manager = managerApi(); // changes the stock
+        adminApi(); // skips without an admin account
+        assertNoNotifyButtonFor(manager, System.getProperty("selenium.adminUser"), System.getProperty("selenium.adminPassword"), false);
+    }
+
+    private void assertNoNotifyButtonFor(HttpClient manager, String user, String password, boolean checkReturnMessage) throws Exception {
         JsonNode product = call(api, "GET", "/api/v1/products/" + productSlug, null);
         long productId = product.path("id").asLong();
         long variantId = ownColour(product).path("id").asLong();
         int original = ownColour(product).path("stockQuantity").asInt();
         setStock(manager, productId, variantId, 0);
         try {
-            logIn(System.getProperty("selenium.managerUser"), System.getProperty("selenium.managerPassword"));
+            logIn(user, password);
             driver.get(baseUrl + "/product/" + productSlug);
             click(By.cssSelector(".variant-option[data-variant-id='" + variantId + "']"));
             wait.until(d -> d.findElement(By.id("stockHint")).getText().length() > 0);
-            assertTrue(driver.findElements(By.id("notifyStock")).isEmpty(), "no notify button for a manager");
+            assertTrue(driver.findElements(By.id("notifyStock")).isEmpty(), "no notify button for " + user);
+            if (checkReturnMessage) {
+                // a guest who pressed the button and then signed in with a staff account is told why nothing was set
+                driver.get(baseUrl + "/product/" + productSlug + "?notify=" + variantId);
+                wait.until(d -> d.findElement(By.id("productNotice")).getText().contains("Chỉ tài khoản khách hàng"));
+            }
         } finally {
             setStock(manager, productId, variantId, original);
         }
@@ -279,6 +321,13 @@ class StockAlertSeleniumTest extends StorefrontSeleniumTest {
                 By.cssSelector("#stock-alerts li[data-variant-id='" + variantId + "']")));
             assertTrue(row.getText().contains("Waiting for stock"), row.getText());
             assertTrue(row.getText().contains("Stop alert"), row.getText());
+
+            // the notice itself is in English: /lang/en saved the language to this customer's profile
+            int before = englishNotificationsFor(productSlug);
+            setStock(manager, productId, variantId, 3);
+            wait.until(d -> englishNotificationsFor(productSlug) == before + 1);
+            driver.get(baseUrl + "/customer/notifications");
+            wait.until(d -> d.findElement(By.id("data-table")).getText().contains("Back in stock"));
         } finally {
             forgetAlert(variantId);
             setStock(manager, productId, variantId, original);
