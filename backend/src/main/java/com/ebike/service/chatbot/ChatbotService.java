@@ -27,6 +27,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,7 +44,8 @@ public class ChatbotService {
     private final GeminiChatClient geminiChatClient;
     private final PdfKnowledgeBaseService pdfKnowledgeBaseService;
     private final PricingService pricingService;
-    private final List<FaqEntry> faqEntries = new ArrayList<>();
+    // FAQ entries by language ("vi" and "en"); see faq-data/faq.csv and faq_en.csv
+    private final Map<String, List<FaqEntry>> faqByLanguage = new java.util.HashMap<>();
     /** The chat id comes from the browser, so cap how many conversations are remembered and how long an id may be. */
     private static final int MAX_REMEMBERED_CHATS = 2000;
     private static final int MAX_CHAT_ID_LENGTH = 64;
@@ -108,7 +110,7 @@ public class ChatbotService {
 
         String chatId = normalizeChatId(request.chatId());
         String normalizedMessage = userMessage.trim().toLowerCase(Locale.ROOT);
-        FaqEntry faqMatch = faqEntries.stream()
+        FaqEntry faqMatch = faqFor(language()).stream()
             .filter(entry -> entry.matches(normalizedMessage))
             // An exact question wins; then priority; then the entry sharing more keywords with the message.
             .max(Comparator.comparing((FaqEntry entry) -> entry.isAskedExactly(normalizedMessage))
@@ -165,13 +167,13 @@ public class ChatbotService {
             return new ChatbotResponse(
                 buildProductDetailAnswer(mentionedProduct),
                 "product_detail",
-                recommendations.isEmpty() ? List.of(toRecommendation(mentionedProduct, "khớp với mẫu xe bạn hỏi")) : recommendations
+                recommendations.isEmpty() ? List.of(toRecommendation(mentionedProduct, tr("khớp với mẫu xe bạn hỏi", "matches the bike you asked about"))) : recommendations
             );
         }
 
         if (faqMatch != null && !recommendations.isEmpty()) {
             return new ChatbotResponse(
-                faqMatch.answer() + " Dựa trên câu hỏi của bạn, đây là vài mẫu xe phù hợp để tham khảo.",
+                faqMatch.answer() + tr(" Dựa trên câu hỏi của bạn, đây là vài mẫu xe phù hợp để tham khảo.", " Based on your question, here are a few bikes worth a look."),
                 "faq+product_recommendation",
                 recommendations
             );
@@ -183,7 +185,7 @@ public class ChatbotService {
 
         if (!showroomContext.isBlank()) {
             return new ChatbotResponse(
-                "Đây là thông tin showroom hiện có:\n" + showroomContext,
+                tr("Đây là thông tin showroom hiện có:\n", "Here are the showrooms currently open:\n") + showroomContext,
                 "showroom_context",
                 List.of()
             );
@@ -203,14 +205,14 @@ public class ChatbotService {
 
         if (priceQuestion) {
             return new ChatbotResponse(
-                "Mình chưa xác định được bạn muốn xem giá của mẫu xe nào. Bạn có thể nhập tên mẫu xe hoặc hỏi lại sau khi mình gợi ý một vài mẫu phù hợp.",
+                tr("Mình chưa xác định được bạn muốn xem giá của mẫu xe nào. Bạn có thể nhập tên mẫu xe hoặc hỏi lại sau khi mình gợi ý một vài mẫu phù hợp.", "I am not sure which bike you want the price of. Type the model name, or ask again after I suggest a few bikes."),
                 "price_followup_missing_context",
                 List.of()
             );
         }
 
         return new ChatbotResponse(
-            "Mình có thể tư vấn mẫu xe điện phù hợp, tầm giá, pin, quãng đường, tốc độ, bảo hành, showroom nhận xe và thanh toán. Bạn có thể nói rõ nhu cầu như: đi học, đi làm hằng ngày, muốn xe giá tốt, đi xa hoặc ưu tiên tốc độ.",
+            tr("Mình có thể tư vấn mẫu xe điện phù hợp, tầm giá, pin, quãng đường, tốc độ, bảo hành, showroom nhận xe và thanh toán. Bạn có thể nói rõ nhu cầu như: đi học, đi làm hằng ngày, muốn xe giá tốt, đi xa hoặc ưu tiên tốc độ.", "I can advise on electric bikes, price range, battery, range, speed, warranty, pickup showrooms and payment. Tell me what you need, for example riding to school or work, your budget and how far you ride each day."),
             "fallback",
             List.of()
         );
@@ -228,59 +230,17 @@ public class ChatbotService {
     }
 
     private String buildRecommendationAnswer(List<ChatbotRecommendationDto> recommendations) {
-        StringBuilder answer = new StringBuilder("Hiện mình tìm thấy một vài mẫu xe phù hợp với câu hỏi của bạn:");
+        StringBuilder answer = new StringBuilder(tr("Hiện mình tìm thấy một vài mẫu xe phù hợp với câu hỏi của bạn:", "Here are a few bikes that fit your question:"));
         for (ChatbotRecommendationDto recommendation : recommendations) {
             answer.append("\n- ")
                 .append(recommendation.name())
-                .append(" giá khoảng ")
+                .append(tr(" giá khoảng ", " costs about "))
                 .append(formatCurrency(recommendation.price()))
                 .append(": ")
                 .append(recommendation.reason());
         }
-        answer.append("\nBạn muốn mình lọc tiếp theo ngân sách, quãng đường đi mỗi ngày hay kiểu dáng xe không?");
+        answer.append(tr("\nBạn muốn mình lọc tiếp theo ngân sách, quãng đường đi mỗi ngày hay kiểu dáng xe không?", "\nWould you like me to narrow it down by budget, daily distance or style?"));
         return answer.toString();
-    }
-
-    private String buildGeminiPrompt(ChatbotAnalysis analysis) {
-        StringBuilder context = new StringBuilder();
-        if (analysis.faqMatch() != null) {
-            context.append("FAQ liên quan:\n")
-                .append("- Câu hỏi: ").append(analysis.faqMatch().question()).append('\n')
-                .append("- Trả lời: ").append(analysis.faqMatch().answer()).append("\n\n");
-        }
-        if (!analysis.recommendations().isEmpty()) {
-            context.append("Sản phẩm gợi ý từ database:\n");
-            for (ChatbotRecommendationDto recommendation : analysis.recommendations()) {
-                context.append("- ")
-                    .append(recommendation.name())
-                    .append(" | Gia: ")
-                    .append(recommendation.price())
-                    .append(" VND | Lý do: ")
-                    .append(recommendation.reason())
-                    .append('\n');
-            }
-            context.append('\n');
-        }
-        if (!analysis.showroomContext().isBlank()) {
-            context.append("Showroom đang hoạt động:\n").append(analysis.showroomContext()).append("\n\n");
-        }
-        if (!analysis.orderPaymentContext().isBlank()) {
-            context.append("Thông tin đặt hàng và thanh toán:\n").append(analysis.orderPaymentContext()).append("\n\n");
-        }
-        context.append("Câu trả lời fallback nếu thiếu dữ liệu: ").append(analysis.ruleBasedResponse().answer());
-
-        return """
-            Bạn là trợ lý tư vấn xe điện của Kinetic E-Bike.
-            Hãy luôn trả lời bằng tiếng Việt có dấu, tự nhiên, thân thiện, ngắn gọn và đúng vai trò tư vấn bán hàng.
-            Chỉ dựa trên CONTEXT được cung cấp. Nếu không đủ thông tin, hãy nói rõ và gợi ý khách xem sản phẩm hoặc liên hệ showroom.
-            Không bịa đặt thông số, giá, khuyến mãi hoặc chính sách ngoài context.
-
-            CONTEXT:
-            %s
-
-            CÂU HỎI KHÁCH HÀNG:
-            %s
-            """.formatted(context, analysis.userMessage());
     }
 
     private List<ChatbotRecommendationDto> findProductRecommendations(String message) {
@@ -344,42 +304,42 @@ public class ChatbotService {
     private String buildProductDetailAnswer(Product product) {
         StringBuilder answer = new StringBuilder();
         answer.append(product.getName())
-            .append(" hiện có giá khoảng ")
+            .append(tr(" hiện có giá khoảng ", " costs about "))
             .append(formatCurrency(product.getPrice()))
             .append(".");
 
         if (hasVietnameseMarks(product.getDescription())) {
-            answer.append("\n- Mô tả: ").append(product.getDescription().trim());
+            answer.append(tr("\n- Mô tả: ", "\n- Description: ")).append(product.getDescription().trim());
         }
 
         ProductSpecification specification = product.getSpecification();
         if (specification != null) {
             List<String> specs = new ArrayList<>();
             if (specification.getMaxRangeKm() != null) {
-                specs.add("quãng đường tối đa khoảng " + specification.getMaxRangeKm().stripTrailingZeros().toPlainString() + " km");
+                specs.add(tr("quãng đường tối đa khoảng ", "maximum range about ") + specification.getMaxRangeKm().stripTrailingZeros().toPlainString() + " km");
             }
             if (specification.getMaxSpeedKmh() != null) {
-                specs.add("tốc độ tối đa khoảng " + specification.getMaxSpeedKmh().stripTrailingZeros().toPlainString() + " km/h");
+                specs.add(tr("tốc độ tối đa khoảng ", "top speed about ") + specification.getMaxSpeedKmh().stripTrailingZeros().toPlainString() + " km/h");
             }
             if (specification.getMotorPowerWatts() != null) {
-                specs.add("động cơ " + specification.getMotorPowerWatts() + "W");
+                specs.add(tr("động cơ ", "motor ") + specification.getMotorPowerWatts() + "W");
             }
             if (specification.getBatteryCapacityAh() != null && specification.getBatteryVoltageV() != null) {
-                specs.add("pin " + specification.getBatteryVoltageV().stripTrailingZeros().toPlainString() + "V "
+                specs.add(tr("pin ", "battery ") + specification.getBatteryVoltageV().stripTrailingZeros().toPlainString() + "V "
                     + specification.getBatteryCapacityAh().stripTrailingZeros().toPlainString() + "Ah");
             }
             if (specification.getChargingTimeHours() != null) {
-                specs.add("sạc khoảng " + specification.getChargingTimeHours().stripTrailingZeros().toPlainString() + " giờ");
+                specs.add(tr("sạc khoảng ", "charging about ") + specification.getChargingTimeHours().stripTrailingZeros().toPlainString() + tr(" giờ", " hours"));
             }
             if (specification.getWarrantyMonths() != null) {
-                specs.add("bảo hành khoảng " + specification.getWarrantyMonths() + " tháng");
+                specs.add(tr("bảo hành khoảng ", "warranty about ") + specification.getWarrantyMonths() + tr(" tháng", " months"));
             }
             if (!specs.isEmpty()) {
-                answer.append("\n- Thông số chính: ").append(String.join(", ", specs)).append(".");
+                answer.append(tr("\n- Thông số chính: ", "\n- Key specs: ")).append(String.join(", ", specs)).append(".");
             }
         }
 
-        answer.append("\nBạn muốn mình so sánh mẫu này với xe giá tương đương hay xem thêm màu/biến thể không?");
+        answer.append(tr("\nBạn muốn mình so sánh mẫu này với xe giá tương đương hay xem thêm màu/biến thể không?", "\nWould you like me to compare this model with a similarly priced bike, or look at its colours and variants?"));
         return answer.toString();
     }
 
@@ -397,15 +357,15 @@ public class ChatbotService {
             && specification != null) {
             if (specification.getMaxRangeKm() != null && specification.getMaxRangeKm().compareTo(BigDecimal.valueOf(50)) >= 0) {
                 score += 3;
-                reasons.add("phù hợp đi làm hằng ngày");
+                reasons.add(tr("phù hợp đi làm hằng ngày", "suits daily commuting"));
             }
             if (specification.getMaxSpeedKmh() != null && specification.getMaxSpeedKmh().compareTo(BigDecimal.valueOf(35)) >= 0) {
                 score += 1;
-                reasons.add("tốc độ đủ dùng trong đô thị");
+                reasons.add(tr("tốc độ đủ dùng trong đô thị", "fast enough for city riding"));
             }
             if (product.getPrice() != null && product.getPrice().compareTo(BigDecimal.valueOf(30_000_000L)) <= 0) {
                 score += 1;
-                reasons.add("chi phí hợp lý cho nhu cầu sử dụng thường xuyên");
+                reasons.add(tr("chi phí hợp lý cho nhu cầu sử dụng thường xuyên", "a sensible cost for everyday use"));
             }
         }
 
@@ -413,14 +373,14 @@ public class ChatbotService {
             BigDecimal threshold = BigDecimal.valueOf(20_000_000L);
             if (product.getPrice() != null && product.getPrice().compareTo(threshold) <= 0) {
                 score += 3;
-                reasons.add("phù hợp nhu cầu giá tốt");
+                reasons.add(tr("phù hợp nhu cầu giá tốt", "fits a tight budget"));
             }
         }
 
         if (containsAny(message, "fast", "speed", "toc do", "tốc độ", "nhanh") && specification != null && specification.getMaxSpeedKmh() != null) {
             if (specification.getMaxSpeedKmh().compareTo(BigDecimal.valueOf(50)) >= 0) {
                 score += 3;
-                reasons.add("có tốc độ tối đa tốt");
+                reasons.add(tr("có tốc độ tối đa tốt", "has a good top speed"));
             }
         }
 
@@ -428,49 +388,57 @@ public class ChatbotService {
             && specification.getMaxRangeKm() != null) {
             if (specification.getMaxRangeKm().compareTo(BigDecimal.valueOf(70)) >= 0) {
                 score += 3;
-                reasons.add("hỗ trợ quãng đường di chuyển dài");
+                reasons.add(tr("hỗ trợ quãng đường di chuyển dài", "supports long distances"));
             }
         }
 
         if (containsAny(message, "battery", "pin") && specification != null && specification.getBatteryType() != null) {
             score += 1;
-            reasons.add("phù hợp câu hỏi về pin");
+            reasons.add(tr("phù hợp câu hỏi về pin", "relevant to your battery question"));
         }
 
         if (containsAny(message, "scooter", "xe tay ga", "xe ga", "e_scooter")
             && specification != null && specification.getVehicleType() != null
             && specification.getVehicleType().name().contains("SCOOTER")) {
             score += 2;
-            reasons.add("thuộc nhóm xe tay ga điện");
+            reasons.add(tr("thuộc nhóm xe tay ga điện", "is an electric scooter"));
         }
 
         if (containsAny(message, "bike", "xe dap", "xe đạp", "xe đạp điện", "ebike")
             && specification != null && specification.getVehicleType() != null
             && specification.getVehicleType().name().contains("BIKE")) {
             score += 2;
-            reasons.add("thuộc nhóm xe đạp điện");
+            reasons.add(tr("thuộc nhóm xe đạp điện", "is an electric bicycle"));
         }
 
         String productName = product.getName() == null ? "" : product.getName().toLowerCase(Locale.ROOT);
         String productSlug = product.getSlug() == null ? "" : product.getSlug().toLowerCase(Locale.ROOT);
         if (score == 0 && containsAny(message, productName, productSlug)) {
             score = 1;
-            reasons.add("khớp với tên sản phẩm bạn nhắc đến");
+            reasons.add(tr("khớp với tên sản phẩm bạn nhắc đến", "matches the product name you mentioned"));
         }
 
-        String reason = reasons.isEmpty() ? "phù hợp nhu cầu bạn mô tả" : String.join(", ", reasons);
+        String reason = reasons.isEmpty() ? tr("phù hợp nhu cầu bạn mô tả", "fits the needs you described") : String.join(", ", reasons);
         return new ScoredProduct(product, score, reason);
     }
 
     private boolean isCatalogQuestion(String message) {
-        return containsAny(message, "sản phẩm", "san pham", "mẫu nào", "mau nao", "có xe", "co xe", "đang có", "dang co", "bán xe", "ban xe")
+        return containsAny(message, "sản phẩm", "san pham", "mẫu nào", "mau nao", "có xe", "co xe", "đang có", "dang co", "bán xe", "ban xe", "what bikes", "which bikes", "which models", "what models", "do you sell", "what do you sell", "available bikes")
             || containsAny(message, "xe đạp điện nào", "xe dap dien nao", "xe điện nào", "xe dien nao");
     }
 
     private boolean isFollowUpPriceQuestion(String message) {
-        return containsAny(message, "giá", "gia", "bao nhiêu", "bao nhieu", "giá tiền", "gia tien", "tầm giá", "tam gia")
+        return containsAny(message, "giá", "gia", "bao nhiêu", "bao nhieu", "giá tiền", "gia tien", "tầm giá", "tam gia", "price", "how much", "cost")
             && containsAny(
                 message,
+                "those bikes",
+                "those models",
+                "the first",
+                "the second",
+                "the third",
+                "the last",
+                "this one",
+                "that one",
                 "các dòng xe đó",
                 "cac dong xe do",
                 "dòng xe đó",
@@ -522,7 +490,7 @@ public class ChatbotService {
 
         List<Showroom> showrooms = showroomRepository.findByActiveTrueOrderByDistrictAscNameAsc();
         if (showrooms.isEmpty()) {
-            return "Hiện chưa có showroom hoạt động trong dữ liệu hệ thống.";
+            return tr("Hiện chưa có showroom hoạt động trong dữ liệu hệ thống.", "There is no active showroom in the system right now.");
         }
 
         return showrooms.stream()
@@ -551,13 +519,31 @@ public class ChatbotService {
             "ở đâu",
             "o dau",
             "quận",
-            "quan"
+            "quan",
+            "store",
+            "address",
+            "pick up",
+            "pickup",
+            "where can i"
         );
     }
 
     private String buildOrderPaymentContext(String message) {
         if (!isOrderPaymentQuestion(message)) {
             return "";
+        }
+
+        if ("en".equals(language())) {
+            return """
+                Ordering: the customer signs in, enters full name, phone number and email, chooses the pickup showroom, a specific address and an optional note. The shop does not ask for a national ID when ordering.
+                Receiving the bike: home delivery (%s per bike if the province has a showroom, %s per bike otherwise) or pickup at the store (free).
+                Checkout quote: licence-plate registration help costs %s per bike and is only offered with store pickup (optional); the owner must be present and declares the bike on VNeID level 2. With home delivery the owner registers it themselves.
+                Payment: the payment method is saved per order and VNPay is supported. When a VNPay payment succeeds the payment becomes PAID and the order CONFIRMED.
+                """.formatted(
+                    formatCurrency(pricingService.homeDeliveryPerBike(true)),
+                    formatCurrency(pricingService.homeDeliveryPerBike(false)),
+                    formatCurrency(pricingService.registrationServicePerBike())
+                ).trim();
         }
 
         return """
@@ -597,7 +583,14 @@ public class ChatbotService {
             "phí giao",
             "phi giao",
             "biển số",
-            "bien so"
+            "bien so",
+            "order",
+            "payment",
+            "pay ",
+            "registration",
+            "delivery",
+            "discount",
+            "shipping"
         );
     }
 
@@ -605,24 +598,24 @@ public class ChatbotService {
         ProductSpecification specification = product.getSpecification();
         List<String> details = new ArrayList<>();
         if (product.getCategory() != null && product.getCategory().getName() != null) {
-            details.add("danh mục " + product.getCategory().getName());
+            details.add(tr("danh mục ", "category ") + product.getCategory().getName());
         }
         if (specification != null && specification.getVehicleType() != null) {
-            details.add("loại " + specification.getVehicleType().name());
+            details.add(tr("loại ", "type ") + specification.getVehicleType().name());
         }
         if (specification != null && specification.getMaxRangeKm() != null) {
-            details.add("quãng đường tối đa khoảng " + specification.getMaxRangeKm().stripTrailingZeros().toPlainString() + " km");
+            details.add(tr("quãng đường tối đa khoảng ", "maximum range about ") + specification.getMaxRangeKm().stripTrailingZeros().toPlainString() + " km");
         }
         if (specification != null && specification.getMaxSpeedKmh() != null) {
-            details.add("tốc độ tối đa khoảng " + specification.getMaxSpeedKmh().stripTrailingZeros().toPlainString() + " km/h");
+            details.add(tr("tốc độ tối đa khoảng ", "top speed about ") + specification.getMaxSpeedKmh().stripTrailingZeros().toPlainString() + " km/h");
         }
-        return details.isEmpty() ? "đang được bán trên hệ thống" : String.join(", ", details);
+        return details.isEmpty() ? tr("đang được bán trên hệ thống", "on sale in the shop") : String.join(", ", details);
     }
 
     /** FAQ answers name fees as placeholders so the chatbot always quotes what the admin set. */
     /** FAQ for the support page: category, question and answer, with the current fees filled in. */
     public List<com.ebike.dto.support.FaqItemDto> listFaq() {
-        return faqEntries.stream()
+        return faqByLanguage.getOrDefault(language(), faqByLanguage.get("vi")).stream()
             .map(this::withCurrentFees)
             .map(entry -> new com.ebike.dto.support.FaqItemDto(entry.category(), entry.question(), entry.answer()))
             .toList();
@@ -637,7 +630,7 @@ public class ChatbotService {
     }
 
     private String formatCurrency(BigDecimal amount) {
-        return amount == null ? "đang cập nhật" : String.format("%,.0f VND", amount);
+        return amount == null ? tr("đang cập nhật", "being updated") : String.format("%,.0f VND", amount);
     }
 
     private String buildAiPrompt(ChatbotAnalysis analysis) {
@@ -847,8 +840,37 @@ public class ChatbotService {
     }
 
     private void loadFaqEntries() {
+        faqByLanguage.put("vi", readFaq("faq-data/faq.csv"));
+        faqByLanguage.put("en", readFaq("faq-data/faq_en.csv"));
+    }
+
+    /** Asking in English also finds the Vietnamese entries, so a Vietnamese question typed on the English site still gets an answer. */
+    private List<FaqEntry> faqFor(String language) {
+        List<FaqEntry> vietnamese = faqByLanguage.get("vi");
+        if (!"en".equals(language)) {
+            return vietnamese;
+        }
+        List<FaqEntry> both = new ArrayList<>(faqByLanguage.get("en"));
+        both.addAll(vietnamese);
+        return both;
+    }
+
+    /** The page language; without a request (no locale chosen) it is Vietnamese, not the server's own language. */
+    private static String language() {
+        var context = LocaleContextHolder.getLocaleContext();
+        java.util.Locale locale = context == null ? null : context.getLocale();
+        return locale == null ? "vi" : locale.getLanguage();
+    }
+
+    /** The text in the page language: the chatbot answers in the language the visitor chose. */
+    private static String tr(String vietnamese, String english) {
+        return "en".equals(language()) ? english : vietnamese;
+    }
+
+    private List<FaqEntry> readFaq(String resource) {
+        List<FaqEntry> entries = new ArrayList<>();
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(
-            new ClassPathResource("faq-data/faq.csv").getInputStream(),
+            new ClassPathResource(resource).getInputStream(),
             StandardCharsets.UTF_8
         ))) {
             reader.readLine();
@@ -857,21 +879,51 @@ public class ChatbotService {
                 if (line.isBlank() || line.equals("...")) {
                     continue;
                 }
-                String[] parts = line.split(",", 6);
-                if (parts.length < 6) {
+                List<String> parts = splitCsvLine(line);
+                if (parts.size() < 6) {
                     continue;
                 }
-                faqEntries.add(new FaqEntry(
-                    parts[1].trim(),
-                    parts[2].trim(),
-                    parts[3].trim(),
-                    parts[4].trim(),
-                    parts[5].trim()
+                entries.add(new FaqEntry(
+                    parts.get(1).trim(),
+                    parts.get(2).trim(),
+                    parts.get(3).trim(),
+                    parts.get(4).trim(),
+                    parts.get(5).trim()
                 ));
             }
         } catch (IOException exception) {
             throw new IllegalStateException("Unable to load FAQ data", exception);
         }
+        return entries;
+    }
+
+    /** Splits one CSV line; a field may be wrapped in double quotes (then it can hold commas, and "" is a quote). */
+    static List<String> splitCsvLine(String line) {
+        List<String> fields = new ArrayList<>();
+        StringBuilder field = new StringBuilder();
+        boolean quoted = false;
+        for (int i = 0; i < line.length(); i++) {
+            char c = line.charAt(i);
+            if (quoted) {
+                if (c == '"' && i + 1 < line.length() && line.charAt(i + 1) == '"') {
+                    field.append('"');
+                    i++;
+                } else if (c == '"') {
+                    quoted = false;
+                } else {
+                    field.append(c);
+                }
+            } else if (c == '"') {
+                quoted = true;
+            } else if (c == ',') {
+                fields.add(field.toString());
+                field.setLength(0);
+            } else {
+                field.append(c);
+            }
+        }
+        fields.add(field.toString());
+        return fields;
     }
 
     private record FaqEntry(

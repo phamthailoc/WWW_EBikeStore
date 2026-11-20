@@ -9,6 +9,8 @@ import com.ebike.dto.order.request.OrderCreateRequest;
 import com.ebike.dto.order.request.OrderQuoteRequest;
 import com.ebike.dto.order.request.OrderStatusUpdateRequest;
 import com.ebike.dto.order.response.OrderItemResponse;
+import com.ebike.dto.order.response.OrderItemUnitResponse;
+import com.ebike.service.order.OrderUnits;
 import com.ebike.dto.order.response.GuestOrderLinkResponse;
 import com.ebike.dto.order.response.OrderQuoteResponse;
 import com.ebike.dto.order.response.OrderResponse;
@@ -69,6 +71,11 @@ public class OrderServiceImpl implements OrderService {
     @Value("${app.order.pay-later-expiry:PT72H}")
     private java.time.Duration payLaterExpiry = java.time.Duration.ofHours(72);
 
+    @Value("${app.order.pickup-hold:P7D}")
+    private java.time.Duration pickupHold = java.time.Duration.ofDays(7);
+
+    static final String UNITS_REQUIRED = "Hãy nhập đủ số khung và số máy của từng xe trước khi xe rời cửa hàng (giao đi hoặc bàn giao cho khách).";
+
     private static final BigDecimal ZERO = BigDecimal.ZERO;
     private static final int MAX_ORDER_ITEMS = 20;
     private static final int MAX_ITEM_QUANTITY = 10;
@@ -86,6 +93,8 @@ public class OrderServiceImpl implements OrderService {
     private final OrderEmailVerificationService orderEmailVerificationService;
     private final PricingService pricingService;
 
+    private final com.ebike.service.admin.AuditLogService auditLog;
+
     public OrderServiceImpl(
         OrderRepository orderRepository,
         UserRepository userRepository,
@@ -93,7 +102,8 @@ public class OrderServiceImpl implements OrderService {
         ShowroomRepository showroomRepository,
         PromotionRepository promotionRepository,
         OrderEmailVerificationService orderEmailVerificationService,
-        PricingService pricingService
+        PricingService pricingService,
+        com.ebike.service.admin.AuditLogService auditLog
     ) {
         this.orderRepository = orderRepository;
         this.userRepository = userRepository;
@@ -102,6 +112,7 @@ public class OrderServiceImpl implements OrderService {
         this.promotionRepository = promotionRepository;
         this.orderEmailVerificationService = orderEmailVerificationService;
         this.pricingService = pricingService;
+        this.auditLog = auditLog;
     }
 
     @Override
@@ -156,8 +167,8 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     @CacheEvict(cacheNames = {
-        com.ebike.config.RedisCacheConfiguration.PRODUCT_LIST_CACHE,
-        com.ebike.config.RedisCacheConfiguration.PRODUCT_DETAIL_CACHE
+        com.ebike.config.CacheNames.PRODUCT_LIST_CACHE,
+        com.ebike.config.CacheNames.PRODUCT_DETAIL_CACHE
     }, allEntries = true)
     public OrderResponse createOrder(OrderCreateRequest request, Authentication authentication) {
         if (request == null) {
@@ -212,18 +223,25 @@ public class OrderServiceImpl implements OrderService {
     }
 
     // The steps a staff member may take from each status. A cancelled or delivered order is final.
-    private static final Map<OrderStatus, List<OrderStatus>> STATUS_TRANSITIONS = Map.of(
-        OrderStatus.PENDING, List.of(OrderStatus.CONFIRMED, OrderStatus.CANCELLED),
-        OrderStatus.CONFIRMED, List.of(OrderStatus.PROCESSING, OrderStatus.CANCELLED),
-        OrderStatus.PROCESSING, List.of(OrderStatus.SHIPPED, OrderStatus.CANCELLED),
-        OrderStatus.SHIPPED, List.of(OrderStatus.DELIVERED)
-    );
+    // After PROCESSING the path depends on how the customer gets the bike: home delivery goes through SHIPPED,
+    // store pickup waits in READY_FOR_PICKUP until the customer collects it.
+    private static List<OrderStatus> nextStatuses(Order order) {
+        boolean pickup = order.getShipment() != null && order.getShipment().getPickupShowroom() != null;
+        return switch (order.getStatus()) {
+            case PENDING -> List.of(OrderStatus.CONFIRMED, OrderStatus.CANCELLED);
+            case CONFIRMED -> List.of(OrderStatus.PROCESSING, OrderStatus.CANCELLED);
+            case PROCESSING -> List.of(pickup ? OrderStatus.READY_FOR_PICKUP : OrderStatus.SHIPPED, OrderStatus.CANCELLED);
+            case READY_FOR_PICKUP -> List.of(OrderStatus.DELIVERED, OrderStatus.CANCELLED);
+            case SHIPPED -> List.of(OrderStatus.DELIVERED);
+            default -> List.of();
+        };
+    }
 
     @Override
     @Transactional
     @CacheEvict(cacheNames = {
-        com.ebike.config.RedisCacheConfiguration.PRODUCT_LIST_CACHE,
-        com.ebike.config.RedisCacheConfiguration.PRODUCT_DETAIL_CACHE
+        com.ebike.config.CacheNames.PRODUCT_LIST_CACHE,
+        com.ebike.config.CacheNames.PRODUCT_DETAIL_CACHE
     }, allEntries = true)
     public OrderResponse updateOrderStatus(Long id, OrderStatusUpdateRequest request, Authentication authentication) {
         if (request == null || request.status() == null || request.status().isBlank()) {
@@ -240,9 +258,26 @@ public class OrderServiceImpl implements OrderService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid order status");
         }
 
-        if (!STATUS_TRANSITIONS.getOrDefault(order.getStatus(), List.of()).contains(nextStatus)) {
+        OrderStatus previousStatus = order.getStatus();
+        if (!nextStatuses(order).contains(nextStatus)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                 "Cannot change an order from " + order.getStatus() + " to " + nextStatus);
+        }
+
+        LocalDateTime cancellableAt = order.getStatus() == OrderStatus.READY_FOR_PICKUP ? order.getPickupDeadlineAt() : null;
+        if (nextStatus == OrderStatus.CANCELLED && cancellableAt != null && LocalDateTime.now().isBefore(cancellableAt)) {
+            // The customer was told the bike is ready; give them the full hold period before the store gives it up.
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Đơn đang chờ khách lấy xe, chỉ được hủy sau "
+                + cancellableAt.format(DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy")));
+        }
+
+        // The numbers are needed before the bike leaves the store: when it ships, or when a pickup customer collects it.
+        // An order already SHIPPED has left (one shipped before V18 has no numbers), so delivering it is not blocked,
+        // the same as the shipment form in ManagerServiceImpl.
+        boolean leavesTheStore = nextStatus == OrderStatus.SHIPPED
+            || (nextStatus == OrderStatus.DELIVERED && order.getStatus() != OrderStatus.SHIPPED);
+        if (leavesTheStore && !OrderUnits.isComplete(order)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, UNITS_REQUIRED);
         }
 
         if (nextStatus == OrderStatus.CANCELLED) {
@@ -250,16 +285,31 @@ public class OrderServiceImpl implements OrderService {
             cancelOrder(order, request.reason(), getAuthenticatedUserOrNull(authentication), "Cancelled by staff");
         } else {
             order.setStatus(nextStatus);
+            if (nextStatus == OrderStatus.READY_FOR_PICKUP) {
+                order.setPickupDeadlineAt(LocalDateTime.now().plus(pickupHold));
+            }
+            if (nextStatus == OrderStatus.DELIVERED && order.getShipment() != null) {
+                // Pickup orders have no carrier step, so the hand-over time is recorded here.
+                Shipment shipment = order.getShipment();
+                LocalDateTime now = LocalDateTime.now();
+                if (shipment.getShippedAt() == null) {
+                    shipment.setShippedAt(now);
+                }
+                shipment.setDeliveredAt(now);
+                shipment.setShipmentStatus(ShipmentStatus.DELIVERED);
+            }
         }
 
-        return toResponse(orderRepository.save(order));
+        OrderResponse updated = toResponse(orderRepository.save(order));
+        auditLog.record("đổi trạng thái đơn", order.getOrderNumber() + ": " + previousStatus + " → " + nextStatus);
+        return updated;
     }
 
     @Override
     @Transactional
     @CacheEvict(cacheNames = {
-        com.ebike.config.RedisCacheConfiguration.PRODUCT_LIST_CACHE,
-        com.ebike.config.RedisCacheConfiguration.PRODUCT_DETAIL_CACHE
+        com.ebike.config.CacheNames.PRODUCT_LIST_CACHE,
+        com.ebike.config.CacheNames.PRODUCT_DETAIL_CACHE
     }, allEntries = true)
     public int expireUnpaidOrders(LocalDateTime now) {
         LocalDateTime vnpayCutoff = now.minus(vnpayExpiry);
@@ -306,8 +356,8 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     @CacheEvict(cacheNames = {
-        com.ebike.config.RedisCacheConfiguration.PRODUCT_LIST_CACHE,
-        com.ebike.config.RedisCacheConfiguration.PRODUCT_DETAIL_CACHE
+        com.ebike.config.CacheNames.PRODUCT_LIST_CACHE,
+        com.ebike.config.CacheNames.PRODUCT_DETAIL_CACHE
     }, allEntries = true)
     public OrderResponse requestCancellation(Long id, OrderCancellationRequest request, Authentication authentication) {
         User currentUser = getAuthenticatedUser(authentication);
@@ -355,6 +405,8 @@ public class OrderServiceImpl implements OrderService {
         order.setCancellationRequestedAt(java.time.LocalDateTime.now());
         order.setCancellationReviewNote(null);
         order.setCancellationReviewedAt(null);
+        // the vehicles go back on sale, so their frame numbers must be free to record on another order
+        order.getItems().forEach(item -> item.getUnits().clear());
         cancelPendingPayment(order.getPayment(), paymentNote);
         restoreStock(order);
         if (order.getPromotion() != null) {
@@ -846,7 +898,20 @@ public class OrderServiceImpl implements OrderService {
         return containsIgnoreCase(order.getOrderNumber(), search)
             || containsIgnoreCase(order.getCustomerEmail(), search)
             || containsIgnoreCase(customerName, search)
-            || containsIgnoreCase(phoneNumber, search);
+            || containsIgnoreCase(phoneNumber, search)
+            || hasUnitMatching(order, squash(search));
+    }
+
+    // V18: find the order a vehicle was sold on from its frame or engine number (warranty, recall, registration).
+    private boolean hasUnitMatching(Order order, String search) {
+        return !search.isEmpty() && order.getItems().stream()
+            .flatMap(item -> item.getUnits().stream())
+            .anyMatch(unit -> squash(unit.getFrameNumber()).contains(search) || squash(unit.getEngineNumber()).contains(search));
+    }
+
+    // Spaces and hyphens are ignored on both sides, so "rlh abc" finds RLH-ABC12345.
+    private static String squash(String value) {
+        return value == null ? "" : value.toUpperCase(Locale.ROOT).replaceAll("[^A-Z0-9]", "");
     }
 
     private boolean matchesShowroom(Order order, Long showroomId) {
@@ -942,6 +1007,7 @@ public class OrderServiceImpl implements OrderService {
             order.getCancellationReviewedAt(),
             order.getCreatedAt(),
             order.getUpdatedAt(),
+            order.getPickupDeadlineAt(),
             order.getItems().stream()
                 .sorted(Comparator.comparing(OrderItem::getId))
                 .map(item -> new OrderItemResponse(
@@ -952,7 +1018,9 @@ public class OrderServiceImpl implements OrderService {
                     item.getQuantity(),
                     item.getLineTotal(),
                     item.getProductVariant() == null ? null : item.getProductVariant().getId(),
-                    item.getProductVariant() == null ? null : item.getProductVariant().getColorName()
+                    item.getProductVariant() == null ? null : item.getProductVariant().getColorName(),
+                    OrderUnits.requiresNumbers(item),
+                    item.getUnits().stream().map(unit -> new OrderItemUnitResponse(unit.getId(), unit.getFrameNumber(), unit.getEngineNumber())).toList()
                 ))
                 .toList(),
             shipment == null ? null : new ShipmentResponse(

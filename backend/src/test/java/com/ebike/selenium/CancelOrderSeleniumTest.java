@@ -42,7 +42,7 @@ class CancelOrderSeleniumTest extends StorefrontSeleniumTest {
         answerPrompt("Đổi ý, muốn chọn màu khác");
 
         assertEquals("Đã hủy đơn hàng.", notice());
-        wait.until(d -> orderRow(orderNumber).getText().contains("CANCELLED"));
+        wait.until(d -> orderRow(orderNumber).getText().contains("Đã hủy"));
         assertTrue(orderRow(orderNumber).findElements(CANCEL_BUTTON).isEmpty(), "a cancelled order must not offer cancel again");
         assertEquals(stockAfterOrder + 1, productStock(), "cancelling must put the bike back in stock");
     }
@@ -108,7 +108,9 @@ class CancelOrderSeleniumTest extends StorefrontSeleniumTest {
         HttpClient manager = managerApi();
         String orderNumber = placePayLaterOrder();
         long orderId = findOrder(orderNumber).path("id").asLong();
-        moveThrough(manager, orderId, "CONFIRMED", "PROCESSING", "SHIPPED");
+        moveThrough(manager, orderId, "CONFIRMED", "PROCESSING");
+        enterUnits(manager, orderId);
+        moveThrough(manager, orderId, "SHIPPED");
 
         driver.get(baseUrl + "/customer/orders");
         assertTrue(orderRow(orderNumber).findElements(CANCEL_BUTTON).isEmpty());
@@ -120,6 +122,7 @@ class CancelOrderSeleniumTest extends StorefrontSeleniumTest {
         String orderNumber = placePayLaterOrder();
         long orderId = findOrder(orderNumber).path("id").asLong();
         moveThrough(manager, orderId, "CONFIRMED", "PROCESSING");
+        enterUnits(manager, orderId); // V18: the bike needs its numbers before it can be sent out
         call(manager, "PATCH", "/api/v1/manager/orders/" + orderId + "/shipment", Map.of("shipmentStatus", "IN_TRANSIT"));
 
         driver.get(baseUrl + "/customer/orders");

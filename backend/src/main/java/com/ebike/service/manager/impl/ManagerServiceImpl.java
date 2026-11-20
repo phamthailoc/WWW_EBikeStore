@@ -3,7 +3,7 @@ package com.ebike.service.manager.impl;
 import com.ebike.model.entity.auth.Role;
 import com.ebike.model.entity.auth.User;
 import com.ebike.repository.auth.UserRepository;
-import com.ebike.config.RedisCacheConfiguration;
+import com.ebike.config.CacheNames;
 import com.ebike.dto.manager.request.ManagerPaymentConfirmationRequest;
 import com.ebike.dto.manager.request.ManagerProductStockUpdateRequest;
 import com.ebike.dto.manager.request.ManagerShipmentUpdateRequest;
@@ -23,7 +23,6 @@ import com.ebike.model.entity.order.PaymentMethod;
 import com.ebike.model.entity.order.PaymentStatus;
 import com.ebike.model.entity.order.Shipment;
 import com.ebike.model.entity.order.ShipmentStatus;
-import com.ebike.model.entity.order.Showroom;
 import com.ebike.repository.order.OrderRepository;
 import com.ebike.repository.order.PaymentRepository;
 import com.ebike.dto.product.response.ProductSummaryDto;
@@ -52,6 +51,7 @@ import org.springframework.web.server.ResponseStatusException;
 @Service
 public class ManagerServiceImpl implements ManagerService {
 
+
     private static final BigDecimal ZERO = BigDecimal.ZERO;
     private static final String ROLE_CUSTOMER = "CUSTOMER";
 
@@ -60,19 +60,22 @@ public class ManagerServiceImpl implements ManagerService {
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
     private final ProductService productService;
+    private final com.ebike.service.admin.AuditLogService auditLog;
 
     public ManagerServiceImpl(
         OrderRepository orderRepository,
         PaymentRepository paymentRepository,
         UserRepository userRepository,
         ProductRepository productRepository,
-        ProductService productService
+        ProductService productService,
+        com.ebike.service.admin.AuditLogService auditLog
     ) {
         this.orderRepository = orderRepository;
         this.paymentRepository = paymentRepository;
         this.userRepository = userRepository;
         this.productRepository = productRepository;
         this.productService = productService;
+        this.auditLog = auditLog;
     }
 
     @Override
@@ -162,7 +165,9 @@ public class ManagerServiceImpl implements ManagerService {
             order.setStatus(OrderStatus.CONFIRMED);
         }
 
-        return toPaymentResponse(paymentRepository.save(payment));
+        ManagerPaymentResponse confirmed = toPaymentResponse(paymentRepository.save(payment));
+        auditLog.record("xác nhận đã thu tiền", order.getOrderNumber());
+        return confirmed;
     }
 
     @Override
@@ -183,7 +188,9 @@ public class ManagerServiceImpl implements ManagerService {
             payment.setProviderResponse(request.note().trim());
         }
 
-        return toPaymentResponse(paymentRepository.save(payment));
+        ManagerPaymentResponse refunded = toPaymentResponse(paymentRepository.save(payment));
+        auditLog.record("ghi nhận hoàn tiền", payment.getOrder().getOrderNumber());
+        return refunded;
     }
 
     @Override
@@ -193,6 +200,7 @@ public class ManagerServiceImpl implements ManagerService {
 
         return userRepository.findAll().stream()
             .filter(this::isCustomer)
+            .filter(user -> !"DELETED".equals(user.getAccountStatus()))
             .filter(user -> matchesCustomerSearch(user, search))
             .sorted(Comparator.comparing(User::getCreatedAt).reversed())
             .map(user -> toCustomerResponse(user, orders))
@@ -262,6 +270,40 @@ public class ManagerServiceImpl implements ManagerService {
         );
     }
 
+    // The customer may ask to collect the bike on another day; staff then move the hold deadline to match.
+    @Override
+    @Transactional
+    public OrderResponse updatePickupDeadline(Long orderId, com.ebike.dto.manager.request.ManagerPickupDeadlineRequest request) {
+        if (request == null || request.pickupDeadlineAt() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "pickupDeadlineAt is required");
+        }
+        Order order = orderRepository.findById(orderId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
+        if (order.getStatus() != OrderStatus.READY_FOR_PICKUP) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Only orders waiting for pickup have a pickup deadline");
+        }
+        if (!request.pickupDeadlineAt().isAfter(LocalDateTime.now())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The pickup deadline must be in the future");
+        }
+        if (request.pickupDeadlineAt().equals(order.getPickupDeadlineAt())) {
+            return toOrderResponse(order);
+        }
+        order.setPickupDeadlineAt(request.pickupDeadlineAt());
+        Order saved = orderRepository.save(order);
+        auditLog.record("đổi hạn giữ xe", order.getOrderNumber() + " đến " + request.pickupDeadlineAt());
+        if (saved.getUser() != null) {
+            Payment payment = saved.getPayment();
+            com.ebike.listener.notification.NotificationEventBridge.publish(new com.ebike.event.notification.PickupDeadlineChangedEvent(
+                saved.getUser().getId(),
+                saved.getId(),
+                payment == null ? null : payment.getId(),
+                saved.getOrderNumber(),
+                saved.getPickupDeadlineAt()
+            ));
+        }
+        return toOrderResponse(saved);
+    }
+
     @Override
     @Transactional
     public OrderResponse updateOrderShipment(Long orderId, ManagerShipmentUpdateRequest request) {
@@ -289,12 +331,25 @@ public class ManagerServiceImpl implements ManagerService {
         }
 
         // The shipment must not push the order past a step it has not reached (e.g. a PENDING order straight to DELIVERED).
+        // Store-pickup orders never go through a carrier: they wait in READY_FOR_PICKUP and are handed over at the showroom.
+        boolean pickup = shipment.getPickupShowroom() != null;
         boolean leavingWarehouse = nextStatus == ShipmentStatus.SHIPPED || nextStatus == ShipmentStatus.IN_TRANSIT;
+        if (leavingWarehouse && pickup) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Store-pickup orders are not shipped; mark them ready for pickup instead");
+        }
         if (leavingWarehouse && order.getStatus() != OrderStatus.PROCESSING && order.getStatus() != OrderStatus.SHIPPED) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Only orders being processed can be handed over for shipping");
         }
-        if (nextStatus == ShipmentStatus.DELIVERED && order.getStatus() != OrderStatus.SHIPPED && order.getStatus() != OrderStatus.DELIVERED) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Only orders that are being shipped can be marked as delivered");
+        boolean leavesTheStore = leavingWarehouse || nextStatus == ShipmentStatus.DELIVERED;
+        if (leavesTheStore && order.getStatus() != OrderStatus.DELIVERED && order.getStatus() != OrderStatus.SHIPPED && !com.ebike.service.order.OrderUnits.isComplete(order)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                "Hãy nhập đủ số khung và số máy của từng xe trước khi xe rời cửa hàng (giao đi hoặc bàn giao cho khách).");
+        }
+        OrderStatus beforeDelivery = pickup ? OrderStatus.READY_FOR_PICKUP : OrderStatus.SHIPPED;
+        if (nextStatus == ShipmentStatus.DELIVERED && order.getStatus() != beforeDelivery && order.getStatus() != OrderStatus.DELIVERED) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, pickup
+                ? "Only orders that are ready for pickup can be marked as received"
+                : "Only orders that are being shipped can be marked as delivered");
         }
 
         shipment.setShipmentStatus(nextStatus);
@@ -315,14 +370,16 @@ public class ManagerServiceImpl implements ManagerService {
         }
 
         syncOrderStatusWithShipment(order, nextStatus);
-        return toOrderResponse(orderRepository.save(order));
+        OrderResponse updated = toOrderResponse(orderRepository.save(order));
+        auditLog.record("cập nhật giao nhận", order.getOrderNumber() + ": " + nextStatus);
+        return updated;
     }
 
     @Override
     @Transactional
     @Caching(evict = {
-        @CacheEvict(cacheNames = RedisCacheConfiguration.PRODUCT_LIST_CACHE, allEntries = true),
-        @CacheEvict(cacheNames = RedisCacheConfiguration.PRODUCT_DETAIL_CACHE, allEntries = true)
+        @CacheEvict(cacheNames = CacheNames.PRODUCT_LIST_CACHE, allEntries = true),
+        @CacheEvict(cacheNames = CacheNames.PRODUCT_DETAIL_CACHE, allEntries = true)
     })
     public ProductSummaryDto updateProductStock(Long productId, ManagerProductStockUpdateRequest request) {
         if (request == null || request.stockQuantity() == null) {
@@ -343,14 +400,15 @@ public class ManagerServiceImpl implements ManagerService {
         }
 
         product.setStockQuantity(request.stockQuantity());
+        auditLog.record("sửa tồn kho", product.getName() + ": " + request.stockQuantity());
         return productService.toSummaryDto(productRepository.save(product));
     }
 
     @Override
     @Transactional
     @Caching(evict = {
-        @CacheEvict(cacheNames = RedisCacheConfiguration.PRODUCT_LIST_CACHE, allEntries = true),
-        @CacheEvict(cacheNames = RedisCacheConfiguration.PRODUCT_DETAIL_CACHE, allEntries = true)
+        @CacheEvict(cacheNames = CacheNames.PRODUCT_LIST_CACHE, allEntries = true),
+        @CacheEvict(cacheNames = CacheNames.PRODUCT_DETAIL_CACHE, allEntries = true)
     })
     public ProductSummaryDto updateVariantStock(Long productId, Long variantId, ManagerProductStockUpdateRequest request) {
         if (request == null || request.stockQuantity() == null) {
@@ -373,6 +431,7 @@ public class ManagerServiceImpl implements ManagerService {
             .filter(candidate -> Boolean.TRUE.equals(candidate.getActive()))
             .mapToInt(candidate -> candidate.getStockQuantity() == null ? 0 : candidate.getStockQuantity())
             .sum());
+        auditLog.record("sửa tồn kho theo màu", product.getName() + " / " + variant.getColorName() + ": " + request.stockQuantity());
         return productService.toSummaryDto(productRepository.save(product));
     }
 
@@ -521,6 +580,7 @@ public class ManagerServiceImpl implements ManagerService {
             order.getCancellationReviewedAt(),
             order.getCreatedAt(),
             order.getUpdatedAt(),
+            order.getPickupDeadlineAt(),
             order.getItems().stream()
                 .sorted(Comparator.comparing(OrderItem::getId))
                 .map(item -> new com.ebike.dto.order.response.OrderItemResponse(
@@ -529,7 +589,11 @@ public class ManagerServiceImpl implements ManagerService {
                     item.getProductName(),
                     item.getUnitPrice(),
                     item.getQuantity(),
-                    item.getLineTotal()
+                    item.getLineTotal(),
+                    item.getProductVariant() == null ? null : item.getProductVariant().getId(),
+                    item.getProductVariant() == null ? null : item.getProductVariant().getColorName(),
+                    com.ebike.service.order.OrderUnits.requiresNumbers(item),
+                    item.getUnits().stream().map(unit -> new com.ebike.dto.order.response.OrderItemUnitResponse(unit.getId(), unit.getFrameNumber(), unit.getEngineNumber())).toList()
                 ))
                 .toList(),
             shipment == null ? null : new com.ebike.dto.order.response.ShipmentResponse(

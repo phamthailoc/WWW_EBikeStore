@@ -1,17 +1,17 @@
 <!doctype html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<html th:lang="${#locale.language}" lang="vi" xmlns:th="http://www.thymeleaf.org" th:attr="data-theme=${userTheme},data-theme-user=${userTheme != null ? 'true' : null}">
 <head>
-  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Đăng nhập | KINETIC</title><link rel="stylesheet" th:href="@{/css/store.css(v=20261102-layout1)}">
-  <link rel="stylesheet" th:href="@{/css/workspace.css(v=20261102-layout1)}">
-<link rel="stylesheet" th:href="@{/css/workspace-overrides.css(v=20261031)}"><link rel="stylesheet" href="/css/commerce.css?v=20261102-colors1"><script src="/js/cart.js?v=20261102-cart1"></script></head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light dark"><link rel="stylesheet" href="/css/theme.css?v=20261109-theme2"><script src="/js/theme.js?v=20261114-i18n1"></script><script th:inline="javascript">window.I18N=/*[[${jsMessages}]]*/ {};</script><script src="/js/i18n.js?v=20261114-i18n2"></script>
+  <title th:text="#{login.title}">Đăng nhập | KINETIC</title><link rel="stylesheet" th:href="@{/css/store.css(v=20261109-theme1)}">
+  <link rel="stylesheet" th:href="@{/css/workspace.css(v=20261109-theme1)}">
+<link rel="stylesheet" th:href="@{/css/workspace-overrides.css(v=20261110-units1)}"><link rel="stylesheet" href="/css/commerce.css?v=20261109-theme1"><script src="/js/cart.js?v=20261110-i18n2"></script></head>
 <body>
-<header class="top"><a class="brand" th:href="@{/}"><span>K</span> KINETIC</a><div class="auth-links"><span>Chưa có tài khoản?</span><a class="register-link" th:href="@{/signup}">Đăng ký ngay ↗</a><a th:href="@{/shop}">Quay lại cửa hàng</a></div></header>
-<main class="auth"><p class="eyebrow">WELCOME BACK</p><h1>Đăng nhập.</h1><p>Tiếp tục hành trình cùng KINETIC.</p>
-  <form id="loginForm"><label>Email hoặc tên đăng nhập<input name="usernameOrEmail" type="text" autocomplete="username" required></label><label>Mật khẩu<input name="password" type="password" autocomplete="current-password" required></label><button class="button">Đăng nhập <b>↗</b></button><p id="error" class="error"></p></form>
-  <p class="auth-register">Chưa có tài khoản? <a th:href="@{/signup}">Tạo tài khoản KINETIC</a></p>
+<header class="top"><a class="brand" th:href="@{/}"><span>K</span> KINETIC</a><div class="auth-links"><span><th:block th:text="#{login.noAccount}">Chưa có tài khoản?</th:block></span><a class="register-link" th:href="@{/signup}"><th:block th:text="#{login.signupNow}">Đăng ký ngay ↗</th:block></a><a th:href="@{/shop}"><th:block th:text="#{common.backToStore}">Quay lại cửa hàng</th:block></a></div></header>
+<main class="auth"><p class="eyebrow">WELCOME BACK</p><h1><th:block th:text="#{login.heading}">Đăng nhập.</th:block></h1><p><th:block th:text="#{login.sub}">Tiếp tục hành trình cùng KINETIC.</th:block></p>
+  <form id="loginForm"><label><th:block th:text="#{login.identity}">Email hoặc tên đăng nhập</th:block><input name="usernameOrEmail" type="text" autocomplete="username" required></label><label><th:block th:text="#{auth.password}">Mật khẩu</th:block><input name="password" type="password" autocomplete="current-password" required></label><button class="button"><th:block th:text="#{login.submit}">Đăng nhập</th:block> <b>↗</b></button><p id="error" class="error"></p></form>
+  <p class="auth-register"><th:block th:text="#{login.noAccount}">Chưa có tài khoản?</th:block> <a th:href="@{/signup}"><th:block th:text="#{login.createLink}">Tạo tài khoản KINETIC</th:block></a></p>
 </main>
 <script>
-document.getElementById('loginForm').addEventListener('submit', async e => { e.preventDefault(); const data=Object.fromEntries(new FormData(e.currentTarget)); try { const r=await fetch('/api/v1/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}); if(!r.ok) throw new Error('Tên đăng nhập hoặc mật khẩu chưa chính xác.'); const user=await r.json(); const roles=user.roles||[]; const wanted=new URLSearchParams(location.search).get('returnTo'); location.href=wanted&&wanted.startsWith('/')&&!wanted.startsWith('//')?wanted:roles.includes('ADMIN')?'/admin':roles.includes('MANAGER')?'/manager':roles.includes('CUSTOMER')?'/customer':'/'; } catch(err) { document.getElementById('error').textContent=err.message; } });
+document.getElementById('loginForm').addEventListener('submit', async e => { e.preventDefault(); const data=Object.fromEntries(new FormData(e.currentTarget)); try { const r=await fetch('/api/v1/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}); if(r.status===429) throw new Error(t('js.login.tooMany')); if(!r.ok) throw new Error(t('js.login.failed')); const user=await r.json(); const roles=user.roles||[]; const wanted=new URLSearchParams(location.search).get('returnTo'); location.href=wanted&&wanted.startsWith('/')&&!wanted.startsWith('//')?wanted:roles.includes('ADMIN')?'/admin':roles.includes('MANAGER')?'/manager':roles.includes('CUSTOMER')?'/customer':'/'; } catch(err) { document.getElementById('error').textContent=err.message; } });
 </script>
 </body></html>

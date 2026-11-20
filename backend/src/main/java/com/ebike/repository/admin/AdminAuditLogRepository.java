@@ -7,4 +7,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface AdminAuditLogRepository extends JpaRepository<AdminAuditLog, Long> {
 
     List<AdminAuditLog> findTop100ByOrderByCreatedAtDesc();
+
+    boolean existsByActorIn(java.util.Collection<String> actors);
 }

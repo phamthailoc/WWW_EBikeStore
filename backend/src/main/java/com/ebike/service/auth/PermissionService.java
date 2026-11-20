@@ -39,8 +39,4 @@ public class PermissionService {
         rolePermissions.removeAll(deniedPermissions);
         return rolePermissions;
     }
-
-    public boolean hasPermission(User user, String permissionCode) {
-        return resolvePermissionCodes(user).contains(permissionCode);
-    }
 }

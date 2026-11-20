@@ -35,7 +35,7 @@ class ChangePasswordTest {
     User user;
 
     @BeforeEach void setup() {
-        service = new AuthenticationServiceImpl(users, roles, logs, permissions, encoder, tokens);
+        service = new AuthenticationServiceImpl(users, roles, logs, permissions, encoder, tokens, org.mockito.Mockito.mock(com.ebike.service.admin.AuditLogService.class));
         user = new User();
         user.setUsername("an");
         user.setPasswordHash("hash");

@@ -27,6 +27,7 @@ public record OrderResponse(
     LocalDateTime cancellationReviewedAt,
     LocalDateTime createdAt,
     LocalDateTime updatedAt,
+    LocalDateTime pickupDeadlineAt,
     List<OrderItemResponse> items,
     ShipmentResponse shipment
 ) {

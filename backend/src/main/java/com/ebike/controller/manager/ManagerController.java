@@ -26,9 +26,21 @@ import org.springframework.web.bind.annotation.RestController;
 public class ManagerController {
 
     private final ManagerService managerService;
+    private final com.ebike.service.order.OrderUnitService orderUnitService;
 
-    public ManagerController(ManagerService managerService) {
+    public ManagerController(ManagerService managerService, com.ebike.service.order.OrderUnitService orderUnitService) {
         this.managerService = managerService;
+        this.orderUnitService = orderUnitService;
+    }
+
+    /** V18: record the frame and engine number of each vehicle of an order. */
+    @org.springframework.web.bind.annotation.PutMapping("/orders/{orderId}/units")
+    @PreAuthorize("hasAuthority('" + PermissionConstants.OrderManagement.ORDER_UPDATE_STATUS + "')")
+    public java.util.List<com.ebike.dto.order.response.OrderItemUnitResponse> replaceUnits(
+        @PathVariable Long orderId,
+        @RequestBody com.ebike.dto.order.request.OrderUnitsRequest request
+    ) {
+        return orderUnitService.replaceUnits(orderId, request);
     }
 
     @GetMapping("/dashboard")
@@ -79,6 +91,15 @@ public class ManagerController {
         @RequestParam(required = false) String to
     ) {
         return managerService.getRevenueReport(period, from, to);
+    }
+
+    @PatchMapping("/orders/{orderId}/pickup-deadline")
+    @PreAuthorize("hasAuthority('" + PermissionConstants.OrderManagement.ORDER_UPDATE_STATUS + "')")
+    public OrderResponse updatePickupDeadline(
+        @PathVariable Long orderId,
+        @RequestBody com.ebike.dto.manager.request.ManagerPickupDeadlineRequest request
+    ) {
+        return managerService.updatePickupDeadline(orderId, request);
     }
 
     @PatchMapping("/orders/{orderId}/shipment")

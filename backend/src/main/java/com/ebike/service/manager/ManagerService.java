@@ -33,4 +33,6 @@ public interface ManagerService {
     ProductSummaryDto updateVariantStock(Long productId, Long variantId, ManagerProductStockUpdateRequest request);
 
     OrderResponse updateOrderShipment(Long orderId, ManagerShipmentUpdateRequest request);
+
+    OrderResponse updatePickupDeadline(Long orderId, com.ebike.dto.manager.request.ManagerPickupDeadlineRequest request);
 }

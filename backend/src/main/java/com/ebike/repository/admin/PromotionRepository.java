@@ -11,8 +11,6 @@ public interface PromotionRepository extends JpaRepository<Promotion, Long> {
 
     boolean existsByCode(String code);
 
-    Optional<Promotion> findByCode(String code);
-
     Optional<Promotion> findByCodeIgnoreCase(String code);
 
     @Modifying

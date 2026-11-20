@@ -7,7 +7,7 @@
   const link = document.createElement('a');
   link.className = 'notif-link';
   link.href = '/customer/notifications';
-  link.innerHTML = 'Thông báo <span class="notif-badge" id="notifBadge" hidden></span>';
+  link.innerHTML = '' + t('Thông báo') + ' <span class="notif-badge" id="notifBadge" hidden></span>';
   actions.insertBefore(link, actions.firstChild);
   const badge = link.querySelector('#notifBadge');
 
@@ -15,7 +15,7 @@
     const n = Number(count) || 0;
     badge.textContent = n > 99 ? '99+' : String(n);
     badge.hidden = n <= 0;
-    link.setAttribute('aria-label', n > 0 ? `Thông báo, ${n} chưa đọc` : 'Thông báo');
+    link.setAttribute('aria-label', n > 0 ? `${t('Thông báo,')} ${n} ${t('chưa đọc')}` : t('Thông báo'));
   };
 
   async function refresh() {
@@ -45,17 +45,17 @@
     const button = document.createElement('button');
     button.type = 'button';
     button.className = 'button compact';
-    button.textContent = 'Đánh dấu tất cả đã đọc';
+    button.textContent = t('Đánh dấu tất cả đã đọc');
     heading.appendChild(button);
     button.addEventListener('click', async () => {
       button.disabled = true;
       const notice = document.querySelector('#notice');
       try {
         const response = await fetch('/api/v1/notifications/read-all', {method: 'PATCH', credentials: 'same-origin', headers: {Accept: 'application/json'}});
-        if (!response.ok) throw Error('Không thể đánh dấu đã đọc. Vui lòng thử lại.');
+        if (!response.ok) throw Error(t('Không thể đánh dấu đã đọc. Vui lòng thử lại.'));
         show(0);
         window.dispatchEvent(new Event('workspace:reload'));
-        notice.textContent = 'Đã đánh dấu tất cả thông báo là đã đọc.';
+        notice.textContent = t('Đã đánh dấu tất cả thông báo là đã đọc.');
         notice.classList.remove('error');
         notice.hidden = false;
       } catch (failure) {

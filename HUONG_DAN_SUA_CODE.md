@@ -5,7 +5,7 @@ Tài liệu Word `TÀI LIỆU WEB BÁN XE_Lập trình WWW (Java).docx` đang m�
 ## 0. Trước khi bắt đầu
 
 - Tạo nhánh mới trước khi sửa: `git checkout -b fix/khop-tai-lieu`. Thư mục đang có sẵn một số file chưa commit (`flow.js`, `workspace.js`, `detail.html`, `flow.html`, `home.html`), đừng làm lẫn với việc này.
-- Mã nguồn nằm ở `backend/src/main/java/com/ebike/...` (viết tắt `…` bên dưới). Cấu hình `spring.flyway.enabled=false` và `spring.jpa.hibernate.ddl-auto=validate`, nên **không có migration tự chạy**; nếu cần thêm dữ liệu mẫu thì sửa `setup_ebike_database.sql` và chạy tay vào `ebike_db`.
+- Mã nguồn nằm ở `backend/src/main/java/com/ebike/...` (viết tắt `…` bên dưới). Cấu hình `spring.jpa.hibernate.ddl-auto=validate` (không dùng Flyway), nên **không có migration tự chạy**; nếu cần thêm dữ liệu mẫu thì sửa `setup_ebike_database.sql` và chạy tay vào `ebike_db`.
 - Cả 4 việc **không cần đổi cấu trúc bảng**: bảng `promotions` đã đủ cột, `payments.payment_status` là `VARCHAR(30)` nên đã chứa được `REFUNDED`, quyền `payment:refund` đã có trong seed và đã gán cho MANAGER.
 - Không ghi secret (khóa VNPay, SMTP, Gemini, AWS) vào file nào được commit.
 

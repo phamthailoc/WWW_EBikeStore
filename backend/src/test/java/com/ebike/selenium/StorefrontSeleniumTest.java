@@ -250,6 +250,25 @@ abstract class StorefrontSeleniumTest {
         return manager;
     }
 
+    private static final java.util.concurrent.atomic.AtomicLong UNIT_SEQUENCE = new java.util.concurrent.atomic.AtomicLong(System.currentTimeMillis());
+
+    /**
+     * Vehicles cannot be handed over (Đã giao / Đã nhận) until their frame and engine numbers are recorded (V18), so
+     * tests that deliver an order call this first. Each number is unique across runs.
+     */
+    protected static void enterUnits(HttpClient manager, long orderId) throws Exception {
+        JsonNode order = call(manager, "GET", "/api/v1/orders/" + orderId, null);
+        java.util.List<Map<String, Object>> units = new java.util.ArrayList<>();
+        for (JsonNode item : order.path("items")) {
+            if (!item.path("requiresUnitNumbers").asBoolean()) continue;
+            for (int i = 0; i < item.path("quantity").asInt(); i++) {
+                long n = UNIT_SEQUENCE.incrementAndGet();
+                units.add(Map.of("orderItemId", item.path("id").asLong(), "frameNumber", "SEL" + n, "engineNumber", "ENG" + n));
+            }
+        }
+        call(manager, "PUT", "/api/v1/manager/orders/" + orderId + "/units", Map.of("units", units));
+    }
+
     protected static JsonNode call(HttpClient client, String method, String path, Object body) throws Exception {
         HttpRequest.Builder request = HttpRequest.newBuilder(URI.create(baseUrl + path))
             .timeout(Duration.ofSeconds(20))

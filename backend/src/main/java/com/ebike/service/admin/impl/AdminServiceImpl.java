@@ -19,6 +19,8 @@ import com.ebike.repository.admin.AdminAuditLogRepository;
 import com.ebike.repository.admin.PricingRuleRepository;
 import com.ebike.repository.admin.PromotionRepository;
 import com.ebike.repository.order.OrderRepository;
+import com.ebike.service.admin.AccountErasure;
+import com.ebike.service.admin.AuditLogService;
 import com.ebike.service.admin.AdminService;
 import com.ebike.model.entity.auth.Permission;
 import com.ebike.model.entity.auth.Role;
@@ -56,6 +58,8 @@ public class AdminServiceImpl implements AdminService {
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final OrderRepository orderRepository;
+    private final AccountErasure accountErasure;
+    private final AuditLogService auditLog;
 
     public AdminServiceImpl(
         PricingRuleRepository pricingRuleRepository,
@@ -64,7 +68,9 @@ public class AdminServiceImpl implements AdminService {
         UserRepository userRepository,
         RoleRepository roleRepository,
         PasswordEncoder passwordEncoder,
-        OrderRepository orderRepository
+        OrderRepository orderRepository,
+        AccountErasure accountErasure,
+        AuditLogService auditLog
     ) {
         this.pricingRuleRepository = pricingRuleRepository;
         this.promotionRepository = promotionRepository;
@@ -73,6 +79,8 @@ public class AdminServiceImpl implements AdminService {
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
         this.orderRepository = orderRepository;
+        this.accountErasure = accountErasure;
+        this.auditLog = auditLog;
     }
 
     @Override
@@ -200,7 +208,9 @@ public class AdminServiceImpl implements AdminService {
     public List<AdminAccountResponse> getAccounts(String type) {
         String normalizedType = normalizeNullable(type);
 
+        // Accounts the customer asked to delete (DELETED) are hidden: only an anonymised shell remains for the orders.
         return userRepository.findAll().stream()
+            .filter(user -> !AccountErasure.DELETED.equals(user.getAccountStatus()))
             .map(this::toAccountResponse)
             .filter(account -> normalizedType == null || normalizedType.equals(account.accountType()))
             .sorted(Comparator.comparing(AdminAccountResponse::createdAt).reversed())
@@ -246,6 +256,7 @@ public class AdminServiceImpl implements AdminService {
     public AdminAccountResponse updateAccountRole(Long id, AdminAccountRoleUpdateRequest request) {
         User user = userRepository.findById(id)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Account not found"));
+        assertNotDeleted(user);
         String normalizedRole = normalizeRole(request.role());
         Role role = roleRepository.findByName(normalizedRole)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Role not found: " + normalizedRole));
@@ -265,6 +276,7 @@ public class AdminServiceImpl implements AdminService {
     public AdminAccountResponse updateAccountStatus(Long id, AdminAccountStatusUpdateRequest request) {
         User user = userRepository.findById(id)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Account not found"));
+        assertNotDeleted(user);
         String status = normalizeOrDefault(request.status(), "ACTIVE", ACCOUNT_STATUSES);
 
         if (!"ACTIVE".equals(status)) {
@@ -280,19 +292,33 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     @Transactional
-    public void deleteAccount(Long id) {
+    public void deleteAccount(Long id, String confirmEmail) {
         User user = userRepository.findById(id)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Account not found"));
         assertNotSelf(user, "Bạn không thể tự xóa tài khoản của chính mình.");
         assertNotLastAdmin(user, "Đây là quản trị viên cuối cùng đang hoạt động, không thể xóa.");
-        // Orders and payments are the shop's accounting record; keep the account and switch it off instead.
-        if (orderRepository.existsByUserId(id)) {
+        assertNotDeleted(user);
+        // Staff who appear in the audit trail are kept: the trail must keep saying who did what. Lock them instead.
+        boolean staff = user.getRoles().stream().anyMatch(role -> !"CUSTOMER".equals(role.getName()));
+        if (staff && auditLogRepository.existsByActorIn(java.util.List.of(user.getUsername(), user.getEmail()))) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                "Tài khoản này đã có đơn hàng nên không thể xóa. Hãy vô hiệu hóa tài khoản.");
+                "Tài khoản nhân viên này đã có thao tác trong nhật ký nên không thể xóa. Hãy vô hiệu hóa tài khoản.");
         }
-        String target = displayName(user);
-        userRepository.delete(user);
-        writeAudit("xóa tài khoản", target);
+        // Erasing is irreversible, so the admin must type the account's email to confirm (checked here, not only in the form).
+        if (confirmEmail == null || !confirmEmail.trim().equalsIgnoreCase(user.getEmail())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email xác nhận không khớp với tài khoản cần xóa.");
+        }
+        // Orders and payments are the shop's accounting record, so the account is anonymised, not removed.
+        accountErasure.erase(user);
+        userRepository.save(user);
+        // The audit entry must not keep the personal data that was just erased.
+        writeAudit("xóa tài khoản (ẩn danh hóa)", "tài khoản #" + id);
+    }
+
+    private void assertNotDeleted(User user) {
+        if (AccountErasure.DELETED.equals(user.getAccountStatus())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tài khoản này đã bị xóa và không thể thay đổi.");
+        }
     }
 
     @Override
@@ -386,12 +412,7 @@ public class AdminServiceImpl implements AdminService {
     }
 
     private void writeAudit(String action, String target) {
-        AdminAuditLog log = new AdminAuditLog();
-        log.setActor(currentActor());
-        log.setAction(action);
-        log.setTarget(target);
-        log.setIpAddress("system");
-        auditLogRepository.save(log);
+        auditLog.record(action, target);
     }
 
     private String currentActor() {
@@ -501,7 +522,7 @@ public class AdminServiceImpl implements AdminService {
             case "SUPPORT" -> "Support";
             case "MAINTENANCE" -> "Maintenance";
             case "MANAGER" -> "Manager";
-            case "CUSTOMER" -> "Người dùng";
+            case "CUSTOMER" -> "Customer";
             default -> role;
         };
     }

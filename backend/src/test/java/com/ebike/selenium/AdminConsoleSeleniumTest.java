@@ -68,7 +68,16 @@ class AdminConsoleSeleniumTest extends StorefrontSeleniumTest {
         assertTrue(row.getText().contains("MANAGER"), row.getText());
 
         row.findElement(By.cssSelector("[data-action='delete-account']")).click();
-        driver.switchTo().alert().accept();
+        WebElement confirm = wait.until(ExpectedConditions.visibilityOfElementLocated(DIALOG));
+        // a wrong email is refused and the account stays
+        type(confirm, "confirmEmail", "khong.dung@example.com");
+        confirm.findElement(By.cssSelector("[type=submit]")).click();
+        wait.until(d -> !confirm.findElement(By.cssSelector(".dialog-error")).getText().isBlank());
+        assertTrue(listed(TABLE_ROWS, email));
+        // the exact email erases it: the account disappears from the list
+        type(confirm, "confirmEmail", email);
+        confirm.findElement(By.cssSelector("[type=submit]")).click();
+        wait.until(ExpectedConditions.invisibilityOfElementLocated(DIALOG));
         wait.until(d -> !listed(TABLE_ROWS, email));
     }
 
@@ -78,14 +87,17 @@ class AdminConsoleSeleniumTest extends StorefrontSeleniumTest {
         HttpClient admin = newClient();
         call(admin, "POST", "/api/v1/auth/login", Map.of("usernameOrEmail", adminUser, "password", adminPassword));
         long ownId = 0;
+        String ownEmail = "";
         for (JsonNode account : listOf(call(admin, "GET", "/api/v1/admin/accounts", null))) {
             if (adminUser.equals(account.path("username").asText())) {
                 ownId = account.path("id").asLong();
+                ownEmail = account.path("email").asText();
             }
         }
         long id = ownId;
+        String email = ownEmail;
         IllegalStateException refused = assertThrows(IllegalStateException.class,
-            () -> call(admin, "DELETE", "/api/v1/admin/accounts/" + id, null));
+            () -> call(admin, "DELETE", "/api/v1/admin/accounts/" + id + "?confirmEmail=" + java.net.URLEncoder.encode(email, java.nio.charset.StandardCharsets.UTF_8), null));
         assertTrue(refused.getMessage().contains("400"), refused.getMessage());
     }
 

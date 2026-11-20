@@ -3,7 +3,7 @@ package com.ebike.service.product;
 import com.ebike.model.entity.auth.User;
 import com.ebike.repository.auth.UserRepository;
 import com.ebike.repository.order.OrderRepository;
-import com.ebike.config.RedisCacheConfiguration;
+import com.ebike.config.CacheNames;
 import com.ebike.dto.product.request.ProductReviewRequest;
 import com.ebike.dto.product.response.ProductReviewDto;
 import com.ebike.dto.product.response.ReviewEligibilityDto;
@@ -14,7 +14,9 @@ import com.ebike.repository.product.ReviewRepository;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Caching;
@@ -64,8 +66,8 @@ public class ProductReviewService {
 
     @Transactional
     @Caching(evict = {
-        @CacheEvict(cacheNames = RedisCacheConfiguration.PRODUCT_LIST_CACHE, allEntries = true),
-        @CacheEvict(cacheNames = RedisCacheConfiguration.PRODUCT_DETAIL_CACHE, allEntries = true)
+        @CacheEvict(cacheNames = CacheNames.PRODUCT_LIST_CACHE, allEntries = true),
+        @CacheEvict(cacheNames = CacheNames.PRODUCT_DETAIL_CACHE, allEntries = true)
     })
     public ProductReviewDto createReview(String productSlug, ProductReviewRequest request, Authentication authentication) {
         User user = currentUser(authentication);
@@ -109,8 +111,8 @@ public class ProductReviewService {
 
     @Transactional
     @Caching(evict = {
-        @CacheEvict(cacheNames = RedisCacheConfiguration.PRODUCT_LIST_CACHE, allEntries = true),
-        @CacheEvict(cacheNames = RedisCacheConfiguration.PRODUCT_DETAIL_CACHE, allEntries = true)
+        @CacheEvict(cacheNames = CacheNames.PRODUCT_LIST_CACHE, allEntries = true),
+        @CacheEvict(cacheNames = CacheNames.PRODUCT_DETAIL_CACHE, allEntries = true)
     })
     public ProductReviewDto updateReview(Long reviewId, ProductReviewRequest request, Authentication authentication) {
         User user = currentUser(authentication);
@@ -131,8 +133,8 @@ public class ProductReviewService {
 
     @Transactional
     @Caching(evict = {
-        @CacheEvict(cacheNames = RedisCacheConfiguration.PRODUCT_LIST_CACHE, allEntries = true),
-        @CacheEvict(cacheNames = RedisCacheConfiguration.PRODUCT_DETAIL_CACHE, allEntries = true)
+        @CacheEvict(cacheNames = CacheNames.PRODUCT_LIST_CACHE, allEntries = true),
+        @CacheEvict(cacheNames = CacheNames.PRODUCT_DETAIL_CACHE, allEntries = true)
     })
     public void deleteReview(Long reviewId, Authentication authentication) {
         User user = currentUser(authentication);
@@ -190,6 +192,21 @@ public class ProductReviewService {
         review.setRating(request.rating());
         review.setTitle(normalize(request.title()));
         review.setComment(normalize(request.comment()));
+    }
+
+    /** Deletes every review a user wrote (their account is being erased) and recomputes the rating of each product. */
+    @Transactional
+    @Caching(evict = {
+        @CacheEvict(cacheNames = CacheNames.PRODUCT_LIST_CACHE, allEntries = true),
+        @CacheEvict(cacheNames = CacheNames.PRODUCT_DETAIL_CACHE, allEntries = true)
+    })
+    public void removeReviewsOf(Long userId) {
+        List<Review> reviews = reviewRepository.findByUserId(userId);
+        Map<Long, Product> products = new LinkedHashMap<>();
+        reviews.forEach(review -> products.putIfAbsent(review.getProduct().getId(), review.getProduct()));
+        reviewRepository.deleteAll(reviews);
+        reviewRepository.flush();
+        products.values().forEach(this::refreshProductRating);
     }
 
     private void refreshProductRating(Product product) {

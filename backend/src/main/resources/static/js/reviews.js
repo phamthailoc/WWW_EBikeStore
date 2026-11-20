@@ -17,7 +17,7 @@
     if (!response.ok) {
       let message = '';
       try { message = (await response.json()).message || ''; } catch (ignored) { /* not JSON */ }
-      const error = Error(message || 'Không thể gửi đánh giá. Vui lòng thử lại.');
+      const error = Error(message || t('Không thể gửi đánh giá. Vui lòng thử lại.'));
       error.status = response.status;
       throw error;
     }
@@ -26,7 +26,7 @@
   }
 
   host.innerHTML = `
-    <h2>Đánh giá của khách hàng</h2>
+    <h2>${t('Đánh giá của khách hàng')}</h2>
     <div class="review-summary" data-summary></div>
     <div class="review-form-area" data-form-area></div>
     <ul class="review-list" data-list></ul>`;
@@ -38,12 +38,12 @@
 
   function renderSummary() {
     if (!reviews.length) {
-      summary.innerHTML = '<p class="muted">Chưa có đánh giá nào cho mẫu xe này.</p>';
+      summary.innerHTML = '<p class="muted">' + t('Chưa có đánh giá nào cho mẫu xe này.') + '</p>';
       return;
     }
     const average = reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length;
     summary.innerHTML = `
-      <div class="review-score"><strong>${average.toFixed(1).replace('.', ',')}</strong><span class="stars" aria-label="${average.toFixed(1)} trên 5 sao">${stars(Math.round(average))}</span><small>${reviews.length} đánh giá</small></div>
+      <div class="review-score"><strong>${average.toFixed(1).replace('.', ',')}</strong><span class="stars" aria-label="${average.toFixed(1)} ${t('trên 5 sao')}">${stars(Math.round(average))}</span><small>${reviews.length} ${t('đánh giá')}</small></div>
       <div class="review-bars">${[5, 4, 3, 2, 1].map(n => {
         const count = reviews.filter(r => r.rating === n).length;
         return `<div><span>${n} ★</span><i><b style="width:${Math.round(count * 100 / reviews.length)}%"></b></i><span>${count}</span></div>`;
@@ -55,32 +55,32 @@
       <li data-id="${r.id}">
         <div class="review-head"><span class="stars">${stars(r.rating)}</span>
           <strong>${esc(r.authorName || r.username)}</strong>
-          ${r.verifiedPurchase ? '<span class="badge">Đã mua hàng</span>' : ''}
+          ${r.verifiedPurchase ? '<span class="badge">' + t('Đã mua hàng') + '</span>' : ''}
           <small>${esc(date(r.createdAt))}</small></div>
         ${r.title ? `<h3>${esc(r.title)}</h3>` : ''}
         ${r.comment ? `<p>${esc(r.comment)}</p>` : ''}
-        ${r.editableByCurrentUser ? '<p class="review-actions"><button type="button" data-do="edit">Sửa</button> <button type="button" data-do="delete">Xóa</button></p>' : ''}
+        ${r.editableByCurrentUser ? '<p class="review-actions"><button type="button" data-do="edit">' + t('Sửa') + '</button> <button type="button" data-do="delete">' + t('Xóa') + '</button></p>' : ''}
       </li>`).join('');
   }
 
   function renderForm(eligibility) {
     if (!editing && !eligibility.canReview) {
       const needsLogin = /Đăng nhập/.test(eligibility.reason || '');
-      formArea.innerHTML = `<p class="muted">${esc(eligibility.reason || '')}${needsLogin ? ` <a href="/login?returnTo=${encodeURIComponent(location.pathname)}">Đăng nhập</a>` : ''}</p>`;
+      formArea.innerHTML = `<p class="muted">${esc(t(eligibility.reason || ''))}${needsLogin ? ` <a href="/login?returnTo=${encodeURIComponent(location.pathname)}">${t('Đăng nhập')}</a>` : ''}</p>`;
       return;
     }
     const r = editing || {rating: 5, title: '', comment: ''};
     formArea.innerHTML = `
       <form class="review-form">
-        <h3>${editing ? 'Sửa đánh giá của bạn' : 'Viết đánh giá'}</h3>
-        <fieldset class="star-input"><legend>Số sao</legend>
+        <h3>${editing ? t('Sửa đánh giá của bạn') : t('Viết đánh giá')}</h3>
+        <fieldset class="star-input"><legend>${t('Số sao')}</legend>
           ${[5, 4, 3, 2, 1].map(n => `<input type="radio" id="star${n}" name="rating" value="${n}" ${r.rating === n ? 'checked' : ''}><label for="star${n}" title="${n} sao">★</label>`).join('')}
         </fieldset>
-        <label>Tiêu đề (không bắt buộc)<input name="title" maxlength="255" value="${esc(r.title || '')}"></label>
-        <label>Nhận xét<textarea name="comment" rows="4" maxlength="2000">${esc(r.comment || '')}</textarea></label>
+        <label>${t('Tiêu đề (không bắt buộc)')}<input name="title" maxlength="255" value="${esc(r.title || '')}"></label>
+        <label>${t('Nhận xét')}<textarea name="comment" rows="4" maxlength="2000">${esc(r.comment || '')}</textarea></label>
         <p class="review-error" role="alert" hidden></p>
-        <p><button class="button compact" type="submit">${editing ? 'Lưu đánh giá' : 'Gửi đánh giá'}</button>
-        ${editing ? '<button class="button compact ghost" type="button" data-do="cancel">Hủy</button>' : ''}</p>
+        <p><button class="button compact" type="submit">${editing ? t('Lưu đánh giá') : t('Gửi đánh giá')}</button>
+        ${editing ? '<button class="button compact ghost" type="button" data-do="cancel">' + t('Hủy') + '</button>' : ''}</p>
       </form>`;
     const form = formArea.querySelector('form');
     form.addEventListener('submit', async event => {
@@ -124,7 +124,7 @@
         editing = null;
         await load();
       } else if (button.dataset.do === 'delete') {
-        if (!confirm('Xóa đánh giá này?')) return;
+        if (!confirm(t('Xóa đánh giá này?'))) return;
         await api(`/api/v1/reviews/${item.dataset.id}`, 'DELETE');
         await load();
       }
@@ -134,6 +134,6 @@
   });
 
   load().catch(() => {
-    summary.innerHTML = '<p class="muted">Không tải được đánh giá. Vui lòng tải lại trang.</p>';
+    summary.innerHTML = '<p class="muted">' + t('Không tải được đánh giá. Vui lòng tải lại trang.') + '</p>';
   });
 })();

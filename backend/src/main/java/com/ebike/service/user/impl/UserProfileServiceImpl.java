@@ -160,7 +160,7 @@ public class UserProfileServiceImpl implements UserProfileService {
         validateUser(userId);
         UserPreference preference = userPreferenceRepository.findByUserId(userId).orElse(null);
         return preference == null
-            ? new UserPreferenceResponse(userId, "light", "en", true)
+            ? new UserPreferenceResponse(userId, "system", "vi", true)
             : toPreferenceResponse(preference);
     }
 
@@ -178,10 +178,18 @@ public class UserProfileServiceImpl implements UserProfileService {
             });
 
         if (request != null && request.theme() != null && !request.theme().isBlank()) {
-            preference.setTheme(request.theme().trim());
+            String theme = request.theme().trim().toLowerCase(java.util.Locale.ROOT);
+            if (!java.util.List.of("system", "light", "dark").contains(theme)) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "theme must be system, light or dark");
+            }
+            preference.setTheme(theme);
         }
         if (request != null && request.language() != null && !request.language().isBlank()) {
-            preference.setLanguage(request.language().trim());
+            String language = request.language().trim().toLowerCase(java.util.Locale.ROOT);
+            if (!java.util.List.of("vi", "en").contains(language)) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "language must be vi or en");
+            }
+            preference.setLanguage(language);
         }
         if (request != null && request.notificationsEnabled() != null) {
             preference.setNotificationsEnabled(request.notificationsEnabled());

@@ -24,10 +24,10 @@ public class UserPreference {
     private User user;
 
     @Column(length = 20, nullable = false)
-    private String theme = "light";
+    private String theme = "system";
 
     @Column(length = 10, nullable = false)
-    private String language = "en";
+    private String language = "vi";
 
     @Column(name = "notifications_enabled", nullable = false)
     private Boolean notificationsEnabled = true;
