@@ -92,7 +92,12 @@
     try{
       if(waiting.has(variantId)){
         const response=await fetch(`/api/v1/stock-alerts/${variantId}`,{method:'DELETE',credentials:'same-origin'});
-        if(!response.ok&&response.status!==204)throw Error(t('Không hủy được đăng ký báo hàng. Vui lòng thử lại.'));
+        if(response.status===401){if(!auto)goToLogin(variantId);return;}
+        if(response.status===403){message(t('Chỉ tài khoản khách hàng mới đăng ký báo hàng được. Hãy đăng nhập bằng tài khoản khách hàng.'),true);return;}
+        if(!response.ok&&response.status!==204){
+          const body=await response.json().catch(()=>null);
+          throw Error(body?.message||'Không hủy được đăng ký báo hàng. Vui lòng thử lại.');
+        }
         waiting.delete(variantId);message(t('Đã hủy đăng ký báo hàng.'));
       }else{
         const saved=await cart.request('/api/v1/stock-alerts',{variantId});
