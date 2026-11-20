@@ -8,13 +8,19 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface WarrantyClaimRepository extends JpaRepository<WarrantyClaim, Long> {
 
-    @EntityGraph(attributePaths = {"unit", "unit.orderItem", "user"})
+    // The graph holds everything WarrantyService.toClaimResponse reads, so a list is one query instead of several per row.
+
+
+    @EntityGraph(attributePaths = {"unit", "unit.orderItem", "unit.orderItem.order", "unit.orderItem.order.shipment",
+        "unit.orderItem.product", "unit.orderItem.product.specification", "unit.orderItem.productVariant", "user"})
     List<WarrantyClaim> findByUserUsernameOrderByCreatedAtDesc(String username);
 
-    @EntityGraph(attributePaths = {"unit", "unit.orderItem", "user"})
+    @EntityGraph(attributePaths = {"unit", "unit.orderItem", "unit.orderItem.order", "unit.orderItem.order.shipment",
+        "unit.orderItem.product", "unit.orderItem.product.specification", "unit.orderItem.productVariant", "user"})
     List<WarrantyClaim> findAllByOrderByCreatedAtDesc();
 
-    @EntityGraph(attributePaths = {"unit", "unit.orderItem", "user"})
+    @EntityGraph(attributePaths = {"unit", "unit.orderItem", "unit.orderItem.order", "unit.orderItem.order.shipment",
+        "unit.orderItem.product", "unit.orderItem.product.specification", "unit.orderItem.productVariant", "user"})
     List<WarrantyClaim> findByStatusOrderByCreatedAtDesc(String status);
 
     boolean existsByUnitIdAndStatusIn(Long unitId, Collection<String> statuses);
