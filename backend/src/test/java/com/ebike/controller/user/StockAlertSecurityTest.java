@@ -79,7 +79,10 @@ class StockAlertSecurityTest {
 
         @Bean
         StockAlertService stockAlertService() {
-            return mock(StockAlertService.class);
+            StockAlertService service = mock(StockAlertService.class);
+            org.mockito.Mockito.when(service.subscribe(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any()))
+                .thenReturn(new com.ebike.service.stock.StockAlertSubscription(null, true));
+            return service;
         }
 
         @Bean

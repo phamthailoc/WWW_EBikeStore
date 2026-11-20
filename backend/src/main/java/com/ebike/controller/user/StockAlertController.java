@@ -4,6 +4,7 @@ import com.ebike.common.exception.ApiExceptionHandler.ApiErrorResponse;
 import com.ebike.dto.product.request.StockAlertRequest;
 import com.ebike.dto.product.response.StockAlertResponse;
 import com.ebike.service.stock.StockAlertService;
+import com.ebike.service.stock.StockAlertSubscription;
 import java.time.OffsetDateTime;
 import java.util.List;
 import org.springframework.http.HttpStatus;
@@ -38,10 +39,11 @@ public class StockAlertController {
         return stockAlertService.list(authentication.getName());
     }
 
+    /** 201 when a request was made, 200 when the customer was already waiting for this colour. */
     @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public StockAlertResponse subscribe(Authentication authentication, @RequestBody StockAlertRequest request) {
-        return stockAlertService.subscribe(authentication.getName(), request.variantId());
+    public ResponseEntity<StockAlertResponse> subscribe(Authentication authentication, @RequestBody StockAlertRequest request) {
+        StockAlertSubscription result = stockAlertService.subscribe(authentication.getName(), request.variantId());
+        return ResponseEntity.status(result.created() ? HttpStatus.CREATED : HttpStatus.OK).body(result.alert());
     }
 
     @DeleteMapping("/{variantId}")

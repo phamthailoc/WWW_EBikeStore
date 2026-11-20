@@ -7,6 +7,7 @@ import com.ebike.model.entity.product.StockAlert;
 import com.ebike.repository.auth.UserRepository;
 import com.ebike.repository.product.ProductVariantRepository;
 import com.ebike.repository.product.StockAlertRepository;
+import java.time.LocalDateTime;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,11 +49,12 @@ public class StockAlertService {
     }
 
     /**
-     * Subscribing twice keeps one row. A row already used for an earlier restock is armed again.
+     * Subscribing twice keeps one row. A row already used for an earlier restock is armed again. Answers "created"
+     * for a new or re-armed row and "not created" when the customer was already waiting.
      * Not one transaction on purpose: when two requests race to insert the same row the loser hits the unique key,
      * and that failure must not poison a surrounding transaction before the existing row is read back.
      */
-    public StockAlertResponse subscribe(String username, Long variantId) {
+    public StockAlertSubscription subscribe(String username, Long variantId) {
         requireUsername(username);
         if (variantId == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vui lòng chọn màu xe.");
@@ -65,7 +67,7 @@ public class StockAlertService {
 
         StockAlert alert = alertRepository.findByUserIdAndVariantId(user.getId(), variantId).orElse(null);
         if (alert != null && alert.getNotifiedAt() == null) {
-            return responseOf(user.getId(), variantId);
+            return new StockAlertSubscription(responseOf(user.getId(), variantId), false);
         }
         if (!StockAlertRules.canSubscribe(stock)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Màu xe này đang còn hàng, bạn có thể đặt mua ngay.");
@@ -76,13 +78,15 @@ public class StockAlertService {
             alert.setVariant(variantRepository.getReferenceById(variantId));
         }
         alert.setNotifiedAt(null);
+        alert.setCreatedAt(LocalDateTime.now());
         try {
             alertRepository.save(alert);
             tellIfRestockedMeanwhile(variantId);
-            return responseOf(user.getId(), variantId);
+            return new StockAlertSubscription(responseOf(user.getId(), variantId), true);
         } catch (DataIntegrityViolationException duplicate) {
             // another request created the same (customer, colour) row first: answer with that one
-            return alertRepository.findResponseByUserIdAndVariantId(user.getId(), variantId).orElseThrow(() -> duplicate);
+            return new StockAlertSubscription(
+                alertRepository.findResponseByUserIdAndVariantId(user.getId(), variantId).orElseThrow(() -> duplicate), false);
         }
     }
 

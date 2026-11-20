@@ -1,7 +1,6 @@
 package com.ebike.service.stock;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -67,7 +66,7 @@ class StockAlertServiceTest {
 
     @Test void subscribingToASoldOutColourSavesOneRow() {
         when(alerts.findByUserIdAndVariantId(7L, 11L)).thenReturn(Optional.empty());
-        service.subscribe("an", 11L);
+        assertEquals(true, service.subscribe("an", 11L).created());
         verify(alerts).save(any(StockAlert.class));
     }
 
@@ -76,7 +75,7 @@ class StockAlertServiceTest {
         existing.setUser(user);
         existing.setVariant(variant);
         when(alerts.findByUserIdAndVariantId(7L, 11L)).thenReturn(Optional.of(existing));
-        service.subscribe("an", 11L);
+        assertEquals(false, service.subscribe("an", 11L).created());
         verify(alerts, never()).save(any());
     }
 
@@ -91,9 +90,11 @@ class StockAlertServiceTest {
         used.setUser(user);
         used.setVariant(variant);
         used.setNotifiedAt(java.time.LocalDateTime.now());
+        used.setCreatedAt(java.time.LocalDateTime.now().minusDays(5));
         when(alerts.findByUserIdAndVariantId(7L, 11L)).thenReturn(Optional.of(used));
-        service.subscribe("an", 11L);
+        assertEquals(true, service.subscribe("an", 11L).created());
         assertNull(used.getNotifiedAt());
+        assertEquals(java.time.LocalDate.now(), used.getCreatedAt().toLocalDate(), "a new request sorts as the newest");
     }
 
     @Test void aRaceOnTheUniqueKeyReturnsTheRowTheOtherRequestCreated() {
@@ -102,7 +103,7 @@ class StockAlertServiceTest {
         winner.setVariant(variant);
         when(alerts.findByUserIdAndVariantId(7L, 11L)).thenReturn(Optional.empty());
         when(alerts.save(any())).thenThrow(new org.springframework.dao.DataIntegrityViolationException("duplicate"));
-        assertNotNull(service.subscribe("an", 11L));
+        assertEquals(false, service.subscribe("an", 11L).created());
     }
 
     @Test void aFailureWhileTellingNeverReachesTheCaller() {

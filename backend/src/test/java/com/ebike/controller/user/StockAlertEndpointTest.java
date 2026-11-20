@@ -9,6 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.ebike.service.stock.StockAlertService;
+import com.ebike.service.stock.StockAlertSubscription;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
@@ -43,8 +44,15 @@ class StockAlertEndpointTest {
     }
 
     @Test void aValidRequestSubscribesTheSignedInCustomer() throws Exception {
+        org.mockito.Mockito.when(service.subscribe("an", 11L)).thenReturn(new StockAlertSubscription(null, true));
         mvc.perform(post("/api/v1/stock-alerts").principal(an).contentType(MediaType.APPLICATION_JSON).content("{\"variantId\":11}"))
             .andExpect(status().isCreated());
         verify(service).subscribe("an", 11L);
+    }
+
+    @Test void askingAgainWhileAlreadyWaitingAnswers200NotCreated() throws Exception {
+        org.mockito.Mockito.when(service.subscribe("an", 11L)).thenReturn(new StockAlertSubscription(null, false));
+        mvc.perform(post("/api/v1/stock-alerts").principal(an).contentType(MediaType.APPLICATION_JSON).content("{\"variantId\":11}"))
+            .andExpect(status().isOk());
     }
 }
