@@ -1,5 +1,9 @@
 package com.ebike.service.stock;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.Locale;
+
 /**
  * V22: the words of the back-in-stock notification and email, in the language the customer chose in the profile
  * (user_preferences.language). Anything other than "en" is Vietnamese, the shop's base language.
@@ -10,7 +14,7 @@ public final class StockAlertMessages {
     }
 
     public static String normalize(String language) {
-        return language != null && language.trim().toLowerCase(java.util.Locale.ROOT).startsWith("en") ? "en" : "vi";
+        return language != null && language.trim().toLowerCase(Locale.ROOT).startsWith("en") ? "en" : "vi";
     }
 
     public static String notificationTitle(String language) {
@@ -62,7 +66,7 @@ public final class StockAlertMessages {
         if (!hasText(slug)) {
             return null;
         }
-        return "/product/" + java.net.URLEncoder.encode(slug.trim(), java.nio.charset.StandardCharsets.UTF_8).replace("+", "%20");
+        return "/product/" + URLEncoder.encode(slug.trim(), StandardCharsets.UTF_8).replace("+", "%20");
     }
 
     /** notifications.target_url holds 255 characters; a longer link is dropped (the notice still shows) rather than failing the insert. */

@@ -1,5 +1,6 @@
 package com.ebike.service.notification.impl;
 
+import com.ebike.config.AsyncConfiguration;
 import com.ebike.model.entity.auth.User;
 import com.ebike.repository.auth.UserRepository;
 import com.ebike.model.entity.notification.Notification;
@@ -13,6 +14,7 @@ import com.ebike.repository.notification.NotificationRepository;
 import com.ebike.repository.user.UserPreferenceRepository;
 import com.ebike.service.notification.NotificationStreamService;
 import com.ebike.service.stock.StockAlertMessages;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -83,7 +85,7 @@ public class NotificationCreationService {
 
     // V22: a colour the customer asked to be told about is back; the link opens the bike page, not the orders page.
     // Runs on its own pool so a restock with hundreds of waiting customers does not hold up the manager's request.
-    @org.springframework.scheduling.annotation.Async(com.ebike.config.AsyncConfiguration.NOTIFICATION_EXECUTOR)
+    @Async(AsyncConfiguration.NOTIFICATION_EXECUTOR)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void handleStockAlertTriggered(StockAlertTriggeredEvent event) {

@@ -13,6 +13,7 @@ import com.ebike.dto.manager.response.ManagerPaymentResponse;
 import com.ebike.dto.manager.response.ManagerRevenuePeriodPointResponse;
 import com.ebike.dto.manager.response.ManagerRevenueReportResponse;
 import com.ebike.dto.manager.response.ManagerTopProductResponse;
+import com.ebike.service.admin.AuditLogService;
 import com.ebike.service.manager.ManagerService;
 import com.ebike.dto.order.response.OrderResponse;
 import com.ebike.model.entity.order.Order;
@@ -30,6 +31,8 @@ import com.ebike.model.entity.product.Product;
 import com.ebike.model.entity.product.ProductVariant;
 import com.ebike.repository.product.ProductRepository;
 import com.ebike.service.product.ProductService;
+import com.ebike.service.stock.StockAlertRules;
+import com.ebike.service.stock.StockAlertService;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -60,8 +63,8 @@ public class ManagerServiceImpl implements ManagerService {
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
     private final ProductService productService;
-    private final com.ebike.service.admin.AuditLogService auditLog;
-    private final com.ebike.service.stock.StockAlertService stockAlerts;
+    private final AuditLogService auditLog;
+    private final StockAlertService stockAlerts;
 
     public ManagerServiceImpl(
         OrderRepository orderRepository,
@@ -69,8 +72,8 @@ public class ManagerServiceImpl implements ManagerService {
         UserRepository userRepository,
         ProductRepository productRepository,
         ProductService productService,
-        com.ebike.service.admin.AuditLogService auditLog,
-        com.ebike.service.stock.StockAlertService stockAlerts
+        AuditLogService auditLog,
+        StockAlertService stockAlerts
     ) {
         this.orderRepository = orderRepository;
         this.paymentRepository = paymentRepository;
@@ -438,7 +441,7 @@ public class ManagerServiceImpl implements ManagerService {
         auditLog.record("sửa tồn kho theo màu", product.getName() + " / " + variant.getColorName() + ": " + request.stockQuantity());
         ProductSummaryDto summary = productService.toSummaryDto(productRepository.save(product));
         // V22: customers waiting for this colour hear about it only when it goes from sold out to in stock.
-        if (Boolean.TRUE.equals(variant.getActive()) && com.ebike.service.stock.StockAlertRules.isRestock(stockBefore, request.stockQuantity())) {
+        if (Boolean.TRUE.equals(variant.getActive()) && StockAlertRules.isRestock(stockBefore, request.stockQuantity())) {
             stockAlerts.notifyRestocked(variant);
         }
         return summary;

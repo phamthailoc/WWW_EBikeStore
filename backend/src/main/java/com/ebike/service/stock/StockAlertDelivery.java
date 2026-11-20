@@ -16,8 +16,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
@@ -50,7 +52,7 @@ public class StockAlertDelivery {
     }
 
     // A new transaction even when called from an after-commit hook, where the finished stock transaction is still bound to the thread.
-    @Transactional(propagation = org.springframework.transaction.annotation.Propagation.REQUIRES_NEW)
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public int deliver(Long variantId) {
         return variantRepository.findWithProductById(variantId)
             .map(variant -> {
@@ -66,7 +68,7 @@ public class StockAlertDelivery {
      * once, or the sweep running at the same moment, tell each customer only once.
      */
     // A new transaction even when called from an after-commit hook, where the finished stock transaction is still bound to the thread.
-    @Transactional(propagation = org.springframework.transaction.annotation.Propagation.REQUIRES_NEW)
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public int deliver(ProductVariant variant) {
         // A colour or bike that is no longer sold, or has nothing left, must not invite anyone to buy it; the rows stay armed for later.
         if (variant == null || !StockAlertRules.canNotify(
@@ -130,7 +132,7 @@ public class StockAlertDelivery {
      */
     private void evictProductPages() {
         for (String name : List.of(CacheNames.PRODUCT_LIST_CACHE, CacheNames.PRODUCT_DETAIL_CACHE)) {
-            org.springframework.cache.Cache cache = cacheManager.getCache(name);
+            Cache cache = cacheManager.getCache(name);
             if (cache != null) {
                 cache.clear();
             }
