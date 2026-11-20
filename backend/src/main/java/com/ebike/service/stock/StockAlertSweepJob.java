@@ -22,7 +22,7 @@ public class StockAlertSweepJob {
         this.stockAlerts = stockAlerts;
     }
 
-    @Scheduled(fixedDelayString = "${app.stock-alert.sweep-interval:PT5M}", initialDelayString = "PT2M")
+    @Scheduled(fixedDelayString = "${app.stock-alert.sweep-interval:PT5M}", initialDelayString = "${app.stock-alert.sweep-initial-delay:PT2M}")
     public void sweep() {
         int told = 0;
         try {
