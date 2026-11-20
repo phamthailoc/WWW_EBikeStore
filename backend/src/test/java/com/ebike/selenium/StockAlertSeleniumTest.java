@@ -71,7 +71,6 @@ class StockAlertSeleniumTest extends StorefrontSeleniumTest {
             // 5. the customer gets a notification that links to the bike page
             driver.get(baseUrl + "/customer/notifications");
             WebElement link = wait.until(d -> {
-                d.navigate().refresh();
                 return d.findElements(By.cssSelector("#data-table a.table-action[href='/product/" + productSlug + "']")).stream()
                     .findFirst().orElse(null);
             });
