@@ -47,7 +47,8 @@ public class StockAlertEmailSender {
         try {
             mailSender.send(message);
         } catch (MailException exception) {
-            log.warn("Could not send back-in-stock email to customer {}: {}", userId, exception.getMessage());
+            // The exception text is left out: mail failures usually quote the recipient's address.
+            log.warn("Could not send back-in-stock email to customer {} ({})", userId, exception.getClass().getSimpleName());
         }
     }
 }
