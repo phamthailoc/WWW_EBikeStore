@@ -9,6 +9,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.ebike.dto.product.response.StockAlertResponse;
 import com.ebike.model.entity.auth.User;
 import com.ebike.model.entity.product.Product;
 import com.ebike.model.entity.product.ProductVariant;
@@ -55,8 +56,13 @@ class StockAlertServiceTest {
         product.setName("Kinetic X");
         product.setSlug("kinetic-x");
         org.mockito.Mockito.lenient().when(users.findByUsername("an")).thenReturn(Optional.of(user));
-        org.mockito.Mockito.lenient().when(variants.findWithProductById(11L)).thenReturn(Optional.of(variant));
+        org.mockito.Mockito.lenient().when(variants.findStockOnSale(11L)).thenReturn(Optional.of(0));
+        org.mockito.Mockito.lenient().when(alerts.findResponseByUserIdAndVariantId(7L, 11L)).thenReturn(Optional.of(row(null)));
         org.mockito.Mockito.lenient().when(alerts.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+    }
+
+    private StockAlertResponse row(java.time.LocalDateTime notifiedAt) {
+        return new StockAlertResponse(5L, 1L, "Kinetic X", "kinetic-x", 11L, "Trắng", 0, java.time.LocalDateTime.now(), notifiedAt, true);
     }
 
     @Test void subscribingToASoldOutColourSavesOneRow() {
@@ -75,7 +81,7 @@ class StockAlertServiceTest {
     }
 
     @Test void colourStillInStockCannotBeWaitedFor() {
-        variant.setStockQuantity(3);
+        when(variants.findStockOnSale(11L)).thenReturn(Optional.of(3));
         when(alerts.findByUserIdAndVariantId(7L, 11L)).thenReturn(Optional.empty());
         assertThrows(ResponseStatusException.class, () -> service.subscribe("an", 11L));
     }
@@ -94,7 +100,7 @@ class StockAlertServiceTest {
         StockAlert winner = new StockAlert();
         winner.setUser(user);
         winner.setVariant(variant);
-        when(alerts.findByUserIdAndVariantId(7L, 11L)).thenReturn(Optional.empty(), Optional.of(winner));
+        when(alerts.findByUserIdAndVariantId(7L, 11L)).thenReturn(Optional.empty());
         when(alerts.save(any())).thenThrow(new org.springframework.dao.DataIntegrityViolationException("duplicate"));
         assertNotNull(service.subscribe("an", 11L));
     }
@@ -147,21 +153,22 @@ class StockAlertServiceTest {
         verify(alerts, never()).deleteByUserId(any());
     }
 
-    @Test void listKeepsRetiredColoursButMarksThemNotOnSale() {
-        StockAlert live = new StockAlert();
-        live.setUser(user);
-        live.setVariant(variant);
-        ProductVariant retired = new ProductVariant();
-        retired.setId(12L);
-        retired.setActive(false);
-        retired.setProduct(variant.getProduct());
-        StockAlert gone = new StockAlert();
-        gone.setUser(user);
-        gone.setVariant(retired);
-        when(alerts.findByUserUsernameOrderByCreatedAtDesc("an")).thenReturn(List.of(live, gone));
-        var rows = service.list("an");
-        assertEquals(2, rows.size());
-        assertEquals(true, rows.get(0).onSale());
-        assertEquals(false, rows.get(1).onSale());
+    @Test void listComesStraightFromTheProjectionQuery() {
+        StockAlertResponse live = row(null);
+        when(alerts.findResponsesByUsername("an")).thenReturn(List.of(live));
+        assertEquals(List.of(live), service.list("an"));
+        verify(variants, never()).findWithProductById(any());
+    }
+
+    @Test void subscribingNeverLoadsTheBikeAsAnEntity() {
+        when(alerts.findByUserIdAndVariantId(7L, 11L)).thenReturn(Optional.empty());
+        service.subscribe("an", 11L);
+        verify(variants, never()).findWithProductById(any());
+    }
+
+    @Test void aColourThatIsWithdrawnCannotBeWaitedFor() {
+        when(variants.findStockOnSale(11L)).thenReturn(Optional.empty());
+        assertThrows(ResponseStatusException.class, () -> service.subscribe("an", 11L));
+        verify(alerts, never()).save(any());
     }
 }

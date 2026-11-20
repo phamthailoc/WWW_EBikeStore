@@ -13,6 +13,6 @@ public record StockAlertResponse(
     Integer stockQuantity,
     LocalDateTime createdAt,
     LocalDateTime notifiedAt,
-    boolean onSale
+    Boolean onSale
 ) {
 }

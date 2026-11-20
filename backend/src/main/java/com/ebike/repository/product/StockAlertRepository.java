@@ -1,12 +1,12 @@
 package com.ebike.repository.product;
 
+import com.ebike.dto.product.response.StockAlertResponse;
 import com.ebike.model.entity.product.StockAlert;
 import jakarta.persistence.LockModeType;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
@@ -15,10 +15,22 @@ import org.springframework.data.repository.query.Param;
 
 public interface StockAlertRepository extends JpaRepository<StockAlert, Long> {
 
-    @EntityGraph(attributePaths = {"variant", "variant.product"})
-    List<StockAlert> findByUserUsernameOrderByCreatedAtDesc(String username);
+    String RESPONSE_SELECT = "select new com.ebike.dto.product.response.StockAlertResponse("
+        + "a.id, p.id, p.name, p.slug, v.id, coalesce(v.colorName, v.variantName), v.stockQuantity, a.createdAt, a.notifiedAt, "
+        + "case when v.active = true and p.active = true then true else false end) "
+        + "from StockAlert a join a.variant v join v.product p ";
 
-    @EntityGraph(attributePaths = {"variant", "variant.product"})
+    /**
+     * The customer's list as ready-made response rows. A constructor projection, not entities: loading the bike as
+     * an entity would also load its specification (an eager one-to-one), one more SELECT for every bike in the list.
+     */
+    @Query(RESPONSE_SELECT + "where a.user.username = :username order by a.createdAt desc")
+    List<StockAlertResponse> findResponsesByUsername(@Param("username") String username);
+
+    /** One row of the customer, in the same shape, read fresh from the database. */
+    @Query(RESPONSE_SELECT + "where a.user.id = :userId and v.id = :variantId")
+    Optional<StockAlertResponse> findResponseByUserIdAndVariantId(@Param("userId") Long userId, @Param("variantId") Long variantId);
+
     Optional<StockAlert> findByUserIdAndVariantId(Long userId, Long variantId);
 
     /**

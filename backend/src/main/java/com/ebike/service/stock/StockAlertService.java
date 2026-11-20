@@ -2,7 +2,6 @@ package com.ebike.service.stock;
 
 import com.ebike.dto.product.response.StockAlertResponse;
 import com.ebike.model.entity.auth.User;
-import com.ebike.model.entity.product.Product;
 import com.ebike.model.entity.product.ProductVariant;
 import com.ebike.model.entity.product.StockAlert;
 import com.ebike.repository.auth.UserRepository;
@@ -45,9 +44,7 @@ public class StockAlertService {
     @Transactional(readOnly = true)
     public List<StockAlertResponse> list(String username) {
         requireUsername(username);
-        return alertRepository.findByUserUsernameOrderByCreatedAtDesc(username).stream()
-            .map(this::toResponse)
-            .toList();
+        return alertRepository.findResponsesByUsername(username);
     }
 
     /**
@@ -62,30 +59,30 @@ public class StockAlertService {
         }
         User user = userRepository.findByUsername(username)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy tài khoản."));
-        ProductVariant variant = variantRepository.findWithProductById(variantId)
-            .filter(this::isOnSale)
+        // scalar reads only: the bike is never loaded as an entity (its specification would cost one more SELECT)
+        Integer stock = variantRepository.findStockOnSale(variantId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy màu xe này."));
 
-        StockAlert alert = alertRepository.findByUserIdAndVariantId(user.getId(), variant.getId()).orElse(null);
+        StockAlert alert = alertRepository.findByUserIdAndVariantId(user.getId(), variantId).orElse(null);
         if (alert != null && alert.getNotifiedAt() == null) {
-            return toResponse(alert);
+            return responseOf(user.getId(), variantId);
         }
-        if (!StockAlertRules.canSubscribe(variant.getStockQuantity())) {
+        if (!StockAlertRules.canSubscribe(stock)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Màu xe này đang còn hàng, bạn có thể đặt mua ngay.");
         }
         if (alert == null) {
             alert = new StockAlert();
             alert.setUser(user);
-            alert.setVariant(variant);
+            alert.setVariant(variantRepository.getReferenceById(variantId));
         }
         alert.setNotifiedAt(null);
         try {
-            return toResponse(tellIfRestockedMeanwhile(alertRepository.save(alert), user.getId(), variant.getId()));
+            alertRepository.save(alert);
+            tellIfRestockedMeanwhile(variantId);
+            return responseOf(user.getId(), variantId);
         } catch (DataIntegrityViolationException duplicate) {
             // another request created the same (customer, colour) row first: answer with that one
-            return alertRepository.findByUserIdAndVariantId(user.getId(), variant.getId())
-                .map(this::toResponse)
-                .orElseThrow(() -> duplicate);
+            return alertRepository.findResponseByUserIdAndVariantId(user.getId(), variantId).orElseThrow(() -> duplicate);
         }
     }
 
@@ -94,13 +91,11 @@ public class StockAlertService {
      * visible, so the restock never saw the row. Reading the stock again after saving closes that gap: if the colour is
      * back on sale already, the customer is told right away instead of waiting for the periodic sweep.
      */
-    private StockAlert tellIfRestockedMeanwhile(StockAlert saved, Long userId, Long variantId) {
+    private void tellIfRestockedMeanwhile(Long variantId) {
         // A scalar query, not findWithProductById: with open-in-view that would return the entity already loaded (stock 0).
-        if (!variantRepository.isOnSaleAndInStock(variantId)) {
-            return saved;
+        if (variantRepository.isOnSaleAndInStock(variantId)) {
+            tellWaiting(variantId);
         }
-        tellWaiting(variantId);
-        return alertRepository.findByUserIdAndVariantId(userId, variantId).orElse(saved);
     }
 
     @Transactional
@@ -153,26 +148,10 @@ public class StockAlertService {
         return alertRepository.findWaitingVariantIdsInStock();
     }
 
-    private boolean isOnSale(ProductVariant variant) {
-        return variant != null && Boolean.TRUE.equals(variant.getActive())
-            && variant.getProduct() != null && Boolean.TRUE.equals(variant.getProduct().getActive());
-    }
-
-    private StockAlertResponse toResponse(StockAlert alert) {
-        ProductVariant variant = alert.getVariant();
-        Product product = variant.getProduct();
-        return new StockAlertResponse(
-            alert.getId(),
-            product.getId(),
-            product.getName(),
-            product.getSlug(),
-            variant.getId(),
-            variant.getColorName() != null ? variant.getColorName() : variant.getVariantName(),
-            variant.getStockQuantity(),
-            alert.getCreatedAt(),
-            alert.getNotifiedAt(),
-            isOnSale(variant)
-        );
+    /** The row as the page shows it, read fresh: never an entity that open-in-view may already hold with old values. */
+    private StockAlertResponse responseOf(Long userId, Long variantId) {
+        return alertRepository.findResponseByUserIdAndVariantId(userId, variantId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy yêu cầu báo hàng."));
     }
 
     private void requireUsername(String username) {
