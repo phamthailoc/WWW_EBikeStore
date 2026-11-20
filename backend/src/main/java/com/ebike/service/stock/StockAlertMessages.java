@@ -54,7 +54,15 @@ public final class StockAlertMessages {
         while (base.endsWith("/")) {
             base = base.substring(0, base.length() - 1);
         }
-        return base + "/product/" + java.net.URLEncoder.encode(slug.trim(), java.nio.charset.StandardCharsets.UTF_8).replace("+", "%20");
+        return base + productPath(slug);
+    }
+
+    /** "/product/{slug}" with the slug encoded; null when there is no slug, so no link is better than "/product/null". */
+    public static String productPath(String slug) {
+        if (!hasText(slug)) {
+            return null;
+        }
+        return "/product/" + java.net.URLEncoder.encode(slug.trim(), java.nio.charset.StandardCharsets.UTF_8).replace("+", "%20");
     }
 
     // A variant with neither a colour nor a name must not print the word "null".

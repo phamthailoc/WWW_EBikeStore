@@ -54,6 +54,15 @@ class StockAlertNotificationTest {
         assertEquals("Back in stock", saved("en").getTitle());
     }
 
+    @Test void aSlugIsEncodedAndAMissingSlugGivesNoLink() {
+        service.handleStockAlertTriggered(new StockAlertTriggeredEvent(7L, "Kinetic X", "White", "xe điện/1", "en"));
+        service.handleStockAlertTriggered(new StockAlertTriggeredEvent(7L, "Kinetic X", "White", null, "en"));
+        ArgumentCaptor<Notification> captor = ArgumentCaptor.forClass(Notification.class);
+        verify(notifications, org.mockito.Mockito.times(2)).save(captor.capture());
+        assertEquals("/product/xe%20%C4%91i%E1%BB%87n%2F1", captor.getAllValues().get(0).getTargetUrl());
+        org.junit.jupiter.api.Assertions.assertNull(captor.getAllValues().get(1).getTargetUrl());
+    }
+
     @Test void vietnameseCustomerGetsVietnameseText() {
         Notification notification = saved("vi");
         assertEquals("Xe đã có hàng lại", notification.getTitle());
