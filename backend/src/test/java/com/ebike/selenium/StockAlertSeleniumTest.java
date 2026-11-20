@@ -18,6 +18,8 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
  * colour, and the customer finds a notification that opens the bike page. The test picks its colour by id and ignores
  * rows or notifications the customer account already had from earlier runs.
  */
+// The two parallel annotations below only matter if JUnit parallel execution is switched on; the project does not enable it,
+// so today every test already runs one after another and these lines are a guard for the day it is.
 @Tag("selenium")
 @org.junit.jupiter.api.parallel.Execution(org.junit.jupiter.api.parallel.ExecutionMode.SAME_THREAD)
 @org.junit.jupiter.api.parallel.ResourceLock("product-stock")
@@ -327,7 +329,8 @@ class StockAlertSeleniumTest extends StorefrontSeleniumTest {
             setStock(manager, productId, variantId, 3);
             wait.until(d -> englishNotificationsFor(productSlug) == before + 1);
             driver.get(baseUrl + "/customer/notifications");
-            wait.until(d -> d.findElement(By.id("data-table")).getText().contains("Back in stock"));
+            // the body, not the type label: both the Vietnamese and the English type label would read "Back in stock"
+            wait.until(d -> d.findElement(By.id("data-table")).getText().contains("is back in stock. You can order it now."));
         } finally {
             forgetAlert(variantId);
             setStock(manager, productId, variantId, original);
