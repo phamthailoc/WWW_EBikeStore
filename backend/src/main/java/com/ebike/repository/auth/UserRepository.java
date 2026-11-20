@@ -12,8 +12,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @EntityGraph(attributePaths = {"roles"})
     List<User> findAll();
 
-    /** Of these accounts, the ones that hold the CUSTOMER role. */
-    @org.springframework.data.jpa.repository.Query("select distinct u.id from User u join u.roles r where u.id in :ids and r.name = 'CUSTOMER'")
+    /** Of these accounts, the ones that hold the CUSTOMER role; the name is trimmed and upper-cased like the JWT filter does when it builds ROLE_*. */
+    @org.springframework.data.jpa.repository.Query("select distinct u.id from User u join u.roles r where u.id in :ids and upper(trim(r.name)) = 'CUSTOMER'")
     List<Long> findCustomerIds(@org.springframework.data.repository.query.Param("ids") java.util.Collection<Long> ids);
 
     Optional<User> findByEmail(String email);
