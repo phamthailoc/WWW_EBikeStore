@@ -135,7 +135,7 @@ class StockAlertServiceTest {
         verify(delivery, never()).deliver(any(Long.class));
     }
 
-    @Test void listHidesRetiredColoursAndInactiveBikes() {
+    @Test void listKeepsRetiredColoursButMarksThemNotOnSale() {
         StockAlert live = new StockAlert();
         live.setUser(user);
         live.setVariant(variant);
@@ -147,6 +147,9 @@ class StockAlertServiceTest {
         gone.setUser(user);
         gone.setVariant(retired);
         when(alerts.findByUserUsernameOrderByCreatedAtDesc("an")).thenReturn(List.of(live, gone));
-        assertEquals(1, service.list("an").size());
+        var rows = service.list("an");
+        assertEquals(2, rows.size());
+        assertEquals(true, rows.get(0).onSale());
+        assertEquals(false, rows.get(1).onSale());
     }
 }
