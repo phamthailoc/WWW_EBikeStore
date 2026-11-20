@@ -435,6 +435,34 @@ CREATE TABLE `stock_alerts` (
     CONSTRAINT uk_stock_alerts_user_variant UNIQUE (user_id, variant_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 CREATE INDEX `idx_stock_alerts_variant_pending` ON `stock_alerts` (variant_id, notified_at);
+DROP TABLE IF EXISTS `warranty_claims`;
+CREATE TABLE `warranty_claims` (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    order_item_unit_id BIGINT NOT NULL,
+    user_id BIGINT NOT NULL,
+    description LONGTEXT NOT NULL,
+    status VARCHAR(30) NOT NULL DEFAULT 'NEW',
+    out_of_warranty TINYINT(1) NOT NULL DEFAULT 0,
+    staff_note LONGTEXT,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_warranty_claims_unit FOREIGN KEY (order_item_unit_id) REFERENCES order_item_units(id) ON DELETE CASCADE,
+    CONSTRAINT fk_warranty_claims_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT chk_warranty_claims_status CHECK (status IN ('NEW', 'RECEIVED', 'REPAIRING', 'DONE', 'REJECTED'))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE INDEX `idx_warranty_claims_status` ON `warranty_claims` (status, created_at);
+CREATE INDEX `idx_warranty_claims_unit` ON `warranty_claims` (order_item_unit_id);
+DROP TABLE IF EXISTS `maintenance_reminders`;
+CREATE TABLE `maintenance_reminders` (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    order_item_unit_id BIGINT NOT NULL,
+    milestone VARCHAR(20) NOT NULL,
+    due_at DATETIME NOT NULL,
+    notified TINYINT(1) NOT NULL DEFAULT 1,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_maintenance_reminders_unit FOREIGN KEY (order_item_unit_id) REFERENCES order_item_units(id) ON DELETE CASCADE,
+    CONSTRAINT uk_maintenance_reminders_unit_milestone UNIQUE (order_item_unit_id, milestone)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 CREATE INDEX `idx_pricing_rules_status` ON `pricing_rules` (status);
 CREATE INDEX `idx_promotions_status` ON `promotions` (status);
 CREATE INDEX `idx_promotions_code` ON `promotions` (code);
