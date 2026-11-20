@@ -94,7 +94,8 @@ public class NotificationCreationService {
             StockAlertMessages.notificationBody(event.language(), event.productName(), event.colorName()),
             null,
             null,
-            "/product/" + event.productSlug()
+            "/product/" + event.productSlug(),
+            false
         ));
     }
 
@@ -120,7 +121,7 @@ public class NotificationCreationService {
         Long orderId,
         Long paymentId
     ) {
-        createNotification(user, type, title, message, orderId, paymentId, "/customer/orders");
+        createNotification(user, type, title, message, orderId, paymentId, "/customer/orders", true);
     }
 
     private void createNotification(
@@ -130,14 +131,17 @@ public class NotificationCreationService {
         String message,
         Long orderId,
         Long paymentId,
-        String targetUrl
+        String targetUrl,
+        boolean honourOptOut
     ) {
         // An erased account (V6) gets nothing new: the shop may still close its old orders, but no data is added to it.
         if ("DELETED".equals(user.getAccountStatus())) {
             return;
         }
         // A customer who switched notifications off in the profile gets none; no saved setting means on.
-        boolean optedOut = userPreferenceRepository.findByUserId(user.getId())
+        // Not for a back-in-stock alert: the customer asked for that one on purpose (honourOptOut is false), and
+        // dropping it silently would use up the request.
+        boolean optedOut = honourOptOut && userPreferenceRepository.findByUserId(user.getId())
             .map(preference -> Boolean.FALSE.equals(preference.getNotificationsEnabled()))
             .orElse(false);
         if (optedOut) {

@@ -21,7 +21,8 @@ class StockAlertEmailListenerTest {
     UserRepository users = mock(UserRepository.class);
     UserPreferenceRepository preferences = mock(UserPreferenceRepository.class);
     StockAlertEmailSender sender = mock(StockAlertEmailSender.class);
-    StockAlertEmailListener listener = new StockAlertEmailListener(users, preferences, sender);
+    // kept only to prove that the profile switch is not consulted for a requested alert
+    StockAlertEmailListener listener = new StockAlertEmailListener(users, sender);
     User user;
 
     @BeforeEach void setup() {
@@ -31,7 +32,6 @@ class StockAlertEmailListenerTest {
         user.setAccountStatus("ACTIVE");
         user.setActive(true);
         when(users.findById(7L)).thenReturn(Optional.of(user));
-        when(preferences.findByUserId(7L)).thenReturn(Optional.empty());
     }
 
     private StockAlertTriggeredEvent event(String language) {
@@ -55,11 +55,11 @@ class StockAlertEmailListenerTest {
         verify(sender, never()).send(any(), any(), any(), any(), any(), any());
     }
 
-    @Test void customerWhoSwitchedNotificationsOffGetsNothing() {
+    @Test void customerWhoSwitchedNotificationsOffStillGetsTheAlertTheyAskedFor() {
         UserPreference off = new UserPreference();
         off.setNotificationsEnabled(false);
         when(preferences.findByUserId(7L)).thenReturn(Optional.of(off));
         listener.onStockAlertTriggered(event("vi"));
-        verify(sender, never()).send(any(), any(), any(), any(), any(), any());
+        verify(sender).send(7L, "an@example.test", "Kinetic X", "White", "kinetic-x", "vi");
     }
 }

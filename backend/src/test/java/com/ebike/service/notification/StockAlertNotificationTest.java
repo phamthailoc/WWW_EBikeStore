@@ -47,6 +47,13 @@ class StockAlertNotificationTest {
         assertTrue(notification.getMessage().contains("Kinetic X"));
     }
 
+    @Test void customerWhoSwitchedNotificationsOffStillGetsTheAlertTheyAskedFor() {
+        com.ebike.model.entity.user.UserPreference off = new com.ebike.model.entity.user.UserPreference();
+        off.setNotificationsEnabled(false);
+        when(preferences.findByUserId(7L)).thenReturn(Optional.of(off));
+        assertEquals("Back in stock", saved("en").getTitle());
+    }
+
     @Test void vietnameseCustomerGetsVietnameseText() {
         Notification notification = saved("vi");
         assertEquals("Xe đã có hàng lại", notification.getTitle());
