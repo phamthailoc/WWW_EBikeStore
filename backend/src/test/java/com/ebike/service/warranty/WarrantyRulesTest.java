@@ -52,9 +52,11 @@ class WarrantyRulesTest {
 
     @Test
     void badOrEmptyIntervalSettingsFallBackSafely() {
-        assertEquals(DEFAULTS, WarrantyRules.parseIntervals(null));
-        assertEquals(DEFAULTS, WarrantyRules.parseIntervals(""));
-        assertEquals(DEFAULTS, WarrantyRules.parseIntervals("soon,P0M,-P1M"));
+        List<Period> FALLBACK = WarrantyRules.parseIntervals(WarrantyRules.DEFAULT_INTERVALS);
+        assertEquals(7, FALLBACK.size());
+        assertEquals(FALLBACK, WarrantyRules.parseIntervals(null));
+        assertEquals(FALLBACK, WarrantyRules.parseIntervals(""));
+        assertEquals(FALLBACK, WarrantyRules.parseIntervals("soon,P0M,-P1M"));
         assertEquals(List.of(Period.ofMonths(3)), WarrantyRules.parseIntervals("oops,P3M"));
     }
 

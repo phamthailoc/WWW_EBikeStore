@@ -13,8 +13,8 @@ import java.util.Set;
 /** The pure rules of V20 (warranty dates, maintenance milestones, claim steps), kept apart from the database so they can be tested alone. */
 public final class WarrantyRules {
 
-    /** First service after a month, then every six months: the plan's default when nothing is configured. */
-    public static final String DEFAULT_INTERVALS = "P1M,P6M,P12M";
+    /** First service after a month, then every six months for three years: the default when nothing is configured. */
+    public static final String DEFAULT_INTERVALS = "P1M,P6M,P12M,P18M,P24M,P30M,P36M";
 
     public static final String ACTIVE = "ACTIVE";
     public static final String EXPIRED = "EXPIRED";
