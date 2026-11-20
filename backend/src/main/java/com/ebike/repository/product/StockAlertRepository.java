@@ -7,6 +7,7 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -26,7 +27,10 @@ public interface StockAlertRepository extends JpaRepository<StockAlert, Long> {
     @Query("select a from StockAlert a where a.variant.id = :variantId and a.notifiedAt is null")
     List<StockAlert> lockWaitingByVariantId(@Param("variantId") Long variantId);
 
-    void deleteByUserId(Long userId);
+    /** One DELETE statement; a derived deleteBy would load every row and remove them one by one. */
+    @Modifying
+    @Query("delete from StockAlert a where a.user.id = :userId")
+    void deleteByUserId(@Param("userId") Long userId);
 
     /**
      * Colours someone is still waiting for that can be bought right now (on sale and in stock). Rows of erased or
