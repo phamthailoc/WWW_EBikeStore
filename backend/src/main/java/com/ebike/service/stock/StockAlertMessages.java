@@ -19,24 +19,53 @@ public final class StockAlertMessages {
 
     public static String notificationBody(String language, String productName, String colorName) {
         return "en".equals(normalize(language))
-            ? productName + " in " + colorName + " is back in stock. You can order it now."
-            : productName + " màu " + colorName + " đã có hàng lại. Bạn có thể đặt mua ngay.";
+            ? productName + " in " + colour(language, colorName) + " is back in stock. You can order it now."
+            : productName + " " + colour(language, colorName) + " đã có hàng lại. Bạn có thể đặt mua ngay.";
     }
 
     public static String emailSubject(String language, String productName, String colorName) {
+        boolean named = hasText(colorName);
         return "en".equals(normalize(language))
-            ? "Kinetic E-Bike: " + productName + " (" + colorName + ") is back in stock"
-            : "Kinetic E-Bike: " + productName + " (" + colorName + ") đã có hàng lại";
+            ? "Kinetic E-Bike: " + productName + (named ? " (" + colorName.trim() + ")" : "") + " is back in stock"
+            : "Kinetic E-Bike: " + productName + (named ? " (" + colorName.trim() + ")" : "") + " đã có hàng lại";
     }
 
-    public static String emailBody(String language, String productName, String colorName) {
+    /** {@code productUrl} is the absolute link to the bike page; it is left out of the text when blank. */
+    public static String emailBody(String language, String productName, String colorName, String productUrl) {
+        String link = hasText(productUrl) ? productUrl.trim() : null;
         if ("en".equals(normalize(language))) {
-            return "The " + productName + " in " + colorName + " that you were waiting for is back in stock.\n\n"
-                + "Open the bike page in the Kinetic store to order it. Quantities are limited, so order early. "
+            return "The " + productName + " in " + colour(language, colorName) + " that you were waiting for is back in stock.\n\n"
+                + (link != null ? "Open the bike page to order it: " + link + "\n\n" : "Open the bike page in the Kinetic store to order it.\n\n")
+                + "Quantities are limited, so order early. "
                 + "You are receiving this email because you chose \"Notify me when back in stock\".\n";
         }
-        return "Xe " + productName + ", màu " + colorName + " mà bạn đang chờ đã có hàng lại.\n\n"
-            + "Vào cửa hàng Kinetic và mở trang xe để đặt mua. Số lượng có hạn, bạn nên đặt sớm. "
+        return "Xe " + productName + ", " + colour(language, colorName) + " mà bạn đang chờ đã có hàng lại.\n\n"
+            + (link != null ? "Mở trang xe để đặt mua: " + link + "\n\n" : "Vào cửa hàng Kinetic và mở trang xe để đặt mua.\n\n")
+            + "Số lượng có hạn, bạn nên đặt sớm. "
             + "Bạn nhận email này vì đã chọn \"Báo tôi khi có hàng\".\n";
+    }
+
+    /** "/product/{slug}" on the shop's public address, with the slug encoded. */
+    public static String productUrl(String baseUrl, String slug) {
+        if (!hasText(baseUrl) || !hasText(slug)) {
+            return null;
+        }
+        String base = baseUrl.trim();
+        while (base.endsWith("/")) {
+            base = base.substring(0, base.length() - 1);
+        }
+        return base + "/product/" + java.net.URLEncoder.encode(slug.trim(), java.nio.charset.StandardCharsets.UTF_8).replace("+", "%20");
+    }
+
+    // A variant with neither a colour nor a name must not print the word "null".
+    private static String colour(String language, String colorName) {
+        if (hasText(colorName)) {
+            return "en".equals(normalize(language)) ? colorName.trim() : "màu " + colorName.trim();
+        }
+        return "en".equals(normalize(language)) ? "the colour you chose" : "màu bạn chọn";
+    }
+
+    private static boolean hasText(String value) {
+        return value != null && !value.isBlank();
     }
 }

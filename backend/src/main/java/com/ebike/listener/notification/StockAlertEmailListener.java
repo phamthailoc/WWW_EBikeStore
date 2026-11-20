@@ -41,7 +41,7 @@ public class StockAlertEmailListener {
                 .map(preference -> Boolean.FALSE.equals(preference.getNotificationsEnabled()))
                 .orElse(false);
             if (!optedOut) {
-                emailSender.send(user.getEmail(), event.productName(), event.colorName(), event.language());
+                emailSender.send(user.getId(), user.getEmail(), event.productName(), event.colorName(), event.productSlug(), event.language());
             }
         });
     }

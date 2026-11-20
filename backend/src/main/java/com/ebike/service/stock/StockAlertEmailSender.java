@@ -18,20 +18,24 @@ public class StockAlertEmailSender {
     private final String fromAddress;
     private final String smtpHost;
     private final boolean mailEnabled;
+    private final String publicBaseUrl;
 
     public StockAlertEmailSender(
         JavaMailSender mailSender,
-        @Value("${app.order.email-otp.from:no-reply@ebike.local}") String fromAddress,
+        @Value("${app.stock-alert.from:${app.order.email-otp.from:no-reply@ebike.local}}") String fromAddress,
         @Value("${spring.mail.host:}") String smtpHost,
-        @Value("${app.order.email-otp.mail-enabled:true}") boolean mailEnabled
+        @Value("${app.stock-alert.mail-enabled:true}") boolean mailEnabled,
+        @Value("${app.public-base-url:}") String publicBaseUrl
     ) {
         this.mailSender = mailSender;
         this.fromAddress = fromAddress;
         this.smtpHost = smtpHost;
         this.mailEnabled = mailEnabled;
+        this.publicBaseUrl = publicBaseUrl;
     }
 
-    public void send(String email, String productName, String colorName, String language) {
+    /** {@code userId} is only for the log: a customer's address does not belong in the log file. */
+    public void send(Long userId, String email, String productName, String colorName, String productSlug, String language) {
         if (!mailEnabled || smtpHost == null || smtpHost.isBlank() || email == null || email.isBlank()) {
             return;
         }
@@ -39,11 +43,11 @@ public class StockAlertEmailSender {
         message.setFrom(fromAddress);
         message.setTo(email);
         message.setSubject(StockAlertMessages.emailSubject(language, productName, colorName));
-        message.setText(StockAlertMessages.emailBody(language, productName, colorName));
+        message.setText(StockAlertMessages.emailBody(language, productName, colorName, StockAlertMessages.productUrl(publicBaseUrl, productSlug)));
         try {
             mailSender.send(message);
         } catch (MailException exception) {
-            log.warn("Could not send back-in-stock email to {}: {}", email, exception.getMessage());
+            log.warn("Could not send back-in-stock email to customer {}: {}", userId, exception.getMessage());
         }
     }
 }

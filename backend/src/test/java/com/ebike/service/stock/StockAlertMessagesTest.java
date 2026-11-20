@@ -30,9 +30,28 @@ class StockAlertMessagesTest {
     void emailNamesTheBikeAndColourInBothLanguages() {
         for (String language : new String[] {"vi", "en"}) {
             assertTrue(StockAlertMessages.emailSubject(language, "Kinetic X", "White").contains("Kinetic X"));
-            assertTrue(StockAlertMessages.emailBody(language, "Kinetic X", "White").contains("White"));
+            assertTrue(StockAlertMessages.emailBody(language, "Kinetic X", "White", null).contains("White"));
         }
-        assertFalse(StockAlertMessages.emailBody("en", "Kinetic X", "White").contains("đã"));
+        assertFalse(StockAlertMessages.emailBody("en", "Kinetic X", "White", null).contains("đã"));
         assertFalse(StockAlertMessages.emailSubject("vi", "Kinetic X", "Trắng").contains("back in stock"));
+    }
+
+    @Test
+    void emailLinksToTheBikePage() {
+        String url = StockAlertMessages.productUrl("https://shop.example/", "kinetic-x");
+        assertEquals("https://shop.example/product/kinetic-x", url);
+        for (String language : new String[] {"vi", "en"}) {
+            assertTrue(StockAlertMessages.emailBody(language, "Kinetic X", "White", url).contains(url));
+        }
+        assertEquals(null, StockAlertMessages.productUrl("", "kinetic-x"));
+    }
+
+    @Test
+    void missingColourNeverPrintsNull() {
+        for (String language : new String[] {"vi", "en"}) {
+            assertFalse(StockAlertMessages.emailBody(language, "Kinetic X", null, null).contains("null"));
+            assertFalse(StockAlertMessages.emailSubject(language, "Kinetic X", " ").contains("()"));
+            assertFalse(StockAlertMessages.notificationBody(language, "Kinetic X", null).contains("null"));
+        }
     }
 }
