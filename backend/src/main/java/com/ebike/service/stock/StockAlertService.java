@@ -9,15 +9,21 @@ import com.ebike.repository.auth.UserRepository;
 import com.ebike.repository.product.ProductVariantRepository;
 import com.ebike.repository.product.StockAlertRepository;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.server.ResponseStatusException;
 
 /** V22: "tell me when this colour is back". */
 @Service
 public class StockAlertService {
+
+    private static final Logger log = LoggerFactory.getLogger(StockAlertService.class);
 
     private final StockAlertRepository alertRepository;
     private final UserRepository userRepository;
@@ -96,13 +102,36 @@ public class StockAlertService {
      * Tells every customer waiting for this colour. Called after the colour went from sold out to in stock (manager
      * stock update, cancelled order) and by the periodic sweep.
      */
-    public int notifyRestocked(ProductVariant variant) {
-        return delivery.deliver(variant);
+    public void notifyRestocked(ProductVariant variant) {
+        if (variant == null || variant.getId() == null) {
+            return;
+        }
+        Long variantId = variant.getId();
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            // after the stock change is committed, so the customers see the new stock and a failure here cannot undo it
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    tellWaiting(variantId);
+                }
+            });
+        } else {
+            tellWaiting(variantId);
+        }
+    }
+
+    private int tellWaiting(Long variantId) {
+        try {
+            return delivery.deliver(variantId);
+        } catch (RuntimeException exception) {
+            log.warn("Could not tell the customers waiting for colour {}: {}", variantId, exception.getMessage());
+            return 0;
+        }
     }
 
     /** Same as above for the sweep, which only has the colour's id; runs in its own transaction per colour. */
     public int notifyRestockedById(Long variantId) {
-        return delivery.deliver(variantId);
+        return tellWaiting(variantId);
     }
 
     /** Colours with someone waiting that are in stock and on sale (for example put back on sale after being sold out). */

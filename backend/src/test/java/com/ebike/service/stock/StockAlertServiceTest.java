@@ -24,6 +24,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.server.ResponseStatusException;
 
 /** V22: one waiting row per customer and colour; restocking arms nobody twice. */
@@ -95,6 +97,24 @@ class StockAlertServiceTest {
         when(alerts.findByUserIdAndVariantId(7L, 11L)).thenReturn(Optional.empty(), Optional.of(winner));
         when(alerts.save(any())).thenThrow(new org.springframework.dao.DataIntegrityViolationException("duplicate"));
         assertNotNull(service.subscribe("an", 11L));
+    }
+
+    @Test void aFailureWhileTellingNeverReachesTheCaller() {
+        when(delivery.deliver(11L)).thenThrow(new IllegalStateException("db down"));
+        service.notifyRestocked(variant);
+        verify(delivery).deliver(11L);
+    }
+
+    @Test void insideATransactionCustomersAreToldOnlyAfterItCommits() {
+        TransactionSynchronizationManager.initSynchronization();
+        try {
+            service.notifyRestocked(variant);
+            verify(delivery, never()).deliver(any(Long.class));
+            TransactionSynchronizationManager.getSynchronizations().forEach(TransactionSynchronization::afterCommit);
+            verify(delivery).deliver(11L);
+        } finally {
+            TransactionSynchronizationManager.clearSynchronization();
+        }
     }
 
     @Test void listHidesRetiredColoursAndInactiveBikes() {

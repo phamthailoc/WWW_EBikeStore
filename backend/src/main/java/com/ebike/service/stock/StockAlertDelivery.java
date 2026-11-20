@@ -46,7 +46,8 @@ public class StockAlertDelivery {
         this.preferenceRepository = preferenceRepository;
     }
 
-    @Transactional
+    // A new transaction even when called from an after-commit hook, where the finished stock transaction is still bound to the thread.
+    @Transactional(propagation = org.springframework.transaction.annotation.Propagation.REQUIRES_NEW)
     public int deliver(Long variantId) {
         return variantRepository.findWithProductById(variantId).map(this::deliver).orElse(0);
     }
@@ -55,7 +56,8 @@ public class StockAlertDelivery {
      * Returns how many customers were told. The rows are locked while they are marked as used, so two managers saving at
      * once, or the sweep running at the same moment, tell each customer only once.
      */
-    @Transactional
+    // A new transaction even when called from an after-commit hook, where the finished stock transaction is still bound to the thread.
+    @Transactional(propagation = org.springframework.transaction.annotation.Propagation.REQUIRES_NEW)
     public int deliver(ProductVariant variant) {
         // A colour or bike that is no longer sold, or has nothing left, must not invite anyone to buy it; the rows stay armed for later.
         if (variant == null || !StockAlertRules.canNotify(

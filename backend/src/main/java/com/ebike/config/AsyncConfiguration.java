@@ -30,7 +30,9 @@ public class AsyncConfiguration {
         executor.setQueueCapacity(500);
         executor.setRejectedExecutionHandler((task, pool) ->
             log.warn("Mail queue is full ({} waiting); one email was dropped", pool.getQueue().size()));
-        executor.setWaitForTasksToCompleteOnShutdown(false);
+        // a normal shutdown finishes the emails already queued (up to 30 seconds); a crash still loses them
+        executor.setWaitForTasksToCompleteOnShutdown(true);
+        executor.setAwaitTerminationSeconds(30);
         return executor;
     }
 
@@ -46,6 +48,8 @@ public class AsyncConfiguration {
         executor.setMaxPoolSize(4);
         executor.setQueueCapacity(1000);
         executor.setRejectedExecutionHandler(new java.util.concurrent.ThreadPoolExecutor.CallerRunsPolicy());
+        executor.setWaitForTasksToCompleteOnShutdown(true);
+        executor.setAwaitTerminationSeconds(30);
         return executor;
     }
 }

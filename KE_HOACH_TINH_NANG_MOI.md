@@ -79,6 +79,11 @@ Ký hiệu: P1 nên làm trước; P2 làm tiếp nếu còn thời gian; P3 là
 
 **Kiểm thử:** Selenium đặt một màu về 0, khách đăng ký báo, Manager nhập thêm, khách thấy thông báo; đăng ký lần hai không tạo bản trùng.
 
+**Giới hạn đã biết (V22):**
+- Báo hàng được gửi ngay sau khi giao dịch tồn kho commit, trong giao dịch riêng; nếu bước báo lỗi thì chỉ ghi log, việc nhập kho không bị hoàn tác.
+- Thông báo trong ứng dụng và email là "tối đa một lần": dòng chờ được đánh dấu `notified_at` cùng lúc với việc tạo sự kiện. Nếu sau đó SMTP lỗi, hàng đợi email đầy (email bị bỏ, có log cảnh báo) hoặc ứng dụng sập giữa chừng, khách không được báo lại. Khi tắt ứng dụng bình thường, hàng đợi được chờ tối đa 30 giây.
+- Khách đăng ký đúng lúc Manager nhập hàng có thể không được báo ngay; việc đăng ký đọc lại tồn kho sau khi lưu và báo luôn nếu màu đã có hàng, còn job quét 5 phút một lần là lưới an toàn.
+
 ---
 
 ## P2. Làm tiếp nếu còn thời gian
