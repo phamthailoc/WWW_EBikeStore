@@ -60,7 +60,7 @@ class AdminAccountGuardTest {
 
     @BeforeEach void setup() {
         service = new AdminServiceImpl(pricingRules, promotions, audits, users, roles, encoder, orders,
-            new AccountErasure(addresses, favorites, preferences, notifications, stockAlerts, reviews, encoder),
+            new AccountErasure(addresses, favorites, preferences, notifications, stockAlerts, org.mockito.Mockito.mock(com.ebike.repository.warranty.WarrantyClaimRepository.class), reviews, encoder),
             auditLog);
         me = account(1L, "admin.user", "ADMIN");
         otherAdmin = account(2L, "second.admin", "ADMIN");

@@ -6,6 +6,7 @@ import com.ebike.repository.product.StockAlertRepository;
 import com.ebike.repository.user.UserAddressRepository;
 import com.ebike.repository.user.UserFavoriteRepository;
 import com.ebike.repository.user.UserPreferenceRepository;
+import com.ebike.repository.warranty.WarrantyClaimRepository;
 import com.ebike.service.product.ProductReviewService;
 import java.util.UUID;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -16,8 +17,8 @@ import org.springframework.stereotype.Component;
  *
  * <p>The row stays with status {@code DELETED}: nobody can sign in, and orders, shipments and payments keep pointing at it
  * because sales records must be kept for accounting. Everything that identifies the person on the account is removed:
- * name, saved addresses, favourites, preferences, notifications, back-in-stock requests and the reviews they wrote (product ratings are
- * recomputed). Email and username become
+ * name, saved addresses, favourites, preferences, notifications, back-in-stock requests, warranty requests (the text they wrote) and the
+ * reviews they wrote (product ratings are recomputed). Email and username become
  * {@code deleted_<id>...} so the person can register again with the same ones. The name, phone and address printed on
  * past orders are part of the sales record and stay as they are.
  */
@@ -30,6 +31,7 @@ public class AccountErasure {
     private final UserPreferenceRepository preferences;
     private final NotificationRepository notifications;
     private final StockAlertRepository stockAlerts;
+    private final WarrantyClaimRepository warrantyClaims;
     private final ProductReviewService reviews;
     private final PasswordEncoder passwordEncoder;
 
@@ -39,6 +41,7 @@ public class AccountErasure {
         UserPreferenceRepository preferences,
         NotificationRepository notifications,
         StockAlertRepository stockAlerts,
+        WarrantyClaimRepository warrantyClaims,
         ProductReviewService reviews,
         PasswordEncoder passwordEncoder
     ) {
@@ -47,6 +50,7 @@ public class AccountErasure {
         this.preferences = preferences;
         this.notifications = notifications;
         this.stockAlerts = stockAlerts;
+        this.warrantyClaims = warrantyClaims;
         this.reviews = reviews;
         this.passwordEncoder = passwordEncoder;
     }
@@ -59,6 +63,7 @@ public class AccountErasure {
         preferences.findByUserId(id).ifPresent(preferences::delete);
         notifications.deleteAll(notifications.findByUserIdOrderByCreatedAtDesc(id));
         stockAlerts.deleteByUserId(id);
+        warrantyClaims.deleteByUserId(id);
         reviews.removeReviewsOf(id);
 
         user.setUsername("deleted_" + id);

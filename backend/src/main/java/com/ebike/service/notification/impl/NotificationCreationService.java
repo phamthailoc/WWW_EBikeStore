@@ -8,10 +8,13 @@ import com.ebike.event.notification.OrderCreatedEvent;
 import com.ebike.event.notification.OrderStatusChangedEvent;
 import com.ebike.event.notification.PickupDeadlineChangedEvent;
 import com.ebike.event.notification.PaymentStatusChangedEvent;
+import com.ebike.event.notification.MaintenanceDueEvent;
 import com.ebike.event.notification.StockAlertTriggeredEvent;
+import com.ebike.event.notification.WarrantyClaimStatusChangedEvent;
 import com.ebike.repository.notification.NotificationRepository;
 import com.ebike.repository.user.UserPreferenceRepository;
 import com.ebike.service.notification.NotificationStreamService;
+import com.ebike.service.warranty.MaintenanceMilestones;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -95,6 +98,38 @@ public class NotificationCreationService {
         ));
     }
 
+    // V20: the staff moved a warranty request; the link opens the customer's warranty book.
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void handleWarrantyClaimStatusChanged(WarrantyClaimStatusChangedEvent event) {
+        userRepository.findById(event.userId()).ifPresent(user -> createNotification(
+            user,
+            NotificationType.WARRANTY_CLAIM,
+            "Cập nhật yêu cầu bảo hành",
+            "Yêu cầu bảo hành xe " + event.productName() + " (số khung " + event.frameNumber() + ") "
+                + formatClaimStatus(event.status()) + ".",
+            null,
+            null,
+            "/customer/warranty"
+        ));
+    }
+
+    // V20: a vehicle reached a maintenance milestone (counted from the delivery).
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void handleMaintenanceDue(MaintenanceDueEvent event) {
+        userRepository.findById(event.userId()).ifPresent(user -> createNotification(
+            user,
+            NotificationType.MAINTENANCE_DUE,
+            "Đến hạn bảo dưỡng",
+            "Xe " + event.productName() + " (số khung " + event.frameNumber() + ") đã đến mốc bảo dưỡng định kỳ ("
+                + MaintenanceMilestones.describe(event.milestone()) + " kể từ ngày giao). Vui lòng mang xe đến cửa hàng.",
+            null,
+            null,
+            "/customer/warranty"
+        ));
+    }
+
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void handlePaymentStatusChanged(PaymentStatusChangedEvent event) {
@@ -150,6 +185,22 @@ public class NotificationCreationService {
         notification.setPaymentId(paymentId);
         notificationRepository.save(notification);
         notificationStreamService.sendUnreadCount(user.getId());
+    }
+
+    private String formatClaimStatus(String status) {
+        if ("RECEIVED".equals(status)) {
+            return "đã được cửa hàng tiếp nhận";
+        }
+        if ("REPAIRING".equals(status)) {
+            return "đang được xử lý";
+        }
+        if ("DONE".equals(status)) {
+            return "đã hoàn tất";
+        }
+        if ("REJECTED".equals(status)) {
+            return "không được chấp nhận, xem ghi chú của cửa hàng";
+        }
+        return "đã chuyển sang trạng thái " + status;
     }
 
     private String formatOrderStatus(String status) {
