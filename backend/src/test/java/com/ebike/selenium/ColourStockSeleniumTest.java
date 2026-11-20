@@ -15,6 +15,7 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 
 /** V17: the manager restocks each colour; the product total follows, and a typed total is refused. */
 @Tag("selenium")
+@org.junit.jupiter.api.parallel.ResourceLock("product-stock")
 @EnabledIfSystemProperty(named = "selenium.baseUrl", matches = "https?://.+")
 class ColourStockSeleniumTest extends StorefrontSeleniumTest {
 

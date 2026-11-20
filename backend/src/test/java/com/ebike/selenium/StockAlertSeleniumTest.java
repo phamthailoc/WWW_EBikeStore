@@ -19,8 +19,20 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
  * rows or notifications the customer account already had from earlier runs.
  */
 @Tag("selenium")
+@org.junit.jupiter.api.parallel.Execution(org.junit.jupiter.api.parallel.ExecutionMode.SAME_THREAD)
+@org.junit.jupiter.api.parallel.ResourceLock("product-stock")
 @EnabledIfSystemProperty(named = "selenium.baseUrl", matches = "https?://.+")
 class StockAlertSeleniumTest extends StorefrontSeleniumTest {
+
+    /**
+     * V22 uses the last colour on sale, not the first: the other Selenium tests move the stock of the first colour
+     * (ColourStockSeleniumTest), and putting the stock back here is a real restock that tells every row still waiting.
+     * A product with one colour has to share it.
+     */
+    private static JsonNode ownColour(JsonNode product) {
+        JsonNode variants = product.path("variants");
+        return variants.get(variants.size() - 1);
+    }
 
     private static int alertsForVariant(long variantId) throws Exception {
         int count = 0;
@@ -78,7 +90,7 @@ class StockAlertSeleniumTest extends StorefrontSeleniumTest {
         JsonNode product = call(api, "GET", "/api/v1/products/" + productSlug, null);
         long productId = product.path("id").asLong();
         // the API lists only colours that are on sale
-        JsonNode colour = product.path("variants").get(0);
+        JsonNode colour = ownColour(product);
         long variantId = colour.path("id").asLong();
         String colourName = colour.path("colorName").asText();
         int original = colour.path("stockQuantity").asInt();
@@ -168,7 +180,7 @@ class StockAlertSeleniumTest extends StorefrontSeleniumTest {
     @Test
     void managerCannotUseStockAlerts() throws Exception {
         HttpClient manager = managerApi();
-        long variantId = call(api, "GET", "/api/v1/products/" + productSlug, null).path("variants").get(0).path("id").asLong();
+        long variantId = ownColour(call(api, "GET", "/api/v1/products/" + productSlug, null)).path("id").asLong();
         assertForbidden(manager, "POST", "/api/v1/stock-alerts", Map.of("variantId", variantId));
         assertForbidden(manager, "GET", "/api/v1/stock-alerts", null);
         assertForbidden(manager, "DELETE", "/api/v1/stock-alerts/" + variantId, null);
@@ -177,7 +189,7 @@ class StockAlertSeleniumTest extends StorefrontSeleniumTest {
     @Test
     void adminCannotUseStockAlerts() throws Exception {
         HttpClient admin = adminApi();
-        long variantId = call(api, "GET", "/api/v1/products/" + productSlug, null).path("variants").get(0).path("id").asLong();
+        long variantId = ownColour(call(api, "GET", "/api/v1/products/" + productSlug, null)).path("id").asLong();
         assertForbidden(admin, "POST", "/api/v1/stock-alerts", Map.of("variantId", variantId));
         assertForbidden(admin, "GET", "/api/v1/stock-alerts", null);
         assertForbidden(admin, "DELETE", "/api/v1/stock-alerts/" + variantId, null);
@@ -188,8 +200,8 @@ class StockAlertSeleniumTest extends StorefrontSeleniumTest {
         HttpClient manager = managerApi();
         JsonNode product = call(api, "GET", "/api/v1/products/" + productSlug, null);
         long productId = product.path("id").asLong();
-        long variantId = product.path("variants").get(0).path("id").asLong();
-        int original = product.path("variants").get(0).path("stockQuantity").asInt();
+        long variantId = ownColour(product).path("id").asLong();
+        int original = ownColour(product).path("stockQuantity").asInt();
         setStock(manager, productId, variantId, 0);
         try {
             logIn(System.getProperty("selenium.managerUser"), System.getProperty("selenium.managerPassword"));
@@ -207,8 +219,8 @@ class StockAlertSeleniumTest extends StorefrontSeleniumTest {
         HttpClient manager = managerApi();
         JsonNode product = call(api, "GET", "/api/v1/products/" + productSlug, null);
         long productId = product.path("id").asLong();
-        long variantId = product.path("variants").get(0).path("id").asLong();
-        int original = product.path("variants").get(0).path("stockQuantity").asInt();
+        long variantId = ownColour(product).path("id").asLong();
+        int original = ownColour(product).path("stockQuantity").asInt();
         turnNotificationsOn();
         forgetAlert(variantId);
         setStock(manager, productId, variantId, 0);
@@ -244,8 +256,8 @@ class StockAlertSeleniumTest extends StorefrontSeleniumTest {
         HttpClient manager = managerApi();
         JsonNode product = call(api, "GET", "/api/v1/products/" + productSlug, null);
         long productId = product.path("id").asLong();
-        long variantId = product.path("variants").get(0).path("id").asLong();
-        int original = product.path("variants").get(0).path("stockQuantity").asInt();
+        long variantId = ownColour(product).path("id").asLong();
+        int original = ownColour(product).path("stockQuantity").asInt();
         turnNotificationsOn();
         forgetAlert(variantId);
         setStock(manager, productId, variantId, 0);
