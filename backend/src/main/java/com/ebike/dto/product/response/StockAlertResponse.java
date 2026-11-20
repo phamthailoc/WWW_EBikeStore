@@ -2,6 +2,7 @@ package com.ebike.dto.product.response;
 
 import java.time.LocalDateTime;
 
+/** {@code onSale} is false when the colour or the bike was withdrawn: the customer can still see and remove the request. */
 public record StockAlertResponse(
     Long id,
     Long productId,
@@ -11,6 +12,7 @@ public record StockAlertResponse(
     String colorName,
     Integer stockQuantity,
     LocalDateTime createdAt,
-    LocalDateTime notifiedAt
+    LocalDateTime notifiedAt,
+    boolean onSale
 ) {
 }

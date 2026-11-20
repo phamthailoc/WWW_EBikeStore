@@ -46,7 +46,6 @@ public class StockAlertService {
     public List<StockAlertResponse> list(String username) {
         requireUsername(username);
         return alertRepository.findByUserUsernameOrderByCreatedAtDesc(username).stream()
-            .filter(alert -> isOnSale(alert.getVariant()))
             .map(this::toResponse)
             .toList();
     }
@@ -176,7 +175,8 @@ public class StockAlertService {
             variant.getColorName() != null ? variant.getColorName() : variant.getVariantName(),
             variant.getStockQuantity(),
             alert.getCreatedAt(),
-            alert.getNotifiedAt()
+            alert.getNotifiedAt(),
+            isOnSale(variant)
         );
     }
 
