@@ -137,6 +137,7 @@ public class WarrantyService {
         }
         User user = users.findByUsername(username)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authentication is required"));
+        units.findLockedById(unitId);
         OrderItemUnit unit = units.findForWarrantyById(unitId)
             .filter(found -> ownedBy(found, username))
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy xe này trong tài khoản của bạn."));
