@@ -126,6 +126,16 @@ class StockAlertDeliveryTest {
         verify(publisher, never()).publishEvent(any(Object.class));
     }
 
+    @Test void accountsDisabledByAnAdminAreSkippedAndStayArmed() {
+        user.setAccountStatus("SUSPENDED");
+        user.setActive(false);
+        StockAlert row = waitingRow(1L, user);
+        when(alerts.lockWaitingByVariantId(11L)).thenReturn(List.of(row));
+        assertEquals(0, delivery.deliver(variant));
+        assertNull(row.getNotifiedAt());
+        verify(publisher, never()).publishEvent(any(Object.class));
+    }
+
     @Test void aColourWithNoStockNotifiesNobody() {
         variant.setStockQuantity(0);
         assertEquals(0, delivery.deliver(variant));

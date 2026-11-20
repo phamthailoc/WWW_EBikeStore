@@ -41,4 +41,14 @@ class StockAlertRulesTest {
         assertTrue(StockAlertRules.canSubscribe(null));
         assertFalse(StockAlertRules.canSubscribe(1));
     }
+
+    @Test
+    void onlyWorkingAccountsAreTold() {
+        assertTrue(StockAlertRules.canReceive("ACTIVE", true));
+        assertTrue(StockAlertRules.canReceive("ACTIVE", null));
+        assertFalse(StockAlertRules.canReceive("DELETED", false));
+        assertFalse(StockAlertRules.canReceive("SUSPENDED", false));
+        assertFalse(StockAlertRules.canReceive("ACTIVE", false));
+        assertFalse(StockAlertRules.canReceive(null, true));
+    }
 }

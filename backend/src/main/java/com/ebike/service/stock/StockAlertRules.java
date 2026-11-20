@@ -18,6 +18,11 @@ public final class StockAlertRules {
         return variantActive && productActive && stock != null && stock > 0;
     }
 
+    /** Only a working account is told: erased, suspended or otherwise disabled accounts cannot sign in to follow the link. */
+    public static boolean canReceive(String accountStatus, Boolean active) {
+        return "ACTIVE".equals(accountStatus) && !Boolean.FALSE.equals(active);
+    }
+
     /** A customer can only wait for a colour that is sold out right now. */
     public static boolean canSubscribe(Integer currentStock) {
         return currentStock == null || currentStock <= 0;

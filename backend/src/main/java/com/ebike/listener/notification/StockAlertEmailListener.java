@@ -4,6 +4,7 @@ import com.ebike.event.notification.StockAlertTriggeredEvent;
 import com.ebike.repository.auth.UserRepository;
 import com.ebike.repository.user.UserPreferenceRepository;
 import com.ebike.service.stock.StockAlertEmailSender;
+import com.ebike.service.stock.StockAlertRules;
 import com.ebike.config.AsyncConfiguration;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -33,7 +34,7 @@ public class StockAlertEmailListener {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void onStockAlertTriggered(StockAlertTriggeredEvent event) {
         userRepository.findById(event.userId()).ifPresent(user -> {
-            if ("DELETED".equals(user.getAccountStatus())) {
+            if (!StockAlertRules.canReceive(user.getAccountStatus(), user.getActive())) {
                 return;
             }
             boolean optedOut = userPreferenceRepository.findByUserId(user.getId())

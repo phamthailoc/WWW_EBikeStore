@@ -87,7 +87,8 @@ public class StockAlertDelivery {
         int told = 0;
         for (StockAlert alert : waiting) {
             User user = alert.getUser() == null ? null : users.get(alert.getUser().getId());
-            if (user == null || "DELETED".equals(user.getAccountStatus())) {
+            if (user == null || !StockAlertRules.canReceive(user.getAccountStatus(), user.getActive())) {
+                // not a working account (erased or disabled by an admin): the row stays armed in case the account comes back
                 continue;
             }
             alert.setNotifiedAt(now);
