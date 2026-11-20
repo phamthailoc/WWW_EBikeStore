@@ -563,5 +563,6 @@
  "Màu xe này đang còn hàng, bạn có thể đặt mua ngay.": "This colour is in stock, you can order it now.",
  "Không tìm thấy màu xe này.": "This colour was not found.",
  "Không tìm thấy tài khoản.": "Account not found.",
- "Vui lòng chọn màu xe.": "Please choose a colour."
+ "Vui lòng chọn màu xe.": "Please choose a colour.",
+ "Yêu cầu không hợp lệ. Vui lòng thử lại.": "Invalid request. Please try again."
 }

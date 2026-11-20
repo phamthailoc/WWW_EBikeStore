@@ -28,6 +28,20 @@ class StockAlertEndpointTest {
         verify(service, never()).subscribe(any(), any());
     }
 
+    @Test void aColourThatIsNotANumberInThePathIsAskedAgainInPlainWords() throws Exception {
+        mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete("/api/v1/stock-alerts/abc").principal(an))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.message").value("Vui lòng chọn màu xe."));
+        verify(service, never()).unsubscribe(any(), any());
+    }
+
+    @Test void aBodyThatIsNotJsonGetsAReadableAnswer() throws Exception {
+        mvc.perform(post("/api/v1/stock-alerts").principal(an).contentType(MediaType.TEXT_PLAIN).content("11"))
+            .andExpect(status().isUnsupportedMediaType())
+            .andExpect(jsonPath("$.message").value("Yêu cầu không hợp lệ. Vui lòng thử lại."));
+        verify(service, never()).subscribe(any(), any());
+    }
+
     @Test void aValidRequestSubscribesTheSignedInCustomer() throws Exception {
         mvc.perform(post("/api/v1/stock-alerts").principal(an).contentType(MediaType.APPLICATION_JSON).content("{\"variantId\":11}"))
             .andExpect(status().isCreated());
