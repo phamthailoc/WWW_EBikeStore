@@ -83,6 +83,7 @@ class StockAlertSeleniumTest extends StorefrontSeleniumTest {
         String colourName = colour.path("colorName").asText();
         int original = colour.path("stockQuantity").asInt();
 
+        turnNotificationsOn(); // another test may have left the switch off
         forgetAlert(variantId); // start without a row left by an earlier run
         int notificationsBefore = stockNotificationsFor(productSlug);
         setStock(manager, productId, variantId, 0);
@@ -135,21 +136,142 @@ class StockAlertSeleniumTest extends StorefrontSeleniumTest {
             click(By.cssSelector("#stock-alerts li[data-variant-id='" + variantId + "'] [data-cancel-alert]"));
             wait.until(d -> alertsOrZero(variantId) == 0);
         } finally {
-            setStock(manager, productId, variantId, original);
+            // forget the row first: putting the stock back is a real restock that would tell the waiting customer
             forgetAlert(variantId);
+            setStock(manager, productId, variantId, original);
+        }
+    }
+
+    /** Another test may have switched notifications off for this customer; alerts would then never arrive. */
+    private static void turnNotificationsOn() throws Exception {
+        long userId = call(api, "GET", "/api/v1/auth/profile", null).path("userId").asLong();
+        call(api, "PUT", "/api/v1/users/" + userId + "/preferences", Map.of("notificationsEnabled", true));
+    }
+
+    private static void assertForbidden(HttpClient client, String method, String path, Object body) throws Exception {
+        try {
+            call(client, method, path, body);
+            throw new AssertionError(method + " " + path + " must be refused for a staff account");
+        } catch (IllegalStateException expected) {
+            assertTrue(expected.getMessage().contains("403"), expected.getMessage());
+        }
+    }
+
+    private static HttpClient adminApi() throws Exception {
+        String user = System.getProperty("selenium.adminUser", "");
+        String password = System.getProperty("selenium.adminPassword", "");
+        org.junit.jupiter.api.Assumptions.assumeTrue(!user.isBlank() && !password.isBlank(), "selenium.adminUser/selenium.adminPassword not set");
+        HttpClient admin = newClient();
+        call(admin, "POST", "/api/v1/auth/login", Map.of("usernameOrEmail", user, "password", password));
+        return admin;
+    }
+
+    @Test
+    void managerCannotUseStockAlerts() throws Exception {
+        HttpClient manager = managerApi();
+        long variantId = call(api, "GET", "/api/v1/products/" + productSlug, null).path("variants").get(0).path("id").asLong();
+        assertForbidden(manager, "POST", "/api/v1/stock-alerts", Map.of("variantId", variantId));
+        assertForbidden(manager, "GET", "/api/v1/stock-alerts", null);
+        assertForbidden(manager, "DELETE", "/api/v1/stock-alerts/" + variantId, null);
+    }
+
+    @Test
+    void adminCannotUseStockAlerts() throws Exception {
+        HttpClient admin = adminApi();
+        long variantId = call(api, "GET", "/api/v1/products/" + productSlug, null).path("variants").get(0).path("id").asLong();
+        assertForbidden(admin, "POST", "/api/v1/stock-alerts", Map.of("variantId", variantId));
+        assertForbidden(admin, "GET", "/api/v1/stock-alerts", null);
+        assertForbidden(admin, "DELETE", "/api/v1/stock-alerts/" + variantId, null);
+    }
+
+    @Test
+    void staffDoNotSeeTheNotifyButtonEvenOnASoldOutColour() throws Exception {
+        HttpClient manager = managerApi();
+        JsonNode product = call(api, "GET", "/api/v1/products/" + productSlug, null);
+        long productId = product.path("id").asLong();
+        long variantId = product.path("variants").get(0).path("id").asLong();
+        int original = product.path("variants").get(0).path("stockQuantity").asInt();
+        setStock(manager, productId, variantId, 0);
+        try {
+            logIn(System.getProperty("selenium.managerUser"), System.getProperty("selenium.managerPassword"));
+            driver.get(baseUrl + "/product/" + productSlug);
+            click(By.cssSelector(".variant-option[data-variant-id='" + variantId + "']"));
+            wait.until(d -> d.findElement(By.id("stockHint")).getText().length() > 0);
+            assertTrue(driver.findElements(By.id("notifyStock")).isEmpty(), "no notify button for a manager");
+        } finally {
+            setStock(manager, productId, variantId, original);
         }
     }
 
     @Test
-    void staffAccountsCannotAskToBeNotified() throws Exception {
+    void guestIsSentToLoginAndTheAlertIsSetOnReturn() throws Exception {
         HttpClient manager = managerApi();
         JsonNode product = call(api, "GET", "/api/v1/products/" + productSlug, null);
+        long productId = product.path("id").asLong();
         long variantId = product.path("variants").get(0).path("id").asLong();
+        int original = product.path("variants").get(0).path("stockQuantity").asInt();
+        turnNotificationsOn();
+        forgetAlert(variantId);
+        setStock(manager, productId, variantId, 0);
         try {
-            call(manager, "POST", "/api/v1/stock-alerts", Map.of("variantId", variantId));
-            throw new AssertionError("a manager account must not be able to subscribe");
-        } catch (IllegalStateException expected) {
-            assertTrue(expected.getMessage().contains("403"), expected.getMessage());
+            driver.manage().deleteAllCookies();
+            driver.get(baseUrl + "/product/" + productSlug);
+            click(By.cssSelector(".variant-option[data-variant-id='" + variantId + "']"));
+            By notify = By.id("notifyStock");
+            wait.until(ExpectedConditions.visibilityOfElementLocated(notify));
+            click(notify);
+            wait.until(ExpectedConditions.urlContains("/login?returnTo="));
+            assertEquals(0, alertsForVariant(variantId), "a guest has no waiting row");
+
+            fill("usernameOrEmail", username);
+            fill("password", PASSWORD);
+            click(By.cssSelector("#loginForm button"));
+            // back on the bike page, the request the guest made is completed without another click
+            wait.until(d -> d.getCurrentUrl().contains("/product/" + productSlug));
+            wait.until(d -> alertsOrZero(variantId) == 1);
+            wait.until(d -> d.findElement(notify).getText().contains("Đã đăng ký"));
+
+            // pressing the button again turns the alert off
+            click(notify);
+            wait.until(d -> alertsOrZero(variantId) == 0);
+        } finally {
+            forgetAlert(variantId);
+            setStock(manager, productId, variantId, original);
+        }
+    }
+
+    @Test
+    void alertTextsAreInEnglishForAnEnglishCustomer() throws Exception {
+        HttpClient manager = managerApi();
+        JsonNode product = call(api, "GET", "/api/v1/products/" + productSlug, null);
+        long productId = product.path("id").asLong();
+        long variantId = product.path("variants").get(0).path("id").asLong();
+        int original = product.path("variants").get(0).path("stockQuantity").asInt();
+        turnNotificationsOn();
+        forgetAlert(variantId);
+        setStock(manager, productId, variantId, 0);
+        try {
+            driver.get(baseUrl + "/lang/en?back=/product/" + productSlug);
+            wait.until(d -> "en".equals(js("return document.documentElement.lang")));
+            click(By.cssSelector(".variant-option[data-variant-id='" + variantId + "']"));
+            By notify = By.id("notifyStock");
+            wait.until(ExpectedConditions.visibilityOfElementLocated(notify));
+            assertEquals("Notify me when back in stock", driver.findElement(notify).getText());
+            click(notify);
+            wait.until(d -> alertsOrZero(variantId) == 1);
+            wait.until(d -> d.findElement(notify).getText().equals("Alert on, click to cancel"));
+            assertTrue(driver.findElement(By.id("productNotice")).getText().startsWith("Done."),
+                driver.findElement(By.id("productNotice")).getText());
+
+            driver.get(baseUrl + "/favorites");
+            WebElement row = wait.until(ExpectedConditions.visibilityOfElementLocated(
+                By.cssSelector("#stock-alerts li[data-variant-id='" + variantId + "']")));
+            assertTrue(row.getText().contains("Waiting for stock"), row.getText());
+            assertTrue(row.getText().contains("Stop alert"), row.getText());
+        } finally {
+            forgetAlert(variantId);
+            setStock(manager, productId, variantId, original);
+            driver.get(baseUrl + "/lang/vi");
         }
     }
 }
