@@ -190,4 +190,15 @@ class WarrantyServiceTest {
         assertEquals(400, error.getStatusCode().value());
         verify(claims, never()).save(any());
     }
+
+    @Test
+    void lookupOfABikeNotYetDeliveredIsNotFound() {
+        OrderItemUnit unit = unitOf(user(1L, "me"));
+        unit.getOrderItem().getOrder().setStatus(OrderStatus.PROCESSING);
+        when(units.findForWarrantyByFrameNumber("FRAME12345")).thenReturn(Optional.of(unit));
+
+        ResponseStatusException error = assertThrows(ResponseStatusException.class, () -> service.lookup("frame12345"));
+
+        assertEquals(404, error.getStatusCode().value());
+    }
 }

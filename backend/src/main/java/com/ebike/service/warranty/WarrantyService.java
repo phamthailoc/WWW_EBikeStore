@@ -107,6 +107,10 @@ public class WarrantyService {
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy xe có số khung này."));
         LocalDateTime now = LocalDateTime.now(clock);
         LocalDateTime starts = startsAt(unit);
+        if (starts == null) {
+            // not handed over yet: answer like an unknown frame, so the page cannot be used to probe frames of open orders
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy xe có số khung này.");
+        }
         Integer months = warrantyMonths(unit);
         return new WarrantyLookupResponse(
             unit.getFrameNumber(),
