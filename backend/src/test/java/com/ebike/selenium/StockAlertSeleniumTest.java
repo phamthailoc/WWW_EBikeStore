@@ -128,10 +128,8 @@ class StockAlertSeleniumTest extends StorefrontSeleniumTest {
             WebElement used = wait.until(ExpectedConditions.visibilityOfElementLocated(row));
             assertTrue(used.findElement(By.cssSelector(".stock-tag")).getAttribute("class").contains("ok"), used.getText());
 
-            // a plain top-up of a colour already in stock tells nobody again
-            int afterRestock = stockNotificationsFor(productSlug);
-            setStock(manager, productId, variantId, 9);
-            assertEquals(afterRestock, stockNotificationsFor(productSlug), "a top-up of an in-stock colour sends nothing");
+            // "a top-up of a colour already in stock tells nobody" is covered by ManagerStockTest, not here: by now the
+            // customer's row is already used and the notification is created asynchronously, so a check here proves nothing.
 
             // cancelling removes the row from the list
             click(By.cssSelector("#stock-alerts li[data-variant-id='" + variantId + "'] [data-cancel-alert]"));
