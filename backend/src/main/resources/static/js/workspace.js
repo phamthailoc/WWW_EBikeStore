@@ -9,6 +9,7 @@
   const valueText = {
     orderStatus:orderStatusText,
     paymentStatus:{PENDING:t('Chờ thanh toán'),AUTHORIZED:t('Đã ủy quyền'),PAID:t('Đã thanh toán'),FAILED:t('Thất bại'),CANCELLED:t('Đã hủy'),REFUNDED:t('Đã hoàn tiền')},
+    type:{ORDER_CREATED:t('Đơn hàng mới'),ORDER_STATUS_CHANGED:t('Cập nhật đơn hàng'),ORDER_STATUS:t('Cập nhật đơn hàng'),PAYMENT_STATUS_CHANGED:t('Cập nhật thanh toán'),PAYMENT_SUCCESS:t('Thanh toán thành công'),PAYMENT_FAILED:t('Thanh toán thất bại'),STOCK_ALERT:t('Xe có hàng lại')},
     paymentMethod:{PAY_LATER:t('Thanh toán khi nhận xe'),VNPAY:'VNPay'},
     status:{...orderStatusText,NEW:t('Mới'),IN_PROGRESS:t('Đang xử lý'),RESOLVED:t('Đã giải quyết')}
   };
@@ -39,6 +40,7 @@
     if(page==='/admin/accounts'&&id!=null)buttons.push(`<button class="table-action" data-action="role" data-id="${id}">${t('Đổi vai trò')}</button><button class="table-action" data-action="account-status" data-id="${id}" data-status="${row.status||'ACTIVE'}">${row.status==='ACTIVE'?t('Vô hiệu hóa'):t('Kích hoạt lại')}</button><button class="table-action" data-action="delete-account" data-id="${id}" data-email="${escape(row.email||'')}">${t('Xóa')}</button>`);
     if(page==='/admin/pricing'&&id!=null)buttons.push(`<button class="table-action" data-action="pricing" data-id="${id}" data-amount="${row.amount||0}" data-status="${row.status||''}">${t('Sửa quy tắc')}</button>`);
     if(page==='/manager/support'&&id!=null){if(row.status==='NEW')buttons.push(`<button class="table-action" data-action="support-status" data-id="${id}" data-status="IN_PROGRESS">${t('Nhận xử lý')}</button>`);if(row.status!=='RESOLVED')buttons.push(`<button class="table-action" data-action="support-status" data-id="${id}" data-status="RESOLVED">${t('Đã giải quyết')}</button>`);else buttons.push(`<button class="table-action" data-action="support-status" data-id="${id}" data-status="IN_PROGRESS">${t('Mở lại')}</button>`)}
+    if(page==='/customer/notifications'&&typeof row.targetUrl==='string'&&/^\/[^\/]/.test(row.targetUrl))buttons.push(`<a class="table-action" href="${escape(row.targetUrl)}">${t('Xem chi tiết')}</a>`);
     if(page==='/customer/notifications'&&id!=null&&!row.readAt)buttons.push(`<button class="table-action" data-action="read" data-id="${id}">${t('Đánh dấu đã đọc')}</button>`);
     if(page.startsWith('/customer/orders')&&id!=null&&awaitsVnPay(row))buttons.push(`<button class="table-action" data-action="pay-vnpay" data-id="${id}">${t('Thanh toán VNPay')}</button>`);
     if(page.startsWith('/customer/orders')&&id!=null&&['PENDING','CONFIRMED','PROCESSING'].includes(row.status))buttons.push(`<button class="table-action" data-action="cancel-order" data-id="${id}">${t('Hủy đơn')}</button>`);

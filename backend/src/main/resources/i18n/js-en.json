@@ -546,5 +546,10 @@
  "Đã có hàng lại": "Back in stock",
  "Đang chờ hàng": "Waiting for stock",
  "Hủy đăng ký": "Cancel",
- "Đã hủy đăng ký báo hàng.": "Stock alert cancelled."
+ "Đã hủy đăng ký báo hàng.": "Stock alert cancelled.",
+ "Đơn hàng mới": "New order",
+ "Cập nhật đơn hàng": "Order update",
+ "Cập nhật thanh toán": "Payment update",
+ "Thanh toán thất bại": "Payment failed",
+ "Xe có hàng lại": "Back in stock"
 }
