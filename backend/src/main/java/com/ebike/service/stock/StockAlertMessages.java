@@ -65,6 +65,15 @@ public final class StockAlertMessages {
         return "/product/" + java.net.URLEncoder.encode(slug.trim(), java.nio.charset.StandardCharsets.UTF_8).replace("+", "%20");
     }
 
+    /** notifications.target_url holds 255 characters; a longer link is dropped (the notice still shows) rather than failing the insert. */
+    public static final int MAX_TARGET_URL_LENGTH = 255;
+
+    /** The link stored with the in-app notice: {@link #productPath} or null when there is none or it would not fit the column. */
+    public static String notificationPath(String slug) {
+        String path = productPath(slug);
+        return path != null && path.length() <= MAX_TARGET_URL_LENGTH ? path : null;
+    }
+
     // A variant with neither a colour nor a name must not print the word "null".
     private static String colour(String language, String colorName) {
         if (hasText(colorName)) {

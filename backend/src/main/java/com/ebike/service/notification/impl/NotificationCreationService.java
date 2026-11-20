@@ -94,7 +94,7 @@ public class NotificationCreationService {
             StockAlertMessages.notificationBody(event.language(), event.productName(), event.colorName()),
             null,
             null,
-            StockAlertMessages.productPath(event.productSlug()),
+            StockAlertMessages.notificationPath(event.productSlug()),
             false
         ));
     }

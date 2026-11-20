@@ -47,6 +47,16 @@ class StockAlertMessagesTest {
     }
 
     @Test
+    void aLinkTooLongForTheNotificationColumnIsDropped() {
+        assertEquals("/product/kinetic-x", StockAlertMessages.notificationPath("kinetic-x"));
+        assertEquals(255, StockAlertMessages.notificationPath("a".repeat(255 - "/product/".length())).length());
+        assertEquals(null, StockAlertMessages.notificationPath("a".repeat(256 - "/product/".length())));
+        // encoding can make the path longer than the slug
+        assertEquals(null, StockAlertMessages.notificationPath("é".repeat(100)));
+        assertEquals(null, StockAlertMessages.notificationPath(" "));
+    }
+
+    @Test
     void missingColourNeverPrintsNull() {
         for (String language : new String[] {"vi", "en"}) {
             assertFalse(StockAlertMessages.emailBody(language, "Kinetic X", null, null).contains("null"));
