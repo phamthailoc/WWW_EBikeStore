@@ -31,19 +31,15 @@ public class StockAlertEmailSender {
         this.mailEnabled = mailEnabled;
     }
 
-    public void send(String email, String productName, String colorName) {
+    public void send(String email, String productName, String colorName, String language) {
         if (!mailEnabled || smtpHost == null || smtpHost.isBlank() || email == null || email.isBlank()) {
             return;
         }
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom(fromAddress);
         message.setTo(email);
-        message.setSubject("Kinetic E-Bike: " + productName + " (" + colorName + ") đã có hàng lại");
-        message.setText("""
-            Xe %s, màu %s mà bạn đang chờ đã có hàng lại.
-
-            Vào cửa hàng Kinetic và mở trang xe để đặt mua. Số lượng có hạn, bạn nên đặt sớm. Bạn nhận email này vì đã chọn "Báo tôi khi có hàng".
-            """.formatted(productName, colorName));
+        message.setSubject(StockAlertMessages.emailSubject(language, productName, colorName));
+        message.setText(StockAlertMessages.emailBody(language, productName, colorName));
         try {
             mailSender.send(message);
         } catch (MailException exception) {

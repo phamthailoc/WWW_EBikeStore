@@ -10,6 +10,8 @@ import com.ebike.model.entity.product.StockAlert;
 import com.ebike.repository.auth.UserRepository;
 import com.ebike.repository.product.ProductVariantRepository;
 import com.ebike.repository.product.StockAlertRepository;
+import com.ebike.repository.user.UserPreferenceRepository;
+import com.ebike.model.entity.user.UserPreference;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -25,15 +27,18 @@ public class StockAlertService {
     private final StockAlertRepository alertRepository;
     private final UserRepository userRepository;
     private final ProductVariantRepository variantRepository;
+    private final UserPreferenceRepository preferenceRepository;
 
     public StockAlertService(
         StockAlertRepository alertRepository,
         UserRepository userRepository,
-        ProductVariantRepository variantRepository
+        ProductVariantRepository variantRepository,
+        UserPreferenceRepository preferenceRepository
     ) {
         this.alertRepository = alertRepository;
         this.userRepository = userRepository;
         this.variantRepository = variantRepository;
+        this.preferenceRepository = preferenceRepository;
     }
 
     @Transactional(readOnly = true)
@@ -92,27 +97,60 @@ public class StockAlertService {
             .ifPresent(alertRepository::delete);
     }
 
-    /** Called by the manager stock update after it moved a colour from sold out to in stock. */
+    /**
+     * Tells every customer waiting for this colour. Called after the colour went from sold out to in stock (manager
+     * stock update, cancelled order) and by the periodic sweep. Each row is claimed with one conditional update, so two
+     * managers saving at once, or the sweep running at the same moment, tell each customer only once.
+     */
     @Transactional
     public int notifyRestocked(ProductVariant variant) {
-        // A colour or bike that is no longer sold must not invite anyone to buy it; the rows stay armed for later.
-        if (!isOnSale(variant)) {
+        // A colour or bike that is no longer sold, or has nothing left, must not invite anyone to buy it; the rows stay armed for later.
+        if (variant == null || !StockAlertRules.canNotify(
+            Boolean.TRUE.equals(variant.getActive()),
+            variant.getProduct() != null && Boolean.TRUE.equals(variant.getProduct().getActive()),
+            variant.getStockQuantity())) {
             return 0;
         }
         List<StockAlert> waiting = alertRepository.findByVariantIdAndNotifiedAtIsNull(variant.getId());
         Product product = variant.getProduct();
         LocalDateTime now = LocalDateTime.now();
+        int told = 0;
         for (StockAlert alert : waiting) {
-            alert.setNotifiedAt(now);
+            User user = alert.getUser();
+            if (user == null || "DELETED".equals(user.getAccountStatus())) {
+                continue;
+            }
+            if (alertRepository.claim(alert.getId(), now) == 0) {
+                continue;
+            }
             NotificationEventBridge.publish(new StockAlertTriggeredEvent(
-                alert.getUser().getId(),
+                user.getId(),
                 product.getName(),
                 variant.getColorName() != null ? variant.getColorName() : variant.getVariantName(),
-                product.getSlug()
+                product.getSlug(),
+                languageOf(user.getId())
             ));
+            told++;
         }
-        alertRepository.saveAll(waiting);
-        return waiting.size();
+        return told;
+    }
+
+    /** Same as above for the sweep, which only has the colour's id; runs in its own transaction per colour. */
+    @Transactional
+    public int notifyRestockedById(Long variantId) {
+        return variantRepository.findWithProductById(variantId).map(this::notifyRestocked).orElse(0);
+    }
+
+    /** Colours with someone waiting that are in stock and on sale (for example put back on sale after being sold out). */
+    @Transactional(readOnly = true)
+    public List<Long> waitingVariantIdsInStock() {
+        return alertRepository.findWaitingVariantIdsInStock();
+    }
+
+    private String languageOf(Long userId) {
+        return StockAlertMessages.normalize(preferenceRepository.findByUserId(userId)
+            .map(UserPreference::getLanguage)
+            .orElse("vi"));
     }
 
     private boolean isOnSale(ProductVariant variant) {

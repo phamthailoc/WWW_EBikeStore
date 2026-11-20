@@ -12,6 +12,7 @@ import com.ebike.event.notification.StockAlertTriggeredEvent;
 import com.ebike.repository.notification.NotificationRepository;
 import com.ebike.repository.user.UserPreferenceRepository;
 import com.ebike.service.notification.NotificationStreamService;
+import com.ebike.service.stock.StockAlertMessages;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -87,8 +88,8 @@ public class NotificationCreationService {
         userRepository.findById(event.userId()).ifPresent(user -> createNotification(
             user,
             NotificationType.STOCK_ALERT,
-            "Xe đã có hàng lại",
-            event.productName() + " màu " + event.colorName() + " đã có hàng lại. Bạn có thể đặt mua ngay.",
+            StockAlertMessages.notificationTitle(event.language()),
+            StockAlertMessages.notificationBody(event.language(), event.productName(), event.colorName()),
             null,
             null,
             "/product/" + event.productSlug()

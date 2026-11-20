@@ -4,6 +4,8 @@ import com.ebike.event.notification.StockAlertTriggeredEvent;
 import com.ebike.repository.auth.UserRepository;
 import com.ebike.repository.user.UserPreferenceRepository;
 import com.ebike.service.stock.StockAlertEmailSender;
+import com.ebike.config.AsyncConfiguration;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
@@ -26,6 +28,8 @@ public class StockAlertEmailListener {
         this.emailSender = emailSender;
     }
 
+    // Sent from the bounded mail thread pool after the commit, so a slow SMTP server never holds up the stock update.
+    @Async(AsyncConfiguration.MAIL_EXECUTOR)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void onStockAlertTriggered(StockAlertTriggeredEvent event) {
         userRepository.findById(event.userId()).ifPresent(user -> {
@@ -36,7 +40,7 @@ public class StockAlertEmailListener {
                 .map(preference -> Boolean.FALSE.equals(preference.getNotificationsEnabled()))
                 .orElse(false);
             if (!optedOut) {
-                emailSender.send(user.getEmail(), event.productName(), event.colorName());
+                emailSender.send(user.getEmail(), event.productName(), event.colorName(), event.language());
             }
         });
     }
