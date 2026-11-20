@@ -369,7 +369,9 @@ public class ManagerServiceImpl implements ManagerService {
             if (shipment.getShippedAt() == null) {
                 shipment.setShippedAt(now);
             }
-            shipment.setDeliveredAt(now);
+            if (shipment.getDeliveredAt() == null) {
+                shipment.setDeliveredAt(now);
+            }
         }
 
         syncOrderStatusWithShipment(order, nextStatus);
