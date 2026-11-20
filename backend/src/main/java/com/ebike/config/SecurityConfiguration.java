@@ -83,6 +83,9 @@ public class SecurityConfiguration {
                 .requestMatchers(HttpMethod.GET, "/api/v1/favorites").hasAuthority(PermissionConstants.Customer.FAVORITE_VIEW)
                 .requestMatchers(HttpMethod.POST, "/api/v1/favorites").hasAuthority(PermissionConstants.Customer.FAVORITE_UPDATE)
                 .requestMatchers(HttpMethod.DELETE, "/api/v1/favorites/*").hasAuthority(PermissionConstants.Customer.FAVORITE_UPDATE)
+                .requestMatchers(HttpMethod.GET, "/api/v1/stock-alerts").hasAuthority(PermissionConstants.Customer.FAVORITE_VIEW)
+                .requestMatchers(HttpMethod.POST, "/api/v1/stock-alerts").hasAuthority(PermissionConstants.Customer.FAVORITE_UPDATE)
+                .requestMatchers(HttpMethod.DELETE, "/api/v1/stock-alerts/*").hasAuthority(PermissionConstants.Customer.FAVORITE_UPDATE)
                 .requestMatchers(HttpMethod.GET, "/api/v1/notifications", "/api/v1/notifications/unread-count", "/api/v1/notifications/stream").authenticated()
                 .requestMatchers(HttpMethod.PATCH, "/api/v1/notifications/*/read", "/api/v1/notifications/read-all").authenticated()
                 .requestMatchers(HttpMethod.GET, "/api/v1/payments/history").hasAnyAuthority(

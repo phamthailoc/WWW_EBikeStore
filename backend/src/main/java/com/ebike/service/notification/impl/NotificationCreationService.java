@@ -8,6 +8,7 @@ import com.ebike.event.notification.OrderCreatedEvent;
 import com.ebike.event.notification.OrderStatusChangedEvent;
 import com.ebike.event.notification.PickupDeadlineChangedEvent;
 import com.ebike.event.notification.PaymentStatusChangedEvent;
+import com.ebike.event.notification.StockAlertTriggeredEvent;
 import com.ebike.repository.notification.NotificationRepository;
 import com.ebike.repository.user.UserPreferenceRepository;
 import com.ebike.service.notification.NotificationStreamService;
@@ -79,6 +80,21 @@ public class NotificationCreationService {
         ));
     }
 
+    // V22: a colour the customer asked to be told about is back; the link opens the bike page, not the orders page.
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void handleStockAlertTriggered(StockAlertTriggeredEvent event) {
+        userRepository.findById(event.userId()).ifPresent(user -> createNotification(
+            user,
+            NotificationType.STOCK_ALERT,
+            "Xe đã có hàng lại",
+            event.productName() + " màu " + event.colorName() + " đã có hàng lại. Bạn có thể đặt mua ngay.",
+            null,
+            null,
+            "/product/" + event.productSlug()
+        ));
+    }
+
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void handlePaymentStatusChanged(PaymentStatusChangedEvent event) {
@@ -101,6 +117,18 @@ public class NotificationCreationService {
         Long orderId,
         Long paymentId
     ) {
+        createNotification(user, type, title, message, orderId, paymentId, "/customer/orders");
+    }
+
+    private void createNotification(
+        User user,
+        NotificationType type,
+        String title,
+        String message,
+        Long orderId,
+        Long paymentId,
+        String targetUrl
+    ) {
         // An erased account (V6) gets nothing new: the shop may still close its old orders, but no data is added to it.
         if ("DELETED".equals(user.getAccountStatus())) {
             return;
@@ -117,7 +145,7 @@ public class NotificationCreationService {
         notification.setType(type);
         notification.setTitle(title);
         notification.setMessage(message);
-        notification.setTargetUrl("/customer/orders");
+        notification.setTargetUrl(targetUrl);
         notification.setOrderId(orderId);
         notification.setPaymentId(paymentId);
         notificationRepository.save(notification);

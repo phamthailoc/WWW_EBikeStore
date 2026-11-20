@@ -10,7 +10,7 @@ Mỗi mục ghi: vì sao nên làm, làm gì, dùng lại phần nào đã có, 
 |---|---|---|---|---|
 | V20. Sổ bảo hành điện tử và nhắc bảo dưỡng | P1 | 2–3 ngày | ⬜ Chưa làm | – |
 | V21. Chạy test tự động trên GitHub Actions (CI) | P1 | 1 ngày | 🟡 Đã viết workflow, **chưa chạy thử trên GitHub** (20/11): job Unit test + job Selenium (MariaDB trong Docker, tài khoản thử tạo bằng SQL, app nền, Selenium headless); mặc định chạy Selenium cho mọi PR vào `develop` hoặc `main`; bỏ qua `ChatbotMemorySeleniumTest` nếu chưa có secret `GEMINI_AI_KEY` | `feat/ci-github-actions` (`.github/workflows/test.yml`) |
-| V22. Báo khi có hàng lại | P1 | 1 ngày | ⬜ Chưa làm | – |
+| V22. Báo khi có hàng lại | P1 | 1 ngày | 🟡 Code xong (20/11), chưa kiểm thử Selenium: bảng `stock_alerts`, `POST/GET/DELETE /api/v1/stock-alerts`, nút ở trang xe, danh sách ở trang yêu thích, thông báo + email khi tồn kho 0 lên >0 | `feat/v22-auto` |
 | V23. Đặt lịch lái thử | P2 | 1–2 ngày | ⬜ Chưa làm | – |
 | V24. Trả góp (mô phỏng) | P2 | 2 ngày | ⬜ Chưa làm | – |
 | V25. Phụ kiện và gợi ý mua kèm | P2 | 2 ngày | ⬜ Chưa làm | – |

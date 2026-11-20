@@ -18,6 +18,8 @@
     document.querySelector('#buyNow').disabled=max < 1;
     document.querySelector('#quantityMinus').disabled=item.quantity <= 1;
     document.querySelector('#quantityPlus').disabled=item.quantity >= max;
+    const notify=document.querySelector('#notifyStock');
+    if(notify)notify.hidden=!(item.variantId&&item.stock<1);
     document.querySelector('#stockHint').textContent=max ? `${t('Còn')} ${item.stock} ${t('xe · Tối đa')} ${max} ${t('xe mỗi đơn')}` : t('Màu xe này đã hết hàng');
   }
   function pickVariant(button) {
@@ -71,6 +73,11 @@
   };
   document.querySelector('#addFavorite').onclick=async()=>{
     try{await cart.request('/api/v1/favorites',{productId:item.id});message(t('Đã thêm xe vào danh sách yêu thích.'));}
+    catch(error){if(/Unauthorized|401/i.test(error.message)){location.href='/login?returnTo='+encodeURIComponent(location.pathname);return;}message(error.message,true);}
+  };
+  const notifyButton=document.querySelector('#notifyStock');
+  if(notifyButton)notifyButton.onclick=async()=>{
+    try{await cart.request('/api/v1/stock-alerts',{variantId:item.variantId});message(t('Đã đăng ký. Chúng tôi sẽ báo khi màu này có hàng lại.'));}
     catch(error){if(/Unauthorized|401/i.test(error.message)){location.href='/login?returnTo='+encodeURIComponent(location.pathname);return;}message(error.message,true);}
   };
   document.querySelector('#addCompare').onclick=()=>{

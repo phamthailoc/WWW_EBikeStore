@@ -1,0 +1,20 @@
+package com.ebike.service.stock;
+
+/** The pure rules of V22, kept apart from the database so they can be tested alone. */
+public final class StockAlertRules {
+
+    private StockAlertRules() {
+    }
+
+    /** Customers are told only when a colour goes from none left to some left; a top-up of a colour already in stock tells nobody. */
+    public static boolean isRestock(Integer before, Integer after) {
+        int old = before == null ? 0 : before;
+        int now = after == null ? 0 : after;
+        return old <= 0 && now > 0;
+    }
+
+    /** A customer can only wait for a colour that is sold out right now. */
+    public static boolean canSubscribe(Integer currentStock) {
+        return currentStock == null || currentStock <= 0;
+    }
+}

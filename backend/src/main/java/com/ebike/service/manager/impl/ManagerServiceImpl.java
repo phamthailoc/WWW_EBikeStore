@@ -61,6 +61,7 @@ public class ManagerServiceImpl implements ManagerService {
     private final ProductRepository productRepository;
     private final ProductService productService;
     private final com.ebike.service.admin.AuditLogService auditLog;
+    private final com.ebike.service.stock.StockAlertService stockAlerts;
 
     public ManagerServiceImpl(
         OrderRepository orderRepository,
@@ -68,7 +69,8 @@ public class ManagerServiceImpl implements ManagerService {
         UserRepository userRepository,
         ProductRepository productRepository,
         ProductService productService,
-        com.ebike.service.admin.AuditLogService auditLog
+        com.ebike.service.admin.AuditLogService auditLog,
+        com.ebike.service.stock.StockAlertService stockAlerts
     ) {
         this.orderRepository = orderRepository;
         this.paymentRepository = paymentRepository;
@@ -76,6 +78,7 @@ public class ManagerServiceImpl implements ManagerService {
         this.productRepository = productRepository;
         this.productService = productService;
         this.auditLog = auditLog;
+        this.stockAlerts = stockAlerts;
     }
 
     @Override
@@ -425,6 +428,7 @@ public class ManagerServiceImpl implements ManagerService {
             .findFirst()
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy màu này của sản phẩm."));
 
+        Integer stockBefore = variant.getStockQuantity();
         variant.setStockQuantity(request.stockQuantity());
         // Only active colours can be ordered, so only they make up what the product has in stock.
         product.setStockQuantity(product.getVariants().stream()
@@ -432,7 +436,12 @@ public class ManagerServiceImpl implements ManagerService {
             .mapToInt(candidate -> candidate.getStockQuantity() == null ? 0 : candidate.getStockQuantity())
             .sum());
         auditLog.record("sửa tồn kho theo màu", product.getName() + " / " + variant.getColorName() + ": " + request.stockQuantity());
-        return productService.toSummaryDto(productRepository.save(product));
+        ProductSummaryDto summary = productService.toSummaryDto(productRepository.save(product));
+        // V22: customers waiting for this colour hear about it only when it goes from sold out to in stock.
+        if (Boolean.TRUE.equals(variant.getActive()) && com.ebike.service.stock.StockAlertRules.isRestock(stockBefore, request.stockQuantity())) {
+            stockAlerts.notifyRestocked(variant);
+        }
+        return summary;
     }
 
     private boolean isCustomer(User user) {
