@@ -95,7 +95,18 @@
         if(!response.ok&&response.status!==204)throw Error(t('Không hủy được đăng ký báo hàng. Vui lòng thử lại.'));
         waiting.delete(variantId);message(t('Đã hủy đăng ký báo hàng.'));
       }else{
-        await cart.request('/api/v1/stock-alerts',{variantId});
+        const saved=await cart.request('/api/v1/stock-alerts',{variantId});
+        if(saved&&(saved.notifiedAt||saved.stockQuantity>0)){
+          // The colour came back in stock just now and the server already told the customer: show it as available, not as waiting.
+          const option=document.querySelector(`.variant-option[data-variant-id="${variantId}"]`);
+          if(option&&saved.stockQuantity>0){
+            option.dataset.stock=String(saved.stockQuantity);
+            root.dataset.stock=String(Math.max(Number(root.dataset.stock),saved.stockQuantity));
+            pickVariant(option);
+          }
+          message(saved.stockQuantity>0?t('Màu xe này đang còn hàng, bạn có thể đặt mua ngay.'):t('Màu xe này vừa có hàng lại nhưng đã hết ngay. Bạn có thể bấm lại để đăng ký báo hàng.'));
+          return;
+        }
         waiting.add(variantId);message(t('Đã đăng ký. Chúng tôi sẽ báo khi màu này có hàng lại.'));
       }
       notifyLabel();
