@@ -1,9 +1,8 @@
 package com.ebike.service.stock;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -16,13 +15,14 @@ import com.ebike.model.entity.auth.User;
 import com.ebike.model.entity.product.Product;
 import com.ebike.model.entity.product.ProductVariant;
 import com.ebike.model.entity.product.StockAlert;
-import com.ebike.model.entity.user.UserPreference;
 import com.ebike.repository.auth.UserRepository;
 import com.ebike.repository.product.ProductVariantRepository;
+import com.ebike.repository.product.StockAlertRecipient;
 import com.ebike.repository.product.StockAlertRepository;
-import com.ebike.repository.user.UserPreferenceRepository;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,7 +39,6 @@ class StockAlertDeliveryTest {
     @Mock StockAlertRepository alerts;
     @Mock UserRepository users;
     @Mock ProductVariantRepository variants;
-    @Mock UserPreferenceRepository preferences;
     @Mock ApplicationEventPublisher publisher;
     @Mock jakarta.persistence.EntityManager entityManager;
     @Mock org.springframework.cache.CacheManager cacheManager;
@@ -49,7 +48,7 @@ class StockAlertDeliveryTest {
     ProductVariant variant;
 
     @BeforeEach void setup() {
-        delivery = new StockAlertDelivery(alerts, users, variants, preferences, entityManager, cacheManager);
+        delivery = new StockAlertDelivery(alerts, users, variants, entityManager, cacheManager);
         new NotificationEventBridge().setApplicationEventPublisher(publisher);
         user = new User();
         user.setId(7L);
@@ -64,8 +63,6 @@ class StockAlertDeliveryTest {
         variant.setColorName("Trắng");
         variant.setStockQuantity(3);
         variant.setProduct(product);
-        lenient().when(users.findAllById(any())).thenReturn(List.of(user));
-        lenient().when(preferences.findByUserIdIn(any())).thenReturn(List.of());
         // everyone in the test is a customer unless a test says otherwise
         lenient().when(users.findCustomerIds(any())).thenAnswer(invocation -> new java.util.ArrayList<Long>(invocation.<java.util.Collection<Long>>getArgument(0)));
     }
@@ -89,22 +86,33 @@ class StockAlertDeliveryTest {
         return (StockAlertTriggeredEvent) captor.getValue();
     }
 
+    private final java.util.Map<Long, String> languages = new java.util.HashMap<>();
+
+    /** The locked rows, and the join that gives their owners' account state and language. */
+    private void waiting(StockAlert... rows) {
+        when(alerts.lockWaitingByVariantId(11L)).thenReturn(List.of(rows));
+        lenient().when(alerts.findRecipients(any())).thenReturn(java.util.Arrays.stream(rows)
+            .map(row -> new StockAlertRecipient(row.getId(), row.getUser().getId(), row.getUser().getAccountStatus(),
+                row.getUser().getActive(), languages.get(row.getUser().getId())))
+            .toList());
+    }
+
     @Test void restockTellsEveryWaitingCustomerOnce() {
         StockAlert row = waitingRow(1L, user);
-        when(alerts.lockWaitingByVariantId(11L)).thenReturn(List.of(row));
+        waiting(row);
         assertEquals(1, delivery.deliver(variant));
         StockAlertTriggeredEvent event = publishedEvent();
         assertEquals(7L, event.userId());
         assertEquals("kinetic-x", event.productSlug());
         assertEquals("vi", event.language(), "no saved preference means Vietnamese");
-        assertNotNull(row.getNotifiedAt(), "the row is marked as used");
-        verify(alerts).saveAll(List.of(row));
+        verify(alerts).markNotified(eq(Set.of(1L)), any(LocalDateTime.class));
+        verify(alerts, never()).deleteByIds(any());
     }
 
     @Test void tellingCustomersClearsTheProductPageCaches() {
         when(cacheManager.getCache(com.ebike.config.CacheNames.PRODUCT_LIST_CACHE)).thenReturn(cache);
         when(cacheManager.getCache(com.ebike.config.CacheNames.PRODUCT_DETAIL_CACHE)).thenReturn(cache);
-        when(alerts.lockWaitingByVariantId(11L)).thenReturn(List.of(waitingRow(1L, user)));
+        waiting(waitingRow(1L, user));
         delivery.deliver(variant);
         verify(cache, times(2)).clear();
     }
@@ -116,53 +124,46 @@ class StockAlertDeliveryTest {
     }
 
     @Test void restockUsesTheLanguageSavedInTheProfile() {
-        UserPreference preference = new UserPreference();
-        preference.setUser(user);
-        preference.setLanguage("en");
-        when(preferences.findByUserIdIn(any())).thenReturn(List.of(preference));
-        when(alerts.lockWaitingByVariantId(11L)).thenReturn(List.of(waitingRow(1L, user)));
+        languages.put(7L, "en");
+        waiting(waitingRow(1L, user));
         delivery.deliver(variant);
         assertEquals("en", publishedEvent().language());
     }
 
-    @Test void accountsAndPreferencesAreReadOncePerColourNotOncePerCustomer() {
+    @Test void accountsAndLanguagesAreReadOncePerColourAndRowsMarkedWithOneStatement() {
         User other = new User();
         other.setId(8L);
-        when(users.findAllById(any())).thenReturn(List.of(user, other));
-        when(alerts.lockWaitingByVariantId(11L)).thenReturn(List.of(waitingRow(1L, user), waitingRow(2L, other)));
+        waiting(waitingRow(1L, user), waitingRow(2L, other));
         assertEquals(2, delivery.deliver(variant));
-        verify(users, times(1)).findAllById(any());
-        verify(preferences, times(1)).findByUserIdIn(any());
-        verify(preferences, never()).findByUserId(any());
+        verify(alerts, times(1)).findRecipients(any());
+        verify(users, times(1)).findCustomerIds(any());
+        verify(alerts, times(1)).markNotified(eq(Set.of(1L, 2L)), any(LocalDateTime.class));
+        verify(alerts, never()).saveAll(any());
     }
 
     @Test void erasedAccountsAreSkippedAndStayUnmarked() {
         user.setAccountStatus("DELETED");
-        StockAlert row = waitingRow(1L, user);
-        when(alerts.lockWaitingByVariantId(11L)).thenReturn(List.of(row));
+        waiting(waitingRow(1L, user));
         assertEquals(0, delivery.deliver(variant));
-        assertNull(row.getNotifiedAt());
+        verify(alerts, never()).markNotified(any(), any());
         verify(publisher, never()).publishEvent(any(Object.class));
     }
 
     @Test void accountsDisabledByAnAdminAreSkippedAndStayArmed() {
         user.setAccountStatus("SUSPENDED");
         user.setActive(false);
-        StockAlert row = waitingRow(1L, user);
-        when(alerts.lockWaitingByVariantId(11L)).thenReturn(List.of(row));
+        waiting(waitingRow(1L, user));
         assertEquals(0, delivery.deliver(variant));
-        assertNull(row.getNotifiedAt());
+        verify(alerts, never()).markNotified(any(), any());
         verify(publisher, never()).publishEvent(any(Object.class));
     }
 
     @Test void aCustomerWhoBecameStaffLosesTheRowAndIsNotTold() {
         org.mockito.Mockito.doReturn(List.of()).when(users).findCustomerIds(any());
-        StockAlert row = waitingRow(1L, user);
-        when(alerts.lockWaitingByVariantId(11L)).thenReturn(List.of(row));
+        waiting(waitingRow(1L, user));
         assertEquals(0, delivery.deliver(variant));
-        verify(alerts).deleteAll(List.of(row));
-        verify(alerts).saveAll(List.of());
-        assertNull(row.getNotifiedAt());
+        verify(alerts).deleteByIds(Set.of(1L));
+        verify(alerts, never()).markNotified(any(), any());
         verify(publisher, never()).publishEvent(any(Object.class));
     }
 
@@ -186,7 +187,7 @@ class StockAlertDeliveryTest {
 
     @Test void sweepByIdNotifiesAColourPutBackOnSale() {
         when(variants.findWithProductById(11L)).thenReturn(Optional.of(variant));
-        when(alerts.lockWaitingByVariantId(11L)).thenReturn(List.of(waitingRow(1L, user)));
+        waiting(waitingRow(1L, user));
         assertEquals(1, delivery.deliver(11L));
         verify(entityManager).refresh(variant);
     }

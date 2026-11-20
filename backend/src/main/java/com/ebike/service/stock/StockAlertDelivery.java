@@ -3,20 +3,17 @@ package com.ebike.service.stock;
 import com.ebike.config.CacheNames;
 import com.ebike.event.notification.StockAlertTriggeredEvent;
 import com.ebike.listener.notification.NotificationEventBridge;
-import com.ebike.model.entity.auth.User;
 import com.ebike.model.entity.product.Product;
 import com.ebike.model.entity.product.ProductVariant;
 import com.ebike.model.entity.product.StockAlert;
-import com.ebike.model.entity.user.UserPreference;
 import com.ebike.repository.auth.UserRepository;
 import com.ebike.repository.product.ProductVariantRepository;
+import com.ebike.repository.product.StockAlertRecipient;
 import com.ebike.repository.product.StockAlertRepository;
-import com.ebike.repository.user.UserPreferenceRepository;
 import jakarta.persistence.EntityManager;
 import java.time.LocalDateTime;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.springframework.cache.CacheManager;
@@ -26,8 +23,8 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * V22: tells every customer waiting for a colour. A separate bean so that callers outside it (after-commit hooks, the
  * sweep) go through the transaction proxy. Per colour it costs a fixed number of queries however many customers wait:
- * one locking read of the waiting rows, one read of their accounts, one read of their preferences and one batched
- * update.
+ * one locking read of the waiting rows, one join for their accounts and languages, one read of which are customers,
+ * and one UPDATE (plus one DELETE when needed).
  */
 @Service
 public class StockAlertDelivery {
@@ -35,7 +32,6 @@ public class StockAlertDelivery {
     private final StockAlertRepository alertRepository;
     private final UserRepository userRepository;
     private final ProductVariantRepository variantRepository;
-    private final UserPreferenceRepository preferenceRepository;
     private final EntityManager entityManager;
     private final CacheManager cacheManager;
 
@@ -43,14 +39,12 @@ public class StockAlertDelivery {
         StockAlertRepository alertRepository,
         UserRepository userRepository,
         ProductVariantRepository variantRepository,
-        UserPreferenceRepository preferenceRepository,
         EntityManager entityManager,
         CacheManager cacheManager
     ) {
         this.alertRepository = alertRepository;
         this.userRepository = userRepository;
         this.variantRepository = variantRepository;
-        this.preferenceRepository = preferenceRepository;
         this.entityManager = entityManager;
         this.cacheManager = cacheManager;
     }
@@ -85,51 +79,44 @@ public class StockAlertDelivery {
         if (waiting.isEmpty()) {
             return 0;
         }
-        Set<Long> userIds = waiting.stream()
-            .map(alert -> alert.getUser() == null ? null : alert.getUser().getId())
-            .filter(java.util.Objects::nonNull)
-            .collect(Collectors.toSet());
-        Map<Long, User> users = new HashMap<>();
-        userRepository.findAllById(userIds).forEach(user -> users.put(user.getId(), user));
-        Map<Long, String> languages = new HashMap<>();
-        for (UserPreference preference : preferenceRepository.findByUserIdIn(userIds)) {
-            languages.put(preference.getUser().getId(), preference.getLanguage());
-        }
+        // One join gives every waiting customer's account state and language; no read per customer.
+        List<StockAlertRecipient> recipients = alertRepository.findRecipients(waiting.stream().map(StockAlert::getId).toList());
+        Set<Long> userIds = recipients.stream().map(StockAlertRecipient::userId).collect(Collectors.toSet());
 
         Product product = variant.getProduct();
         String colour = variant.getColorName() != null ? variant.getColorName() : variant.getVariantName();
         LocalDateTime now = LocalDateTime.now();
         // Only customers can see and cancel their rows (the API is closed to staff): a customer whose role was changed
         // since (for example promoted to Manager) loses the row instead of getting notices they cannot manage.
-        Set<Long> customerIds = new java.util.HashSet<>(userRepository.findCustomerIds(userIds));
-        List<StockAlert> toTell = new java.util.ArrayList<>(waiting);
-        List<StockAlert> noLongerCustomers = new java.util.ArrayList<>();
+        Set<Long> customerIds = new HashSet<>(userRepository.findCustomerIds(userIds));
+        Set<Long> toDelete = new HashSet<>();
+        Set<Long> toMark = new HashSet<>();
         int told = 0;
-        for (StockAlert alert : waiting) {
-            User user = alert.getUser() == null ? null : users.get(alert.getUser().getId());
-            if (user != null && !customerIds.contains(user.getId())) {
-                noLongerCustomers.add(alert);
-                toTell.remove(alert);
+        for (StockAlertRecipient recipient : recipients) {
+            if (!customerIds.contains(recipient.userId())) {
+                toDelete.add(recipient.alertId());
                 continue;
             }
-            if (user == null || !StockAlertRules.canReceive(user.getAccountStatus(), user.getActive())) {
+            if (!StockAlertRules.canReceive(recipient.accountStatus(), recipient.active())) {
                 // not a working account (erased or disabled by an admin): the row stays armed in case the account comes back
                 continue;
             }
-            alert.setNotifiedAt(now);
+            toMark.add(recipient.alertId());
             NotificationEventBridge.publish(new StockAlertTriggeredEvent(
-                user.getId(),
+                recipient.userId(),
                 product.getName(),
                 colour,
                 product.getSlug(),
-                StockAlertMessages.normalize(languages.get(user.getId()))
+                StockAlertMessages.normalize(recipient.language())
             ));
             told++;
         }
-        if (!noLongerCustomers.isEmpty()) {
-            alertRepository.deleteAll(noLongerCustomers);
+        if (!toDelete.isEmpty()) {
+            alertRepository.deleteByIds(toDelete);
         }
-        alertRepository.saveAll(toTell);
+        if (!toMark.isEmpty()) {
+            alertRepository.markNotified(toMark, now);
+        }
         if (told > 0) {
             evictProductPages();
         }
