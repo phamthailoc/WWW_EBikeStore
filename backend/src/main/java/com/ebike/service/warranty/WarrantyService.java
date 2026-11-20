@@ -173,6 +173,8 @@ public class WarrantyService {
         WarrantyClaim claim = claims.findById(id)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy yêu cầu bảo hành."));
         String previous = claim.getStatus();
+        String previousNote = claim.getStaffNote();
+        boolean closed = WarrantyClaim.DONE.equals(previous) || WarrantyClaim.REJECTED.equals(previous);
         if (request != null && request.status() != null && !request.status().isBlank()) {
             String next = request.status().trim().toUpperCase(Locale.ROOT);
             if (!WarrantyRules.isKnownStatus(next)) {
@@ -184,14 +186,23 @@ public class WarrantyService {
             claim.setStatus(next);
         }
         if (request != null && request.staffNote() != null) {
+            if (closed) {
+                throw bad("Yêu cầu đã đóng, không thể sửa ghi chú.");
+            }
             String note = request.staffNote().trim();
             if (note.length() > 3000) {
                 throw bad("Ghi chú tối đa 3000 ký tự.");
             }
             claim.setStaffNote(note.isEmpty() ? null : note);
         }
+        if (WarrantyClaim.REJECTED.equals(claim.getStatus()) && !WarrantyClaim.REJECTED.equals(previous) && (claim.getStaffNote() == null || claim.getStaffNote().isBlank())) {
+            throw bad("Vui lòng ghi lý do khi từ chối yêu cầu.");
+        }
+        boolean changed = !previous.equals(claim.getStatus()) || !java.util.Objects.equals(previousNote, claim.getStaffNote());
         WarrantyClaim saved = claims.save(claim);
-        auditLog.record("xử lý yêu cầu bảo hành", "#" + saved.getId() + ": " + previous + " → " + saved.getStatus());
+        if (changed) {
+            auditLog.record("xử lý yêu cầu bảo hành", "#" + saved.getId() + ": " + previous + " → " + saved.getStatus());
+        }
         if (!previous.equals(saved.getStatus())) {
             OrderItemUnit unit = saved.getUnit();
             NotificationEventBridge.publish(new WarrantyClaimStatusChangedEvent(
