@@ -158,7 +158,7 @@ public class WarrantyService {
         claim.setUnit(unit);
         claim.setUser(user);
         claim.setDescription(text);
-        claim.setOutOfWarranty(!WarrantyRules.ACTIVE.equals(coverage));
+        claim.setOutOfWarranty(WarrantyRules.EXPIRED.equals(coverage));
         return toClaimResponse(claims.save(claim));
     }
 

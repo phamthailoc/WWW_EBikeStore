@@ -1,6 +1,7 @@
 package com.ebike.service.warranty;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -200,5 +201,16 @@ class WarrantyServiceTest {
         ResponseStatusException error = assertThrows(ResponseStatusException.class, () -> service.lookup("frame12345"));
 
         assertEquals(404, error.getStatusCode().value());
+    }
+
+    @Test
+    void aBikeWithoutAWarrantyLengthIsNotMarkedAsOutOfWarranty() {
+        User me = user(1L, "me");
+        when(users.findByUsername("me")).thenReturn(Optional.of(me));
+        when(units.findForWarrantyById(7L)).thenReturn(Optional.of(unitOf(me)));
+
+        WarrantyClaimResponse created = service.createClaim("me", 7L, "The motor makes a noise");
+
+        assertFalse(created.outOfWarranty());
     }
 }
