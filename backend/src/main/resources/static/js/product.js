@@ -5,6 +5,14 @@
   const cart = window.KineticCart, quantity = document.querySelector('#productQuantity');
   const notice = document.querySelector('#productNotice');
   const baseImage = root.dataset.image;
+  // Colours this customer already waits for (stays empty for guests and staff); drives the label of #notifyStock.
+  const waiting = new Set();
+  const notifyLabel = () => {
+    const button = document.querySelector('#notifyStock');
+    if (!button) return;
+    if (!button.dataset.label) button.dataset.label = button.textContent.trim();
+    button.textContent = waiting.has(item.variantId) ? t('Đã đăng ký báo hàng · bấm để hủy') : button.dataset.label;
+  };
   const gallery = document.querySelector('#productGallery');
   const item = {id:Number(root.dataset.id), name:root.dataset.name, price:Number(root.dataset.price), slug:root.dataset.slug, image:baseImage, quantity:1, stock:Number(root.dataset.stock)};
   function message(text, error=false) {
@@ -19,7 +27,7 @@
     document.querySelector('#quantityMinus').disabled=item.quantity <= 1;
     document.querySelector('#quantityPlus').disabled=item.quantity >= max;
     const notify=document.querySelector('#notifyStock');
-    if(notify)notify.hidden=!(item.variantId&&item.stock<1);
+    if(notify){notify.hidden=!(item.variantId&&item.stock<1);notifyLabel();}
     document.querySelector('#stockHint').textContent=max ? `${t('Còn')} ${item.stock} ${t('xe · Tối đa')} ${max} ${t('xe mỗi đơn')}` : t('Màu xe này đã hết hàng');
   }
   function pickVariant(button) {
@@ -76,18 +84,45 @@
     catch(error){if(/Unauthorized|401/i.test(error.message)){location.href='/login?returnTo='+encodeURIComponent(location.pathname);return;}message(error.message,true);}
   };
   const notifyButton=document.querySelector('#notifyStock');
-  if(notifyButton)notifyButton.onclick=async()=>{
-    if(notifyButton.disabled)return;
+  const goToLogin=variantId=>{location.href='/login?returnTo='+encodeURIComponent(location.pathname+'?notify='+variantId);};
+  const sendNotify=async(auto)=>{
+    if(!notifyButton||notifyButton.disabled)return;
     notifyButton.disabled=true;
-    try{await cart.request('/api/v1/stock-alerts',{variantId:item.variantId});message(t('Đã đăng ký. Chúng tôi sẽ báo khi màu này có hàng lại.'));}
+    const variantId=item.variantId;
+    try{
+      if(waiting.has(variantId)){
+        const response=await fetch(`/api/v1/stock-alerts/${variantId}`,{method:'DELETE',credentials:'same-origin'});
+        if(!response.ok&&response.status!==204)throw Error(t('Không hủy được đăng ký báo hàng. Vui lòng thử lại.'));
+        waiting.delete(variantId);message(t('Đã hủy đăng ký báo hàng.'));
+      }else{
+        await cart.request('/api/v1/stock-alerts',{variantId});
+        waiting.add(variantId);message(t('Đã đăng ký. Chúng tôi sẽ báo khi màu này có hàng lại.'));
+      }
+      notifyLabel();
+    }
     catch(error){
-      if(/Unauthorized|401/i.test(error.message)){location.href='/login?returnTo='+encodeURIComponent(location.pathname);return;}
+      if(/Unauthorized|401/i.test(error.message)){if(!auto)goToLogin(variantId);return;}
       // 403: a staff account (Manager, Admin...) is signed in; only customers can ask to be told.
       if(/\b403\b|Forbidden/i.test(error.message)){message(t('Chỉ tài khoản khách hàng mới đăng ký báo hàng được. Hãy đăng nhập bằng tài khoản khách hàng.'),true);}
       else message(t(error.message),true);
     }
     finally{notifyButton.disabled=false;}
   };
+  if(notifyButton){
+    notifyButton.onclick=()=>sendNotify(false);
+    // Which colours does this customer already wait for? Guests (401) and staff (403) just get the plain button.
+    fetch('/api/v1/stock-alerts',{credentials:'same-origin',headers:{Accept:'application/json'}})
+      .then(r=>r.ok?r.json():[])
+      .then(rows=>{(rows||[]).forEach(r=>{if(!r.notifiedAt&&r.stockQuantity<1)waiting.add(r.variantId);});notifyLabel();
+        // Back from the login page after pressing the button as a guest: finish what the customer asked for.
+        const wanted=Number(new URLSearchParams(location.search).get('notify'));
+        if(wanted){
+          try{history.replaceState(null,'',location.pathname);}catch{}
+          const option=document.querySelector(`.variant-option[data-variant-id="${wanted}"]`);
+          if(option){pickVariant(option);if(!notifyButton.hidden&&!waiting.has(wanted))sendNotify(true);}
+        }})
+      .catch(()=>{});
+  }
   document.querySelector('#addCompare').onclick=()=>{
     let ids=[];try{ids=JSON.parse(localStorage.getItem('kinetic_compare')||'[]')}catch{}
     if(!ids.includes(item.id))ids.push(item.id);
