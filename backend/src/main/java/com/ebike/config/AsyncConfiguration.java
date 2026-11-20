@@ -3,8 +3,11 @@ package com.ebike.config;
 import java.util.concurrent.Executor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.task.TaskExecutionAutoConfiguration;
+import org.springframework.boot.task.TaskExecutorBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.annotation.AsyncAnnotationBeanPostProcessor;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
@@ -34,6 +37,16 @@ public class AsyncConfiguration {
         executor.setWaitForTasksToCompleteOnShutdown(true);
         executor.setAwaitTerminationSeconds(30);
         return executor;
+    }
+
+    /**
+     * Spring Boot creates its default "applicationTaskExecutor" (used by MVC async requests and by spring.task.execution.*
+     * settings) only when the application has no Executor bean at all. The two pools above are Executor beans, so the
+     * default is declared here again, built by Boot's own builder so that spring.task.execution.* still applies.
+     */
+    @Bean(name = {TaskExecutionAutoConfiguration.APPLICATION_TASK_EXECUTOR_BEAN_NAME, AsyncAnnotationBeanPostProcessor.DEFAULT_TASK_EXECUTOR_BEAN_NAME})
+    public ThreadPoolTaskExecutor applicationTaskExecutor(TaskExecutorBuilder builder) {
+        return builder.build();
     }
 
     /**
