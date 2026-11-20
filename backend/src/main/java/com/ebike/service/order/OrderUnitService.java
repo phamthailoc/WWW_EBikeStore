@@ -8,6 +8,7 @@ import com.ebike.model.entity.order.OrderItemUnit;
 import com.ebike.model.entity.order.OrderStatus;
 import com.ebike.repository.order.OrderItemUnitRepository;
 import com.ebike.repository.order.OrderRepository;
+import com.ebike.repository.warranty.WarrantyClaimRepository;
 import com.ebike.service.admin.AuditLogService;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -33,10 +34,13 @@ public class OrderUnitService {
     private final OrderRepository orders;
     private final OrderItemUnitRepository unitRepository;
     private final AuditLogService auditLog;
+    private final WarrantyClaimRepository warrantyClaims;
 
-    public OrderUnitService(OrderRepository orders, OrderItemUnitRepository unitRepository, AuditLogService auditLog) {
+    public OrderUnitService(OrderRepository orders, OrderItemUnitRepository unitRepository, AuditLogService auditLog,
+                            WarrantyClaimRepository warrantyClaims) {
         this.orders = orders;
         this.unitRepository = unitRepository;
+        this.warrantyClaims = warrantyClaims;
         this.auditLog = auditLog;
     }
 
@@ -92,16 +96,54 @@ public class OrderUnitService {
             }
         }
 
-        // Delete the old rows first and flush, so a frame number that stays the same does not hit the unique key.
-        order.getItems().forEach(item -> item.getUnits().clear());
-        orders.saveAndFlush(order);
+        // Keep the rows that already exist (warranty requests and maintenance reminders hang off their ids): a vehicle
+        // whose frame number stays is updated in place, a changed number reuses a spare row of the same line.
+        Map<String, OrderItemUnit> byFrame = new HashMap<>();
+        order.getItems().forEach(item -> item.getUnits().forEach(unit -> byFrame.put(unit.getFrameNumber(), unit)));
+        Set<OrderItemUnit> kept = new HashSet<>();
+        List<NormalizedEntry> unmatched = new ArrayList<>();
         for (NormalizedEntry entry : normalized) {
-            OrderItemUnit unit = new OrderItemUnit();
-            unit.setOrderItem(entry.item());
-            unit.setFrameNumber(entry.frame());
+            OrderItemUnit unit = byFrame.get(entry.frame());
+            if (unit == null) {
+                unmatched.add(entry);
+                continue;
+            }
+            if (unit.getOrderItem() != entry.item()) {
+                unit.getOrderItem().getUnits().remove(unit);
+                unit.setOrderItem(entry.item());
+                entry.item().getUnits().add(unit);
+            }
             unit.setEngineNumber(entry.engine());
-            entry.item().getUnits().add(unit);
+            kept.add(unit);
         }
+        List<OrderItemUnit> spare = new ArrayList<>();
+        for (OrderItem item : order.getItems()) {
+            for (OrderItemUnit unit : item.getUnits()) {
+                if (!kept.contains(unit)) {
+                    spare.add(unit);
+                }
+            }
+        }
+        for (NormalizedEntry entry : unmatched) {
+            OrderItemUnit reuse = spare.stream().filter(unit -> unit.getOrderItem() == entry.item()).findFirst().orElse(null);
+            if (reuse == null) {
+                OrderItemUnit unit = new OrderItemUnit();
+                unit.setOrderItem(entry.item());
+                unit.setFrameNumber(entry.frame());
+                unit.setEngineNumber(entry.engine());
+                entry.item().getUnits().add(unit);
+            } else {
+                spare.remove(reuse);
+                reuse.setFrameNumber(entry.frame());
+                reuse.setEngineNumber(entry.engine());
+            }
+        }
+        List<Long> removedIds = spare.stream().map(OrderItemUnit::getId).filter(java.util.Objects::nonNull).toList();
+        if (!removedIds.isEmpty() && !warrantyClaims.findByUnitIdIn(removedIds).isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                "Xe đã có yêu cầu bảo hành, không thể xóa số khung của xe này.");
+        }
+        spare.forEach(unit -> unit.getOrderItem().getUnits().remove(unit));
         orders.saveAndFlush(order);
         auditLog.record("nhập số khung, số máy", order.getOrderNumber() + ": " + normalized.size() + " xe");
 

@@ -20,6 +20,7 @@ import com.ebike.model.entity.product.ProductSpecification;
 import com.ebike.model.entity.product.VehicleType;
 import com.ebike.repository.order.OrderItemUnitRepository;
 import com.ebike.repository.order.OrderRepository;
+import com.ebike.repository.warranty.WarrantyClaimRepository;
 import com.ebike.service.admin.AuditLogService;
 import java.util.List;
 import java.util.Optional;
@@ -37,6 +38,7 @@ class OrderUnitServiceTest {
     @Mock OrderRepository orders;
     @Mock OrderItemUnitRepository unitRepository;
     @Mock AuditLogService auditLog;
+    @Mock WarrantyClaimRepository warrantyClaims;
     OrderUnitService service;
     Order order;
     OrderItem bikes;
@@ -56,7 +58,7 @@ class OrderUnitServiceTest {
     }
 
     @BeforeEach void setup() {
-        service = new OrderUnitService(orders, unitRepository, auditLog);
+        service = new OrderUnitService(orders, unitRepository, auditLog, warrantyClaims);
         bikes = line(1L, VehicleType.E_MOTORBIKE, 2);
         accessory = line(2L, VehicleType.ACCESSORY, 1);
         order = new Order();
@@ -124,5 +126,35 @@ class OrderUnitServiceTest {
         assertThrows(ResponseStatusException.class,
             () -> service.replaceUnits(10L, new OrderUnitsRequest(List.of(new Entry(1L, "RLHABC12345", "M1234567")))));
         verify(orders, never()).saveAndFlush(any());
+    }
+
+    private OrderItemUnit existing(long id, String frame, String engine) {
+        OrderItemUnit unit = new OrderItemUnit();
+        ReflectionTestUtils.setField(unit, "id", id);
+        unit.setOrderItem(bikes);
+        unit.setFrameNumber(frame);
+        unit.setEngineNumber(engine);
+        bikes.getUnits().add(unit);
+        return unit;
+    }
+
+    @Test void savingAgainKeepsTheRowsSoWarrantyRecordsSurvive() {
+        OrderItemUnit first = existing(7L, "RLHABC12345", "M1234567");
+        OrderItemUnit second = existing(8L, "RLHABC12346", "M1234568");
+        service.replaceUnits(10L, new OrderUnitsRequest(List.of(
+            new Entry(1L, "RLHABC12345", "M9999999"), new Entry(1L, "RLHABC99999", "M1234568"))));
+        assertEquals(2, bikes.getUnits().size());
+        assertTrue(bikes.getUnits().contains(first));
+        assertTrue(bikes.getUnits().contains(second));
+        assertEquals("M9999999", first.getEngineNumber());
+        assertEquals("RLHABC99999", second.getFrameNumber());
+    }
+
+    @Test void aVehicleWithWarrantyRequestsCannotLoseItsNumbers() {
+        existing(7L, "RLHABC12345", "M1234567");
+        when(warrantyClaims.findByUnitIdIn(any())).thenReturn(List.of(new com.ebike.model.entity.warranty.WarrantyClaim()));
+        var ex = assertThrows(ResponseStatusException.class, () -> service.replaceUnits(10L, new OrderUnitsRequest(List.of())));
+        assertEquals(409, ex.getStatusCode().value());
+        assertEquals(1, bikes.getUnits().size());
     }
 }
