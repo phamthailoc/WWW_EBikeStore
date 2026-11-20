@@ -96,8 +96,9 @@ class StockAlertSeleniumTest extends StorefrontSeleniumTest {
             click(notify);
             wait.until(d -> alertsOrZero(variantId) == 1);
 
-            // 2. asking a second time (button and API) does not create a duplicate
-            click(notify);
+            // 2. the button now offers to cancel; asking again through the API (twice) does not create a duplicate
+            wait.until(d -> d.findElement(notify).getText().contains("Đã đăng ký"));
+            call(api, "POST", "/api/v1/stock-alerts", Map.of("variantId", variantId));
             call(api, "POST", "/api/v1/stock-alerts", Map.of("variantId", variantId));
             assertEquals(1, alertsForVariant(variantId), "one waiting row per customer and colour");
 
