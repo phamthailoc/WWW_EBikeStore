@@ -95,13 +95,8 @@ public class StockAlertService {
      * back on sale already, the customer is told right away instead of waiting for the periodic sweep.
      */
     private StockAlert tellIfRestockedMeanwhile(StockAlert saved, Long userId, Long variantId) {
-        boolean backOnSale = variantRepository.findWithProductById(variantId)
-            .filter(fresh -> StockAlertRules.canNotify(
-                Boolean.TRUE.equals(fresh.getActive()),
-                fresh.getProduct() != null && Boolean.TRUE.equals(fresh.getProduct().getActive()),
-                fresh.getStockQuantity()))
-            .isPresent();
-        if (!backOnSale) {
+        // A scalar query, not findWithProductById: with open-in-view that would return the entity already loaded (stock 0).
+        if (!variantRepository.isOnSaleAndInStock(variantId)) {
             return saved;
         }
         tellWaiting(variantId);

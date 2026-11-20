@@ -11,6 +11,7 @@ import com.ebike.repository.auth.UserRepository;
 import com.ebike.repository.product.ProductVariantRepository;
 import com.ebike.repository.product.StockAlertRepository;
 import com.ebike.repository.user.UserPreferenceRepository;
+import jakarta.persistence.EntityManager;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -33,23 +34,32 @@ public class StockAlertDelivery {
     private final UserRepository userRepository;
     private final ProductVariantRepository variantRepository;
     private final UserPreferenceRepository preferenceRepository;
+    private final EntityManager entityManager;
 
     public StockAlertDelivery(
         StockAlertRepository alertRepository,
         UserRepository userRepository,
         ProductVariantRepository variantRepository,
-        UserPreferenceRepository preferenceRepository
+        UserPreferenceRepository preferenceRepository,
+        EntityManager entityManager
     ) {
         this.alertRepository = alertRepository;
         this.userRepository = userRepository;
         this.variantRepository = variantRepository;
         this.preferenceRepository = preferenceRepository;
+        this.entityManager = entityManager;
     }
 
     // A new transaction even when called from an after-commit hook, where the finished stock transaction is still bound to the thread.
     @Transactional(propagation = org.springframework.transaction.annotation.Propagation.REQUIRES_NEW)
     public int deliver(Long variantId) {
-        return variantRepository.findWithProductById(variantId).map(this::deliver).orElse(0);
+        return variantRepository.findWithProductById(variantId)
+            .map(variant -> {
+                // With open-in-view the variant may already sit in this thread's persistence context with an old stock.
+                entityManager.refresh(variant);
+                return deliver(variant);
+            })
+            .orElse(0);
     }
 
     /**

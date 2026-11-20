@@ -41,12 +41,13 @@ class StockAlertDeliveryTest {
     @Mock ProductVariantRepository variants;
     @Mock UserPreferenceRepository preferences;
     @Mock ApplicationEventPublisher publisher;
+    @Mock jakarta.persistence.EntityManager entityManager;
     StockAlertDelivery delivery;
     User user;
     ProductVariant variant;
 
     @BeforeEach void setup() {
-        delivery = new StockAlertDelivery(alerts, users, variants, preferences);
+        delivery = new StockAlertDelivery(alerts, users, variants, preferences, entityManager);
         new NotificationEventBridge().setApplicationEventPublisher(publisher);
         user = new User();
         user.setId(7L);
@@ -158,5 +159,6 @@ class StockAlertDeliveryTest {
         when(variants.findWithProductById(11L)).thenReturn(Optional.of(variant));
         when(alerts.lockWaitingByVariantId(11L)).thenReturn(List.of(waitingRow(1L, user)));
         assertEquals(1, delivery.deliver(11L));
+        verify(entityManager).refresh(variant);
     }
 }
