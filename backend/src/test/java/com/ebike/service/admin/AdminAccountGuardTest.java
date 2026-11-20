@@ -50,6 +50,7 @@ class AdminAccountGuardTest {
     @Mock com.ebike.repository.user.UserFavoriteRepository favorites;
     @Mock com.ebike.repository.user.UserPreferenceRepository preferences;
     @Mock com.ebike.repository.notification.NotificationRepository notifications;
+    @Mock com.ebike.repository.product.StockAlertRepository stockAlerts;
     @Mock com.ebike.service.product.ProductReviewService reviews;
     @Mock com.ebike.service.admin.AuditLogService auditLog;
     AdminServiceImpl service;
@@ -59,7 +60,7 @@ class AdminAccountGuardTest {
 
     @BeforeEach void setup() {
         service = new AdminServiceImpl(pricingRules, promotions, audits, users, roles, encoder, orders,
-            new AccountErasure(addresses, favorites, preferences, notifications, reviews, encoder),
+            new AccountErasure(addresses, favorites, preferences, notifications, stockAlerts, reviews, encoder),
             auditLog);
         me = account(1L, "admin.user", "ADMIN");
         otherAdmin = account(2L, "second.admin", "ADMIN");

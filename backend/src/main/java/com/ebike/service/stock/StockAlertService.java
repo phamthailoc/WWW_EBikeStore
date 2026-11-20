@@ -12,6 +12,7 @@ import com.ebike.repository.product.ProductVariantRepository;
 import com.ebike.repository.product.StockAlertRepository;
 import java.time.LocalDateTime;
 import java.util.List;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,14 +40,16 @@ public class StockAlertService {
     public List<StockAlertResponse> list(String username) {
         requireUsername(username);
         return alertRepository.findByUserUsernameOrderByCreatedAtDesc(username).stream()
-            .filter(alert -> alert.getVariant().getProduct() != null
-                && Boolean.TRUE.equals(alert.getVariant().getProduct().getActive()))
+            .filter(alert -> isOnSale(alert.getVariant()))
             .map(this::toResponse)
             .toList();
     }
 
-    /** Subscribing twice keeps one row. A row already used for an earlier restock is armed again. */
-    @Transactional
+    /**
+     * Subscribing twice keeps one row. A row already used for an earlier restock is armed again.
+     * Not one transaction on purpose: when two requests race to insert the same row the loser hits the unique key,
+     * and that failure must not poison a surrounding transaction before the existing row is read back.
+     */
     public StockAlertResponse subscribe(String username, Long variantId) {
         requireUsername(username);
         if (variantId == null) {
@@ -54,9 +57,8 @@ public class StockAlertService {
         }
         User user = userRepository.findByUsername(username)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
-        ProductVariant variant = variantRepository.findById(variantId)
-            .filter(candidate -> Boolean.TRUE.equals(candidate.getActive())
-                && candidate.getProduct() != null && Boolean.TRUE.equals(candidate.getProduct().getActive()))
+        ProductVariant variant = variantRepository.findWithProductById(variantId)
+            .filter(this::isOnSale)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy màu xe này."));
 
         StockAlert alert = alertRepository.findByUserIdAndVariantId(user.getId(), variant.getId()).orElse(null);
@@ -72,7 +74,14 @@ public class StockAlertService {
             alert.setVariant(variant);
         }
         alert.setNotifiedAt(null);
-        return toResponse(alertRepository.save(alert));
+        try {
+            return toResponse(alertRepository.save(alert));
+        } catch (DataIntegrityViolationException duplicate) {
+            // another request created the same (customer, colour) row first: answer with that one
+            return alertRepository.findByUserIdAndVariantId(user.getId(), variant.getId())
+                .map(this::toResponse)
+                .orElseThrow(() -> duplicate);
+        }
     }
 
     @Transactional
@@ -86,6 +95,10 @@ public class StockAlertService {
     /** Called by the manager stock update after it moved a colour from sold out to in stock. */
     @Transactional
     public int notifyRestocked(ProductVariant variant) {
+        // A colour or bike that is no longer sold must not invite anyone to buy it; the rows stay armed for later.
+        if (!isOnSale(variant)) {
+            return 0;
+        }
         List<StockAlert> waiting = alertRepository.findByVariantIdAndNotifiedAtIsNull(variant.getId());
         Product product = variant.getProduct();
         LocalDateTime now = LocalDateTime.now();
@@ -100,6 +113,11 @@ public class StockAlertService {
         }
         alertRepository.saveAll(waiting);
         return waiting.size();
+    }
+
+    private boolean isOnSale(ProductVariant variant) {
+        return variant != null && Boolean.TRUE.equals(variant.getActive())
+            && variant.getProduct() != null && Boolean.TRUE.equals(variant.getProduct().getActive());
     }
 
     private StockAlertResponse toResponse(StockAlert alert) {

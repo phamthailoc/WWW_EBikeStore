@@ -37,12 +37,13 @@ class OrderStatusUpdateTest {
     @Mock OrderEmailVerificationService verification;
     @Mock com.ebike.repository.admin.PricingRuleRepository pricingRules;
     @Mock Authentication staff;
+    @Mock com.ebike.service.stock.StockAlertService stockAlerts;
     OrderServiceImpl service;
     Order order;
     Product product;
 
     @BeforeEach void setup() {
-        service = new OrderServiceImpl(orders, users, products, showrooms, promotions, verification, new com.ebike.service.admin.PricingService(pricingRules), org.mockito.Mockito.mock(com.ebike.service.admin.AuditLogService.class));
+        service = new OrderServiceImpl(orders, users, products, showrooms, promotions, verification, new com.ebike.service.admin.PricingService(pricingRules), org.mockito.Mockito.mock(com.ebike.service.admin.AuditLogService.class), stockAlerts);
         product = new Product();
         product.setId(1L);
         product.setStockQuantity(5);
@@ -180,6 +181,33 @@ class OrderStatusUpdateTest {
         assertEquals(99L, order.getCancellationRequestedBy().getId());
         assertEquals(PaymentStatus.CANCELLED, payment.getPaymentStatus());
         assertEquals(7, product.getStockQuantity());
+    }
+
+    @Test void cancellingAnOrderBringsASoldOutColourBackAndTellsWhoWaits() {
+        saves();
+        staffMember();
+        order.setStatus(OrderStatus.PROCESSING);
+        com.ebike.model.entity.product.ProductVariant soldOut = new com.ebike.model.entity.product.ProductVariant();
+        soldOut.setStockQuantity(0);
+        order.getItems().iterator().next().setProductVariant(soldOut);
+
+        service.updateOrderStatus(10L, new OrderStatusUpdateRequest("CANCELLED", "Khách đổi ý"), staff);
+
+        assertEquals(2, soldOut.getStockQuantity());
+        verify(stockAlerts).notifyRestocked(soldOut);
+    }
+
+    @Test void cancellingAnOrderForAColourThatStaysInStockTellsNobody() {
+        saves();
+        staffMember();
+        order.setStatus(OrderStatus.PROCESSING);
+        com.ebike.model.entity.product.ProductVariant inStock = new com.ebike.model.entity.product.ProductVariant();
+        inStock.setStockQuantity(3);
+        order.getItems().iterator().next().setProductVariant(inStock);
+
+        service.updateOrderStatus(10L, new OrderStatusUpdateRequest("CANCELLED", "Khách đổi ý"), staff);
+
+        verify(stockAlerts, never()).notifyRestocked(any());
     }
 
     @Test void aPaidPaymentIsLeftForTheRefundStep() {

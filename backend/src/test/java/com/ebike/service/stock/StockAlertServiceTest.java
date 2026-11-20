@@ -50,7 +50,7 @@ class StockAlertServiceTest {
         variant.setStockQuantity(0);
         variant.setProduct(product);
         org.mockito.Mockito.lenient().when(users.findByUsername("an")).thenReturn(Optional.of(user));
-        org.mockito.Mockito.lenient().when(variants.findById(11L)).thenReturn(Optional.of(variant));
+        org.mockito.Mockito.lenient().when(variants.findWithProductById(11L)).thenReturn(Optional.of(variant));
         org.mockito.Mockito.lenient().when(alerts.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
     }
 
@@ -94,5 +94,41 @@ class StockAlertServiceTest {
         variant.getProduct().setName("Kinetic X");
         assertEquals(1, service.notifyRestocked(variant));
         assertNotNull(first.getNotifiedAt());
+    }
+
+    @Test void aRaceOnTheUniqueKeyReturnsTheRowTheOtherRequestCreated() {
+        StockAlert winner = new StockAlert();
+        winner.setUser(user);
+        winner.setVariant(variant);
+        when(alerts.findByUserIdAndVariantId(7L, 11L)).thenReturn(Optional.empty(), Optional.of(winner));
+        when(alerts.save(any())).thenThrow(new org.springframework.dao.DataIntegrityViolationException("duplicate"));
+        assertNotNull(service.subscribe("an", 11L));
+    }
+
+    @Test void restockOfARetiredColourNotifiesNobodyAndKeepsRowsArmed() {
+        variant.setActive(false);
+        assertEquals(0, service.notifyRestocked(variant));
+        verify(alerts, never()).findByVariantIdAndNotifiedAtIsNull(any());
+    }
+
+    @Test void restockOfAnInactiveBikeNotifiesNobody() {
+        variant.getProduct().setActive(false);
+        assertEquals(0, service.notifyRestocked(variant));
+        verify(alerts, never()).saveAll(any());
+    }
+
+    @Test void listHidesRetiredColoursAndInactiveBikes() {
+        StockAlert live = new StockAlert();
+        live.setUser(user);
+        live.setVariant(variant);
+        ProductVariant retired = new ProductVariant();
+        retired.setId(12L);
+        retired.setActive(false);
+        retired.setProduct(variant.getProduct());
+        StockAlert gone = new StockAlert();
+        gone.setUser(user);
+        gone.setVariant(retired);
+        when(alerts.findByUserUsernameOrderByCreatedAtDesc("an")).thenReturn(List.of(live, gone));
+        assertEquals(1, service.list("an").size());
     }
 }
