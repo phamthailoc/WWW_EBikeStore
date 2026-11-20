@@ -84,7 +84,7 @@ Ký hiệu: P1 nên làm trước; P2 làm tiếp nếu còn thời gian; P3 là
 - Thông báo trong ứng dụng và email là "tối đa một lần": dòng chờ được đánh dấu `notified_at` cùng lúc với việc tạo sự kiện. Nếu sau đó SMTP lỗi, hàng đợi email đầy (email bị bỏ, có log cảnh báo) hoặc ứng dụng sập giữa chừng, khách không được báo lại. Khi tắt ứng dụng bình thường, hàng đợi được chờ tối đa 30 giây.
 - Báo hàng (thông báo trong ứng dụng và email) vẫn được gửi khi khách đã tắt thông báo trong hồ sơ, vì đây là yêu cầu chủ động của khách; công tắc đó chỉ áp dụng cho thông báo đơn hàng và thanh toán.
 - Khách đăng ký đúng lúc Manager nhập hàng có thể không được báo ngay; việc đăng ký đọc lại tồn kho sau khi lưu (bằng câu truy vấn scalar, không dùng entity đã nạp sẵn do open-in-view) và báo luôn nếu màu đã có hàng; việc này chưa có test tích hợp với DB thật, còn job quét 5 phút một lần là lưới an toàn.
-- Nhánh này chứa 2 commit của V21 (`43c498e` workflow CI `.github/workflows/test.yml`, `4a8f602` dòng V21 trong kế hoạch) vì được tách ra từ nhánh V21. Khi mở PR cho V22 phải nói rõ điều này và review/gộp `feat/ci-github-actions` trước, hoặc chấp nhận workflow CI đi cùng PR; rebase bỏ 2 commit này gây xung đột ở file kế hoạch nên chưa làm.
+- Nhánh này chứa 2 commit của V21 (`43c498e` workflow CI `.github/workflows/test.yml`, `4a8f602` dòng V21 trong kế hoạch) vì được tách ra từ nhánh V21. Khi mở PR cho V22 phải nói rõ điều này và review/gộp `feat/ci-github-actions` trước, hoặc chấp nhận workflow CI đi cùng PR; rebase bỏ 2 commit này gây xung đột ở file kế hoạch nên chưa làm. Cả hai commit đã có trong `origin/develop`: PR vào `develop` không thêm gì từ chúng, còn PR vào nhánh khác thì vẫn kéo theo workflow CI.
 
 ---
 
