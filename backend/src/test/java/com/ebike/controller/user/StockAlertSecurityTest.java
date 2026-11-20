@@ -6,6 +6,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.ebike.common.constants.PermissionConstants;
 import com.ebike.config.SecurityConfiguration;
 import com.ebike.security.filter.JwtAuthenticationFilter;
 import com.ebike.service.stock.StockAlertService;
@@ -58,9 +59,12 @@ class StockAlertSecurityTest {
             throws ServletException, IOException {
             String roles = request.getHeader("X-Test-Roles");
             if (roles != null) {
-                List<GrantedAuthority> authorities = Arrays.stream(roles.split(","))
+                // Like PermissionService: every signed-in role also carries the favourites permissions, Manager and Admin included.
+                List<GrantedAuthority> authorities = new java.util.ArrayList<>(Arrays.stream(roles.split(","))
                     .<GrantedAuthority>map(role -> new SimpleGrantedAuthority("ROLE_" + role))
-                    .toList();
+                    .toList());
+                authorities.add(new SimpleGrantedAuthority(PermissionConstants.Customer.FAVORITE_VIEW));
+                authorities.add(new SimpleGrantedAuthority(PermissionConstants.Customer.FAVORITE_UPDATE));
                 SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken("an", "x", authorities));
             }
             chain.doFilter(request, response);
@@ -115,6 +119,7 @@ class StockAlertSecurityTest {
         mvc.perform(delete("/api/v1/stock-alerts/11").header("X-Test-Roles", "CUSTOMER")).andExpect(status().isNoContent());
     }
 
+    /** The original bug: a permission rule let staff in because they hold favorite:update. The filter above gives them that permission, so this fails if the rule goes back to a permission check. */
     @Test void managerAndAdminAreRefused() throws Exception {
         for (String role : List.of("MANAGER", "ADMIN")) {
             mvc.perform(get("/api/v1/stock-alerts").header("X-Test-Roles", role)).andExpect(status().isForbidden());
