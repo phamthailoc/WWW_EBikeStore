@@ -1,8 +1,10 @@
 package com.ebike.controller.web;
 
 import com.ebike.config.order.VnPayProperties;
+import com.ebike.common.constants.PermissionConstants;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,10 +32,15 @@ public class WorkspaceController {
     }
 
     @GetMapping({"/customer", "/customer/**", "/manager", "/manager/**", "/admin", "/admin/**"})
-    public String workspace(HttpServletRequest request, Model model) {
+    public String workspace(HttpServletRequest request, Model model, Authentication authentication) {
         String path = request.getRequestURI();
         String role = path.startsWith("/admin") ? "admin" : path.startsWith("/manager") ? "manager" : "customer";
         String section = path.substring(1);
+        if (section.equals("customer/warranty") && authentication != null
+            && authentication.getAuthorities().stream().noneMatch(a -> PermissionConstants.Customer.PROFILE_VIEW.equals(a.getAuthority()))) {
+            // staff may open /customer pages, but the warranty book API belongs to customer accounts: send them to the queue they work in
+            return "redirect:/manager/warranty";
+        }
         String id = path.substring(path.lastIndexOf('/') + 1);
         String title;
         String api;
