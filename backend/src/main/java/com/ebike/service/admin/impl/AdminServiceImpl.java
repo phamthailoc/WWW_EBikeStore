@@ -1,5 +1,6 @@
 package com.ebike.service.admin.impl;
 
+import com.ebike.common.i18n.RequestLanguage;
 import com.ebike.dto.admin.request.AdminAccountCreateRequest;
 import com.ebike.dto.admin.request.AdminAccountRoleUpdateRequest;
 import com.ebike.dto.admin.request.AdminAccountStatusUpdateRequest;
@@ -120,7 +121,8 @@ public class AdminServiceImpl implements AdminService {
         }
         if (rule.getCode().startsWith(com.ebike.service.admin.PricingService.INSTALLMENT_RATE_PREFIX) && request.amount().compareTo(new BigDecimal("60")) > 0) {
             // V24: a yearly rate above 60% is a typo (an amount in dong), and customers would be shown it
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Installment rate must not exceed 60 percent per year");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, RequestLanguage.text(
+                "Lãi suất trả góp không được vượt 60% mỗi năm.", "The instalment rate must not exceed 60 percent a year."));
         }
 
         rule.setAmount(request.amount());

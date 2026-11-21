@@ -1,5 +1,6 @@
 package com.ebike.service.manager.impl;
 
+import com.ebike.common.i18n.RequestLanguage;
 import com.ebike.model.entity.auth.Role;
 import com.ebike.model.entity.auth.User;
 import com.ebike.repository.auth.UserRepository;
@@ -160,10 +161,11 @@ public class ManagerServiceImpl implements ManagerService {
         // V24: the down payment of an instalment order can also be taken at the store, once the application is approved
         boolean installment = payment.getPaymentMethod() == PaymentMethod.INSTALLMENT;
         if (payment.getPaymentMethod() != PaymentMethod.PAY_LATER && !installment) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Only PAY_LATER or INSTALLMENT payments can be confirmed manually");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, RequestLanguage.text(
+                "Chỉ xác nhận thủ công được khoản trả sau hoặc khoản trả trước của đơn trả góp.", "Only pay-later or instalment down payments can be confirmed manually."));
         }
         if (installment && !installments.findByOrderId(payment.getOrder().getId()).map(a -> InstallmentApplication.APPROVED.equals(a.getStatus())).orElse(false)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, com.ebike.common.i18n.RequestLanguage.text(
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, RequestLanguage.text(
                 "Hồ sơ trả góp chưa được duyệt nên chưa thu được khoản trả trước.", "The instalment application is not approved yet, so the down payment cannot be taken."));
         }
         if (payment.getPaymentStatus() == PaymentStatus.PAID) {

@@ -735,5 +735,10 @@
  "Chi tiết đơn": "Order details",
  "Chỉ hiện {n} hồ sơ đầu tiên. Hãy lọc theo trạng thái để xem phần còn lại.": "Only the first {n} applications are shown. Filter by status to see the rest.",
  "Không có hồ sơ nào ở trạng thái này.": "No application has this status.",
- "{n} hồ sơ đang chờ duyệt.": "{n} applications are waiting for review."
+ "{n} hồ sơ đang chờ duyệt.": "{n} applications are waiting for review.",
+ "Hồ sơ trả góp bị từ chối: ": "Instalment application rejected: ",
+ "Tự động hủy: quá hạn thanh toán khoản trả trước của hồ sơ trả góp.": "Cancelled automatically: the down payment of the instalment application was not paid in time.",
+ "Tự động hủy: cửa hàng chưa duyệt hồ sơ trả góp trong thời hạn giữ hàng.": "Cancelled automatically: the store did not review the instalment application within the holding period.",
+ "Tự động hủy: quá hạn thanh toán online.": "Cancelled automatically: the online payment was not made in time.",
+ "Tự động hủy: cửa hàng chưa xác nhận đơn trả sau trong thời hạn giữ hàng.": "Cancelled automatically: the store did not confirm the pay-later order within the holding period."
 }

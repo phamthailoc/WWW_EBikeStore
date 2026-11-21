@@ -65,6 +65,8 @@
   const send = async(url,method,data) => { const r=await fetch(url,{method,credentials:'same-origin',headers:{'Content-Type':'application/json',Accept:'application/json'},body:data===undefined?undefined:JSON.stringify(data)});if(r.status===401){location.href='/login';throw Error(t('Phiên đăng nhập đã hết hạn.'))}if(!r.ok)throw Error(await errorText(r,t('Không thể lưu thay đổi.')));return r.status===204?null:r.json(); };
   const vnpayEnabled = body.dataset.vnpayEnabled === 'true';
   // VNPay orders have no payment row until the first payment URL is created, so a missing method also means VNPay.
+  // the reasons the server writes itself are Vietnamese text: show them in the page language (a rejected application keeps the staff's own words after the prefix)
+  const cancelReasonText=reason=>{const prefix='Hồ sơ trả góp bị từ chối: ';return reason.startsWith(prefix)?t(prefix)+reason.slice(prefix.length):t(reason)};
   const awaitsVnPay = row => vnpayEnabled && row.orderNumber != null && row.status !== 'CANCELLED'
     && (row.paymentMethod == null || row.paymentMethod === 'VNPAY') && !['PAID','REFUNDED'].includes(row.paymentStatus);
   const actionFor = row => {
@@ -235,7 +237,7 @@
       return `<li class="${state}"${state==='current'?' aria-current="step"':''}><span class="dot"></span><div><b>${escape(stepText(step,order))}</b>${time?`<small>${escape(stamp(time))}</small>`:''}</div></li>`;
     });
     if(cancelled){
-      items.push(`<li class="cancelled" aria-current="step"><span class="dot"></span><div><b>${escape(orderStatusText.CANCELLED)}</b>${order.cancellationRequestedAt?`<small>${escape(stamp(order.cancellationRequestedAt))}</small>`:''}${order.cancellationReason?`<small>${t('Lý do:')} ${escape(order.cancellationReason)}</small>`:''}</div></li>`);
+      items.push(`<li class="cancelled" aria-current="step"><span class="dot"></span><div><b>${escape(orderStatusText.CANCELLED)}</b>${order.cancellationRequestedAt?`<small>${escape(stamp(order.cancellationRequestedAt))}</small>`:''}${order.cancellationReason?`<small>${t('Lý do:')} ${escape(cancelReasonText(order.cancellationReason))}</small>`:''}</div></li>`);
     }
     detailPanel('orderTimeline',`<h2>${t('Tiến trình đơn hàng')}</h2><ol class="timeline">${items.join('')}</ol>`);
   };
@@ -304,7 +306,7 @@
     let panel=document.querySelector('#cancellationDetails');
     if(order?.status!=='CANCELLED'||!order.cancellationReason){panel?.remove();return;}
     if(!panel){panel=document.createElement('section');panel.id='cancellationDetails';panel.className='data-panel';panel.style.marginTop='20px';document.querySelector('.work-main').appendChild(panel);}
-    panel.innerHTML=`<h2>${t('Thông tin hủy đơn')}</h2><p><strong>${t('Lý do:')}</strong> ${escape(order.cancellationReason)}</p>${order.cancellationRequestedAt?`<p><strong>${t('Thời điểm hủy:')}</strong> ${escape(new Date(order.cancellationRequestedAt).toLocaleString('vi-VN'))}</p>`:''}`;
+    panel.innerHTML=`<h2>${t('Thông tin hủy đơn')}</h2><p><strong>${t('Lý do:')}</strong> ${escape(cancelReasonText(order.cancellationReason))}</p>${order.cancellationRequestedAt?`<p><strong>${t('Thời điểm hủy:')}</strong> ${escape(new Date(order.cancellationRequestedAt).toLocaleString('vi-VN'))}</p>`:''}`;
   };
   // ---- list filters (V5) ---------------------------------------------------------------
   // The manager's payment and customer lists filter on the server; the bar below only builds the query string.

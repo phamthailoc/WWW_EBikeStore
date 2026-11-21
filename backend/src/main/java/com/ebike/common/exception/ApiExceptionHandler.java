@@ -6,6 +6,7 @@ import org.springframework.dao.PessimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
@@ -41,6 +42,13 @@ public class ApiExceptionHandler {
     public ResponseEntity<ApiErrorResponse> handleBadArgument(MethodArgumentTypeMismatchException exception) {
         return badRequest(RequestLanguage.text("Giá trị của tham số \"" + exception.getName() + "\" không hợp lệ.",
             "The value of the parameter \"" + exception.getName() + "\" is not valid."));
+    }
+
+    /** A required query parameter that is missing, such as a quote without ?amount=. */
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ResponseEntity<ApiErrorResponse> handleMissingParameter(MissingServletRequestParameterException exception) {
+        return badRequest(RequestLanguage.text("Thiếu tham số \"" + exception.getParameterName() + "\".",
+            "The parameter \"" + exception.getParameterName() + "\" is missing."));
     }
 
     /** A row lock that could not be had, or a deadlock the database broke: nothing was saved, so the person can simply try again. */
