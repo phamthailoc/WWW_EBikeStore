@@ -144,9 +144,11 @@ public class WarrantyService {
         if (text.length() < 10 || text.length() > 2000) {
             throw bad("Mô tả lỗi cần từ 10 đến 2000 ký tự.", "Describe the problem in 10 to 2000 characters.");
         }
+        // The lock is the first statement of the transaction on purpose: under REPEATABLE READ the first plain SELECT fixes the
+        // snapshot, and a snapshot taken before the lock would not show a request that another transaction committed while we waited.
+        units.findLockedById(unitId);
         User user = users.findByUsername(username)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authentication is required"));
-        units.findLockedById(unitId);
         OrderItemUnit unit = units.findForWarrantyById(unitId)
             .filter(found -> ownedBy(found, username))
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, WarrantyMessages.text("Không tìm thấy xe này trong tài khoản của bạn.", "This vehicle was not found in your account.")));

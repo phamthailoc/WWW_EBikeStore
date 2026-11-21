@@ -55,6 +55,10 @@ public class OrderUnitService {
      */
     @Transactional
     public List<OrderItemUnitResponse> replaceUnits(Long orderId, OrderUnitsRequest request) {
+        // Lock the order's vehicles before anything else is read: under REPEATABLE READ the first plain SELECT fixes the snapshot,
+        // and a snapshot taken before the lock would not show a warranty request that was committed while we waited (the unit would
+        // then be deleted and the request cascaded away). A request being filed at this moment waits for us instead.
+        unitRepository.findLockedByOrderId(orderId);
         Order order = orders.findById(orderId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
         if (!EDITABLE.contains(order.getStatus())) {
@@ -144,8 +148,6 @@ public class OrderUnitService {
         }
         // The frame number of a vehicle that has a warranty request or a service reminder is its identity: no edit, no delete.
         List<Long> touchedIds = spare.stream().map(OrderItemUnit::getId).filter(Objects::nonNull).toList();
-        // Lock the rows first: a warranty request being filed at this moment waits for us instead of being cascaded away.
-        touchedIds.forEach(unitRepository::findLockedById);
         if (!touchedIds.isEmpty() && (!warrantyClaims.findByUnitIdIn(touchedIds).isEmpty()
             || !maintenanceReminders.findByUnitIdIn(touchedIds).isEmpty())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT,

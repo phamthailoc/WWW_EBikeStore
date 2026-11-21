@@ -5,8 +5,10 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -32,6 +34,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -132,7 +135,11 @@ class WarrantyServiceTest {
 
         WarrantyClaimResponse created = service.createClaim("me", 7L, "The motor makes a noise");
 
-        verify(units).findLockedById(7L);
+        // the lock comes before any plain read, or the read snapshot would predate it (REPEATABLE READ)
+        InOrder order = inOrder(units, users, claims);
+        order.verify(units).findLockedById(7L);
+        order.verify(users).findByUsername("me");
+        order.verify(claims).existsByUnitIdAndStatusIn(any(), any());
         assertEquals(WarrantyClaim.NEW, created.status());
     }
 
@@ -245,7 +252,7 @@ class WarrantyServiceTest {
         service.listClaims(null, -5, 100000);
         service.listClaims(null, 0, 0);
         ArgumentCaptor<Pageable> page = ArgumentCaptor.forClass(Pageable.class);
-        verify(claims, org.mockito.Mockito.times(2)).findAllBy(page.capture());
+        verify(claims, times(2)).findAllBy(page.capture());
         assertEquals(0, page.getAllValues().get(0).getPageNumber());
         assertEquals(WarrantyService.MAX_PAGE_SIZE, page.getAllValues().get(0).getPageSize());
         assertEquals(1, page.getAllValues().get(1).getPageSize());
