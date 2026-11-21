@@ -495,6 +495,37 @@ CREATE TABLE `test_ride_bookings` (
 CREATE INDEX `idx_test_ride_showroom_slot` ON `test_ride_bookings` (showroom_id, slot_start, status);
 CREATE INDEX `idx_test_ride_user_slot` ON `test_ride_bookings` (user_id, slot_start);
 CREATE INDEX `idx_test_ride_status_slot` ON `test_ride_bookings` (status, slot_start);
+DROP TABLE IF EXISTS `installment_applications`;
+CREATE TABLE `installment_applications` (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    order_id BIGINT NOT NULL,
+    user_id BIGINT NOT NULL,
+    id_number_masked VARCHAR(20) NULL,
+    monthly_income DECIMAL(14, 2) NULL,
+    order_total DECIMAL(12, 2) NOT NULL,
+    down_payment_percent INT NOT NULL,
+    down_payment_amount DECIMAL(12, 2) NOT NULL,
+    financed_amount DECIMAL(12, 2) NOT NULL,
+    term_months INT NOT NULL,
+    annual_rate_percent DECIMAL(5, 2) NOT NULL,
+    monthly_payment DECIMAL(12, 2) NOT NULL,
+    total_payable DECIMAL(14, 2) NOT NULL,
+    status VARCHAR(12) NOT NULL DEFAULT 'PENDING',
+    review_note VARCHAR(1000) NULL,
+    reviewed_by BIGINT NULL,
+    reviewed_at DATETIME NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_installment_order FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
+    CONSTRAINT fk_installment_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_installment_reviewer FOREIGN KEY (reviewed_by) REFERENCES users(id) ON DELETE SET NULL,
+    CONSTRAINT uk_installment_order UNIQUE (order_id),
+    CONSTRAINT chk_installment_status CHECK (status IN ('PENDING', 'APPROVED', 'REJECTED', 'CANCELLED')),
+    CONSTRAINT chk_installment_percent CHECK (down_payment_percent BETWEEN 1 AND 99),
+    CONSTRAINT chk_installment_term CHECK (term_months BETWEEN 1 AND 60)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE INDEX `idx_installment_status_created` ON `installment_applications` (status, created_at);
+CREATE INDEX `idx_installment_user_status` ON `installment_applications` (user_id, status);
 CREATE INDEX `idx_stock_alerts_pending` ON `stock_alerts` (notified_at, variant_id);
 CREATE INDEX `idx_pricing_rules_status` ON `pricing_rules` (status);
 CREATE INDEX `idx_promotions_status` ON `promotions` (status);
@@ -1100,7 +1131,10 @@ INSERT INTO pricing_rules(code,name,description,amount,unit,status,effective_fro
 ('HOME_DELIVERY_SAME_CITY','Phí giao xe tận nhà cùng tỉnh','Giao xe đến địa chỉ trong tỉnh, thành phố có showroom.',200000,'VND/xe','ACTIVE',NOW()),
 ('HOME_DELIVERY_OTHER_PROVINCE','Phí giao xe tận nhà khác tỉnh','Giao xe đến địa chỉ ở tỉnh, thành phố không có showroom.',800000,'VND/xe','ACTIVE',NOW()),
 ('REGISTRATION_TAX_RATE_CENTRAL','Tỷ lệ lệ phí trước bạ (thành phố lớn)','Chỉ hiển thị ước tính tham khảo, không cộng vào đơn.',5,'%','ACTIVE',NOW()),
-('REGISTRATION_TAX_RATE_OTHER','Tỷ lệ lệ phí trước bạ (khu vực khác)','Chỉ hiển thị ước tính tham khảo, không cộng vào đơn.',2,'%','ACTIVE',NOW());
+('REGISTRATION_TAX_RATE_OTHER','Tỷ lệ lệ phí trước bạ (khu vực khác)','Chỉ hiển thị ước tính tham khảo, không cộng vào đơn.',2,'%','ACTIVE',NOW()),
+('INSTALLMENT_RATE_6','Lãi suất trả góp 6 tháng (mô phỏng)','Lãi suất phẳng theo năm, tính trên số tiền còn lại sau khi trả trước. Đặt trạng thái INACTIVE để ngừng nhận kỳ hạn này.',8,'%/năm','ACTIVE',NOW()),
+('INSTALLMENT_RATE_9','Lãi suất trả góp 9 tháng (mô phỏng)','Lãi suất phẳng theo năm, tính trên số tiền còn lại sau khi trả trước. Đặt trạng thái INACTIVE để ngừng nhận kỳ hạn này.',9,'%/năm','ACTIVE',NOW()),
+('INSTALLMENT_RATE_12','Lãi suất trả góp 12 tháng (mô phỏng)','Lãi suất phẳng theo năm, tính trên số tiền còn lại sau khi trả trước. Đặt trạng thái INACTIVE để ngừng nhận kỳ hạn này.',10,'%/năm','ACTIVE',NOW());
 INSERT INTO promotions(code,campaign_name,discount_type,discount_value,max_discount_amount,usage_count,usage_limit,status,starts_at,ends_at) VALUES
 ('KINETIC20','Chào hè xanh','PERCENTAGE',20,25000,326,800,'LIVE','2026-06-01 00:00:00','2026-06-30 23:59:59'),
 ('STUDENT15','Ưu đãi sinh viên','FIXED_AMOUNT',15000,NULL,1020,2000,'LIVE','2026-05-15 00:00:00','2026-07-15 23:59:59'),
