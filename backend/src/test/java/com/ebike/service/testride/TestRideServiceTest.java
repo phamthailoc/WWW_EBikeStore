@@ -253,6 +253,20 @@ class TestRideServiceTest {
     }
 
     @Test
+    void theBacklogCountsOpenBookingsOfAShowroomOrBikeThatIsSwitchedOff() {
+        when(bookings.countOpenUnavailable(anyCollection())).thenReturn(5L);
+        assertEquals(5L, service.backlog().unavailable());
+    }
+
+    @Test
+    void aBikeThatIsNoLongerSoldHasNoLinkInTheBookingList() {
+        TestRideBooking booking = bookingIn("CONFIRMED", SLOT);
+        assertNotNull(service.update(77L, new TestRideUpdateRequest(null, "note")).productSlug());
+        booking.getProduct().setActive(false);
+        assertNull(service.update(77L, new TestRideUpdateRequest(null, "note two")).productSlug());
+    }
+
+    @Test
     void theBacklogCountsConfirmedRidesTheCustomerWithdrewInTheNextDay() {
         when(bookings.countCancelledByCustomerBetween(NOW, NOW.plusHours(24))).thenReturn(3L);
         assertEquals(3L, service.backlog().customerCancelled());

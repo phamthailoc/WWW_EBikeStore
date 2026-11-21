@@ -59,6 +59,10 @@ public interface TestRideBookingRepository extends JpaRepository<TestRideBooking
     @Query("select count(b) from TestRideBooking b where b.status = 'CANCELLED' and b.cancelledByCustomerAt is not null and b.slotStart > :now and b.slotStart <= :until")
     long countCancelledByCustomerBetween(@Param("now") LocalDateTime now, @Param("until") LocalDateTime until);
 
+    /** Open bookings whose showroom was switched off or whose bike is no longer sold: nobody can be served, the staff must cancel them. */
+    @Query("select count(b) from TestRideBooking b where b.status in :statuses and (b.showroom.active = false or b.product.active = false)")
+    long countOpenUnavailable(@Param("statuses") Collection<String> statuses);
+
     long countByStatus(String status);
 
     long countByStatusAndSlotStartLessThanEqual(String status, LocalDateTime slotStart);

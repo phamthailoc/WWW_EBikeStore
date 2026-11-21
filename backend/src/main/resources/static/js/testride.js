@@ -242,6 +242,7 @@ window.KineticTestRide = (() => {
         if (counts && counts.pending > 0) parts.push(t('{n} yêu cầu đang chờ xác nhận.', {n: counts.pending}));
         if (counts && counts.overdue > 0) parts.push(t('{n} lịch đã quá giờ nhưng chưa đóng (đã lái thử hoặc khách không đến).', {n: counts.overdue}));
         if (counts && counts.customerCancelled > 0) parts.push(t('{n} lịch đã xác nhận bị khách hủy, giờ hẹn trong 24 giờ tới (chọn trạng thái "Đã hủy" để xem).', {n: counts.customerCancelled}));
+        if (counts && counts.unavailable > 0) parts.push(t('{n} lịch chưa đóng thuộc cửa hàng đã tắt hoặc xe ngừng bán. Hãy hủy và ghi lý do.', {n: counts.unavailable}));
         backlog.textContent = parts.join(' ');
         backlog.hidden = parts.length === 0;
       })

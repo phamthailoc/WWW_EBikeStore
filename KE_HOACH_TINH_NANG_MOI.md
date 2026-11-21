@@ -112,6 +112,7 @@ Ký hiệu: P1 nên làm trước; P2 làm tiếp nếu còn thời gian; P3 là
 - Quyết định: thông báo và email về lịch lái thử của chính khách (xác nhận, cửa hàng hủy, nhắc lịch, đóng quá hạn) **không** bị công tắc thông báo trong hồ sơ chặn, giống cảnh báo hết hàng của V22; công tắc chỉ còn chặn thông báo đơn hàng và thanh toán.
 - Một yêu cầu chưa ai xác nhận vẫn có thể được đánh dấu "đã lái thử" hoặc "khách không đến" từ giờ hẹn; job chỉ đóng (EXPIRED) yêu cầu khi cả khung giờ 1 tiếng đã qua.
 - Khách hủy lịch đã xác nhận không báo riêng cho nhân viên: cột `cancelled_by_customer_at` đánh dấu, và trang Manager hiện số lịch đã xác nhận bị khách hủy trong 24 giờ tới (lọc trạng thái Đã hủy để xem).
+- Tắt một cửa hàng hoặc ngừng bán một xe không tự hủy lịch đang mở: trang Manager hiện số lịch chưa đóng thuộc cửa hàng đã tắt hoặc xe ngừng bán để nhân viên hủy kèm lý do; danh sách của khách không còn nút "Xem xe" cho xe ngừng bán.
 
 ### V24. Trả góp (mô phỏng) — khoảng 2 ngày
 

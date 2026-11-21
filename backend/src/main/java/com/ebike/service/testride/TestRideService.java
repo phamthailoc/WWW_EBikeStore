@@ -287,7 +287,7 @@ public class TestRideService {
 
     /**
      * How many requests wait for a confirmation, how many confirmed rides are past their time and still not closed, and how many confirmed rides the
-     * customer withdrew for a slot within the next {@link #CANCELLED_NOTICE_HOURS} hours (the list shows at most {@link #SCHEDULE_LIMIT}).
+     * customer withdrew for a slot within the next {@link #CANCELLED_NOTICE_HOURS} hours, and how many open ones belong to a showroom or bike that was switched off (the list shows at most {@link #SCHEDULE_LIMIT}).
      */
     @Transactional(readOnly = true)
     public TestRideBacklogResponse backlog() {
@@ -295,7 +295,8 @@ public class TestRideService {
         return new TestRideBacklogResponse(
             bookings.countByStatus(TestRideBooking.REQUESTED),
             bookings.countByStatusAndSlotStartLessThanEqual(TestRideBooking.CONFIRMED, now),
-            bookings.countCancelledByCustomerBetween(now, now.plusHours(CANCELLED_NOTICE_HOURS)));
+            bookings.countCancelledByCustomerBetween(now, now.plusHours(CANCELLED_NOTICE_HOURS)),
+            bookings.countOpenUnavailable(TestRideRules.OPEN));
     }
 
     /** The staff move a booking to its next step, or change only the note the customer reads. */
@@ -377,7 +378,8 @@ public class TestRideService {
             booking.getId(),
             product.getId(),
             product.getName(),
-            product.getSlug(),
+            // a bike that is no longer sold has no page: no slug, so the customer's list shows no link to a 404
+            Boolean.TRUE.equals(product.getActive()) ? product.getSlug() : null,
             showroom.getId(),
             showroom.getName(),
             showroom.getAddress(),
