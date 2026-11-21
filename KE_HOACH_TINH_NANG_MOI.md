@@ -103,6 +103,13 @@ Ký hiệu: P1 nên làm trước; P2 làm tiếp nếu còn thời gian; P3 là
 
 **Cần chốt:** giờ mở cửa lấy từ `showrooms.opening_hours` (đang là chữ tự do) hay thêm cột giờ mở/đóng; khách vãng lai có được đặt không.
 
+**Hạn chế đã biết của bản đã code (chưa kiểm thử trên DB thật):**
+- Lớp DB chưa được chạy lần nào: các câu JPQL (`findSchedule`, `countBySlot`, hai câu update hàng loạt), `ddl-auto=validate` với entity, cột sinh `active_user_slot` có UNIQUE trên MariaDB và việc khóa dòng showroom rồi dòng user dưới REPEATABLE READ mới được kiểm bằng mock. Trước khi gắn ✅: chạy `update_test_ride_bookings.sql` và setup trên MariaDB thật, khởi động app, chạy `TestRideSeleniumTest` (với `APP_RATE_LIMIT_ENABLED=false`), và nên thêm kiểm thử đồng thời (hai luồng cùng đặt chỗ cuối; một khách đặt hai cửa hàng cùng giờ) chạy với DB thật.
+- Giờ mở cửa chỉ đọc khoảng giờ đầu tiên; chưa hiểu nghỉ trưa, giờ theo thứ, giờ qua đêm, ngày nghỉ và ngày lễ (chữ "Đóng cửa"/"Tạm nghỉ"/"Closed" mà không có giờ thì không nhận lịch). Muốn đúng hơn thì thêm cột giờ mở/đóng và bảng ngày nghỉ.
+- Nhân viên không nhận thông báo riêng; trang Manager hiện số yêu cầu chờ xác nhận và số lịch đã quá giờ chưa đóng. Danh sách Manager tối đa 200 dòng, của khách tối đa 100 dòng, chưa phân trang.
+- "14 ngày tới" nghĩa là ngày cuối được đặt là hôm nay cộng 14 ngày (số ngày đọc từ `APP_TEST_RIDE_DAYS_AHEAD`, hộp thoại cũng đọc từ server).
+- Xóa tài khoản xóa số điện thoại, ghi chú của khách và ghi chú của cửa hàng ở mọi lịch của tài khoản đó (khác với phiếu bảo hành, nơi ghi chú cửa hàng được giữ).
+
 ### V24. Trả góp (mô phỏng) — khoảng 2 ngày
 
 **Vì sao:** mua xe điện trả góp rất phổ biến; hiện chỉ có VNPay và trả sau.
