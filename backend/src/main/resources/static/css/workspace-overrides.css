@@ -138,3 +138,5 @@ h1,h2,h3,.brand,.eyebrow,.metric b,.metric small{font-family:'Space Grotesk','Se
 .testride-slot.selected{border-color:var(--c-708b40);box-shadow:0 0 0 2px #c8f16966}
 .testride-slot:disabled{opacity:.45;cursor:not-allowed}
 @media(max-width:700px){.testride-dialog{padding:18px}.testride-slots{grid-template-columns:repeat(3,1fr)}}
+/* V23: count of test-ride requests waiting, on the staff menu */
+.menu-badge{margin-left:auto;min-width:20px;padding:2px 7px;border-radius:10px;background:var(--c-003b93);color:#fff;font:700 11px/16px 'DM Sans',sans-serif;text-align:center}
