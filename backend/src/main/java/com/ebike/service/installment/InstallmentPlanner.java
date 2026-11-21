@@ -59,7 +59,7 @@ public class InstallmentPlanner {
     public InstallmentConfigResponse config() {
         return new InstallmentConfigResponse(
             InstallmentRules.MIN_DOWN_PERCENT, InstallmentRules.MAX_DOWN_PERCENT, terms(),
-            limits.minTotal(), limits.maxTotal(), limits.minIncome(),
+            limits.minIncome(),
             limits.maxPaymentShareOfIncome().movePointRight(2).intValue(), limits.maxOpenPerCustomer());
     }
 

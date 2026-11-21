@@ -8,8 +8,6 @@ public record InstallmentConfigResponse(
     int minDownPaymentPercent,
     int maxDownPaymentPercent,
     List<InstallmentTermResponse> terms,
-    BigDecimal minOrderTotal,
-    BigDecimal maxOrderTotal,
     BigDecimal minMonthlyIncome,
     int maxPaymentPercentOfIncome,
     int maxOpenApplications

@@ -54,10 +54,6 @@ public interface InstallmentApplicationRepository extends JpaRepository<Installm
     @EntityGraph(attributePaths = {"user", "order", "order.payment", "order.shipment", "reviewedBy"})
     List<InstallmentApplication> findAllByOrderByCreatedAtDesc(Pageable pageable);
 
-    /** The customer's own applications, newest first. */
-    @EntityGraph(attributePaths = {"user", "order"})
-    List<InstallmentApplication> findByUserIdOrderByCreatedAtDesc(Long userId, Pageable pageable);
-
     /** The order was cancelled: an application that was still open is closed with it (a rejected one keeps its verdict). */
     @Modifying
     @Query("update InstallmentApplication a set a.status = 'CANCELLED', a.updatedAt = :now where a.order.id = :orderId and a.status in ('PENDING', 'APPROVED')")

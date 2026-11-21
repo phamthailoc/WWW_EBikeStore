@@ -103,7 +103,6 @@ class InstallmentPlannerTest {
         assertEquals(50, config.maxDownPaymentPercent());
         assertEquals(60, config.maxPaymentPercentOfIncome());
         assertEquals(2, config.maxOpenApplications());
-        assertEquals(0, config.minOrderTotal().compareTo(new BigDecimal("5000000")));
     }
 
     // ---- the quote ----
