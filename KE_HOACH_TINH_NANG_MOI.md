@@ -130,7 +130,21 @@ Ký hiệu: P1 nên làm trước; P2 làm tiếp nếu còn thời gian; P3 là
 - Phương thức thanh toán mới "Trả góp": khách gửi hồ sơ (CCCD, thu nhập ước tính, chỉ lưu thông tin cần thiết); đơn ở trạng thái chờ duyệt; Manager duyệt hoặc từ chối kèm lý do. Duyệt xong khách trả khoản trả trước (VNPay hoặc tại cửa hàng), đơn đi tiếp như bình thường.
 - Không kết nối công ty tài chính thật; ghi rõ trên giao diện là mô phỏng.
 
-**Cần chốt:** có lưu ảnh CCCD không (khuyên **không** lưu, chỉ lưu số CCCD che bớt); lãi suất mẫu.
+**Đã chốt (22/11):** không lưu ảnh CCCD, chỉ lưu 4 số cuối và mức thu nhập khai (xóa khi xóa tài khoản); lãi suất mẫu 8/9/10%/năm cho kỳ 6/9/12 tháng (`INSTALLMENT_RATE_6/9/12` trong bảng giá, Admin sửa, tối đa 60%/năm); thu nhập khai tối đa mặc định 1.000.000.000 (`APP_INSTALLMENT_MAX_INCOME`).
+
+**Chưa làm:** khởi động app thật và chạy `InstallmentSeleniumTest` (với `APP_RATE_LIMIT_ENABLED=false`); chưa chạy các truy vấn mới (`findExpiryCandidates`, `findOrderIdById`, `findOrderIdByTransactionReference`) và việc khóa dòng trên MariaDB thật như đã làm cho V23.
+
+**Hạn chế đã biết của bản đã code:**
+- Chỉ mô phỏng: không kết nối công ty tài chính, không theo dõi các khoản trả hàng tháng, không có hợp đồng.
+- Thứ tự khóa: mọi thao tác đổi trạng thái đơn (khách hủy, nhân viên hủy, từ chối hồ sơ, job hết hạn, "Xác nhận đã thu" tại cửa hàng, kết quả VNPay và việc tạo lần thanh toán VNPay) khóa **dòng đơn trước**, rồi mới tới dòng hồ sơ hoặc dòng thanh toán, nên một thao tác chạy cùng lúc với thao tác khác thấy kết quả của nó (409 khi đơn đã hủy) thay vì ghi đè. Các thao tác phải đọc mã đơn trước khi khóa (duyệt hồ sơ, xác nhận thu, kết quả VNPay, job hết hạn) chạy ở mức `READ_COMMITTED`, để dữ liệu đọc sau khi chờ khóa không cũ hơn khóa. Job hết hạn đọc ứng viên không khóa và chỉ khóa các đơn sẽ hủy (theo thứ tự mã đơn).
+- Khoản trả trước thu tại cửa hàng: nhận cả khoản có lần trả thẻ lỗi (`FAILED`, lần lỗi được xóa); từ chối (409) trong 15 phút kể từ khi khách mở trang VNPay (mã giao dịch mang giờ tạo), để khách không trả hai lần. Nếu VNPay vẫn báo thành công cho khoản đã thu bằng cách khác, hệ thống không đổi trạng thái mà ghi `DUPLICATE VNPAY PAYMENT <mã giao dịch>` vào `provider_response` của dòng thanh toán và cảnh báo vào nhật ký; nhân viên hoàn khoản đó ngoài hệ thống (nút "Ghi nhận hoàn tiền" chỉ có cho đơn đã hủy).
+- Quá hạn chờ khoản trả trước (72 giờ kể từ lúc duyệt) thì không thu và không thanh toán được nữa dù job hết hạn chưa chạy; dòng thanh toán `INSTALLMENT` mà không còn hồ sơ bị từ chối chứ không được cho qua.
+- Giờ: hạn trả khoản trả trước (và giờ duyệt, giờ nộp trong hàng đợi) được gửi kèm múi giờ của cửa hàng (`APP_TIME_ZONE`, ghi "GMT+7" trong thông báo và email) dù máy chủ chạy UTC. Các mốc lưu trong DB vẫn là giờ của máy chủ như phần còn lại của đơn hàng.
+- Ghi chú duyệt tối đa 1000 ký tự, ghi chú từ chối ngắn hơn độ dài tiền tố của lý do hủy (khoảng 974); trang đọc giới hạn từ `GET /api/v1/installments/config`. Cả `config` (60 lần/phút/IP) lẫn `quote` (90 lần/phút/IP) có chặn tràn.
+- Từ chối hồ sơ đánh dấu đơn (`suppressStatusNotice`, không lưu) để bỏ thông báo "đơn đã hủy" trùng; chữ trong lý do hủy không quyết định gì. Bộ nhớ đệm trang xe đã được xóa sau khi giao dịch xong (`TransactionAwareCacheManagerProxy`), kể cả khi từ chối hồ sơ.
+- Việc đọc danh sách xe của nhiều đơn dùng `@BatchSize(50)` ở `Order.items`; không còn cài đặt Hibernate toàn cục.
+- Tiền hiển thị theo dạng `1.234.567 ₫` ở cả hai ngôn ngữ như phần còn lại của cửa hàng (`KineticCart.money`); chỉ email và thông báo tiếng Anh viết `1,234,567 VND`. Lãi suất hiện không có số 0 thừa (`8%`, `8.5%`); dòng thanh toán đã trả của đơn trả góp ghi "Đã trả trước", không phải "Đã thanh toán".
+- **Còn chờ (có từ trước V24):** hoàn kho (`restoreStock`) và đặt hàng (`addItems`) đọc rồi ghi số tồn kho mà không khóa dòng sản phẩm, nên hai việc chạy cùng lúc có thể làm mất một lần cập nhật. Khóa theo mã đơn không sửa được chỗ này; cần `UPDATE ... SET stock = stock ± n` nguyên tử ở cả hai nơi (hợp với V26, phiếu nhập kho).
 
 ### V25. Phụ kiện và gợi ý mua kèm — khoảng 2 ngày
 
