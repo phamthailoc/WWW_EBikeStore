@@ -73,8 +73,12 @@ public interface TestRideBookingRepository extends JpaRepository<TestRideBooking
 
     long countByUserIdAndStatusInAndSlotStartGreaterThanEqual(Long userId, Collection<String> statuses, LocalDateTime from);
 
-    /** Confirmed bookings starting within the window whose reminder was not sent yet, soonest first (ids only; each is handled in its own transaction). */
-    @Query("select b.id from TestRideBooking b where b.status = 'CONFIRMED' and b.reminderSentAt is null and b.slotStart > :now and b.slotStart <= :until order by b.slotStart, b.id")
+    /**
+     * Confirmed bookings starting within the window whose reminder was not sent yet, soonest first (ids only; each is handled in its own transaction).
+     * Bookings of a showroom that was switched off or of a bike no longer sold are left out: that ride will not take place.
+     */
+    @Query("select b.id from TestRideBooking b where b.status = 'CONFIRMED' and b.reminderSentAt is null and b.slotStart > :now and b.slotStart <= :until "
+        + "and b.showroom.active = true and b.product.active = true order by b.slotStart, b.id")
     List<Long> findReminderDueIds(@Param("now") LocalDateTime now, @Param("until") LocalDateTime until, Pageable pageable);
 
     /** Requests nobody confirmed whose start time is at or before {@code cutoff} (the caller passes now minus one slot, so the slot is over). */

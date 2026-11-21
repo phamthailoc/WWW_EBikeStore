@@ -331,6 +331,10 @@ public class TestRideService {
             if (!TestRideRules.timingAllows(next, booking.getSlotStart(), now)) {
                 throw bad(timingRefusalVi(next), timingRefusalEn(next));
             }
+            if (TestRideBooking.CONFIRMED.equals(next) && !isAvailable(booking)) {
+                throw bad("Cửa hàng này đã ngừng nhận lịch hoặc xe này đã ngừng bán, không thể xác nhận. Hãy hủy lịch và ghi lý do.",
+                    "This showroom no longer takes bookings or this bike is no longer sold, so the ride cannot be confirmed. Cancel it and give a reason.");
+            }
             // the reason must come with this very request: an older note (written at confirmation) is not a reason for the cancellation
             if (TestRideBooking.CANCELLED.equals(next) && (request.staffNote() == null || request.staffNote().isBlank())) {
                 throw bad("Vui lòng ghi lý do khi hủy lịch.", "Please give a reason when cancelling a test ride.");
@@ -395,10 +399,15 @@ public class TestRideService {
             name.isEmpty() ? user.getEmail() : name,
             user.getEmail(),
             !forStaff && TestRideRules.canCustomerCancel(booking.getStatus(), booking.getSlotStart(), now),
-            forStaff ? TestRideRules.nextSteps(booking.getStatus(), booking.getSlotStart(), now) : List.of(),
+            forStaff ? TestRideRules.nextSteps(booking.getStatus(), booking.getSlotStart(), now, isAvailable(booking)) : List.of(),
             booking.getCreatedAt(),
             TestRideBooking.CANCELLED.equals(booking.getStatus()) ? booking.getCancelSource() : null,
             booking.getCancelledByCustomerAt());
+    }
+
+    /** True while the showroom takes bookings and the bike is sold: only then can a ride take place. */
+    static boolean isAvailable(TestRideBooking booking) {
+        return Boolean.TRUE.equals(booking.getShowroom().getActive()) && Boolean.TRUE.equals(booking.getProduct().getActive());
     }
 
     private String leadText(boolean vietnamese) {
@@ -410,6 +419,9 @@ public class TestRideService {
     }
 
     private static String timingRefusalVi(String next) {
+        if (TestRideBooking.CANCELLED.equals(next)) {
+            return "Khung giờ này đã kết thúc, không thể hủy. Hãy đánh dấu đã lái thử hoặc khách không đến.";
+        }
         if (TestRideBooking.CONFIRMED.equals(next)) {
             return "Giờ hẹn đã bắt đầu, không thể xác nhận nữa. Hãy đánh dấu kết quả hoặc hủy lịch.";
         }
@@ -420,6 +432,9 @@ public class TestRideService {
     }
 
     private static String timingRefusalEn(String next) {
+        if (TestRideBooking.CANCELLED.equals(next)) {
+            return "This slot is over, so it can no longer be cancelled. Mark it done or mark the customer absent.";
+        }
         if (TestRideBooking.CONFIRMED.equals(next)) {
             return "The slot has already begun, so it can no longer be confirmed. Mark its outcome or cancel it.";
         }

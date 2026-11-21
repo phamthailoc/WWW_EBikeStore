@@ -168,12 +168,32 @@ class TestRideRulesTest {
         assertEquals(List.of("DONE", "CANCELLED"), TestRideRules.nextSteps("CONFIRMED", NOW.plusMinutes(20), NOW));
         // from the start on, the customer may be absent
         assertEquals(List.of("DONE", "NO_SHOW", "CANCELLED"), TestRideRules.nextSteps("CONFIRMED", NOW, NOW));
-        assertEquals(List.of("DONE", "NO_SHOW", "CANCELLED"), TestRideRules.nextSteps("CONFIRMED", NOW.minusDays(1), NOW));
+        // once the hour is over, cancelling is no longer offered: the ride was done or the customer did not come
+        assertEquals(List.of("DONE", "NO_SHOW", "CANCELLED"), TestRideRules.nextSteps("CONFIRMED", NOW.minusMinutes(59), NOW));
+        assertEquals(List.of("DONE", "NO_SHOW"), TestRideRules.nextSteps("CONFIRMED", NOW.minusHours(1), NOW));
+        assertEquals(List.of("DONE", "NO_SHOW"), TestRideRules.nextSteps("CONFIRMED", NOW.minusDays(1), NOW));
+        assertEquals(List.of("DONE", "NO_SHOW"), TestRideRules.nextSteps("REQUESTED", NOW.minusDays(1), NOW));
         // a request whose slot began can no longer be confirmed, but the staff can still record what happened
         assertEquals(List.of("DONE", "NO_SHOW", "CANCELLED"), TestRideRules.nextSteps("REQUESTED", NOW.minusMinutes(1), NOW));
         // before the start a request can only be confirmed or cancelled
         assertEquals(List.of("CONFIRMED", "CANCELLED"), TestRideRules.nextSteps("REQUESTED", NOW.plusHours(2), NOW));
         assertTrue(TestRideRules.nextSteps("DONE", NOW.minusDays(1), NOW).isEmpty());
+    }
+
+    @Test
+    void aShowroomOrBikeThatIsNoLongerAvailableCannotConfirmButCanStillBeCancelled() {
+        LocalDateTime slot = NOW.plusHours(5);
+        assertEquals(List.of("CANCELLED"), TestRideRules.nextSteps("REQUESTED", slot, NOW, false));
+        assertEquals(List.of("CONFIRMED", "CANCELLED"), TestRideRules.nextSteps("REQUESTED", slot, NOW, true));
+        assertEquals(List.of("DONE", "NO_SHOW"), TestRideRules.nextSteps("CONFIRMED", NOW.minusHours(2), NOW, false));
+    }
+
+    @Test
+    void aCancellationIsTimedByTheEndOfTheHour() {
+        assertTrue(TestRideRules.timingAllows("CANCELLED", NOW.plusHours(3), NOW));
+        assertTrue(TestRideRules.timingAllows("CANCELLED", NOW.minusMinutes(59), NOW));
+        assertFalse(TestRideRules.timingAllows("CANCELLED", NOW.minusHours(1), NOW));
+        assertFalse(TestRideRules.timingAllows("CANCELLED", NOW.minusDays(1), NOW));
     }
 
     @Test

@@ -83,7 +83,9 @@ public class TestRideReminderService {
     private boolean remind(Long id, LocalDateTime now) {
         // read again under the row lock: the customer may have cancelled, or another run may have sent it, since the ids were read
         TestRideBooking booking = bookings.findLockedById(id).orElse(null);
-        if (booking == null || !TestRideRules.reminderDue(booking.getStatus(), booking.getSlotStart(), booking.getReminderSentAt(), now, reminderHours)) {
+        if (booking == null || !TestRideRules.reminderDue(booking.getStatus(), booking.getSlotStart(), booking.getReminderSentAt(), now, reminderHours)
+            || !TestRideService.isAvailable(booking)) {
+            // a ride at a showroom that was switched off or of a bike no longer sold will not take place: no reminder
             return false;
         }
         booking.setReminderSentAt(now);

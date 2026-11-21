@@ -3,6 +3,7 @@ package com.ebike.service.testride;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -85,6 +86,21 @@ class TestRideReminderServiceTest {
         TestRideNoticeEvent event = (TestRideNoticeEvent) events.get(0);
         assertEquals(TestRideMessages.REMINDER, event.kind());
         assertEquals("Kinetic X", event.productName());
+    }
+
+    @Test
+    void noReminderForARideThatCannotTakePlace() {
+        TestRideBooking booking = booking(1L, "CONFIRMED", NOW.plusHours(20));
+        booking.getShowroom().setActive(false);
+        when(bookings.findReminderDueIds(any(), any(), any(Pageable.class))).thenReturn(List.of(1L));
+
+        assertEquals(0, service.sendReminders(NOW));
+        assertNull(booking.getReminderSentAt());
+        assertTrue(events.isEmpty());
+        booking.getShowroom().setActive(true);
+        booking.getProduct().setActive(false);
+        assertEquals(0, service.sendReminders(NOW));
+        assertTrue(events.isEmpty());
     }
 
     @Test

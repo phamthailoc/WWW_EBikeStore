@@ -459,6 +459,31 @@ class TestRideServiceTest {
     }
 
     @Test
+    void aRideWhoseHourIsOverCannotBeCancelledNoMatterWhoAsks() {
+        TestRideBooking booking = bookingIn("CONFIRMED", NOW.minusHours(2));
+        assertEquals(HttpStatus.BAD_REQUEST, statusOf(() -> service.update(77L, new TestRideUpdateRequest("CANCELLED", "Too late"))));
+        assertEquals(TestRideBooking.CONFIRMED, booking.getStatus());
+        assertTrue(events.isEmpty(), "no 'we cancelled your ride' for a ride that is past");
+        assertEquals(List.of("DONE", "NO_SHOW"), service.update(77L, new TestRideUpdateRequest(null, "Waited")).nextSteps());
+    }
+
+    @Test
+    void aRideAtASwitchedOffShowroomOrOfAWithdrawnBikeCannotBeConfirmed() {
+        TestRideBooking booking = bookingIn("REQUESTED", NOW.plusDays(3));
+        showroom.setActive(false);
+        assertEquals(HttpStatus.BAD_REQUEST, statusOf(() -> service.update(77L, new TestRideUpdateRequest("CONFIRMED", null))));
+        assertEquals(List.of("CANCELLED"), service.update(77L, new TestRideUpdateRequest(null, "note")).nextSteps());
+        showroom.setActive(true);
+        bike.setActive(false);
+        assertEquals(HttpStatus.BAD_REQUEST, statusOf(() -> service.update(77L, new TestRideUpdateRequest("CONFIRMED", null))));
+        assertEquals(TestRideBooking.REQUESTED, booking.getStatus());
+        assertTrue(events.isEmpty(), "nobody is told about a confirmation that did not happen");
+        // it can still be cancelled, with a reason
+        service.update(77L, new TestRideUpdateRequest("CANCELLED", "The bike is no longer sold"));
+        assertEquals(TestRideBooking.CANCELLED, booking.getStatus());
+    }
+
+    @Test
     void anOlderNoteOnTheBookingIsNotAReasonToCancel() {
         TestRideBooking booking = bookingIn("CONFIRMED", NOW.plusDays(2));
         booking.setStaffNote("Please bring your ID");

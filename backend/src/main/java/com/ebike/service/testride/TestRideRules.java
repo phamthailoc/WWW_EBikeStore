@@ -171,14 +171,20 @@ public final class TestRideRules {
         return false;
     }
 
+    /** {@link #nextSteps(String, LocalDateTime, LocalDateTime, boolean)} for a booking whose showroom and bike are both still available. */
+    public static List<String> nextSteps(String status, LocalDateTime slotStart, LocalDateTime now) {
+        return nextSteps(status, slotStart, now, true);
+    }
+
     /**
      * The steps the staff can take right now: the allowed steps, minus "done" before the ride starts (a little early is fine) and
-     * minus "no-show" before the start time (nobody is absent from a ride that has not begun), and minus "confirm" once the slot began.
+     * minus "no-show" before the start time (nobody is absent from a ride that has not begun), minus "confirm" once the slot began or when the
+     * showroom or the bike is no longer available ({@code available} false: the ride cannot take place), and minus "cancel" once the slot is over.
      */
-    public static List<String> nextSteps(String status, LocalDateTime slotStart, LocalDateTime now) {
+    public static List<String> nextSteps(String status, LocalDateTime slotStart, LocalDateTime now, boolean available) {
         List<String> steps = new ArrayList<>();
         for (String candidate : List.of(TestRideBooking.CONFIRMED, TestRideBooking.DONE, TestRideBooking.NO_SHOW, TestRideBooking.CANCELLED)) {
-            if (canMove(status, candidate) && timingAllows(candidate, slotStart, now)) {
+            if (canMove(status, candidate) && timingAllows(candidate, slotStart, now) && (available || !TestRideBooking.CONFIRMED.equals(candidate))) {
                 steps.add(candidate);
             }
         }
@@ -195,6 +201,10 @@ public final class TestRideRules {
         }
         if (TestRideBooking.NO_SHOW.equals(to)) {
             return !now.isBefore(slotStart);
+        }
+        if (TestRideBooking.CANCELLED.equals(to)) {
+            // a ride whose hour is over did happen or did not: it is closed as done or no-show, and the customer is not told "we cancelled your ride" about a past one
+            return now.isBefore(slotStart.plus(SLOT));
         }
         return true;
     }
