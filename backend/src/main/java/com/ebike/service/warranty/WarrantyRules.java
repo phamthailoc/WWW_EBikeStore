@@ -35,7 +35,10 @@ public final class WarrantyRules {
     private WarrantyRules() {
     }
 
-    /** The warranty starts when the bike was handed over: the shipment's delivery time, else the time the order last changed. */
+    /**
+     * The warranty starts when the bike was handed over. {@code deliveredAt} is the shipment's delivery time, else {@code orders.delivered_at}
+     * (fixed when the order became DELIVERED); only an order with neither (delivered before that column existed) falls back to the time it last changed.
+     */
     public static LocalDateTime startsAt(LocalDateTime deliveredAt, LocalDateTime orderUpdatedAt) {
         return deliveredAt != null ? deliveredAt : orderUpdatedAt;
     }

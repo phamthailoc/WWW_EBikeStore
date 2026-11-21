@@ -33,7 +33,11 @@ public interface OrderItemUnitRepository extends JpaRepository<OrderItemUnit, Lo
     @Query("select u from OrderItemUnit u where u.id = :id")
     Optional<OrderItemUnit> findLockedById(@Param("id") Long id);
 
-    /** Row locks on every vehicle of an order, taken first by staff who save its numbers (see OrderUnitService.replaceUnits). */
+    /**
+     * Row locks on every vehicle of an order, taken first by staff who save its numbers (see OrderUnitService.replaceUnits). Unlike
+     * {@link #findLockedById} it must reach the order through order_items, so those rows are locked too: harmless, the staff member is
+     * already changing that order.
+     */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select u from OrderItemUnit u where u.orderItem.order.id = :orderId order by u.id")
     List<OrderItemUnit> findLockedByOrderId(@Param("orderId") Long orderId);
