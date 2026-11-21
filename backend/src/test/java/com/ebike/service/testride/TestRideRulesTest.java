@@ -342,6 +342,15 @@ class TestRideRulesTest {
     }
 
     @Test
+    void aRequestIsClosedOnlyOnceItsHourIsOver() {
+        assertEquals(NOW.minusHours(1), TestRideRules.expiryCutoff(NOW));
+        // a request whose ride is under way can still be marked done, so it is not yet expired
+        LocalDateTime running = NOW.minusMinutes(30);
+        assertFalse(running.isBefore(TestRideRules.expiryCutoff(NOW)) || running.equals(TestRideRules.expiryCutoff(NOW)));
+        assertTrue(TestRideRules.nextSteps("REQUESTED", running, NOW).contains("DONE"));
+    }
+
+    @Test
     void theStaffCanOnlyDoWhatTheClockAllows() {
         LocalDateTime slot = NOW.plusHours(5);
         assertEquals(List.of("CONFIRMED", "CANCELLED"), TestRideRules.nextSteps("REQUESTED", slot, NOW));

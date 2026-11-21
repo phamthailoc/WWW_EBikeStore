@@ -69,7 +69,7 @@ public interface TestRideBookingRepository extends JpaRepository<TestRideBooking
 
     /**
      * Requests nobody confirmed whose showroom and bike are both available and whose start time is still ahead of {@code now}: the ones the staff can still
-     * confirm (the others are counted by {@link #countOpenUnavailable}; a request whose start time has come is closed by the timer within one run).
+     * confirm (the others are counted by {@link #countOpenUnavailable}; a request whose start time has come is no longer counted and is closed by the timer once its hour is over).
      */
     @Query("select count(b) from TestRideBooking b where b.status = 'REQUESTED' and b.slotStart > :now and b.showroom.active = true and b.product.active = true")
     long countRequestedAvailable(@Param("now") LocalDateTime now);
@@ -95,7 +95,7 @@ public interface TestRideBookingRepository extends JpaRepository<TestRideBooking
         + "and b.showroom.active = true and b.product.active = true order by b.slotStart, b.id")
     List<Long> findReminderDueIds(@Param("now") LocalDateTime now, @Param("until") LocalDateTime until, Pageable pageable);
 
-    /** Requests nobody confirmed whose start time is at or before {@code cutoff} (the caller passes now: the appointment time came and nobody confirmed). */
+    /** Requests nobody confirmed whose start time is at or before {@code cutoff} (the caller passes one hour before now: the whole hour is over and nobody confirmed). */
     @Query("select b.id from TestRideBooking b where b.status = 'REQUESTED' and b.slotStart <= :cutoff order by b.slotStart, b.id")
     List<Long> findExpiredRequestIds(@Param("cutoff") LocalDateTime cutoff, Pageable pageable);
 

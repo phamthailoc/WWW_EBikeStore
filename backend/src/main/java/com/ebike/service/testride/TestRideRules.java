@@ -370,7 +370,7 @@ public final class TestRideRules {
     /**
      * Which step may follow which. REQUESTED goes to CONFIRMED or CANCELLED, and to DONE (a customer who came a little early to a request nobody had
      * confirmed yet; the clock rules of {@link #timingAllows} allow it only from {@link #EARLY_DONE} before the start), but never to NO_SHOW: nobody is absent
-     * from a ride the shop never agreed to, and a request is closed by the timer once its start time comes. CONFIRMED goes to DONE, NO_SHOW or CANCELLED; the rest are final.
+     * from a ride the shop never agreed to, and a request is closed by the timer once its hour is over. CONFIRMED goes to DONE, NO_SHOW or CANCELLED; the rest are final.
      */
     public static boolean canMove(String from, String to) {
         if (TestRideBooking.REQUESTED.equals(from)) {
@@ -426,11 +426,11 @@ public final class TestRideRules {
     }
 
     /**
-     * The last start time of a request that is too old to wait for a confirmation: its start time has come by {@code now}. From then it can no longer be
-     * confirmed, so it is closed (and the customer told) instead of staying open past the appointment.
+     * The latest start time of a request that is closed as expired: its whole hour is over by {@code now}. From its start it can no longer be confirmed, but
+     * it stays open until the hour is over so the staff can still record a ride that happened (a customer who came early to an unconfirmed request).
      */
     public static LocalDateTime expiryCutoff(LocalDateTime now) {
-        return now;
+        return now.minus(SLOT);
     }
 
     /** The reminder goes to a confirmed booking that starts within the next {@code hours}, once. */

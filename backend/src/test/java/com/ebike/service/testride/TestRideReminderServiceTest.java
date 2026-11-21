@@ -139,9 +139,9 @@ class TestRideReminderServiceTest {
     }
 
     @Test
-    void anUnconfirmedRequestWhoseTimeCameIsClosedAndTheCustomerIsTold() {
-        TestRideBooking late = booking(1L, "REQUESTED", NOW.minusMinutes(5));
-        when(bookings.findExpiredRequestIds(eq(NOW), any(Pageable.class))).thenReturn(List.of(1L));
+    void anUnconfirmedRequestWhoseHourIsOverIsClosedAndTheCustomerIsTold() {
+        TestRideBooking late = booking(1L, "REQUESTED", NOW.minusMinutes(65));
+        when(bookings.findExpiredRequestIds(eq(NOW.minusHours(1)), any(Pageable.class))).thenReturn(List.of(1L));
 
         assertEquals(1, service.expireUnconfirmed(NOW));
 
@@ -152,15 +152,17 @@ class TestRideReminderServiceTest {
     }
 
     @Test
-    void aRequestConfirmedMeanwhileOrWhoseSlotHasNotStartedIsLeftAlone() {
+    void aRequestConfirmedMeanwhileOrWhoseHourIsNotOverIsLeftAlone() {
         TestRideBooking confirmed = booking(1L, "CONFIRMED", NOW.minusMinutes(65));
         TestRideBooking future = booking(2L, "REQUESTED", NOW.plusMinutes(30));
-        when(bookings.findExpiredRequestIds(any(), any(Pageable.class))).thenReturn(List.of(1L, 2L));
+        TestRideBooking running = booking(3L, "REQUESTED", NOW.minusMinutes(30));
+        when(bookings.findExpiredRequestIds(any(), any(Pageable.class))).thenReturn(List.of(1L, 2L, 3L));
 
         assertEquals(0, service.expireUnconfirmed(NOW));
 
         assertEquals(TestRideBooking.CONFIRMED, confirmed.getStatus());
         assertEquals(TestRideBooking.REQUESTED, future.getStatus());
+        assertEquals(TestRideBooking.REQUESTED, running.getStatus(), "the staff may still mark the ride done until its hour is over");
         verify(bookings, never()).save(any(TestRideBooking.class));
         assertEquals(0, events.size());
     }
