@@ -84,6 +84,81 @@ class TestRideRulesTest {
         assertTrue(TestRideRules.parseOpeningHours("CN: 9h - 12h").closedDays().isEmpty());
     }
 
+    private static TestRideRules.Hours days(String text, java.time.DayOfWeek... expected) {
+        TestRideRules.Hours hours = TestRideRules.parseOpeningHours(text);
+        assertEquals(java.util.Set.of(expected), hours.closedDays(), text);
+        return hours;
+    }
+
+    @Test
+    void aRangeOfWeekdaysOffGivesEveryDayInIt() {
+        java.time.DayOfWeek[] weekdays = {java.time.DayOfWeek.MONDAY, java.time.DayOfWeek.TUESDAY, java.time.DayOfWeek.WEDNESDAY,
+            java.time.DayOfWeek.THURSDAY, java.time.DayOfWeek.FRIDAY};
+        days("T2-T6 nghỉ", weekdays);
+        days("Thứ 2 - Thứ 6 đóng cửa", weekdays);
+        days("Thứ 2-6 nghỉ", weekdays);
+        days("Mon-Fri closed", weekdays);
+        days("Monday to Friday closed", weekdays);
+        days("T7-CN nghỉ", java.time.DayOfWeek.SATURDAY, java.time.DayOfWeek.SUNDAY);
+        days("Sat-Sun closed", java.time.DayOfWeek.SATURDAY, java.time.DayOfWeek.SUNDAY);
+        // a range that wraps past Sunday
+        days("T7 - T2 nghỉ", java.time.DayOfWeek.SATURDAY, java.time.DayOfWeek.SUNDAY, java.time.DayOfWeek.MONDAY);
+        // two days in separate words, and a list split by a comma before the clause that says "off"
+        days("T7, CN đóng cửa", java.time.DayOfWeek.SATURDAY, java.time.DayOfWeek.SUNDAY);
+        days("T7 và CN nghỉ", java.time.DayOfWeek.SATURDAY, java.time.DayOfWeek.SUNDAY);
+        // the hours stay readable next to it
+        TestRideRules.Hours hours = days("8h-17h; Sat-Sun closed", java.time.DayOfWeek.SATURDAY, java.time.DayOfWeek.SUNDAY);
+        assertEquals(new TestRideRules.Hours(LocalTime.of(8, 0), LocalTime.of(17, 0), hours.closedDays()), hours);
+        // a day off written after the hours of the same clause
+        TestRideRules.Hours sameClause = days("Mon-Sat 8:00 - 21:00 Sun closed", java.time.DayOfWeek.SUNDAY);
+        assertEquals(LocalTime.of(21, 0), sameClause.close());
+        // a list cut off from its "off" by a clause with hours does not leak into it
+        days("T7, 8-17h, CN nghỉ", java.time.DayOfWeek.SUNDAY);
+    }
+
+    @Test
+    void offAndClosedAreWholeWordsOnly() {
+        TestRideRules.Hours fallback = new TestRideRules.Hours(TestRideRules.DEFAULT_OPEN, TestRideRules.DEFAULT_CLOSE);
+        // "nghi" is inside "nghiệp" and "off" inside "official": neither is a day off or a shut showroom
+        assertEquals(fallback, TestRideRules.parseOpeningHours("Chuyên nghiệp, T7 phục vụ"));
+        assertEquals(fallback, TestRideRules.parseOpeningHours("Chủ nhật official hours"));
+        assertEquals(fallback, TestRideRules.parseOpeningHours("Nghiệp vụ bán xe, T7 nghiên cứu"));
+        // "month" is no weekday
+        assertTrue(TestRideRules.parseOpeningHours("08:00 - 21:00, closed month-end").closedDays().isEmpty());
+        assertTrue(TestRideRules.parseOpeningHours("08:00 - 21:00, nghiệp đoàn").closedDays().isEmpty());
+    }
+
+    @Test
+    void closedCountsOnlyWhenTheWholeTextSaysNothingElse() {
+        TestRideRules.Hours fallback = new TestRideRules.Hours(TestRideRules.DEFAULT_OPEN, TestRideRules.DEFAULT_CLOSE);
+        assertEquals(fallback, TestRideRules.parseOpeningHours("Mở cửa hằng ngày, đóng cửa ngày lễ"));
+        assertEquals(fallback, TestRideRules.parseOpeningHours("Mở cửa hằng ngày đóng cửa ngày lễ"));
+        assertEquals(fallback, TestRideRules.parseOpeningHours("Open daily, closed on holidays"));
+        assertEquals(fallback, TestRideRules.parseOpeningHours("Đóng cửa buổi trưa"));
+        assertEquals(fallback, TestRideRules.parseOpeningHours("Tạm đóng cửa dịp Tết, mở cửa lại sau"));
+        // a note around it that is still only about being shut
+        assertEquals(TestRideRules.Hours.CLOSED, TestRideRules.parseOpeningHours("Tạm nghỉ"));
+        assertEquals(TestRideRules.Hours.CLOSED, TestRideRules.parseOpeningHours("Đóng cửa."));
+        assertEquals(TestRideRules.Hours.CLOSED, TestRideRules.parseOpeningHours("Closed; đóng cửa"));
+    }
+
+    @Test
+    void anHourWithNoUnitBeforeADashIsReadWhenTheClosingTimeHasOne() {
+        TestRideRules.Hours eightToNine = new TestRideRules.Hours(LocalTime.of(8, 0), LocalTime.of(21, 0));
+        assertEquals(eightToNine, TestRideRules.parseOpeningHours("8 - 21h"));
+        assertEquals(eightToNine, TestRideRules.parseOpeningHours("8-21h"));
+        assertEquals(eightToNine, TestRideRules.parseOpeningHours("Mở cửa 8 - 21h hằng ngày"));
+        assertEquals(eightToNine, TestRideRules.parseOpeningHours("8 - 9 PM"));
+        assertEquals(new TestRideRules.Hours(LocalTime.of(9, 0), LocalTime.of(17, 30)), TestRideRules.parseOpeningHours("9 - 17:30"));
+        assertEquals(new TestRideRules.Hours(LocalTime.of(11, 0), LocalTime.of(13, 0)), TestRideRules.parseOpeningHours("11 - 1 PM"));
+        // the 2 of "T2" and "Thứ 2" are days, not an opening hour
+        assertEquals(eightToNine, TestRideRules.parseOpeningHours("T2 - 8h-21h"));
+        assertEquals(eightToNine, TestRideRules.parseOpeningHours("T2-T7: 8 - 21h"));
+        assertEquals(eightToNine, TestRideRules.parseOpeningHours("Thứ 2 - Thứ 7: 8 - 21h"));
+        // a closing time before the opening one falls back
+        assertEquals(eightToNine, TestRideRules.parseOpeningHours("21 - 8h"));
+    }
+
     @Test
     void theDaysOfTheWeekAreNotTakenForTheHours() {
         TestRideRules.Hours expected = new TestRideRules.Hours(LocalTime.of(8, 0), LocalTime.of(21, 0));
@@ -191,7 +266,7 @@ class TestRideRulesTest {
         assertTrue(TestRideRules.canMove("REQUESTED", "CONFIRMED"));
         assertTrue(TestRideRules.canMove("REQUESTED", "CANCELLED"));
         assertTrue(TestRideRules.canMove("REQUESTED", "DONE"), "a customer may ride at an unconfirmed request");
-        assertTrue(TestRideRules.canMove("REQUESTED", "NO_SHOW"));
+        assertFalse(TestRideRules.canMove("REQUESTED", "NO_SHOW"), "nobody is absent from a ride the shop never agreed to");
         assertTrue(TestRideRules.canMove("CONFIRMED", "DONE"));
         assertTrue(TestRideRules.canMove("CONFIRMED", "NO_SHOW"));
         assertTrue(TestRideRules.canMove("CONFIRMED", "CANCELLED"));
@@ -217,9 +292,10 @@ class TestRideRulesTest {
         assertEquals(List.of("DONE", "NO_SHOW", "CANCELLED"), TestRideRules.nextSteps("CONFIRMED", NOW.minusMinutes(59), NOW));
         assertEquals(List.of("DONE", "NO_SHOW"), TestRideRules.nextSteps("CONFIRMED", NOW.minusHours(1), NOW));
         assertEquals(List.of("DONE", "NO_SHOW"), TestRideRules.nextSteps("CONFIRMED", NOW.minusDays(1), NOW));
-        assertEquals(List.of("DONE", "NO_SHOW"), TestRideRules.nextSteps("REQUESTED", NOW.minusDays(1), NOW));
-        // a request whose slot began can no longer be confirmed, but the staff can still record what happened
-        assertEquals(List.of("DONE", "NO_SHOW", "CANCELLED"), TestRideRules.nextSteps("REQUESTED", NOW.minusMinutes(1), NOW));
+        // a request whose slot began can no longer be confirmed and is never a no-show: the staff can record a ride that happened, or cancel it
+        assertEquals(List.of("DONE"), TestRideRules.nextSteps("REQUESTED", NOW.minusDays(1), NOW));
+        assertEquals(List.of("DONE", "CANCELLED"), TestRideRules.nextSteps("REQUESTED", NOW.minusMinutes(1), NOW));
+        assertEquals(List.of("CONFIRMED", "DONE", "CANCELLED"), TestRideRules.nextSteps("REQUESTED", NOW.plusMinutes(20), NOW));
         // before the start a request can only be confirmed or cancelled
         assertEquals(List.of("CONFIRMED", "CANCELLED"), TestRideRules.nextSteps("REQUESTED", NOW.plusHours(2), NOW));
         assertTrue(TestRideRules.nextSteps("DONE", NOW.minusDays(1), NOW).isEmpty());

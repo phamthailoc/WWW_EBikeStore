@@ -256,7 +256,7 @@ class TestRideServiceTest {
 
     @Test
     void theBacklogCountsWaitingRequestsAndConfirmedRidesPastTheirTime() {
-        when(bookings.countRequestedAvailable()).thenReturn(4L);
+        when(bookings.countRequestedAvailable(NOW)).thenReturn(4L);
         // a ride is overdue once its whole hour is over, not when it has just begun
         when(bookings.countByStatusAndSlotStartLessThanEqual("CONFIRMED", NOW.minusHours(1))).thenReturn(2L);
         var backlog = service.backlog();
@@ -526,6 +526,18 @@ class TestRideServiceTest {
         service.update(77L, new TestRideUpdateRequest("NO_SHOW", null));
         assertEquals(TestRideBooking.NO_SHOW, booking.getStatus());
         assertEquals(TestRideMessages.NO_SHOW, ((TestRideNoticeEvent) events.get(0)).kind());
+    }
+
+    @Test
+    void aRequestIsNeverANoShowAndIsOnlyDoneFromHalfAnHourBeforeItsStart() {
+        TestRideBooking booking = bookingIn("REQUESTED", NOW.plusMinutes(10));
+        assertEquals(HttpStatus.BAD_REQUEST, statusOf(() -> service.update(77L, new TestRideUpdateRequest("NO_SHOW", null))));
+        assertEquals(List.of("CONFIRMED", "DONE", "CANCELLED"), service.update(77L, new TestRideUpdateRequest(null, "note")).nextSteps());
+        booking.setSlotStart(NOW.minusMinutes(5));
+        assertEquals(HttpStatus.BAD_REQUEST, statusOf(() -> service.update(77L, new TestRideUpdateRequest("NO_SHOW", null))));
+        assertEquals(List.of("DONE", "CANCELLED"), service.update(77L, new TestRideUpdateRequest(null, "note")).nextSteps());
+        assertEquals(TestRideBooking.REQUESTED, booking.getStatus());
+        assertTrue(events.isEmpty());
     }
 
     @Test

@@ -299,7 +299,7 @@ public class TestRideService {
 
     /**
      * What the staff must still handle, in four counts that never count one booking twice: requests waiting for a confirmation (only those the staff
-     * can confirm, that is of an available showroom and bike), confirmed rides whose whole hour is over and still not closed, confirmed rides the
+     * can still confirm, that is of an available showroom and bike and with a start time still ahead), confirmed rides whose whole hour is over and still not closed, confirmed rides the
      * customer withdrew for a slot within the next {@link #CANCELLED_NOTICE_HOURS} hours, and open bookings of a showroom or bike that was switched off
      * and whose hour is not over (they must be cancelled with a reason). The lists show at most {@link #SCHEDULE_LIMIT} rows, the counts cover all.
      */
@@ -308,7 +308,7 @@ public class TestRideService {
         LocalDateTime now = LocalDateTime.now(clock);
         LocalDateTime hourOver = now.minus(TestRideRules.SLOT);
         return new TestRideBacklogResponse(
-            bookings.countRequestedAvailable(),
+            bookings.countRequestedAvailable(now),
             bookings.countByStatusAndSlotStartLessThanEqual(TestRideBooking.CONFIRMED, hourOver),
             bookings.countCancelledByCustomerBetween(now, now.plusHours(CANCELLED_NOTICE_HOURS)),
             bookings.countOpenUnavailable(TestRideRules.OPEN, hourOver));

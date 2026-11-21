@@ -234,7 +234,7 @@ class TestRideDatabaseTest {
         long off = newShowroom(false);
         LocalDateTime now = LocalDateTime.now(ZONE).withNano(0);
         long before = bookings.countOpenUnavailable(TestRideRules.OPEN, now.minusHours(1));
-        long pendingBefore = bookings.countRequestedAvailable();
+        long pendingBefore = bookings.countRequestedAvailable(now);
         long withdrawnBefore = bookings.countCancelledByCustomerBetween(now, now.plusHours(24));
         insertBooking(user, off, now.plusDays(3), "REQUESTED", null);
         insertBooking(user, off, now.plusDays(4), "CONFIRMED", null);
@@ -245,7 +245,10 @@ class TestRideDatabaseTest {
 
         assertEquals(before + 2, bookings.countOpenUnavailable(TestRideRules.OPEN, now.minusHours(1)));
         // the request at the switched-off showroom is counted as unavailable, not as waiting: no booking is counted twice
-        assertEquals(pendingBefore + 1, bookings.countRequestedAvailable());
+        assertEquals(pendingBefore + 1, bookings.countRequestedAvailable(now));
+        // a request whose start time has come can no longer be confirmed, so it does not wait
+        insertBooking(user, live, now.minusMinutes(10), "REQUESTED", null);
+        assertEquals(pendingBefore + 1, bookings.countRequestedAvailable(now));
         // a booking whose hour is over is no longer asked to be cancelled
         insertBooking(user, off, now.minusHours(3), "CONFIRMED", null);
         assertEquals(before + 2, bookings.countOpenUnavailable(TestRideRules.OPEN, now.minusHours(1)));

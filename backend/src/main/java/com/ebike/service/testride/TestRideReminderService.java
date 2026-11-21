@@ -17,7 +17,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 /**
  * V23: the two things the test-ride job does on a timer. It reminds customers of a confirmed ride that starts within the next
- * {@code app.test-ride.reminder-hours} (once), and it closes requests that nobody confirmed or closed by hand before their slot was over, telling the customer.
+ * {@code app.test-ride.reminder-hours} (once), and it closes requests that nobody confirmed by the time their slot starts (a request can no longer be confirmed from then), telling the customer.
  *
  * <p>Like the maintenance reminders (V20), each booking is handled in its own transaction: one that fails is logged and left for the next
  * run, and the notice and email go out only after that booking's row was saved. A run handles at most {@code max-per-run} bookings of each kind
@@ -65,7 +65,7 @@ public class TestRideReminderService {
 
     /** Returns how many requests were closed. */
     public int expireUnconfirmed(LocalDateTime now) {
-        // a request is closed only when its whole slot is over: the staff can still mark a ride that happened or a no-show while the slot runs
+        // a request still open when its start time comes can no longer be confirmed (and is no no-show: the shop never agreed to it), so it is closed and the customer told
         LocalDateTime cutoff = TestRideRules.expiryCutoff(now);
         List<Long> ids = bookings.findExpiredRequestIds(cutoff, PageRequest.of(0, maxPerRun));
         int closed = 0;

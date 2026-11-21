@@ -39,16 +39,27 @@ public final class TestRideRules {
     private static final String TIME = "(\\d{1,2})(?:(?::(\\d{2})|[hH](\\d{2})?)\\s*(?:([AaPp])\\.?[Mm]\\b\\.?)?|\\s*([AaPp])\\.?[Mm]\\b\\.?)";
     /** Two clock times joined by a dash: groups 1-5 are the opening time, 6-10 the closing time. */
     private static final Pattern HOURS = Pattern.compile(TIME + "\\s*[-\\u2013\\u2014]\\s*" + TIME);
-    /** A weekday written as a word or abbreviation: Thứ 2 ... Thứ 7, T2 ... T7, CN, Chủ nhật, Mon ... Sun. */
-    private static final Pattern WEEKDAY = Pattern.compile(
-        "(?<![\\p{L}\\d])(?:th\\u1ee9\\s*([2-7])|t([2-7])|(cn|ch\\u1ee7\\s*nh\\u1eadt)|(mon|tue|wed|thu|fri|sat|sun)[a-z]*)(?![\\p{L}\\d])",
+    /** A weekday written as a word or abbreviation: Thứ 2 ... Thứ 7, T2 ... T7, CN, Chủ nhật, Mon ... Sun (also Monday ...). Case-insensitive. */
+    private static final String DAY = "(?:thứ\\s*[2-7]|t[2-7]|cn|chủ\\s*nhật|(?:monday|tuesday|wednesday|thursday|friday|saturday|sunday|mon|tues|tue|wed|thurs|thur|thu|fri|sat|sun)s?)";
+    /** One weekday or a range of them ("T2-T6", "Thứ 2 - Thứ 6", "Thứ 2-6", "Mon-Fri", "Sat to Sun"; "month" is no weekday): group 1 the first day, group 2 the last day of a range (a day or a bare 2-7). */
+    private static final Pattern WEEKDAYS = Pattern.compile(
+        "(?<![\\p{L}\\d])(" + DAY + ")(?:\\s*(?:[-–—]|to|đến|tới)\\s*(" + DAY + "|[2-7]))?(?![\\p{L}\\d])",
         Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
-    /** A clause that gives a weekday off: "CN đóng cửa", "Sunday closed", "T7 nghỉ". */
-    private static final Pattern DAY_OFF = Pattern.compile("đóng\\s*cửa|dong\\s*cua|nghỉ|nghi|closed|(?<![\\p{L}\\d])off(?![\\p{L}\\d])", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+    /** A clause that gives a weekday off: "CN đóng cửa", "Sunday closed", "T7 nghỉ". Each word stands alone, so "nghiệp" or "official" do not count. */
+    private static final Pattern DAY_OFF = Pattern.compile(
+        "(?<![\\p{L}\\d])(?:đóng\\s*cửa|dong\\s*cua|nghỉ|nghi|closed|off)(?![\\p{L}\\d])", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
     /** The whole text is just "8 - 21": written with no minutes and no "h", it can only be hours. */
     private static final Pattern PLAIN_HOURS = Pattern.compile("^\\s*(\\d{1,2})\\s*[-\\u2013\\u2014]\\s*(\\d{1,2})\\s*$");
-    /** Free text that says the showroom is shut ({@code Đóng cửa}, {@code Tạm nghỉ}, {@code Closed}), used only when no hours are written. */
-    private static final Pattern SHUT = Pattern.compile("đóng\\s*cửa|dong\\s*cua|tạm\\s*(?:nghỉ|ngưng|ngừng)|tam\\s*(?:nghi|ngung)|ngừng\\s*hoạt\\s*động|closed", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+    /** An hour with no unit before a dash and a time that has one: "8 - 21h", "8-9 PM". Group 1 the opening hour, groups 2-6 the closing time. A number that follows a letter (the 2 of "T2") is not an hour. */
+    private static final Pattern HOURS_BARE_OPEN = Pattern.compile("(?<![\\p{L}\\d:.\\-–—])(\\d{1,2})\\s*[-–—]\\s*" + TIME);
+    /** A phrase that says the showroom is shut (Đóng cửa, Tạm nghỉ, Closed); it counts only when the whole text says nothing else. */
+    private static final Pattern SHUT = Pattern.compile(
+        "(?<![\\p{L}\\d])(?:đóng\\s*cửa|dong\\s*cua|tạm\\s*(?:nghỉ|ngưng|ngừng)|tam\\s*(?:nghi|ngung)|ngừng\\s*hoạt\\s*động|ngưng\\s*hoạt\\s*động|nghỉ|closed)(?![\\p{L}\\d])",
+        Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+    /** Words that make a "closed" only part of the story: a holiday, a break, a part of the day, or the showroom being open too. */
+    private static final Pattern SHUT_QUALIFIER = Pattern.compile(
+        "(?<![\\p{L}\\d])(?:lễ|tết|holidays?|trưa|lunch|break|buổi|sáng|chiều|tối|đêm|morning|afternoon|evening|night|mở\\s*cửa|mo\\s*cua|open)(?![\\p{L}\\d])",
+        Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
     private static final Pattern PHONE = Pattern.compile("^0\\d{9,10}$");
 
     private TestRideRules() {
@@ -72,10 +83,12 @@ public final class TestRideRules {
     }
 
     /**
-     * Reads "08:00 - 21:00" (also "8h - 21h", "8:00 AM - 9:00 PM", "08:00 - 24:00", "08:30-17:00", and "Thứ 2-7: 08:00 - 21:00" as 08:00 - 21:00) from the
-     * free text of {@code showrooms.opening_hours}. A clause that gives a day off with no hours in it ("CN đóng cửa", "Sunday closed", "T7 nghỉ") makes
-     * that weekday take no bookings. Text that says the showroom is shut ("Đóng cửa", "Tạm nghỉ", "Closed") and gives no hours takes no bookings at all. Anything
-     * else that cannot be read as a same-day range falls back to 08:00 - 21:00, so a showroom with a note such as "by appointment" still takes bookings.
+     * Reads "08:00 - 21:00" (also "8h - 21h", "8 - 21h", "8:00 AM - 9:00 PM", "08:00 - 24:00", "08:30-17:00", and "Thứ 2-7: 08:00 - 21:00" as 08:00 - 21:00) from the
+     * free text of {@code showrooms.opening_hours}. A clause that gives a day off with no hours in it ("CN đóng cửa", "Sunday closed", "T7 nghỉ", "T7-CN nghỉ",
+     * "Sat-Sun closed") makes those weekdays (a range counts every day in it) take no bookings; the same goes for a day off written after the hours in one
+     * clause ("Mon-Sat 8:00 - 21:00 Sun closed"). Text whose every clause says the showroom is shut ("Đóng cửa", "Tạm nghỉ", "Closed") and gives no hours takes
+     * no bookings at all; "Mở cửa hằng ngày, đóng cửa ngày lễ" is not that, since it also says "open" and names a holiday. Anything else that cannot be read
+     * as a same-day range falls back to 08:00 - 21:00, so a showroom with a note such as "by appointment" still takes bookings.
      *
      * <p>Only the first range is read: a lunch break ("8:00 - 12:00, 13:30 - 21:00"), hours that differ by weekday, hours past midnight ("22:00 - 02:00")
      * and holidays are not understood (the first two use the first range, the third falls back to the default hours). The manager must keep the text to one
@@ -87,10 +100,26 @@ public final class TestRideRules {
         }
         // clauses that only give a weekday off are taken out first, so "CN đóng cửa" is not read as "the showroom is shut"
         Set<DayOfWeek> closedDays = EnumSet.noneOf(DayOfWeek.class);
+        Set<DayOfWeek> listed = EnumSet.noneOf(DayOfWeek.class); // the clause just before this one, when it names only weekdays ("T7, CN đóng cửa")
         StringBuilder rest = new StringBuilder();
         for (String clause : text.split("[;|\n,]")) {
-            if (!HOURS.matcher(clause).find() && DAY_OFF.matcher(clause).find() && addWeekdays(clause, closedDays)) {
+            Matcher hours = hoursIn(clause);
+            if (hours != null) {
+                // "Mon-Sat 8:00 - 21:00 Sun closed": a day off written after the hours of the same clause
+                String tail = clause.substring(hours.end());
+                if (DAY_OFF.matcher(tail).find() && addWeekdays(tail, closedDays)) {
+                    clause = clause.substring(0, hours.end());
+                }
+                listed.clear();
+            } else if (DAY_OFF.matcher(clause).find() && addWeekdays(clause, closedDays)) {
+                closedDays.addAll(listed);
+                listed.clear();
                 continue;
+            } else {
+                listed.clear();
+                if (onlyWeekdays(clause)) {
+                    addWeekdays(clause, listed);
+                }
             }
             rest.append(clause).append(' ');
         }
@@ -98,31 +127,60 @@ public final class TestRideRules {
         return closedDays.isEmpty() ? base : new Hours(base.open(), base.close(), closedDays);
     }
 
-    /** Adds the weekdays named in the clause to {@code days}; false when it names none. */
+    /** A matcher that found the first hours range written in the clause (so the caller may ask where it ends), or null. */
+    private static Matcher hoursIn(String clause) {
+        Matcher matcher = HOURS.matcher(clause);
+        if (matcher.find()) {
+            return matcher;
+        }
+        matcher = HOURS_BARE_OPEN.matcher(clause);
+        return matcher.find() ? matcher : null;
+    }
+
+    /** True when the clause is nothing but weekdays and the words that join them ("T7", "Thứ 6 và Thứ 7", "Sat & Sun"). */
+    private static boolean onlyWeekdays(String clause) {
+        String left = WEEKDAYS.matcher(clause).replaceAll("");
+        return !left.equals(clause) && left.replaceAll("(?iu)(?<![\\p{L}\\d])(?:và|and)(?![\\p{L}\\d])|[\\s&/:.\\-–—]", "").isEmpty();
+    }
+
+    /** Adds the weekdays named in the clause (a range such as "T2-T6" or "Mon-Fri" gives every day in it) to {@code days}; false when it names none. */
     private static boolean addWeekdays(String clause, Set<DayOfWeek> days) {
-        Matcher matcher = WEEKDAY.matcher(clause);
+        Matcher matcher = WEEKDAYS.matcher(clause);
         boolean found = false;
         while (matcher.find()) {
             found = true;
-            if (matcher.group(1) != null) {
-                days.add(DayOfWeek.of(Integer.parseInt(matcher.group(1)) - 1)); // Thứ 2 is Monday
-            } else if (matcher.group(2) != null) {
-                days.add(DayOfWeek.of(Integer.parseInt(matcher.group(2)) - 1));
-            } else if (matcher.group(3) != null) {
-                days.add(DayOfWeek.SUNDAY);
-            } else {
-                days.add(switch (matcher.group(4).toLowerCase(java.util.Locale.ROOT)) {
-                    case "mon" -> DayOfWeek.MONDAY;
-                    case "tue" -> DayOfWeek.TUESDAY;
-                    case "wed" -> DayOfWeek.WEDNESDAY;
-                    case "thu" -> DayOfWeek.THURSDAY;
-                    case "fri" -> DayOfWeek.FRIDAY;
-                    case "sat" -> DayOfWeek.SATURDAY;
-                    default -> DayOfWeek.SUNDAY;
-                });
+            DayOfWeek day = dayOf(matcher.group(1));
+            days.add(day);
+            if (matcher.group(2) != null) {
+                DayOfWeek last = dayOf(matcher.group(2));
+                while (day != last) { // forward from the first day, so "T7 - T2" runs Saturday, Sunday, Monday
+                    day = day.plus(1);
+                    days.add(day);
+                }
             }
         }
         return found;
+    }
+
+    /** One weekday word: "Thứ 2" is Monday ... "Thứ 7" Saturday, "CN" Sunday; a bare digit 2-7 (the end of "Thứ 2-6") counts the same way. */
+    private static DayOfWeek dayOf(String word) {
+        String w = word.trim().toLowerCase(java.util.Locale.ROOT);
+        char last = w.charAt(w.length() - 1);
+        if (Character.isDigit(last)) {
+            return DayOfWeek.of(last - '0' - 1); // Thứ 2 is Monday
+        }
+        if (w.startsWith("cn") || w.startsWith("ch")) {
+            return DayOfWeek.SUNDAY;
+        }
+        return switch (w.substring(0, 3)) {
+            case "mon" -> DayOfWeek.MONDAY;
+            case "tue" -> DayOfWeek.TUESDAY;
+            case "wed" -> DayOfWeek.WEDNESDAY;
+            case "thu" -> DayOfWeek.THURSDAY;
+            case "fri" -> DayOfWeek.FRIDAY;
+            case "sat" -> DayOfWeek.SATURDAY;
+            default -> DayOfWeek.SUNDAY;
+        };
     }
 
     private static Hours parseRange(String text) {
@@ -132,10 +190,13 @@ public final class TestRideRules {
         if (matcher.find()) {
             open = time(matcher.group(1), matcher.group(2) != null ? matcher.group(2) : matcher.group(3), matcher.group(4) != null ? matcher.group(4) : matcher.group(5));
             close = time(matcher.group(6), matcher.group(7) != null ? matcher.group(7) : matcher.group(8), matcher.group(9) != null ? matcher.group(9) : matcher.group(10));
+        } else if ((matcher = HOURS_BARE_OPEN.matcher(text)).find()) {
+            open = time(matcher.group(1), null, null);
+            close = time(matcher.group(2), matcher.group(3) != null ? matcher.group(3) : matcher.group(4), matcher.group(5) != null ? matcher.group(5) : matcher.group(6));
         } else {
             Matcher plain = PLAIN_HOURS.matcher(text);
             if (!plain.matches()) {
-                return SHUT.matcher(text).find() ? Hours.CLOSED : new Hours(DEFAULT_OPEN, DEFAULT_CLOSE);
+                return isShut(text) ? Hours.CLOSED : new Hours(DEFAULT_OPEN, DEFAULT_CLOSE);
             }
             open = time(plain.group(1), null, null);
             close = time(plain.group(2), null, null);
@@ -144,6 +205,21 @@ public final class TestRideRules {
             return new Hours(DEFAULT_OPEN, DEFAULT_CLOSE);
         }
         return new Hours(open, close);
+    }
+
+    /** True when every clause of the text says the showroom is shut and none adds a holiday, a break, a part of the day or "open": "Đóng cửa", "Tạm nghỉ", "Closed". */
+    private static boolean isShut(String text) {
+        boolean shut = false;
+        for (String clause : text.split("[;|\n,.]")) {
+            if (clause.replaceAll("[^\\p{L}\\d]", "").isEmpty()) {
+                continue;
+            }
+            if (!SHUT.matcher(clause).find() || SHUT_QUALIFIER.matcher(clause).find()) {
+                return false;
+            }
+            shut = true;
+        }
+        return shut;
     }
 
     /** {@code meridiem} is "a" or "p" (any case) or null. 24:00 is {@link #END_OF_DAY}; an hour or minute that does not exist is null. */
@@ -236,14 +312,13 @@ public final class TestRideRules {
     }
 
     /**
-     * Which step may follow which. REQUESTED goes to CONFIRMED or CANCELLED, and also to DONE or NO_SHOW (a customer who came at the time of a
-     * request nobody had confirmed is still a ride that happened, or a no-show; the clock rules of {@link #timingAllows} keep it from being early);
-     * CONFIRMED to DONE, NO_SHOW or CANCELLED; the rest are final.
+     * Which step may follow which. REQUESTED goes to CONFIRMED or CANCELLED, and to DONE (a customer who came a little early to a request nobody had
+     * confirmed yet; the clock rules of {@link #timingAllows} allow it only from {@link #EARLY_DONE} before the start), but never to NO_SHOW: nobody is absent
+     * from a ride the shop never agreed to, and a request is closed by the timer once its start time comes. CONFIRMED goes to DONE, NO_SHOW or CANCELLED; the rest are final.
      */
     public static boolean canMove(String from, String to) {
         if (TestRideBooking.REQUESTED.equals(from)) {
-            return TestRideBooking.CONFIRMED.equals(to) || TestRideBooking.CANCELLED.equals(to)
-                || TestRideBooking.DONE.equals(to) || TestRideBooking.NO_SHOW.equals(to);
+            return TestRideBooking.CONFIRMED.equals(to) || TestRideBooking.CANCELLED.equals(to) || TestRideBooking.DONE.equals(to);
         }
         if (TestRideBooking.CONFIRMED.equals(from)) {
             return TestRideBooking.DONE.equals(to) || TestRideBooking.NO_SHOW.equals(to) || TestRideBooking.CANCELLED.equals(to);
@@ -294,9 +369,12 @@ public final class TestRideRules {
         return OPEN.contains(status) && now.isBefore(slotStart);
     }
 
-    /** The last start time of a request that is too old to wait for a confirmation: its whole slot is over by {@code now}. */
+    /**
+     * The last start time of a request that is too old to wait for a confirmation: its start time has come by {@code now}. From then it can no longer be
+     * confirmed, so it is closed (and the customer told) instead of staying open past the appointment.
+     */
     public static LocalDateTime expiryCutoff(LocalDateTime now) {
-        return now.minus(SLOT);
+        return now;
     }
 
     /** The reminder goes to a confirmed booking that starts within the next {@code hours}, once. */
