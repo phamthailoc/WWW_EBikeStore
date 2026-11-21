@@ -207,16 +207,26 @@ class WarrantySeleniumTest extends StorefrontSeleniumTest {
         submitDialog("Selenium: mời anh mang xe tới cửa hàng");
         wait.until(d -> "RECEIVED".equals(rowWith(frame).findElement(By.cssSelector("td[data-field='status']")).getAttribute("data-raw")));
 
+        // 5b. "Edit note" keeps the step and changes only what the customer reads
+        click(rowWith(frame).findElement(By.cssSelector("[data-action='warranty-status'][data-status='']")));
+        submitDialog(" Selenium: ghi chú thêm");
+        wait.until(d -> rowWith(frame).getText().contains("Selenium: ghi chú thêm"));
+        assertEquals("RECEIVED", rowWith(frame).findElement(By.cssSelector("td[data-field='status']")).getAttribute("data-raw"), "editing the note keeps the step");
+
+        // 5c. staff who open the customer's warranty book are sent to the queue they work in
+        driver.get(baseUrl + "/customer/warranty");
+        wait.until(d -> d.getCurrentUrl().endsWith("/manager/warranty"));
+
         // 6. later steps over the API (REPAIRING -> DONE); a finished request cannot move back
         long claimId = claimIdOf(manager, frame);
         call(manager, "PATCH", "/api/v1/manager/warranty-claims/" + claimId, Map.of("status", "REPAIRING"));
         call(manager, "PATCH", "/api/v1/manager/warranty-claims/" + claimId, Map.of("status", "DONE", "staffNote", "Đã thay bộ sạc"));
         assertThrows(IllegalStateException.class, () -> call(manager, "PATCH", "/api/v1/manager/warranty-claims/" + claimId, Map.of("status", "REPAIRING")));
 
-        // 7. the customer was notified of each change and sees the staff note in the warranty book
+        // 7. the customer was notified of each change (including the note on its own) and sees the staff note in the warranty book
         wait.until(d -> {
             try {
-                return notificationsOfType("WARRANTY_CLAIM") >= before + 3;
+                return notificationsOfType("WARRANTY_CLAIM") >= before + 4; // received, a new note, repairing, done
             } catch (Exception e) {
                 return false;
             }
@@ -249,14 +259,15 @@ class WarrantySeleniumTest extends StorefrontSeleniumTest {
 
     @Test
     void serverMessagesFollowTheLanguageOfTheRequest() throws Exception {
-        String english = body("/api/v1/warranty/lookup?frame=ZZZ-NO-SUCH-0002", "en-US,en;q=0.9");
+        String english = body("/api/v1/warranty/lookup?frame=ZZZ-NO-SUCH-0002", "en", null);
         assertTrue(english.contains("No vehicle with this frame number was found."), english);
-        String vietnamese = body("/api/v1/warranty/lookup?frame=ZZZ-NO-SUCH-0002", "vi-VN,vi;q=0.9");
+        String vietnamese = body("/api/v1/warranty/lookup?frame=ZZZ-NO-SUCH-0002", "vi", null);
         assertTrue(vietnamese.contains("Không tìm thấy xe có số khung này."), vietnamese);
-        String tooShort = body("/api/v1/warranty/lookup?frame=AB", "en");
+        String tooShort = body("/api/v1/warranty/lookup?frame=AB", "en", "vi-VN");
         assertTrue(tooShort.contains("5 to 30 letters"), tooShort);
-        // a language this shop does not have falls back to Vietnamese
-        assertTrue(body("/api/v1/warranty/lookup?frame=AB", "fr").contains("5 đến 30 ký tự"));
+        // like the pages, the browser's Accept-Language is not used: nothing chosen on the device is Vietnamese, and so is a language the shop does not have
+        assertTrue(body("/api/v1/warranty/lookup?frame=AB", null, "en-US,en;q=0.9").contains("5 đến 30 ký tự"));
+        assertTrue(body("/api/v1/warranty/lookup?frame=AB", "fr", null).contains("5 đến 30 ký tự"));
     }
 
     @Test
@@ -279,10 +290,12 @@ class WarrantySeleniumTest extends StorefrontSeleniumTest {
     void erasingTheAccountKeepsTheRepairHistoryButClearsTheCustomersWords() throws Exception {
         HttpClient manager = managerApi();
         Map<Long, Integer> stockBefore = stockOf(productSlug);
+        HttpClient client = newClient();
+        String name = "seleniumwdel" + System.nanoTime();
+        String email = name + "@example.com";
+        String frame = null;
+        boolean erased = false;
         try {
-            HttpClient client = newClient();
-            String name = "seleniumwdel" + System.nanoTime();
-            String email = name + "@example.com";
             call(client, "POST", "/api/v1/auth/register", Map.of("username", name, "email", email, "password", PASSWORD, "firstName", "Selenium", "lastName", "Xoa"));
             call(client, "POST", "/api/v1/auth/login", Map.of("usernameOrEmail", name, "password", PASSWORD));
             long orderId = placePickupOrder(client, email);
@@ -291,13 +304,14 @@ class WarrantySeleniumTest extends StorefrontSeleniumTest {
                 call(manager, "PATCH", "/api/v1/orders/" + orderId + "/status", Map.of("status", status));
             }
             JsonNode unit = listOf(call(client, "GET", "/api/v1/warranty/units", null)).iterator().next();
-            String frame = unit.path("frameNumber").asText();
+            frame = unit.path("frameNumber").asText();
             call(client, "POST", "/api/v1/warranty/claims", Map.of("unitId", unit.path("id").asLong(), "description", "Selenium: nội dung riêng của khách"));
             long claimId = claimIdOf(manager, frame);
             // closed before the account goes, so no request of an erased account stays in the staff queue for good (the note stays on it)
             call(manager, "PATCH", "/api/v1/manager/warranty-claims/" + claimId, Map.of("status", "DONE", "staffNote", "Selenium: ghi chú của cửa hàng"));
 
             call(client, "DELETE", "/api/v1/auth/account", Map.of("password", PASSWORD, "confirmEmail", email));
+            erased = true;
 
             JsonNode kept = null;
             for (JsonNode claim : claimsOf(manager, "ALL")) {
@@ -311,6 +325,15 @@ class WarrantySeleniumTest extends StorefrontSeleniumTest {
             assertFalse(kept.toString().contains(email), "the erased account's email is no longer on the request: " + kept);
             assertEquals(frame, call(newClient(), "GET", "/api/v1/warranty/lookup?frame=" + frame, null).path("frameNumber").asText());
         } finally {
+            // a step that failed half way must not leave an open request in the shared queue or a test account behind
+            closeOpenClaimsOf(manager, frame);
+            if (!erased) {
+                try {
+                    call(client, "DELETE", "/api/v1/auth/account", Map.of("password", PASSWORD, "confirmEmail", email));
+                } catch (Exception ignored) {
+                    // the account was never made, or is already gone
+                }
+            }
             restoreStock(manager, productSlug, stockBefore);
         }
     }
@@ -369,10 +392,16 @@ class WarrantySeleniumTest extends StorefrontSeleniumTest {
     }
 
     /** The raw answer of a GET with the given Accept-Language, error or not. */
-    private static String body(String path, String acceptLanguage) throws Exception {
-        HttpRequest request = HttpRequest.newBuilder(URI.create(baseUrl + path)).header("Accept", "application/json")
-            .header("Accept-Language", acceptLanguage).GET().build();
-        return newClient().send(request, HttpResponse.BodyHandlers.ofString()).body();
+    /** The answer of an API call from a visitor who chose a language on the device (cookie, may be null) and whose browser sends an Accept-Language (may be null). */
+    private static String body(String path, String languageCookie, String acceptLanguage) throws Exception {
+        HttpRequest.Builder builder = HttpRequest.newBuilder(URI.create(baseUrl + path)).header("Accept", "application/json");
+        if (languageCookie != null) {
+            builder.header("Cookie", "ebike_lang=" + languageCookie);
+        }
+        if (acceptLanguage != null) {
+            builder.header("Accept-Language", acceptLanguage);
+        }
+        return newClient().send(builder.GET().build(), HttpResponse.BodyHandlers.ofString()).body();
     }
 
     private static int listSize(JsonNode list) {
