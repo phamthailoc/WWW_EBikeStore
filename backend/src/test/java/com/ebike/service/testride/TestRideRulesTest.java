@@ -44,7 +44,7 @@ class TestRideRulesTest {
 
     @Test
     void aShowroomThatSaysItIsShutTakesNoBookings() {
-        for (String text : List.of("Đóng cửa", "Tạm nghỉ", "Dong cua", "Closed", "Tạm ngưng hoạt động")) {
+        for (String text : List.of("Đóng cửa", "Tạm nghỉ", "Dong cua", "Closed", "Tạm ngưng hoạt động", "Đóng   cửa")) {
             assertEquals(TestRideRules.Hours.CLOSED, TestRideRules.parseOpeningHours(text), text);
         }
         LocalDate day = LocalDate.of(2026, 11, 22);
@@ -107,6 +107,11 @@ class TestRideRulesTest {
     void phoneNumbersAreVietnameseAndSeparatorsAreIgnored() {
         assertEquals("0901234567", TestRideRules.normalizePhone(" 0901 234.567 "));
         assertEquals("0901234567", TestRideRules.normalizePhone("0901-234-567"));
+        assertEquals("0901234567", TestRideRules.normalizePhone("+84 901 234 567"));
+        assertEquals("0901234567", TestRideRules.normalizePhone("84901234567"));
+        assertEquals("0901234567", TestRideRules.normalizePhone("+84 (0) 901 234 567"));
+        assertEquals("02839201234", TestRideRules.normalizePhone("+842839201234"));
+        assertFalse(TestRideRules.isValidPhone(TestRideRules.normalizePhone("8412345")), "too short stays invalid");
         assertTrue(TestRideRules.isValidPhone("0901234567"));
         assertTrue(TestRideRules.isValidPhone("02839201234"));
         assertFalse(TestRideRules.isValidPhone("901234567"));

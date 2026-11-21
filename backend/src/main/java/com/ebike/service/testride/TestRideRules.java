@@ -29,7 +29,7 @@ public final class TestRideRules {
 
     private static final Pattern HOURS = Pattern.compile("(\\d{1,2})\\s*(?:[:hH]\\s*(\\d{2})?)?\\s*[-\\u2013\\u2014]\\s*(\\d{1,2})\\s*(?:[:hH]\\s*(\\d{2})?)?");
     /** Free text that says the showroom is shut ({@code Đóng cửa}, {@code Tạm nghỉ}, {@code Closed}), used only when no hours are written. */
-    private static final Pattern SHUT = Pattern.compile("đóng\s*cửa|dong\s*cua|tạm\s*(?:nghỉ|ngưng|ngừng)|tam\s*(?:nghi|ngung)|ngừng\s*hoạt\s*động|closed", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+    private static final Pattern SHUT = Pattern.compile("đóng\\s*cửa|dong\\s*cua|tạm\\s*(?:nghỉ|ngưng|ngừng)|tam\\s*(?:nghi|ngung)|ngừng\\s*hoạt\\s*động|closed", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
     private static final Pattern PHONE = Pattern.compile("^0\\d{9,10}$");
 
     private TestRideRules() {
@@ -108,9 +108,21 @@ public final class TestRideRules {
         return phone != null && PHONE.matcher(phone).matches();
     }
 
-    /** Takes out the spaces, dots and dashes people type inside a number. */
+    /** Takes out the spaces, dots, dashes and brackets people type inside a number, and turns the international form (+84901234567, 84901234567) into the local one (0901234567). */
     public static String normalizePhone(String phone) {
-        return phone == null ? "" : phone.trim().replaceAll("[\\s.\\-]", "");
+        if (phone == null) {
+            return "";
+        }
+        String digits = phone.trim().replaceAll("[\\s.\\-()]", "");
+        String rest;
+        if (digits.startsWith("+84")) {
+            rest = digits.substring(3);
+        } else if (digits.startsWith("84") && (digits.length() == 11 || digits.length() == 12)) {
+            rest = digits.substring(2);
+        } else {
+            return digits;
+        }
+        return rest.startsWith("0") ? rest : "0" + rest;
     }
 
     public static boolean isKnownStatus(String status) {

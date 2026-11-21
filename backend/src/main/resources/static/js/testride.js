@@ -7,6 +7,12 @@ window.KineticTestRide = (() => {
   const isoDay = date => `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
   const timeText = iso => new Date(iso).toLocaleTimeString(localeTag(), {hour: '2-digit', minute: '2-digit'});
   const dayLabel = date => date.toLocaleDateString(localeTag(), {weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric'});
+  /** Same as the server: separators out, +84 / 84 at the start become 0. */
+  const normalizePhone = text => {
+    const digits = String(text || '').trim().replace(/[\s.\-()]/g, '');
+    const rest = digits.startsWith('+84') ? digits.slice(3) : (/^84\d{9,10}$/.test(digits) ? digits.slice(2) : null);
+    return rest === null ? digits : (rest.startsWith('0') ? rest : '0' + rest);
+  };
   const DEFAULT_DAYS_AHEAD = 14; // only when the page does not say (the server's app.test-ride.days-ahead wins)
   const stepText = {CONFIRMED: t('Xác nhận'), DONE: t('Đã lái thử'), NO_SHOW: t('Khách không đến'), CANCELLED: t('Hủy lịch')};
   const tell = (message, error) => {
@@ -84,7 +90,7 @@ window.KineticTestRide = (() => {
       <label>${t('Ngày')}<select name="date">${days.map(day => `<option value="${isoDay(day)}">${esc(dayLabel(day))}</option>`).join('')}</select></label>
       <p class="muted testride-label">${t('Khung giờ (mỗi lượt 1 giờ)')}</p>
       <div class="testride-slots" role="group" aria-label="${esc(t('Khung giờ'))}" aria-live="polite"></div>
-      <label>${t('Số điện thoại liên hệ')}<input name="phone" type="tel" inputmode="tel" autocomplete="tel" maxlength="15" placeholder="0901234567"></label>
+      <label>${t('Số điện thoại liên hệ')}<input name="phone" type="tel" inputmode="tel" autocomplete="tel" maxlength="20" placeholder="0901234567"></label>
       <label>${t('Ghi chú (không bắt buộc)')}<textarea name="note" rows="2" maxlength="500"></textarea></label>
       <p class="muted">${t('Vui lòng mang theo căn cước công dân. Bạn có thể hủy lịch trước giờ hẹn trong mục Lái thử của tài khoản.')}</p>
       <p class="support-message error" role="alert" hidden></p>
@@ -142,7 +148,7 @@ window.KineticTestRide = (() => {
       event.preventDefault();
       if (submitButton.disabled) return;
       if (!chosen) { fail(t('Vui lòng chọn khung giờ.')); return; }
-      const phone = form.elements.phone.value.replace(/[\s.\-]/g, '');
+      const phone = normalizePhone(form.elements.phone.value);
       if (!/^0\d{9,10}$/.test(phone)) { fail(t('Số điện thoại chưa hợp lệ. Vui lòng nhập số bắt đầu bằng 0 và gồm 10-11 chữ số.')); form.elements.phone.focus(); return; }
       submitButton.disabled = true;
       clearFail();
