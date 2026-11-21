@@ -104,7 +104,7 @@ class TestRideServiceTest {
 
         when(showrooms.findLockedById(10L)).thenReturn(Optional.of(showroom));
         when(showrooms.findById(10L)).thenReturn(Optional.of(showroom));
-        when(users.findByUsername("an")).thenReturn(Optional.of(an));
+        when(users.findLockedByUsername("an")).thenReturn(Optional.of(an));
         when(products.findById(5L)).thenReturn(Optional.of(bike));
         when(bookings.saveAndFlush(any(TestRideBooking.class))).thenAnswer(call -> call.getArgument(0));
         when(bookings.save(any(TestRideBooking.class))).thenAnswer(call -> call.getArgument(0));
@@ -168,7 +168,7 @@ class TestRideServiceTest {
         service.book("an", request("2026-11-22T09:00"));
         var order = inOrder(showrooms, users, bookings);
         order.verify(showrooms).findLockedById(10L);
-        order.verify(users).findByUsername("an");
+        order.verify(users).findLockedByUsername("an");
         order.verify(bookings).countAt(eq(10L), eq(SLOT), anyCollection());
         order.verify(bookings).saveAndFlush(any(TestRideBooking.class));
     }
@@ -342,7 +342,7 @@ class TestRideServiceTest {
         User other = new User();
         other.setId(2L);
         other.setUsername("binh");
-        when(users.findByUsername("binh")).thenReturn(Optional.of(other));
+        when(users.findLockedByUsername("binh")).thenReturn(Optional.of(other));
         assertEquals(HttpStatus.NOT_FOUND, statusOf(() -> service.cancelOwn("binh", 77L)));
         assertEquals(HttpStatus.NOT_FOUND, statusOf(() -> service.cancelOwn("an", 404L)));
     }

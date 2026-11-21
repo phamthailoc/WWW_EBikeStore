@@ -42,7 +42,7 @@ import org.springframework.web.server.ResponseStatusException;
  * number of rides per showroom. The staff confirm the request, close it afterwards (done, no-show) or cancel it.
  *
  * <p>The number of places is kept without a table of slots: booking locks the showroom row first and counts the open bookings of the slot
- * under that lock, so two customers cannot both take the last place. A customer cannot hold two open bookings at the same time (the
+ * under that lock, so two customers cannot both take the last place; it then locks the customer's row so one customer's parallel requests are counted one by one. A customer cannot hold two open bookings at the same time (the
  * database refuses it too) nor more than {@code app.test-ride.max-open-per-customer} future ones.
  */
 @Service
@@ -176,7 +176,8 @@ public class TestRideService {
         if (!Boolean.TRUE.equals(showroom.getActive())) {
             throw showroomNotFound();
         }
-        User user = users.findByUsername(username).orElseThrow(TestRideService::signInRequired);
+        // then the customer's own row, so two parallel requests of one customer (at two showrooms) cannot both pass the limit below; always showroom first, user second
+        User user = users.findLockedByUsername(username).orElseThrow(TestRideService::signInRequired);
         Product product = products.findById(request.productId())
             .filter(found -> Boolean.TRUE.equals(found.getActive()))
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, RequestLanguage.text("Không tìm thấy xe này.", "This bike was not found.")));
