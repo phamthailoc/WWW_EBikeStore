@@ -58,3 +58,13 @@ ALTER TABLE `maintenance_reminders` ADD CONSTRAINT `fk_maintenance_reminders_uni
 -- If this fails with a duplicate-key error, two open requests of one vehicle exist already: close one of them and run it again.
 ALTER TABLE `warranty_claims` ADD COLUMN IF NOT EXISTS `open_unit_id` BIGINT AS (IF(status IN ('NEW', 'RECEIVED', 'REPAIRING'), order_item_unit_id, NULL)) VIRTUAL;
 CREATE UNIQUE INDEX IF NOT EXISTS `uk_warranty_claims_open_unit` ON `warranty_claims` (open_unit_id);
+
+-- The warranty length of a vehicle is pinned on its own row when the frame number is recorded, so changing
+-- product_specifications.warranty_months later does not move the end date of bikes already sold. Vehicles recorded
+-- before this change take the product's current length now.
+ALTER TABLE `order_item_units` ADD COLUMN IF NOT EXISTS `warranty_months` INT NULL;
+UPDATE `order_item_units` u
+JOIN `order_items` i ON i.id = u.order_item_id
+JOIN `product_specifications` sp ON sp.product_id = i.product_id
+SET u.warranty_months = sp.warranty_months
+WHERE u.warranty_months IS NULL AND sp.warranty_months IS NOT NULL;

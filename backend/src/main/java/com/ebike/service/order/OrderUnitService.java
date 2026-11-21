@@ -120,6 +120,7 @@ public class OrderUnitService {
                 continue;
             }
             unit.setEngineNumber(entry.engine());
+            pinWarranty(unit);
             kept.add(unit);
         }
         List<OrderItemUnit> spare = new ArrayList<>();
@@ -162,12 +163,14 @@ public class OrderUnitService {
         for (int i = 0; i < reused.size(); i++) {
             reused.get(i).setFrameNumber(reuseEntries.get(i).frame());
             reused.get(i).setEngineNumber(reuseEntries.get(i).engine());
+            pinWarranty(reused.get(i));
         }
         for (NormalizedEntry entry : created) {
             OrderItemUnit unit = new OrderItemUnit();
             unit.setOrderItem(entry.item());
             unit.setFrameNumber(entry.frame());
             unit.setEngineNumber(entry.engine());
+            pinWarranty(unit);
             entry.item().getUnits().add(unit);
         }
         orders.saveAndFlush(order);
@@ -177,6 +180,13 @@ public class OrderUnitService {
             .flatMap(item -> item.getUnits().stream())
             .map(unit -> new OrderItemUnitResponse(unit.getId(), unit.getFrameNumber(), unit.getEngineNumber()))
             .toList();
+    }
+
+    /** Pins the warranty length once: later changes of the product do not move the end date of a bike already recorded. */
+    private static void pinWarranty(OrderItemUnit unit) {
+        if (unit.getWarrantyMonths() == null) {
+            unit.setWarrantyMonths(OrderUnits.warrantyMonthsOf(unit.getOrderItem()));
+        }
     }
 
     private static String clean(String value) {

@@ -154,6 +154,17 @@ class OrderUnitServiceTest {
         assertEquals("RLHABC99999", second.getFrameNumber());
     }
 
+    @Test void theWarrantyLengthIsPinnedOnceAndSurvivesALaterProductChange() {
+        bikes.getProduct().getSpecification().setWarrantyMonths(24);
+        service.replaceUnits(10L, new OrderUnitsRequest(List.of(new Entry(1L, "RLHABC12345", "M1234567"))));
+        OrderItemUnit unit = bikes.getUnits().iterator().next();
+        assertEquals(24, unit.getWarrantyMonths());
+
+        bikes.getProduct().getSpecification().setWarrantyMonths(18);
+        service.replaceUnits(10L, new OrderUnitsRequest(List.of(new Entry(1L, "RLHABC12345", "M7654321"))));
+        assertEquals(24, unit.getWarrantyMonths());
+    }
+
     @Test void theVehiclesAreLockedBeforeTheOrderIsRead() {
         service.replaceUnits(10L, new OrderUnitsRequest(List.of(new Entry(1L, "RLHABC12345", "M1234567"))));
         InOrder order = inOrder(unitRepository, orders);

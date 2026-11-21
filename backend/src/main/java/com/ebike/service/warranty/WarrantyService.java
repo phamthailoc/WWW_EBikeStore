@@ -286,6 +286,10 @@ public class WarrantyService {
     }
 
     static Integer warrantyMonths(OrderItemUnit unit) {
+        if (unit.getWarrantyMonths() != null) {
+            return unit.getWarrantyMonths();
+        }
+        // not pinned (the product had no length when the numbers were recorded): fall back to the product's current length
         var product = unit.getOrderItem().getProduct();
         return product == null || product.getSpecification() == null ? null : product.getSpecification().getWarrantyMonths();
     }

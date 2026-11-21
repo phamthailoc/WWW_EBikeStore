@@ -420,6 +420,7 @@ CREATE TABLE `order_item_units` (
     order_item_id BIGINT NOT NULL,
     frame_number VARCHAR(30) NOT NULL,
     engine_number VARCHAR(30) NOT NULL,
+    warranty_months INT NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_order_item_units_item FOREIGN KEY (order_item_id) REFERENCES order_items(id) ON DELETE CASCADE,
     CONSTRAINT uq_order_item_units_frame UNIQUE (frame_number)
