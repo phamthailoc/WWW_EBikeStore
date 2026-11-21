@@ -35,6 +35,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -136,8 +137,13 @@ public class InstallmentService {
         return new InstallmentBacklogResponse(applications.countByStatus(InstallmentApplication.PENDING));
     }
 
-    /** The staff's verdict. A rejection cancels the order (with the reason), an approval opens the down payment. */
-    @Transactional
+    /**
+     * The staff's verdict. A rejection cancels the order (with the reason), an approval opens the down payment.
+     * READ_COMMITTED: the order is found through a bare id before its row can be locked, and under the default snapshot everything read after waiting for
+     * that lock (the order's items, the stock of the vehicles a rejection puts back) would be as old as that first read, so a rejection could write back
+     * a stock that another order changed while it waited. With READ_COMMITTED each read sees what is committed when it runs.
+     */
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public InstallmentApplicationResponse decide(Long id, InstallmentDecisionRequest request, Authentication authentication) {
         String decision = request == null || request.decision() == null ? "" : request.decision().trim().toUpperCase(Locale.ROOT);
         boolean approve = "APPROVE".equals(decision);
