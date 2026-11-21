@@ -189,7 +189,7 @@ public class WarrantyService {
     /**
      * The staff queue, one page at a time ({@code size} is held between 1 and {@link #MAX_PAGE_SIZE}). With no status it holds the requests
      * still open (NEW, RECEIVED, REPAIRING), oldest first, so the longest-waiting one is on top and closed ones do not push it away;
-     * {@code ALL} lists everything and a single status lists that status, newest first.
+     * a single open status is listed oldest first too, while {@code ALL} (everything) and a closed status (DONE, REJECTED) are listed newest first.
      */
     @Transactional(readOnly = true)
     public ClaimPage listClaims(String status, int page, int size) {
