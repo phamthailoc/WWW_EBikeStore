@@ -42,4 +42,23 @@ class AccountErasureInstallmentTest {
         order.verify(installments).clearPersonalDataOf(eq(42L), any(LocalDateTime.class));
         assertEquals(AccountErasure.DELETED, user.getAccountStatus());
     }
+
+    @Test
+    void anAccountWithAnOpenInstalmentApplicationCannotBeErased() {
+        InstallmentApplicationRepository installments = mock(InstallmentApplicationRepository.class);
+        UserRepository users = mock(UserRepository.class);
+        AccountErasure erasure = new AccountErasure(
+            mock(UserAddressRepository.class), mock(UserFavoriteRepository.class), mock(UserPreferenceRepository.class),
+            mock(NotificationRepository.class), mock(StockAlertRepository.class), mock(WarrantyClaimRepository.class),
+            mock(TestRideBookingRepository.class), installments, users, mock(ProductReviewService.class), mock(PasswordEncoder.class), "Asia/Ho_Chi_Minh");
+        org.mockito.Mockito.when(installments.countOpenOf(42L)).thenReturn(1L);
+        User user = new User();
+        user.setId(42L);
+
+        var refused = org.junit.jupiter.api.Assertions.assertThrows(org.springframework.web.server.ResponseStatusException.class, () -> erasure.erase(user));
+
+        assertEquals(org.springframework.http.HttpStatus.CONFLICT, refused.getStatusCode());
+        org.mockito.Mockito.verify(installments, org.mockito.Mockito.never()).clearPersonalDataOf(eq(42L), any(LocalDateTime.class));
+        assertEquals("ACTIVE", user.getAccountStatus());
+    }
 }

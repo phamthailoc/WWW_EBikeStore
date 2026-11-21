@@ -1,5 +1,6 @@
 package com.ebike.service.admin;
 
+import com.ebike.common.i18n.RequestLanguage;
 import com.ebike.model.entity.auth.User;
 import com.ebike.repository.auth.UserRepository;
 import com.ebike.repository.installment.InstallmentApplicationRepository;
@@ -15,9 +16,11 @@ import java.time.Clock;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.UUID;
+import org.springframework.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.web.server.ResponseStatusException;
 
 /**
  * Deletes an account at the customer's request without deleting the shop's records (V6).
@@ -84,6 +87,13 @@ public class AccountErasure {
         // V23: lock the account row first. A booking in progress holds the showroom row and then this row, so taking this one before the bookings are
         // updated keeps both in the same order (no deadlock); the booking then finds the account gone and is refused.
         users.findLockedById(id);
+        // V24: an application waiting for the staff, or for its down payment, still holds an order's stock and someone has to answer it: the order is
+        // cancelled (or the application rejected) first. Counted after the lock, so an order placed at this very moment cannot slip in.
+        if (installments.countOpenOf(id) > 0) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, RequestLanguage.text(
+                "Khách này còn hồ sơ trả góp đang mở (chờ duyệt hoặc chờ trả trước). Hãy từ chối hồ sơ hoặc hủy đơn trước khi xóa tài khoản.",
+                "This customer still has an open instalment application (waiting for a decision or for the down payment). Reject it or cancel the order before deleting the account."));
+        }
         addresses.deleteAll(addresses.findByUserId(id));
         favorites.deleteAll(favorites.findByUserId(id));
         preferences.findByUserId(id).ifPresent(preferences::delete);
@@ -96,7 +106,7 @@ public class AccountErasure {
         testRides.clearPersonalDataOf(id, now);
         testRides.cancelOpenOf(id, now);
         // V24: the ID number and the income of an instalment application are personal data; the plan and the staff verdict stay as the shop's record
-        // (an account with an open order cannot be erased, so no application is still waiting for a decision)
+        // (an application still open blocks the erasure above, so none is waiting for a decision)
         installments.clearPersonalDataOf(id, now);
         reviews.removeReviewsOf(id);
 

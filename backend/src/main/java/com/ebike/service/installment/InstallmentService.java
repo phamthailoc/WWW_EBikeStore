@@ -143,7 +143,8 @@ public class InstallmentService {
                 "Đơn hàng không còn ở trạng thái chờ xác nhận nên không duyệt được hồ sơ.",
                 "The order is no longer waiting for confirmation, so the application cannot be decided."));
         }
-        if (AccountErasure.DELETED.equals(application.getUser().getAccountStatus())) {
+        // an application of an account erased before this was checked can still be rejected (that frees the order's stock), but not approved
+        if (approve && AccountErasure.DELETED.equals(application.getUser().getAccountStatus())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, RequestLanguage.text(
                 "Tài khoản của khách đã bị xóa, không duyệt được hồ sơ.", "The customer's account was deleted, so the application cannot be approved."));
         }

@@ -300,6 +300,14 @@ class InstallmentServiceTest {
     }
 
     @Test
+    void anApplicationOfADeletedAccountCanStillBeRejectedSoTheStockGoesBack() {
+        customer.setAccountStatus(AccountErasure.DELETED);
+        service.decide(5L, new InstallmentDecisionRequest("REJECT", "Tài khoản đã xóa"), staff());
+        assertEquals(InstallmentApplication.REJECTED, application.getStatus());
+        verify(orders).updateOrderStatus(eq(10L), any(OrderStatusUpdateRequest.class), any());
+    }
+
+    @Test
     void anUnknownApplicationIsNotFound() {
         when(applications.findLockedById(404L)).thenReturn(Optional.empty());
         assertEquals(HttpStatus.NOT_FOUND, refused(() -> service.decide(404L, new InstallmentDecisionRequest("APPROVE", null), staff())).getStatusCode());
