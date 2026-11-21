@@ -237,7 +237,7 @@ public class NotificationCreationService {
             String language = languageOf(preference);
             createNotification(user, preference, NotificationType.TEST_RIDE,
                 TestRideMessages.title(language, event.kind()),
-                TestRideMessages.body(language, event.kind(), event.productName(), event.showroomName(), event.slotStart(), event.note()),
+                TestRideMessages.body(language, event.kind(), event.productName(), TestRideMessages.place(event.showroomName(), event.showroomAddress()), event.slotStart(), event.note()),
                 null, null, "/customer/test-rides", false);
         });
     }

@@ -63,6 +63,7 @@ class TestRideNotificationTest {
         assertEquals(NotificationType.TEST_RIDE, notification.getType());
         assertEquals("Test ride confirmed", notification.getTitle());
         assertTrue(notification.getMessage().contains("22/11/2026 at 09:00"), notification.getMessage());
+        assertTrue(notification.getMessage().contains("Quan 1, 187 Nguyen Thai Hoc"), notification.getMessage());
         assertEquals("/customer/test-rides", notification.getTargetUrl());
     }
 

@@ -48,9 +48,15 @@ public final class TestRideMessages {
         };
     }
 
-    public static String body(String language, String kind, String productName, String showroomName, LocalDateTime slotStart, String note) {
+    /** The showroom as one phrase: its name, then its address when there is one. */
+    public static String place(String showroomName, String address) {
+        return address == null || address.isBlank() ? showroomName : showroomName + ", " + address.trim();
+    }
+
+    /** {@code place} is the showroom as {@link #place(String, String)} writes it, so the customer reads where to go and not only a name. */
+    public static String body(String language, String kind, String productName, String place, LocalDateTime slotStart, String note) {
         boolean english = isEnglish(language);
-        String bike = productName + " - " + showroomName + ", " + when(language, slotStart);
+        String bike = productName + " - " + place + ", " + when(language, slotStart);
         String reason = note == null || note.isBlank() ? "" : (english ? " Note from the store: " : " Ghi chú của cửa hàng: ") + note.trim();
         return switch (kind) {
             case CONFIRMED -> english
@@ -100,7 +106,7 @@ public final class TestRideMessages {
     public static String emailBody(String language, String kind, String productName, String showroomName, String address,
                                    LocalDateTime slotStart, String note, String bookingsUrl) {
         boolean english = isEnglish(language);
-        String where = address == null || address.isBlank() ? showroomName : showroomName + ", " + address.trim();
+        String where = place(showroomName, address);
         String link = bookingsUrl == null || bookingsUrl.isBlank() ? null : bookingsUrl.trim();
         StringBuilder text = new StringBuilder();
         text.append(body(language, kind, productName, where, slotStart, note)).append("\n\n");
