@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS `warranty_claims` (
     staff_note LONGTEXT,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_warranty_claims_unit FOREIGN KEY (order_item_unit_id) REFERENCES order_item_units(id) ON DELETE CASCADE,
+    CONSTRAINT fk_warranty_claims_unit FOREIGN KEY (order_item_unit_id) REFERENCES order_item_units(id) ON DELETE RESTRICT,
     CONSTRAINT fk_warranty_claims_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     CONSTRAINT chk_warranty_claims_status CHECK (status IN ('NEW', 'RECEIVED', 'REPAIRING', 'DONE', 'REJECTED'))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS `maintenance_reminders` (
     due_at DATETIME NOT NULL,
     notified TINYINT(1) NOT NULL DEFAULT 1,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_maintenance_reminders_unit FOREIGN KEY (order_item_unit_id) REFERENCES order_item_units(id) ON DELETE CASCADE,
+    CONSTRAINT fk_maintenance_reminders_unit FOREIGN KEY (order_item_unit_id) REFERENCES order_item_units(id) ON DELETE RESTRICT,
     CONSTRAINT uk_maintenance_reminders_unit_milestone UNIQUE (order_item_unit_id, milestone)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -43,3 +43,10 @@ WHERE o.status = 'DELIVERED' AND s.delivered_at IS NULL;
 UPDATE `orders` o LEFT JOIN `shipments` s ON s.order_id = o.id
 SET o.delivered_at = COALESCE(s.delivered_at, o.updated_at)
 WHERE o.status = 'DELIVERED' AND o.delivered_at IS NULL;
+
+-- A vehicle's warranty history must never vanish with the vehicle row: the two foreign keys refuse the delete (RESTRICT)
+-- instead of cascading it. Databases made by an earlier version of this file still have ON DELETE CASCADE, so recreate them.
+ALTER TABLE `warranty_claims` DROP FOREIGN KEY IF EXISTS `fk_warranty_claims_unit`;
+ALTER TABLE `warranty_claims` ADD CONSTRAINT `fk_warranty_claims_unit` FOREIGN KEY (order_item_unit_id) REFERENCES order_item_units(id) ON DELETE RESTRICT;
+ALTER TABLE `maintenance_reminders` DROP FOREIGN KEY IF EXISTS `fk_maintenance_reminders_unit`;
+ALTER TABLE `maintenance_reminders` ADD CONSTRAINT `fk_maintenance_reminders_unit` FOREIGN KEY (order_item_unit_id) REFERENCES order_item_units(id) ON DELETE RESTRICT;
