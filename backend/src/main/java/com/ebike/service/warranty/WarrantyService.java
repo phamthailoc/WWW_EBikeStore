@@ -28,6 +28,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -157,7 +158,7 @@ public class WarrantyService {
             throw bad("Xe chỉ được yêu cầu bảo hành sau khi đã giao.", "A warranty request can be made only after the vehicle was delivered.");
         }
         if (claims.existsByUnitIdAndStatusIn(unit.getId(), OPEN)) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, WarrantyMessages.text("Xe này đang có một yêu cầu bảo hành chưa xử lý xong.", "This vehicle already has an open warranty request."));
+            throw openRequestExists();
         }
         LocalDateTime now = LocalDateTime.now(clock);
         String coverage = WarrantyRules.coverage(startsAt(unit), warrantyMonths(unit), now);
@@ -167,7 +168,12 @@ public class WarrantyService {
         claim.setUser(user);
         claim.setDescription(text);
         claim.setOutOfWarranty(WarrantyRules.EXPIRED.equals(coverage));
-        return toClaimResponse(claims.save(claim));
+        try {
+            return toClaimResponse(claims.save(claim));
+        } catch (DataIntegrityViolationException exception) {
+            // the database allows one open request per vehicle (uk_warranty_claims_open_unit): a second one that slipped past the check above
+            throw openRequestExists();
+        }
     }
 
     /** The staff queue, newest first, one page at a time ({@code size} is held between 1 and {@link #MAX_PAGE_SIZE}). */
@@ -309,6 +315,10 @@ public class WarrantyService {
         if (username == null || username.isBlank()) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authentication is required");
         }
+    }
+
+    private static ResponseStatusException openRequestExists() {
+        return new ResponseStatusException(HttpStatus.CONFLICT, WarrantyMessages.text("Xe này đang có một yêu cầu bảo hành chưa xử lý xong.", "This vehicle already has an open warranty request."));
     }
 
     private static ResponseStatusException unitNotFound() {

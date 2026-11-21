@@ -41,6 +41,7 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -125,6 +126,19 @@ class WarrantyServiceTest {
         assertEquals(404, error.getStatusCode().value());
         verify(users, never()).findByUsername(any());
         verify(units, never()).findForWarrantyById(any());
+    }
+
+    @Test
+    void aSecondOpenRequestRejectedByTheDatabaseIsAConflict() {
+        User me = user(1L, "me");
+        when(users.findByUsername("me")).thenReturn(Optional.of(me));
+        when(units.findForWarrantyById(7L)).thenReturn(Optional.of(unitOf(me)));
+        when(claims.save(any(WarrantyClaim.class))).thenThrow(new DataIntegrityViolationException("uk_warranty_claims_open_unit"));
+
+        ResponseStatusException error = assertThrows(ResponseStatusException.class,
+            () -> service.createClaim("me", 7L, "The motor makes a noise"));
+
+        assertEquals(409, error.getStatusCode().value());
     }
 
     @Test

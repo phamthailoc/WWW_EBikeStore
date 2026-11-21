@@ -12,9 +12,11 @@ CREATE TABLE IF NOT EXISTS `warranty_claims` (
     staff_note LONGTEXT,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    open_unit_id BIGINT AS (IF(status IN ('NEW', 'RECEIVED', 'REPAIRING'), order_item_unit_id, NULL)) VIRTUAL,
     CONSTRAINT fk_warranty_claims_unit FOREIGN KEY (order_item_unit_id) REFERENCES order_item_units(id) ON DELETE RESTRICT,
     CONSTRAINT fk_warranty_claims_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    CONSTRAINT chk_warranty_claims_status CHECK (status IN ('NEW', 'RECEIVED', 'REPAIRING', 'DONE', 'REJECTED'))
+    CONSTRAINT chk_warranty_claims_status CHECK (status IN ('NEW', 'RECEIVED', 'REPAIRING', 'DONE', 'REJECTED')),
+    CONSTRAINT uk_warranty_claims_open_unit UNIQUE (open_unit_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE INDEX IF NOT EXISTS `idx_warranty_claims_status` ON `warranty_claims` (status, created_at);
@@ -50,3 +52,9 @@ ALTER TABLE `warranty_claims` DROP FOREIGN KEY IF EXISTS `fk_warranty_claims_uni
 ALTER TABLE `warranty_claims` ADD CONSTRAINT `fk_warranty_claims_unit` FOREIGN KEY (order_item_unit_id) REFERENCES order_item_units(id) ON DELETE RESTRICT;
 ALTER TABLE `maintenance_reminders` DROP FOREIGN KEY IF EXISTS `fk_maintenance_reminders_unit`;
 ALTER TABLE `maintenance_reminders` ADD CONSTRAINT `fk_maintenance_reminders_unit` FOREIGN KEY (order_item_unit_id) REFERENCES order_item_units(id) ON DELETE RESTRICT;
+
+-- At most one open request (NEW, RECEIVED or REPAIRING) per vehicle, enforced by the database itself: open_unit_id is the
+-- vehicle id while the request is open and NULL once it is closed, and NULLs do not collide in a unique key.
+-- If this fails with a duplicate-key error, two open requests of one vehicle exist already: close one of them and run it again.
+ALTER TABLE `warranty_claims` ADD COLUMN IF NOT EXISTS `open_unit_id` BIGINT AS (IF(status IN ('NEW', 'RECEIVED', 'REPAIRING'), order_item_unit_id, NULL)) VIRTUAL;
+CREATE UNIQUE INDEX IF NOT EXISTS `uk_warranty_claims_open_unit` ON `warranty_claims` (open_unit_id);
