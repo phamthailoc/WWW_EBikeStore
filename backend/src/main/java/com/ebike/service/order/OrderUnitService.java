@@ -137,8 +137,9 @@ public class OrderUnitService {
         List<NormalizedEntry> created = new ArrayList<>();
         List<OrderItemUnit> removed = new ArrayList<>(spare);
         for (NormalizedEntry entry : unmatched) {
+            // A row whose old number is asked for again (on another line) is not reused: it is deleted so the number is free to insert.
             OrderItemUnit reuse = removed.stream().filter(unit -> unit.getOrderItem() == entry.item()
-                && !byFrame.containsKey(entry.frame())).findFirst().orElse(null);
+                && !byFrame.containsKey(entry.frame()) && !frames.contains(unit.getFrameNumber())).findFirst().orElse(null);
             if (reuse == null) {
                 created.add(entry);
             } else {

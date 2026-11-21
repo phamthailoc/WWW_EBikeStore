@@ -210,6 +210,26 @@ class OrderUnitServiceTest {
         assertTrue(otherBikes.getUnits().isEmpty());
     }
 
+    @Test void swappingNumbersAcrossLinesNeverInsertsBeforeTheOldRowIsGone() {
+        OrderItem otherBikes = line(3L, VehicleType.E_MOTORBIKE, 1);
+        order.getItems().add(otherBikes);
+        existing(7L, "RLHXXXX1", "M1234567");
+        OrderItemUnit z = new OrderItemUnit();
+        ReflectionTestUtils.setField(z, "id", 8L);
+        z.setOrderItem(otherBikes);
+        z.setFrameNumber("RLHZZZZ1");
+        z.setEngineNumber("M7654321");
+        otherBikes.getUnits().add(z);
+        // line 1 changes X to W while line 3 takes X: the row that carries X is deleted and flushed, never reused for W
+        service.replaceUnits(10L, new OrderUnitsRequest(List.of(
+            new Entry(1L, "RLHWWWW1", "M1234567"), new Entry(3L, "RLHXXXX1", "M7654321"))));
+        OrderItemUnit onFirst = bikes.getUnits().iterator().next();
+        assertEquals("RLHWWWW1", onFirst.getFrameNumber());
+        assertEquals(null, onFirst.getId());
+        assertEquals("RLHXXXX1", otherBikes.getUnits().iterator().next().getFrameNumber());
+        verify(orders, org.mockito.Mockito.times(2)).saveAndFlush(any());
+    }
+
     @Test void movingAFrameToAnotherLineWithoutHistoryDeletesThenInserts() {
         OrderItem otherBikes = line(3L, VehicleType.E_MOTORBIKE, 1);
         order.getItems().add(otherBikes);
