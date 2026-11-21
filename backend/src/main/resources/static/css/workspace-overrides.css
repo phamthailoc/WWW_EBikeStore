@@ -126,3 +126,15 @@ h1,h2,h3,.brand,.eyebrow,.metric b,.metric small{font-family:'Space Grotesk','Se
 @media(max-width:640px){.unit-row{grid-template-columns:1fr}}
 
 .clamped-text{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:4;line-clamp:4;overflow:hidden;max-width:36ch;overflow-wrap:anywhere}
+/* V23: test-ride booking dialog */
+.testride-dialog{max-width:560px;max-height:calc(100vh - 32px);overflow:auto}
+.testride-dialog label{display:block;margin:12px 0 0;font-size:14px}
+.testride-dialog select,.testride-dialog input,.testride-dialog textarea{width:100%;box-sizing:border-box;margin-top:6px}
+.testride-dialog .testride-label{margin:14px 0 0}
+.testride-slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px;margin:8px 0 4px}
+.testride-slots>p{grid-column:1/-1;margin:0}
+.testride-slot{display:grid;gap:2px;justify-items:center;padding:9px 6px;border:1px solid var(--c-dfe4dc);border-radius:8px;background:var(--c-ffffff);color:inherit;font:inherit;cursor:pointer}
+.testride-slot small{color:var(--c-6b7771);font-size:11px}
+.testride-slot.selected{border-color:var(--c-708b40);box-shadow:0 0 0 2px #c8f16966}
+.testride-slot:disabled{opacity:.45;cursor:not-allowed}
+@media(max-width:700px){.testride-dialog{padding:18px}.testride-slots{grid-template-columns:repeat(3,1fr)}}

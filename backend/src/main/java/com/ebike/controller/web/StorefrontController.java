@@ -77,7 +77,8 @@ public class StorefrontController {
 
     @GetMapping({"/bike/{slug}", "/product/{slug}", "/models/{slug}"})
     public String detail(@PathVariable String slug, Model model) {
-        model.addAttribute("product", products.getProductBySlug(slug));
+        var product = products.getProductBySlug(slug);
+        model.addAttribute("product", product);
         model.addAttribute("related", products.getRelatedProducts(slug, 4));
         // V22: "Notify me" is for visitors (who are sent to sign in) and customers; staff accounts do not get the button.
         var authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -87,6 +88,10 @@ public class StorefrontController {
         model.addAttribute("canNotifyStock", visitor || customer);
         // only a signed-in customer has a waiting list to ask for; guests and staff would just get 401/403
         model.addAttribute("stockAlertCustomer", customer);
+        // V23: "Book a test ride" is for visitors (sent to sign in) and customers, and only for a bike that can be ridden (not a battery or an accessory).
+        String vehicleType = product == null || product.specification() == null ? null : product.specification().vehicleType();
+        boolean rideable = !"BATTERY".equals(vehicleType) && !"ACCESSORY".equals(vehicleType);
+        model.addAttribute("canTestRide", (visitor || customer) && rideable);
         return "store/detail";
     }
 
