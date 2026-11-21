@@ -52,6 +52,8 @@ Ký hiệu: P1 nên làm trước; P2 làm tiếp nếu còn thời gian; P3 là
 
 **Cần chốt:** mốc bảo dưỡng (1 tháng / 6 tháng?); xe hết hạn bảo hành có được gửi yêu cầu (sửa có tính phí) không.
 
+**Giới hạn đã biết:** sổ bảo hành chỉ đọc `order_item_units`, nên một xe không có dòng số khung thì không có phiếu và khách không tự thêm được. Gồm (a) đơn đã giao trước V18 (lúc đó đơn được giao mà không cần số khung): nhân viên mở chi tiết đơn đã giao ở `/manager/orders` và nhập số khung (trạng thái "Đã giao" vẫn cho sửa số khung), ngày bàn giao lấy từ `orders.delivered_at` hoặc giờ giao của đơn; (b) sản phẩm loại pin và phụ kiện (`OrderUnits.requiresNumbers` trả `false`), dù pin thường có bảo hành riêng: chưa có phiếu cho chúng, chủ sản phẩm cần quyết định có làm không.
+
 **Chờ xác nhận (tác giả code đã tự chọn, chưa có ý kiến chủ sản phẩm):** (1) bỏ ảnh đính kèm trong biểu mẫu yêu cầu bảo hành (bucket S3 đang công khai, nên chưa làm); (2) mốc bảo dưỡng `P1M,P6M,P12M,P18M,P24M,P30M,P36M`; (3) xe hết hạn vẫn được gửi yêu cầu, đánh dấu sửa có tính phí; (4) thời hạn bảo hành được ghim vào từng xe lúc ghi số khung, đổi `warranty_months` của sản phẩm sau đó không làm đổi xe đã bán; (5) ghi chú nhân viên (`staff_note`) được giữ lại khi khách xóa tài khoản; (6) yêu cầu bảo hành đang mở (`NEW`/`RECEIVED`/`REPAIRING`) của tài khoản đã xóa được giữ nguyên trong hàng đợi, không tự đóng; nhân viên không còn cách liên lạc (email đã thành `deleted_<id>`, không có thông báo), nên cần chốt: để mở cho tới khi nhân viên tự đóng, hay tự chuyển `REJECTED`/`DONE` lúc xóa tài khoản. Các mục này chưa tính là xong cho đến khi được xác nhận.
 
 ### V21. Chạy test tự động trên GitHub Actions (CI) — khoảng 1 ngày
