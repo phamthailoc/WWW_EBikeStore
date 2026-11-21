@@ -258,6 +258,17 @@ class InstallmentServiceTest {
     }
 
     @Test
+    void aRejectionNoteLeavesRoomForThePrefixOfTheCancellationReason() {
+        String longest = "x".repeat(1000 - InstallmentService.REJECTED_REASON_PREFIX.length());
+        assertEquals(HttpStatus.BAD_REQUEST, refused(() -> service.decide(5L, new InstallmentDecisionRequest("REJECT", longest + "x"), staff())).getStatusCode());
+        assertEquals(InstallmentApplication.PENDING, application.getStatus());
+        service.decide(5L, new InstallmentDecisionRequest("REJECT", longest), staff());
+        var reason = ArgumentCaptor.forClass(OrderStatusUpdateRequest.class);
+        verify(orders).updateOrderStatus(eq(10L), reason.capture(), any());
+        assertEquals(1000, reason.getValue().reason().length());
+    }
+
+    @Test
     void anUnknownDecisionOrALongNoteIsRefused() {
         assertEquals(HttpStatus.BAD_REQUEST, refused(() -> service.decide(5L, new InstallmentDecisionRequest("MAYBE", "x"), staff())).getStatusCode());
         assertEquals(HttpStatus.BAD_REQUEST, refused(() -> service.decide(5L, new InstallmentDecisionRequest(null, "x"), staff())).getStatusCode());

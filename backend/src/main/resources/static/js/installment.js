@@ -223,7 +223,7 @@ window.KineticInstallment = (() => {
       title: approving ? t('Duyệt hồ sơ trả góp') : t('Từ chối hồ sơ trả góp'),
       intro: approving ? t('Khách sẽ nhận thông báo và email, rồi trả khoản trả trước qua VNPay hoặc tại cửa hàng. {s}', {s: summary || ''}) : t('Đơn hàng sẽ bị hủy và xe được trả về kho. Khách sẽ thấy lý do. {s}', {s: summary || ''}),
       label: approving ? t('Ghi chú cho khách (có thể để trống)') : t('Lý do từ chối (khách sẽ thấy)'),
-      required: !approving, max: 1000, submit: approving ? t('Duyệt') : t('Từ chối')
+      required: !approving, max: approving ? 1000 : 970, submit: approving ? t('Duyệt') : t('Từ chối')
     });
     if (text === null) return false;
     await request(`/api/v1/manager/installments/${Number(id)}`, 'PATCH', {decision, note: text});

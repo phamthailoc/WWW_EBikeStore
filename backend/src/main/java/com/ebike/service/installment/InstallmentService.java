@@ -46,6 +46,8 @@ public class InstallmentService {
     /** The most rows the staff queue returns, so a long backlog cannot make the page heavy; the page says when the list is full. */
     public static final int QUEUE_LIMIT = 200;
     private static final int MAX_NOTE_LENGTH = 1000;
+    /** What the cancellation reason of a rejected application starts with; the order page words it in the language of the viewer. */
+    public static final String REJECTED_REASON_PREFIX = "Hồ sơ trả góp bị từ chối: ";
     private static final Set<String> QUEUE_STATUSES = Set.of(
         InstallmentApplication.PENDING, InstallmentApplication.APPROVED, InstallmentApplication.REJECTED, InstallmentApplication.CANCELLED);
 
@@ -118,8 +120,10 @@ public class InstallmentService {
             throw bad("Quyết định phải là APPROVE hoặc REJECT.", "The decision must be APPROVE or REJECT.");
         }
         String note = request.note() == null || request.note().isBlank() ? null : request.note().trim();
-        if (note != null && note.length() > MAX_NOTE_LENGTH) {
-            throw bad("Ghi chú tối đa " + MAX_NOTE_LENGTH + " ký tự.", "A note can have at most " + MAX_NOTE_LENGTH + " characters.");
+        // a rejection note becomes the tail of the order's cancellation reason, which has the same limit as a whole
+        int maxNote = approve ? MAX_NOTE_LENGTH : MAX_NOTE_LENGTH - REJECTED_REASON_PREFIX.length();
+        if (note != null && note.length() > maxNote) {
+            throw bad("Ghi chú tối đa " + maxNote + " ký tự.", "A note can have at most " + maxNote + " characters.");
         }
         if (!approve && note == null) {
             throw bad("Vui lòng nhập lý do từ chối (khách sẽ thấy).", "Please give the reason for rejecting (the customer will see it).");
@@ -152,7 +156,7 @@ public class InstallmentService {
         applications.saveAndFlush(application);
         if (!approve) {
             // the order goes back with its stock; the closing of the open application skips a rejected one, so the verdict stays
-            orders.updateOrderStatus(order.getId(), new OrderStatusUpdateRequest("CANCELLED", "Hồ sơ trả góp bị từ chối: " + note), authentication);
+            orders.updateOrderStatus(order.getId(), new OrderStatusUpdateRequest("CANCELLED", REJECTED_REASON_PREFIX + note), authentication);
         }
         auditLog.record(approve ? "duyệt hồ sơ trả góp" : "từ chối hồ sơ trả góp", order.getOrderNumber());
         NotificationEventBridge.publish(new InstallmentNoticeEvent(
