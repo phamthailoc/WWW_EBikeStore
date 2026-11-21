@@ -2,7 +2,7 @@
 window.KineticWarranty = (() => {
   const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
   const page = document.body.dataset.page || '';
-  const statusText = {NEW: t('Mới gửi'), RECEIVED: t('Đã tiếp nhận'), REPAIRING: t('Đang xử lý'), DONE: t('Đã hoàn tất'), REJECTED: t('Bị từ chối')};
+  const statusText = {NEW: t('Mới gửi'), RECEIVED: t('Đã tiếp nhận'), REPAIRING: t('Đang sửa'), DONE: t('Đã hoàn tất'), REJECTED: t('Bị từ chối')};
   const coverageText = {ACTIVE: t('Còn bảo hành'), EXPIRED: t('Hết bảo hành'), UNKNOWN: t('Chưa có thời hạn bảo hành'), NOT_STARTED: t('Chưa bàn giao')};
   const day = iso => {
     if (!iso) return '—';
