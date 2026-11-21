@@ -57,6 +57,20 @@ class InstallmentSeleniumTest extends StorefrontSeleniumTest {
         return text.replaceAll("[^0-9]", "");
     }
 
+    /** The whole amount the page shows equals the server's figure (a comparison of numbers: a figure ten times too big or too small fails). */
+    private static void assertSameMoney(java.math.BigDecimal expected, String shown) {
+        assertEquals(0, expected.compareTo(new java.math.BigDecimal(digits(shown))), "expected " + expected + " but the page shows " + shown);
+    }
+
+    /**
+     * Orders placed here carry no email verification, so a server that asks for it (ORDER_EMAIL_OTP_REQUIRED=true) refuses them with a 400 before the
+     * instalment rules are reached, and a test that expects another 400 would pass for the wrong reason: those tests are skipped instead.
+     */
+    private void assumeNoEmailOtp() {
+        driver.get(baseUrl + "/checkout");
+        assumeTrue(!"true".equals(js("return document.body.dataset.emailOtpRequired")), "the server asks for an email code at checkout (ORDER_EMAIL_OTP_REQUIRED)");
+    }
+
     private static String failureOf(HttpClient client, String method, String path, Object body) throws Exception {
         try {
             call(client, method, path, body);
@@ -89,6 +103,9 @@ class InstallmentSeleniumTest extends StorefrontSeleniumTest {
                 break;
             }
         }
+        // the cases below assume a bike inside the range the store finances and dear enough for the low-income case (a 3,000,000 income cannot carry 20% down over 6 months under about 13,000,000)
+        assumeTrue(price.compareTo(new java.math.BigDecimal("14000000")) >= 0 && price.compareTo(new java.math.BigDecimal("300000000")) <= 0,
+            "the test bike costs " + price + ", outside 14,000,000 to 300,000,000");
         return new Bike(product.path("id").asLong(), variant, price);
     }
 
@@ -162,7 +179,9 @@ class InstallmentSeleniumTest extends StorefrontSeleniumTest {
     }
 
     /** Signs the browser in as the manager, opens the queue and presses a decision button of one order. */
-    private void decideInBrowser(String orderNumber, String decision, String text) {
+    private void decideInBrowser(String orderNumber, String decision, String text) throws Exception {
+        // the queue shows the 200 oldest waiting applications: with more than that this order might not be on the page
+        assumeTrue(call(managerApi(), "GET", "/api/v1/manager/installments/backlog", null).path("pending").asLong() < 200, "more than 200 applications are waiting");
         logIn(System.getProperty("selenium.managerUser"), System.getProperty("selenium.managerPassword"));
         driver.get(baseUrl + "/manager/installments");
         WebElement row = queueRow(orderNumber);
@@ -207,8 +226,7 @@ class InstallmentSeleniumTest extends StorefrontSeleniumTest {
         click(By.cssSelector("#installmentBox input[name=term][value='6']"));
         wait.until(d -> !firstMonthly.equals(d.findElement(By.cssSelector("#installmentBox [data-field=monthly]")).getText()));
         JsonNode quote = call(api, "GET", "/api/v1/installments/quote?amount=" + amount + "&downPaymentPercent=20&termMonths=6", null);
-        assertEquals(digits(quote.path("monthlyPayment").asText()).replaceFirst("0+$", ""),
-            digits(driver.findElement(By.cssSelector("#installmentBox [data-field=monthly]")).getText()).replaceFirst("0+$", ""));
+        assertSameMoney(quote.path("monthlyPayment").decimalValue(), driver.findElement(By.cssSelector("#installmentBox [data-field=monthly]")).getText());
         assertEquals(20, quote.path("downPaymentPercent").asInt());
         assertEquals(6, quote.path("termMonths").asInt());
 
@@ -224,6 +242,8 @@ class InstallmentSeleniumTest extends StorefrontSeleniumTest {
 
     @Test
     void applyAtCheckoutThenTheManagerApprovesAndTheDownPaymentIsTakenAtTheStore() throws Exception {
+        assumeNoEmailOtp();
+        bike(); // skips the test when the bike on sale is outside the range the store finances
         HttpClient manager = managerApi();
         String orderNumber = placeInstallmentOrderInBrowser();
         JsonNode order = findOrder(orderNumber);
@@ -262,8 +282,7 @@ class InstallmentSeleniumTest extends StorefrontSeleniumTest {
             panel = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("installmentPanel")));
             wait.until(d -> d.findElement(By.id("installmentPanel")).getText().contains("Đã duyệt"));
             assertTrue(panel.getText().contains("Mang theo CCCD khi nhận xe"), panel.getText());
-            assertEquals(digits(approved.path("downPayment").asText()).replaceFirst("0+$", ""),
-                digits(panel.findElement(By.cssSelector("[data-field=down]")).getText()).replaceFirst("0+$", ""));
+            assertSameMoney(approved.path("downPayment").decimalValue(), panel.findElement(By.cssSelector("[data-field=down]")).getText());
 
             // a second decision is a conflict, not a second verdict
             assertRefused(409, manager, "PATCH", "/api/v1/manager/installments/" + approved.path("id").asLong(), Map.of("decision", "REJECT", "note", "late"));
@@ -291,6 +310,7 @@ class InstallmentSeleniumTest extends StorefrontSeleniumTest {
         } finally {
             driver.get(baseUrl + "/lang/vi?back=/");
             cancelQuietly(orderId);
+            refundQuietly(manager, orderNumber);
         }
     }
 
@@ -311,6 +331,15 @@ class InstallmentSeleniumTest extends StorefrontSeleniumTest {
         throw new AssertionError("no payment row for " + orderNumber);
     }
 
+    /** An order cancelled after its down payment was taken leaves a PAID payment on a cancelled order: record the refund, so the test database is left clean. */
+    private static void refundQuietly(HttpClient manager, String orderNumber) {
+        try {
+            call(manager, "PATCH", "/api/v1/manager/payments/" + paymentIdOf(manager, orderNumber) + "/refund", Map.of("note", "Selenium test cleanup"));
+        } catch (Exception ignored) {
+            // cleanup only: nothing to refund when the payment was never taken
+        }
+    }
+
     private static void cancelQuietly(long orderId) {
         try {
             call(api, "POST", "/api/v1/orders/" + orderId + "/cancellation-request", Map.of("reason", "Selenium test cleanup"));
@@ -323,6 +352,7 @@ class InstallmentSeleniumTest extends StorefrontSeleniumTest {
 
     @Test
     void rejectingAnApplicationCancelsTheOrderWithTheReasonAndTellsTheCustomer() throws Exception {
+        assumeNoEmailOtp();
         HttpClient manager = managerApi();
         Bike bike = bike();
         JsonNode order = call(api, "POST", "/api/v1/orders", orderBody(bike, showroomId(), "INSTALLMENT", plan(ID_NUMBER, INCOME, 30, 12)));
@@ -355,6 +385,7 @@ class InstallmentSeleniumTest extends StorefrontSeleniumTest {
 
     @Test
     void cancellingTheOrderClosesAWaitingApplication() throws Exception {
+        assumeNoEmailOtp();
         Bike bike = bike();
         JsonNode order = call(api, "POST", "/api/v1/orders", orderBody(bike, showroomId(), "INSTALLMENT", plan(ID_NUMBER, INCOME, 30, 12)));
         long orderId = order.path("id").asLong();
@@ -369,6 +400,7 @@ class InstallmentSeleniumTest extends StorefrontSeleniumTest {
 
     @Test
     void theRulesAnswerFourHundredsAndTheRolesAreKept() throws Exception {
+        assumeNoEmailOtp();
         HttpClient manager = managerApi();
         Bike bike = bike();
         long showroom = showroomId();
