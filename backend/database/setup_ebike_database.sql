@@ -393,6 +393,7 @@ CREATE TABLE `admin_audit_logs` (
 ALTER TABLE users ADD COLUMN account_status VARCHAR(30) NOT NULL DEFAULT 'ACTIVE';
 ALTER TABLE orders ADD COLUMN promotion_id BIGINT NULL, ADD CONSTRAINT fk_orders_promotion FOREIGN KEY (promotion_id) REFERENCES promotions(id) ON DELETE SET NULL;
 ALTER TABLE orders ADD COLUMN pickup_deadline_at DATETIME NULL;
+ALTER TABLE orders ADD COLUMN delivered_at DATETIME NULL;
 ALTER TABLE user_preferences ALTER COLUMN theme SET DEFAULT 'system', ALTER COLUMN language SET DEFAULT 'vi';
 
 DROP TABLE IF EXISTS `support_requests`;
@@ -419,6 +420,7 @@ CREATE TABLE `order_item_units` (
     order_item_id BIGINT NOT NULL,
     frame_number VARCHAR(30) NOT NULL,
     engine_number VARCHAR(30) NOT NULL,
+    warranty_months INT NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_order_item_units_item FOREIGN KEY (order_item_id) REFERENCES order_items(id) ON DELETE CASCADE,
     CONSTRAINT uq_order_item_units_frame UNIQUE (frame_number)
@@ -435,6 +437,36 @@ CREATE TABLE `stock_alerts` (
     CONSTRAINT uk_stock_alerts_user_variant UNIQUE (user_id, variant_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 CREATE INDEX `idx_stock_alerts_variant_pending` ON `stock_alerts` (variant_id, notified_at);
+DROP TABLE IF EXISTS `warranty_claims`;
+CREATE TABLE `warranty_claims` (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    order_item_unit_id BIGINT NOT NULL,
+    user_id BIGINT NOT NULL,
+    description LONGTEXT NOT NULL,
+    status VARCHAR(30) NOT NULL DEFAULT 'NEW',
+    out_of_warranty TINYINT(1) NOT NULL DEFAULT 0,
+    staff_note LONGTEXT,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    open_unit_id BIGINT AS (IF(status IN ('NEW', 'RECEIVED', 'REPAIRING'), order_item_unit_id, NULL)) VIRTUAL,
+    CONSTRAINT fk_warranty_claims_unit FOREIGN KEY (order_item_unit_id) REFERENCES order_item_units(id) ON DELETE RESTRICT,
+    CONSTRAINT fk_warranty_claims_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT chk_warranty_claims_status CHECK (status IN ('NEW', 'RECEIVED', 'REPAIRING', 'DONE', 'REJECTED')),
+    CONSTRAINT uk_warranty_claims_open_unit UNIQUE (open_unit_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE INDEX `idx_warranty_claims_status` ON `warranty_claims` (status, created_at);
+CREATE INDEX `idx_warranty_claims_unit` ON `warranty_claims` (order_item_unit_id);
+DROP TABLE IF EXISTS `maintenance_reminders`;
+CREATE TABLE `maintenance_reminders` (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    order_item_unit_id BIGINT NOT NULL,
+    milestone VARCHAR(20) NOT NULL,
+    due_at DATETIME NOT NULL,
+    notified TINYINT(1) NOT NULL DEFAULT 1,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_maintenance_reminders_unit FOREIGN KEY (order_item_unit_id) REFERENCES order_item_units(id) ON DELETE RESTRICT,
+    CONSTRAINT uk_maintenance_reminders_unit_milestone UNIQUE (order_item_unit_id, milestone)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 CREATE INDEX `idx_stock_alerts_pending` ON `stock_alerts` (notified_at, variant_id);
 CREATE INDEX `idx_pricing_rules_status` ON `pricing_rules` (status);
 CREATE INDEX `idx_promotions_status` ON `promotions` (status);

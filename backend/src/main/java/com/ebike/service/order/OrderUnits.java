@@ -19,6 +19,12 @@ public final class OrderUnits {
         return type != null && type != VehicleType.BATTERY && type != VehicleType.ACCESSORY;
     }
 
+    /** The warranty length on the product right now; pinned on the vehicle row when its numbers are recorded. */
+    public static Integer warrantyMonthsOf(OrderItem item) {
+        ProductSpecification specification = item.getProduct() == null ? null : item.getProduct().getSpecification();
+        return specification == null ? null : specification.getWarrantyMonths();
+    }
+
     /** True when every vehicle of the order has its numbers: a line of three bikes needs three entries. */
     public static boolean isComplete(Order order) {
         return order.getItems().stream()

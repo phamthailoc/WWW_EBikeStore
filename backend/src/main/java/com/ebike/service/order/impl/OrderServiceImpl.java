@@ -301,7 +301,9 @@ public class OrderServiceImpl implements OrderService {
                 if (shipment.getShippedAt() == null) {
                     shipment.setShippedAt(now);
                 }
-                shipment.setDeliveredAt(now);
+                if (shipment.getDeliveredAt() == null) {
+                    shipment.setDeliveredAt(now);
+                }
                 shipment.setShipmentStatus(ShipmentStatus.DELIVERED);
             }
         }

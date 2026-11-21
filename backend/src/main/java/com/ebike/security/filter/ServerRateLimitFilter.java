@@ -9,6 +9,7 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import com.ebike.common.i18n.RequestLanguage;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -30,7 +31,9 @@ public class ServerRateLimitFilter extends OncePerRequestFilter {
         new RateLimitRule("auth-login", HttpMethod.POST.name(), "/api/v1/auth/login", 5, Duration.ofMinutes(1)),
         new RateLimitRule("email-otp-send", HttpMethod.POST.name(), "/api/v1/orders/email-verification/send", 3, Duration.ofMinutes(5)),
         new RateLimitRule("chatbot-ask", HttpMethod.POST.name(), "/api/v1/chatbot/ask", 20, Duration.ofMinutes(1)),
-        new RateLimitRule("vnpay-create", HttpMethod.POST.name(), "/api/v1/payments/vnpay/create", 10, Duration.ofMinutes(1))
+        new RateLimitRule("vnpay-create", HttpMethod.POST.name(), "/api/v1/payments/vnpay/create", 10, Duration.ofMinutes(1)),
+        // a frame number is a short code: slow down anyone trying many of them
+        new RateLimitRule("warranty-lookup", HttpMethod.GET.name(), "/api/v1/warranty/lookup", 20, Duration.ofMinutes(1))
     );
 
     private final boolean enabled;
@@ -60,7 +63,7 @@ public class ServerRateLimitFilter extends OncePerRequestFilter {
         TokenBucket bucket = buckets.computeIfAbsent(bucketKey, ignored -> new TokenBucket(rule.capacity(), rule.window()));
         RateLimitDecision decision = bucket.tryConsume();
         if (!decision.allowed()) {
-            writeTooManyRequests(response, decision.retryAfterSeconds());
+            writeTooManyRequests(request, response, decision.retryAfterSeconds());
             return;
         }
 
@@ -84,11 +87,12 @@ public class ServerRateLimitFilter extends OncePerRequestFilter {
         return request.getRemoteAddr();
     }
 
-    private void writeTooManyRequests(HttpServletResponse response, long retryAfterSeconds) throws IOException {
+    private void writeTooManyRequests(HttpServletRequest request, HttpServletResponse response, long retryAfterSeconds) throws IOException {
         response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
         response.setContentType("application/json;charset=UTF-8");
         response.setHeader("Retry-After", String.valueOf(Math.max(1, retryAfterSeconds)));
-        response.getWriter().write("{\"message\":\"Bạn thao tác quá nhanh. Vui lòng thử lại sau ít phút.\"}");
+        String message = RequestLanguage.text(request, "Bạn thao tác quá nhanh. Vui lòng thử lại sau ít phút.", "You are doing that too fast. Please try again in a few minutes.");
+        response.getWriter().write("{\"message\":\"" + message + "\"}");
     }
 
     private void cleanupStaleBuckets() {

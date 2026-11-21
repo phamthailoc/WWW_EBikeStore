@@ -25,7 +25,7 @@
   async function request(url, data) {
     const response = await fetch(url, {credentials:'same-origin', method:data === undefined ? 'GET' : 'POST', headers:{Accept:'application/json', ...(data === undefined ? {} : {'Content-Type':'application/json'})}, ...(data === undefined ? {} : {body:JSON.stringify(data)})});
     const body = await response.json().catch(() => null);
-    if (!response.ok) throw Error(body?.detail || body?.message || body?.error || `${t('Yêu cầu thất bại (')}${response.status}).`);
+    if (!response.ok) { const error = Error(body?.detail || body?.message || body?.error || `${t('Yêu cầu thất bại (')}${response.status}).`); error.status = response.status; throw error; }
     return body;
   }
   async function refresh(items) {

@@ -7,5 +7,7 @@ public enum NotificationType {
     ORDER_STATUS,
     PAYMENT_SUCCESS,
     PAYMENT_FAILED,
-    STOCK_ALERT
+    STOCK_ALERT,
+    WARRANTY_CLAIM,
+    MAINTENANCE_DUE
 }

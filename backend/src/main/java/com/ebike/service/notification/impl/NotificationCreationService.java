@@ -9,12 +9,17 @@ import com.ebike.event.notification.OrderCreatedEvent;
 import com.ebike.event.notification.OrderStatusChangedEvent;
 import com.ebike.event.notification.PickupDeadlineChangedEvent;
 import com.ebike.event.notification.PaymentStatusChangedEvent;
+import com.ebike.event.notification.MaintenanceDueEvent;
 import com.ebike.event.notification.StockAlertTriggeredEvent;
+import com.ebike.event.notification.WarrantyClaimStatusChangedEvent;
 import com.ebike.repository.notification.NotificationRepository;
+import com.ebike.model.entity.user.UserPreference;
 import com.ebike.repository.user.UserPreferenceRepository;
 import com.ebike.service.notification.NotificationStreamService;
+import com.ebike.service.warranty.WarrantyMessages;
 import com.ebike.service.stock.StockAlertMessages;
 import org.springframework.scheduling.annotation.Async;
+import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -101,6 +106,35 @@ public class NotificationCreationService {
         ));
     }
 
+    // V20: the staff moved a warranty request; the link opens the customer's warranty book.
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void handleWarrantyClaimStatusChanged(WarrantyClaimStatusChangedEvent event) {
+        userRepository.findById(event.userId()).ifPresent(user -> {
+            // the profile is read once: it gives the language of the words and the opt-out of the notification
+            Optional<UserPreference> preference = userPreferenceRepository.findByUserId(user.getId());
+            String language = languageOf(preference);
+            createNotification(user, preference, NotificationType.WARRANTY_CLAIM,
+                WarrantyMessages.claimTitle(language),
+                WarrantyMessages.claimBody(language, event.productName(), event.frameNumber(), event.status()),
+                null, null, "/customer/warranty", true);
+        });
+    }
+
+    // V20: a vehicle reached a maintenance milestone (counted from the delivery).
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void handleMaintenanceDue(MaintenanceDueEvent event) {
+        userRepository.findById(event.userId()).ifPresent(user -> {
+            Optional<UserPreference> preference = userPreferenceRepository.findByUserId(user.getId());
+            String language = languageOf(preference);
+            createNotification(user, preference, NotificationType.MAINTENANCE_DUE,
+                WarrantyMessages.maintenanceTitle(language),
+                WarrantyMessages.maintenanceBody(language, event.productName(), event.frameNumber(), event.milestone()),
+                null, null, "/customer/warranty", true);
+        });
+    }
+
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void handlePaymentStatusChanged(PaymentStatusChangedEvent event) {
@@ -133,6 +167,35 @@ public class NotificationCreationService {
         String message,
         Long orderId,
         Long paymentId,
+        String targetUrl
+    ) {
+        createNotification(user, type, title, message, orderId, paymentId, targetUrl, true);
+    }
+
+    private void createNotification(
+        User user,
+        NotificationType type,
+        String title,
+        String message,
+        Long orderId,
+        Long paymentId,
+        String targetUrl,
+        boolean honourOptOut
+    ) {
+        // the profile is only looked up when it decides something
+        createNotification(user, honourOptOut ? userPreferenceRepository.findByUserId(user.getId()) : Optional.empty(),
+            type, title, message, orderId, paymentId, targetUrl, honourOptOut);
+    }
+
+    /** {@code preference} is the profile the caller has already read, so one notification costs one lookup. */
+    private void createNotification(
+        User user,
+        Optional<UserPreference> preference,
+        NotificationType type,
+        String title,
+        String message,
+        Long orderId,
+        Long paymentId,
         String targetUrl,
         boolean honourOptOut
     ) {
@@ -143,8 +206,8 @@ public class NotificationCreationService {
         // A customer who switched notifications off in the profile gets none; no saved setting means on.
         // Not for a back-in-stock alert: the customer asked for that one on purpose (honourOptOut is false), and
         // dropping it silently would use up the request.
-        boolean optedOut = honourOptOut && userPreferenceRepository.findByUserId(user.getId())
-            .map(preference -> Boolean.FALSE.equals(preference.getNotificationsEnabled()))
+        boolean optedOut = honourOptOut && preference
+            .map(saved -> Boolean.FALSE.equals(saved.getNotificationsEnabled()))
             .orElse(false);
         if (optedOut) {
             return;
@@ -159,6 +222,11 @@ public class NotificationCreationService {
         notification.setPaymentId(paymentId);
         notificationRepository.save(notification);
         notificationStreamService.sendUnreadCount(user.getId());
+    }
+
+    /** The language saved in the customer's profile ("vi" when there is none), for the words of a notice they did not ask for in a page. */
+    private String languageOf(Optional<UserPreference> preference) {
+        return preference.map(UserPreference::getLanguage).orElse("vi");
     }
 
     private String formatOrderStatus(String status) {

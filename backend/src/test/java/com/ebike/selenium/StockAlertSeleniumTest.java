@@ -253,6 +253,9 @@ class StockAlertSeleniumTest extends StorefrontSeleniumTest {
                 driver.get(baseUrl + "/product/" + productSlug + "?notify=" + variantId);
                 wait.until(d -> d.findElement(By.id("productNotice")).getText().contains("Chỉ tài khoản khách hàng"));
             }
+            // the favourites page tells a staff account why the alert list is empty (it reads the 403 status, not the words of the body)
+            driver.get(baseUrl + "/favorites");
+            wait.until(d -> d.findElement(By.cssSelector("#stock-alerts")).getText().contains("Chỉ tài khoản khách hàng"));
         } finally {
             setStock(manager, productId, variantId, original);
         }

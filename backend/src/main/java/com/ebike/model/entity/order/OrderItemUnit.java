@@ -31,6 +31,10 @@ public class OrderItemUnit {
     @Column(name = "engine_number", nullable = false, length = 30)
     private String engineNumber;
 
+    /** The warranty length (months) pinned when the vehicle was recorded, so a later change of the product does not move the end date of bikes already sold. */
+    @Column(name = "warranty_months")
+    private Integer warrantyMonths;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -52,4 +56,8 @@ public class OrderItemUnit {
     public String getEngineNumber() { return engineNumber; }
 
     public void setEngineNumber(String engineNumber) { this.engineNumber = engineNumber; }
+
+    public Integer getWarrantyMonths() { return warrantyMonths; }
+
+    public void setWarrantyMonths(Integer warrantyMonths) { this.warrantyMonths = warrantyMonths; }
 }

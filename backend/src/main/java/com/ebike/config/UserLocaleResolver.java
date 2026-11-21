@@ -45,15 +45,25 @@ public class UserLocaleResolver implements LocaleResolver {
         if (cached instanceof Locale locale) {
             return locale;
         }
+        Locale locale = resolveFresh(request);
+        request.setAttribute(REQUEST_ATTRIBUTE, locale);
+        return locale;
+    }
+
+    /**
+     * The language code ("en" or "vi") for a servlet filter that runs after the sign-in but before the dispatcher, such as the
+     * access-denied handler. Nothing is remembered on the request: a filter earlier in the chain may not know the account yet.
+     */
+    public String languageOf(HttpServletRequest request) {
+        return resolveFresh(request).getLanguage();
+    }
+
+    private Locale resolveFresh(HttpServletRequest request) {
         Locale locale = fromCookie(request);
         if (locale == null) {
             locale = fromAccount();
         }
-        if (locale == null) {
-            locale = VIETNAMESE;
-        }
-        request.setAttribute(REQUEST_ATTRIBUTE, locale);
-        return locale;
+        return locale == null ? VIETNAMESE : locale;
     }
 
     private static Locale fromCookie(HttpServletRequest request) {

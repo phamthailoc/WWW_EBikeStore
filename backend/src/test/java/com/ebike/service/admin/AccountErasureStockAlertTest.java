@@ -10,6 +10,7 @@ import com.ebike.repository.product.StockAlertRepository;
 import com.ebike.repository.user.UserAddressRepository;
 import com.ebike.repository.user.UserFavoriteRepository;
 import com.ebike.repository.user.UserPreferenceRepository;
+import com.ebike.repository.warranty.WarrantyClaimRepository;
 import com.ebike.service.product.ProductReviewService;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -20,13 +21,15 @@ class AccountErasureStockAlertTest {
     @Test
     void erasingAnAccountDeletesItsStockAlerts() {
         StockAlertRepository stockAlerts = mock(StockAlertRepository.class);
+        WarrantyClaimRepository warrantyClaims = mock(WarrantyClaimRepository.class);
         AccountErasure erasure = new AccountErasure(
             mock(UserAddressRepository.class), mock(UserFavoriteRepository.class), mock(UserPreferenceRepository.class),
-            mock(NotificationRepository.class), stockAlerts, mock(ProductReviewService.class), mock(PasswordEncoder.class));
+            mock(NotificationRepository.class), stockAlerts, warrantyClaims, mock(ProductReviewService.class), mock(PasswordEncoder.class));
         User user = new User();
         user.setId(42L);
         erasure.erase(user);
         verify(stockAlerts).deleteByUserId(42L);
+        verify(warrantyClaims).clearDescriptionsOf(42L, AccountErasure.ERASED_DESCRIPTION);
         assertEquals(AccountErasure.DELETED, user.getAccountStatus());
     }
 }

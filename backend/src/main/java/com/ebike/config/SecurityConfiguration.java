@@ -2,6 +2,7 @@ package com.ebike.config;
 
 import com.ebike.security.filter.JwtAuthenticationFilter;
 import com.ebike.common.constants.PermissionConstants;
+import com.ebike.common.i18n.RequestLanguage;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,8 +22,11 @@ public class SecurityConfiguration {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    public SecurityConfiguration(JwtAuthenticationFilter jwtAuthenticationFilter) {
+    private final UserLocaleResolver localeResolver;
+
+    public SecurityConfiguration(JwtAuthenticationFilter jwtAuthenticationFilter, UserLocaleResolver localeResolver) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+        this.localeResolver = localeResolver;
     }
 
     @Bean
@@ -40,7 +44,7 @@ public class SecurityConfiguration {
                 PermissionConstants.ChatbotManagement.CHATBOT_USE
             ))
             .authorizeHttpRequests(authorize -> authorize
-                .requestMatchers("/", "/shop", "/products", "/models", "/bike/**", "/product/**", "/models/**", "/login", "/auth", "/signup", "/lang/*", "/checkout", "/checkout/success", "/payment/return", "/support", "/compare", "/chatbot", "/css/**", "/js/**", "/images/**", "/favicon.ico").permitAll()
+                .requestMatchers("/", "/shop", "/products", "/models", "/bike/**", "/product/**", "/models/**", "/login", "/auth", "/signup", "/lang/*", "/checkout", "/checkout/success", "/payment/return", "/support", "/warranty", "/compare", "/chatbot", "/css/**", "/js/**", "/images/**", "/favicon.ico").permitAll()
                 .requestMatchers("/cart", "/data/**").permitAll()
                 .requestMatchers("/favorites").authenticated()
                 .requestMatchers("/customer/**").hasAnyAuthority(PermissionConstants.Customer.PROFILE_VIEW, PermissionConstants.OrderManagement.ORDER_VIEW_ALL)
@@ -83,6 +87,8 @@ public class SecurityConfiguration {
                 .requestMatchers(HttpMethod.GET, "/api/v1/favorites").hasAuthority(PermissionConstants.Customer.FAVORITE_VIEW)
                 .requestMatchers(HttpMethod.POST, "/api/v1/favorites").hasAuthority(PermissionConstants.Customer.FAVORITE_UPDATE)
                 .requestMatchers(HttpMethod.DELETE, "/api/v1/favorites/*").hasAuthority(PermissionConstants.Customer.FAVORITE_UPDATE)
+                .requestMatchers(HttpMethod.GET, "/api/v1/warranty/lookup").permitAll()
+                .requestMatchers("/api/v1/warranty/**").hasAuthority(PermissionConstants.Customer.PROFILE_VIEW)
                 // V22: back-in-stock requests belong to customers; Manager and Admin hold the favourites permission too, so the role decides.
                 .requestMatchers(HttpMethod.GET, "/api/v1/stock-alerts").hasRole("CUSTOMER")
                 .requestMatchers(HttpMethod.POST, "/api/v1/stock-alerts").hasRole("CUSTOMER")
@@ -128,6 +134,8 @@ public class SecurityConfiguration {
                     PermissionConstants.Customer.PROFILE_VIEW,
                     PermissionConstants.OrderManagement.ORDER_VIEW_ALL
                 )
+                // V20: moving a warranty request changes its status and messages the customer, so it needs the write permission, not only the view one.
+                .requestMatchers(HttpMethod.PATCH, "/api/v1/manager/warranty-claims/*").hasAuthority(PermissionConstants.OrderManagement.ORDER_UPDATE_STATUS)
                 .requestMatchers("/api/v1/manager/**").hasAuthority(PermissionConstants.OrderManagement.ORDER_VIEW_ALL)
                 .requestMatchers("/api/v1/admin/**").hasAuthority(PermissionConstants.AccessControl.PERMISSION_MANAGE)
                 .anyRequest().denyAll()
@@ -135,16 +143,30 @@ public class SecurityConfiguration {
             .exceptionHandling(exceptions -> exceptions
                 .authenticationEntryPoint((request, response, exception) -> {
                     if (request.getRequestURI().startsWith("/api/v1/")) {
-                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                    response.setContentType("application/json");
-                    response.getWriter().write("{\"message\":\"Unauthorized\"}");
+                        writeJson(request, response, HttpServletResponse.SC_UNAUTHORIZED, "Bạn cần đăng nhập.", "Please sign in.");
                     } else {
                         response.sendRedirect("/login?returnTo=" + java.net.URLEncoder.encode(request.getRequestURI(), java.nio.charset.StandardCharsets.UTF_8));
+                    }
+                })
+                .accessDeniedHandler((request, response, exception) -> {
+                    if (request.getRequestURI().startsWith("/api/v1/")) {
+                        writeJson(request, response, HttpServletResponse.SC_FORBIDDEN,
+                            "Bạn không có quyền thực hiện thao tác này.", "You do not have permission for this action.");
+                    } else {
+                        response.sendError(HttpServletResponse.SC_FORBIDDEN);
                     }
                 })
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
+    }
+
+    /** An API error in the language of the request: the device's choice, else the account's language, else Vietnamese (as the pages). */
+    private void writeJson(jakarta.servlet.http.HttpServletRequest request, HttpServletResponse response, int status, String vietnamese, String english) throws java.io.IOException {
+        response.setStatus(status);
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        response.getWriter().write("{\"message\":\"" + RequestLanguage.text(request, localeResolver, vietnamese, english) + "\"}");
     }
 }

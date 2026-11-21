@@ -8,7 +8,7 @@ Mỗi mục ghi: vì sao nên làm, làm gì, dùng lại phần nào đã có, 
 
 | Việc | Ưu tiên | Ước lượng | Trạng thái | Nhánh / PR |
 |---|---|---|---|---|
-| V20. Sổ bảo hành điện tử và nhắc bảo dưỡng | P1 | 2–3 ngày | ⬜ Chưa làm | – |
+| V20. Sổ bảo hành điện tử và nhắc bảo dưỡng | P1 | 2–3 ngày | 🟡 Code xong (hoàn thiện 21/11), chưa kiểm thử Selenium: ngày bàn giao lưu cố định ở `orders.delivered_at`, số khung xe đã có yêu cầu bảo hành/mốc nhắc bị khóa (409), job nhắc theo lô mỗi xe một giao dịch, hàng đợi Manager phân trang, thông báo/email/lỗi VI-EN; chưa đính ảnh vì kho ảnh S3 là bucket công khai; sổ bảo hành `/customer/warranty`, tra cứu `/warranty`, hàng đợi `/manager/warranty`, job nhắc bảo dưỡng (mốc `P1M,P6M,…,P36M`); xe hết hạn vẫn được gửi yêu cầu, đánh dấu sửa có tính phí; chạy `update_warranty_book.sql` trước; đã viết `WarrantySeleniumTest`, chưa chạy | `feat/warranty-book` |
 | V21. Chạy test tự động trên GitHub Actions (CI) | P1 | 1 ngày | 🟡 Đã viết workflow, **chưa chạy thử trên GitHub** (20/11): job Unit test + job Selenium (MariaDB trong Docker, tài khoản thử tạo bằng SQL, app nền, Selenium headless); mặc định chạy Selenium cho mọi PR vào `develop` hoặc `main`; bỏ qua `ChatbotMemorySeleniumTest` nếu chưa có secret `GEMINI_AI_KEY` | `feat/ci-github-actions` (`.github/workflows/test.yml`) |
 | V22. Báo khi có hàng lại | P1 | 1 ngày | 🟡 Code xong (21/11), chưa kiểm thử Selenium: bảng `stock_alerts`, `POST/GET/DELETE /api/v1/stock-alerts` (chỉ vai trò khách hàng, Manager/Admin nhận 403 và không thấy nút), thông báo (bấm được) + email VI/EN theo ngôn ngữ hồ sơ, gửi email nền có timeout 5 giây, mỗi lượt chỉ báo một lần dù nhiều người cùng cập nhật, quét 5 phút một lần cho màu bán lại; trang yêu thích hiện "Đã có hàng lại" khi còn hàng; đã viết `StockAlertSeleniumTest`, chưa chạy | `feat/back-in-stock-alerts` |
 | V23. Đặt lịch lái thử | P2 | 1–2 ngày | ⬜ Chưa làm | – |
@@ -44,13 +44,17 @@ Ký hiệu: P1 nên làm trước; P2 làm tiếp nếu còn thời gian; P3 là
 - **Khách:** trang `/customer/warranty` liệt kê xe của mình (tên xe, màu, số khung, còn bảo hành đến ngày nào); nút "Yêu cầu bảo hành" mở biểu mẫu (mô tả lỗi, ảnh nếu có S3).
 - **Tra cứu công khai:** `/warranty?frame=...` nhập số khung, trả về tên xe và hạn bảo hành (không lộ tên, số điện thoại chủ xe).
 - **Yêu cầu bảo hành:** bảng mới `warranty_claims` (unit_id, user_id, mô tả, trạng thái `NEW` → `RECEIVED` → `REPAIRING` → `DONE`/`REJECTED`, ghi chú nhân viên, thời gian). Manager xử lý ở `/manager/warranty`, giống trang Hỗ trợ hiện có.
-- **Nhắc bảo dưỡng:** job chạy mỗi ngày (giống `UnpaidOrderExpiryJob`) gửi thông báo và email khi xe đến mốc bảo dưỡng. Mốc cấu hình `app.maintenance.intervals=P1M,P6M,P12M` (bảo dưỡng lần đầu sau 1 tháng, rồi 6 tháng một lần); ghi lại đã nhắc để không gửi trùng.
+- **Nhắc bảo dưỡng:** job chạy mỗi ngày (giống `UnpaidOrderExpiryJob`) gửi thông báo và email khi xe đến mốc bảo dưỡng. Mốc cấu hình `app.maintenance.intervals=P1M,P6M,P12M,P18M,P24M,P30M,P36M` (bảo dưỡng lần đầu sau 1 tháng, rồi 6 tháng một lần trong 3 năm); ghi lại đã nhắc để không gửi trùng.
 
 **Dùng lại:** `order_item_units` (V18), `NotificationCreationService` + SSE, công tắc nhận thông báo (V4), trang Hỗ trợ của Manager làm mẫu cho trang yêu cầu bảo hành, `messages*.properties` + `js-en.json` cho tiếng Anh.
 
 **Kiểm thử:** Selenium giao một đơn (`enterUnits`), khách thấy phiếu với đúng hạn; tra cứu bằng số khung; khách gửi yêu cầu, Manager đổi trạng thái, khách nhận thông báo. Unit test cho tính ngày hết hạn và mốc nhắc.
 
 **Cần chốt:** mốc bảo dưỡng (1 tháng / 6 tháng?); xe hết hạn bảo hành có được gửi yêu cầu (sửa có tính phí) không.
+
+**Giới hạn đã biết:** sổ bảo hành chỉ đọc `order_item_units`, nên một xe không có dòng số khung thì không có phiếu và khách không tự thêm được. Gồm (a) đơn đã giao trước V18 (lúc đó đơn được giao mà không cần số khung): nhân viên mở chi tiết đơn đã giao ở `/manager/orders` và nhập số khung (trạng thái "Đã giao" vẫn cho sửa số khung), ngày bàn giao lấy từ `orders.delivered_at` hoặc giờ giao của đơn; (b) sản phẩm loại pin và phụ kiện (`OrderUnits.requiresNumbers` trả `false`), dù pin thường có bảo hành riêng: chưa có phiếu cho chúng, chủ sản phẩm cần quyết định có làm không.
+
+**Chờ xác nhận (tác giả code đã tự chọn, chưa có ý kiến chủ sản phẩm):** (1) bỏ ảnh đính kèm trong biểu mẫu yêu cầu bảo hành (bucket S3 đang công khai, nên chưa làm); (2) mốc bảo dưỡng `P1M,P6M,P12M,P18M,P24M,P30M,P36M`; (3) xe hết hạn vẫn được gửi yêu cầu, đánh dấu sửa có tính phí; (4) thời hạn bảo hành được ghim vào từng xe lúc ghi số khung, đổi `warranty_months` của sản phẩm sau đó không làm đổi xe đã bán; (5) ghi chú nhân viên (`staff_note`) được giữ lại khi khách xóa tài khoản; (6) yêu cầu bảo hành đang mở (`NEW`/`RECEIVED`/`REPAIRING`) của tài khoản đã xóa được giữ nguyên trong hàng đợi, không tự đóng; nhân viên không còn cách liên lạc (email đã thành `deleted_<id>`, không có thông báo), nên cần chốt: để mở cho tới khi nhân viên tự đóng, hay tự chuyển `REJECTED`/`DONE` lúc xóa tài khoản. Các mục này chưa tính là xong cho đến khi được xác nhận.
 
 ### V21. Chạy test tự động trên GitHub Actions (CI) — khoảng 1 ngày
 
