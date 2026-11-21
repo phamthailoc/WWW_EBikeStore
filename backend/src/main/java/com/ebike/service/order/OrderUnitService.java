@@ -63,7 +63,8 @@ public class OrderUnitService {
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
         if (!EDITABLE.contains(order.getStatus())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                "Chỉ nhập số khung, số máy khi đơn đã sang bước đang xử lý.");
+                WarrantyMessages.text("Chỉ nhập số khung, số máy khi đơn đã sang bước đang xử lý.",
+                    "Frame and engine numbers can only be entered once the order is being processed."));
         }
         List<OrderUnitsRequest.Entry> entries = request == null || request.units() == null ? List.of() : request.units();
 
@@ -75,16 +76,18 @@ public class OrderUnitService {
         for (OrderUnitsRequest.Entry entry : entries) {
             OrderItem item = entry.orderItemId() == null ? null : items.get(entry.orderItemId());
             if (item == null || !OrderUnits.requiresNumbers(item)) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Dòng sản phẩm không hợp lệ hoặc không cần số khung.");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, WarrantyMessages.text("Dòng sản phẩm không hợp lệ hoặc không cần số khung.",
+                    "The order line is not valid or needs no frame number."));
             }
             String frame = clean(entry.frameNumber());
             String engine = clean(entry.engineNumber());
             if (!NUMBER.matcher(frame).matches() || !NUMBER.matcher(engine).matches()) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Số khung và số máy gồm 5 đến 30 ký tự chữ, số hoặc dấu gạch ngang.");
+                    WarrantyMessages.text("Số khung và số máy gồm 5 đến 30 ký tự chữ, số hoặc dấu gạch ngang.",
+                    "Frame and engine numbers are 5 to 30 letters, digits or hyphens."));
             }
             if (!frames.add(frame)) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Số khung " + frame + " bị nhập hai lần.");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, WarrantyMessages.text("Số khung " + frame + " bị nhập hai lần.", "Frame number " + frame + " is entered twice."));
             }
             perItem.computeIfAbsent(item.getId(), id -> new ArrayList<>()).add(entry);
             normalized.add(new NormalizedEntry(item, frame, engine));
@@ -92,7 +95,9 @@ public class OrderUnitService {
         perItem.forEach((itemId, list) -> {
             if (list.size() > items.get(itemId).getQuantity()) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Dòng " + items.get(itemId).getProductName() + " chỉ có " + items.get(itemId).getQuantity() + " xe.");
+                    WarrantyMessages.text(
+                    "Dòng " + items.get(itemId).getProductName() + " chỉ có " + items.get(itemId).getQuantity() + " xe.",
+                    "The line " + items.get(itemId).getProductName() + " has only " + items.get(itemId).getQuantity() + " vehicle(s)."));
             }
         });
         // A frame number belongs to one vehicle: refuse one already recorded on another order line.
@@ -101,7 +106,8 @@ public class OrderUnitService {
         for (OrderItemUnit other : unitRepository.findByFrameNumberIn(frames)) {
             if (!mine.contains(other.getId())) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Số khung " + other.getFrameNumber() + " đã được ghi cho một đơn hàng khác.");
+                    WarrantyMessages.text("Số khung " + other.getFrameNumber() + " đã được ghi cho một đơn hàng khác.",
+                    "Frame number " + other.getFrameNumber() + " is already recorded on another order."));
             }
         }
 
