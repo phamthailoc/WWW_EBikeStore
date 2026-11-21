@@ -115,8 +115,11 @@
     }
     return escape(text);
   };
+  // The most rows the test-ride API returns (TestRideService.SCHEDULE_LIMIT and MINE_LIMIT): a full list may be cut, so the page says so.
+  const RIDE_LIMITS={'/manager/test-rides':200,'/customer/test-rides':100};
+  const showRideLimit=()=>{const max=RIDE_LIMITS[page];if(!max)return;let note=document.querySelector('#rideLimit');if(!note){note=document.createElement('p');note.id='rideLimit';note.className='muted';table.insertAdjacentElement('afterend',note)}const full=records.length>=max;note.hidden=!full;note.textContent=full?(page==='/manager/test-rides'?t('Chỉ hiện {n} lịch đầu tiên. Hãy lọc theo ngày hoặc cửa hàng để xem phần còn lại.',{n:max}):t('Chỉ hiện {n} lịch mới nhất của bạn.',{n:max})):''};
   const renderTable = rows => {
-    records=Array.isArray(rows)?rows:rows==null?[]:[rows]; loading.hidden=true;
+    records=Array.isArray(rows)?rows:rows==null?[]:[rows]; loading.hidden=true; showRideLimit();
     if(!records.length){if(emptyText[page])empty.textContent=page==='/manager/test-rides'&&(filterQuery.get('date')||filterQuery.get('status')||filterQuery.get('showroomId'))?t('Không có lịch lái thử nào khớp bộ lọc.'):page==='/manager/warranty'&&!filterQuery.get('status')?t('Không có yêu cầu bảo hành nào đang chờ xử lý.'):page==='/manager/warranty'&&filterQuery.get('status')!=='ALL'?t('Không có yêu cầu nào ở trạng thái này.'):emptyText[page];empty.hidden=false;table.hidden=true;return}
     empty.hidden=true;table.hidden=false;
     const available=[...new Set(records.flatMap(row=>Object.keys(row||{})))].filter(k=>!['items','variants','permissions','specification','addresses','category','images','shipment'].includes(k));

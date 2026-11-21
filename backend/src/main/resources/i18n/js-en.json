@@ -666,6 +666,8 @@
  "{n} lịch chưa đóng thuộc cửa hàng đã tắt hoặc xe ngừng bán. Hãy hủy và ghi lý do.": "{n} open bookings belong to a showroom that was switched off or a bike that is no longer sold. Cancel them and give a reason.",
  "{n} lịch đã xác nhận bị khách hủy, giờ hẹn trong 24 giờ tới (chọn trạng thái \"Đã hủy\" để xem).": "{n} confirmed rides were cancelled by the customer and start within 24 hours (choose the status \"Cancelled\" to see them).",
  "Khách đã xóa tài khoản": "The customer deleted their account",
+ "Chỉ hiện {n} lịch đầu tiên. Hãy lọc theo ngày hoặc cửa hàng để xem phần còn lại.": "Only the first {n} bookings are shown. Filter by day or showroom to see the rest.",
+ "Chỉ hiện {n} lịch mới nhất của bạn.": "Only your latest {n} bookings are shown.",
  "Khách hủy": "Cancelled by the customer",
  "Khách hủy sau khi đã xác nhận": "Cancelled by the customer after confirmation",
  "Bạn đã hủy": "You cancelled",
