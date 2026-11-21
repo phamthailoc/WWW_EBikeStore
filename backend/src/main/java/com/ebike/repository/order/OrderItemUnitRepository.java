@@ -18,7 +18,7 @@ public interface OrderItemUnitRepository extends JpaRepository<OrderItemUnit, Lo
     /** V20: everything the warranty book needs to know about a vehicle, in one query. */
     String WARRANTY_FETCH = "select u from OrderItemUnit u join fetch u.orderItem i join fetch i.order o "
         + "join fetch i.product p left join fetch p.specification sp left join fetch i.productVariant v "
-        + "left join fetch o.shipment s left join fetch o.user usr ";
+        + "left join fetch o.shipment s left join fetch o.payment pay left join fetch o.user usr left join fetch usr.preference pref ";
 
     @Query(WARRANTY_FETCH + "where usr.username = :username and o.status = com.ebike.model.entity.order.OrderStatus.DELIVERED order by u.id desc")
     List<OrderItemUnit> findDeliveredByUsername(@Param("username") String username);
