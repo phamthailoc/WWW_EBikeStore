@@ -91,10 +91,14 @@ public class PricingService {
         return amount(INSTALLMENT_RATE_PREFIX + termMonths, defaultInstallmentRate(termMonths));
     }
 
-    /** V24: an admin stops offering a term by setting its rule INACTIVE; a missing rule keeps the default offer (like the registration service). */
+    /**
+     * V24: a term is offered with the rate the admin set, or with the default rate when it has no rule at all. A rule that is INACTIVE, SCHEDULED or not in
+     * effect yet switches the term off: offering it would show the customer the default rate, not the figure the admin typed.
+     */
     public boolean installmentTermOffered(int termMonths) {
+        LocalDateTime now = LocalDateTime.now(clock);
         return pricingRuleRepository.findByCode(INSTALLMENT_RATE_PREFIX + termMonths)
-            .map(rule -> !"INACTIVE".equals(rule.getStatus()))
+            .map(rule -> "ACTIVE".equals(rule.getStatus()) && (rule.getEffectiveFrom() == null || !rule.getEffectiveFrom().isAfter(now)))
             .orElse(true);
     }
 

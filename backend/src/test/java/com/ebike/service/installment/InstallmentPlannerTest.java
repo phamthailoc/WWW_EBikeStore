@@ -88,10 +88,12 @@ class InstallmentPlannerTest {
     }
 
     @Test
-    void aRateThatIsNotInEffectYetFallsBackToTheDefault() {
+    void aTermWhoseRateIsNotInEffectYetIsNotOffered() {
         rate("INSTALLMENT_RATE_12", "20", "ACTIVE", LocalDateTime.now().plusDays(3));
-        var twelve = planner.terms().get(2);
-        assertEquals(0, twelve.annualRatePercent().compareTo(new BigDecimal("10")));
+        rate("INSTALLMENT_RATE_9", "9", "SCHEDULED", LocalDateTime.now().minusDays(1));
+        var terms = planner.terms();
+        assertEquals(1, terms.size());
+        assertEquals(6, terms.get(0).termMonths());
     }
 
     @Test
