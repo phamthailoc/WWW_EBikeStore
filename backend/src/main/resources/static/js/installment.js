@@ -178,7 +178,9 @@ window.KineticInstallment = (() => {
       setTotal(value) { total = Number(value) || null; if (sim) sim.refresh(); },
       /** The text of what is missing or wrong, or null when the application can be sent. */
       error() {
-        if (customer === null || !customer) return t('Mua trả góp cần tài khoản khách hàng. Vui lòng đăng nhập bằng tài khoản khách hàng hoặc chọn hình thức thanh toán khác.');
+        // the profile is still being asked for: a real customer must not be told to sign in
+        if (customer === null) return t('Đang kiểm tra tài khoản. Vui lòng đợi một chút rồi đặt hàng lại.');
+        if (!customer) return t('Mua trả góp cần tài khoản khách hàng. Vui lòng đăng nhập bằng tài khoản khách hàng hoặc chọn hình thức thanh toán khác.');
         if (!form || !simulatorReady) return t('Chưa tải được bảng trả góp. Vui lòng thử lại.');
         if (problem) return problem;
         if (!plan) return t('Đang tính khoản trả góp. Vui lòng đợi một chút.');

@@ -744,5 +744,6 @@
  "Chưa gồm phí giao hàng, phí đăng ký và mã giảm giá; số tiền chính xác được tính ở bước thanh toán.": "Delivery, registration fees and discount codes are not included; the exact amount is worked out at checkout.",
  "Chọn hình thức nhận hàng để tính khoản trả góp.": "Choose how you receive the bike to see the instalments.",
  "Khoản trả trước trả góp chưa thu": "Instalment down payments to collect",
- "Đơn trả góp: chờ duyệt hồ sơ và khoản trả trước": "Instalment order: waiting for the application and the down payment"
+ "Đơn trả góp: chờ duyệt hồ sơ và khoản trả trước": "Instalment order: waiting for the application and the down payment",
+ "Đang kiểm tra tài khoản. Vui lòng đợi một chút rồi đặt hàng lại.": "Checking your account. Please wait a moment and place the order again."
 }
