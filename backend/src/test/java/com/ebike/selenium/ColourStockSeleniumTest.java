@@ -14,7 +14,9 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 
 /** V17: the manager restocks each colour; the product total follows, and a typed total is refused. */
+// Only matters if JUnit parallel execution is switched on; the project does not enable it, so tests already run one by one.
 @Tag("selenium")
+@org.junit.jupiter.api.parallel.ResourceLock("product-stock")
 @EnabledIfSystemProperty(named = "selenium.baseUrl", matches = "https?://.+")
 class ColourStockSeleniumTest extends StorefrontSeleniumTest {
 

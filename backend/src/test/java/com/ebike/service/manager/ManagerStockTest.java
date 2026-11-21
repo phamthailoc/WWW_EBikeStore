@@ -34,6 +34,7 @@ class ManagerStockTest {
     @Mock UserRepository users;
     @Mock ProductRepository products;
     @Mock ProductService productService;
+    @Mock com.ebike.service.stock.StockAlertService stockAlerts;
     ManagerServiceImpl service;
     Product product;
     ProductVariant white;
@@ -41,7 +42,7 @@ class ManagerStockTest {
     ProductVariant retired;
 
     @BeforeEach void setup() {
-        service = new ManagerServiceImpl(orders, payments, users, products, productService, org.mockito.Mockito.mock(com.ebike.service.admin.AuditLogService.class));
+        service = new ManagerServiceImpl(orders, payments, users, products, productService, org.mockito.Mockito.mock(com.ebike.service.admin.AuditLogService.class), stockAlerts);
         product = new Product();
         ReflectionTestUtils.setField(product, "id", 1L);
         white = variant(11L, 4, true);
@@ -78,6 +79,29 @@ class ManagerStockTest {
         service.updateVariantStock(1L, 11L, stock(3));
         assertEquals(3, white.getStockQuantity());
         assertEquals(9, product.getStockQuantity());
+    }
+
+    @Test void aColourGoingFromSoldOutToInStockTellsTheCustomersWaiting() {
+        white.setStockQuantity(0);
+        service.updateVariantStock(1L, 11L, stock(3));
+        verify(stockAlerts).notifyRestocked(white);
+    }
+
+    @Test void toppingUpAColourAlreadyInStockTellsNobody() {
+        service.updateVariantStock(1L, 11L, stock(10));
+        verify(stockAlerts, never()).notifyRestocked(any());
+    }
+
+    @Test void settingASoldOutColourToZeroAgainTellsNobody() {
+        white.setStockQuantity(0);
+        service.updateVariantStock(1L, 11L, stock(0));
+        verify(stockAlerts, never()).notifyRestocked(any());
+    }
+
+    @Test void aRetiredColourBroughtBackTellsNobody() {
+        retired.setStockQuantity(0);
+        service.updateVariantStock(1L, 13L, stock(4));
+        verify(stockAlerts, never()).notifyRestocked(any());
     }
 
     @Test void aColourOfAnotherProductIsNotFound() {

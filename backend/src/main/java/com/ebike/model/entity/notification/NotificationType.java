@@ -6,5 +6,6 @@ public enum NotificationType {
     PAYMENT_STATUS_CHANGED,
     ORDER_STATUS,
     PAYMENT_SUCCESS,
-    PAYMENT_FAILED
+    PAYMENT_FAILED,
+    STOCK_ALERT
 }

@@ -48,7 +48,7 @@ class GuestOrderLinkTest {
     final UUID session = UUID.randomUUID();
 
     @BeforeEach void setup() {
-        service = new OrderServiceImpl(orders, users, products, showrooms, promotions, verification, new com.ebike.service.admin.PricingService(pricingRules), org.mockito.Mockito.mock(com.ebike.service.admin.AuditLogService.class));
+        service = new OrderServiceImpl(orders, users, products, showrooms, promotions, verification, new com.ebike.service.admin.PricingService(pricingRules), org.mockito.Mockito.mock(com.ebike.service.admin.AuditLogService.class), org.mockito.Mockito.mock(com.ebike.service.stock.StockAlertService.class));
         customer = new User();
         customer.setId(3L);
         customer.setUsername("an");

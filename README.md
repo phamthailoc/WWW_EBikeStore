@@ -32,6 +32,7 @@ Mặc định ứng dụng kết nối MariaDB ở `localhost:3306`. Thông tin 
 | Xác minh email | `ORDER_EMAIL_OTP_REQUIRED` | `true` thì đặt hàng phải xác minh email bằng mã (mặc định `false`) |
 | Hủy đơn quá hạn | `APP_ORDER_VNPAY_EXPIRY`, `APP_ORDER_PAY_LATER_EXPIRY` | Thời hạn giữ xe cho đơn VNPay (mặc định 30 phút) và đơn trả sau (72 giờ) |
 | Giới hạn tần suất | `APP_RATE_LIMIT_ENABLED` | Mặc định `true`: mỗi địa chỉ IP được 5 lần đăng nhập/phút, 3 lần gửi mã email/5 phút, 20 câu hỏi chatbot/phút, 10 lần tạo thanh toán VNPay/phút. Đặt `false` khi chạy kiểm thử tự động (Selenium) |
+| Báo khi có hàng lại | `APP_PUBLIC_BASE_URL`, `STOCK_ALERT_MAIL_ENABLED`, `STOCK_ALERT_FROM`, `STOCK_ALERT_SWEEP_INTERVAL`, `STOCK_ALERT_SWEEP_INITIAL_DELAY` | `APP_PUBLIC_BASE_URL` là địa chỉ công khai của cửa hàng (ví dụ `https://shop.example.com`), **phải đặt khi triển khai**: không đặt thì link trong email báo hàng trỏ tới `http://localhost:8080`. `STOCK_ALERT_MAIL_ENABLED` (mặc định `true`) bật/tắt email báo hàng; `STOCK_ALERT_FROM` là người gửi (mặc định lấy `ORDER_EMAIL_OTP_FROM`); `STOCK_ALERT_SWEEP_INTERVAL` (mặc định `PT5M`) và `STOCK_ALERT_SWEEP_INITIAL_DELAY` (mặc định `PT2M`) là chu kỳ quét và độ trễ lần quét đầu |
 | Ảnh | `APP_STORAGE_S3_BUCKET`, `APP_STORAGE_S3_REGION`, `APP_STORAGE_S3_PUBLIC_BASE_URL` | Lưu ảnh sản phẩm |
 
 ## Cập nhật database đang chạy
@@ -42,6 +43,7 @@ Mặc định ứng dụng kết nối MariaDB ở `localhost:3306`. Thông tin 
 - `update_orders_promotion.sql`: cột `orders.promotion_id` (mỗi khách dùng một mã một lần)
 - `update_orders_pickup_deadline.sql`: cột `orders.pickup_deadline_at` (hạn giữ xe do cửa hàng đặt cho đơn "Chờ lấy")
 - `update_order_item_units.sql`: bảng `order_item_units` (số khung, số máy từng xe)
+- `update_stock_alerts.sql`: bảng `stock_alerts` (đăng ký báo khi có hàng lại, V22)
 - `update_user_preferences_defaults.sql`: giao diện mặc định theo thiết bị (`system`), ngôn ngữ mặc định `vi`
 - `update_verified_electric_catalog.sql`: chuyển danh mục cũ (có xe xăng 50cc, ảnh `/images/products/`) sang danh mục xe điện, ảnh ở `/images/catalog/`. Chạy **một lần**, trước `update_vehicle_types.sql` và `update_product_stock_totals.sql`
 - `update_vehicle_types.sql`: xe trên 25 km/h hoặc 250 W là xe máy điện

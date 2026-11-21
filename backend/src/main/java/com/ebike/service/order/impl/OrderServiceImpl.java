@@ -10,7 +10,10 @@ import com.ebike.dto.order.request.OrderQuoteRequest;
 import com.ebike.dto.order.request.OrderStatusUpdateRequest;
 import com.ebike.dto.order.response.OrderItemResponse;
 import com.ebike.dto.order.response.OrderItemUnitResponse;
+import com.ebike.service.admin.AuditLogService;
 import com.ebike.service.order.OrderUnits;
+import com.ebike.service.stock.StockAlertRules;
+import com.ebike.service.stock.StockAlertService;
 import com.ebike.dto.order.response.GuestOrderLinkResponse;
 import com.ebike.dto.order.response.OrderQuoteResponse;
 import com.ebike.dto.order.response.OrderResponse;
@@ -93,7 +96,8 @@ public class OrderServiceImpl implements OrderService {
     private final OrderEmailVerificationService orderEmailVerificationService;
     private final PricingService pricingService;
 
-    private final com.ebike.service.admin.AuditLogService auditLog;
+    private final AuditLogService auditLog;
+    private final StockAlertService stockAlerts;
 
     public OrderServiceImpl(
         OrderRepository orderRepository,
@@ -103,7 +107,8 @@ public class OrderServiceImpl implements OrderService {
         PromotionRepository promotionRepository,
         OrderEmailVerificationService orderEmailVerificationService,
         PricingService pricingService,
-        com.ebike.service.admin.AuditLogService auditLog
+        AuditLogService auditLog,
+        StockAlertService stockAlerts
     ) {
         this.orderRepository = orderRepository;
         this.userRepository = userRepository;
@@ -113,6 +118,7 @@ public class OrderServiceImpl implements OrderService {
         this.orderEmailVerificationService = orderEmailVerificationService;
         this.pricingService = pricingService;
         this.auditLog = auditLog;
+        this.stockAlerts = stockAlerts;
     }
 
     @Override
@@ -415,6 +421,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     private void restoreStock(Order order) {
+        java.util.List<ProductVariant> backInStock = new java.util.ArrayList<>();
         for (OrderItem item : order.getItems()) {
             Product product = item.getProduct();
             if (product != null) {
@@ -422,9 +429,15 @@ public class OrderServiceImpl implements OrderService {
             }
             ProductVariant variant = item.getProductVariant();
             if (variant != null) {
-                variant.setStockQuantity(defaultStock(variant.getStockQuantity()) + item.getQuantity());
+                Integer before = variant.getStockQuantity();
+                variant.setStockQuantity(defaultStock(before) + item.getQuantity());
+                if (StockAlertRules.isRestock(before, variant.getStockQuantity()) && !backInStock.contains(variant)) {
+                    backInStock.add(variant);
+                }
             }
         }
+        // V22: a cancelled order can bring a sold-out colour back, so customers waiting for it hear about it too.
+        backInStock.forEach(stockAlerts::notifyRestocked);
     }
 
     private int defaultStock(Integer stock) {
