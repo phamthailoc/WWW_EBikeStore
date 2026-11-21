@@ -77,7 +77,11 @@ window.KineticWarranty = (() => {
       document.querySelector('.work-main').appendChild(panel);
     }
     let rows;
-    try { rows = await request('/api/v1/warranty/claims'); } catch (err) { panel.innerHTML = ''; return; }
+    try { rows = await request('/api/v1/warranty/claims'); } catch (err) {
+      // a failed load must not look like "no requests"
+      panel.innerHTML = `<h2>${t('Yêu cầu bảo hành đã gửi')}</h2><p class="notice error" role="alert">${esc(err.message)}</p>`;
+      return;
+    }
     if (!rows.length) {
       panel.innerHTML = `<h2>${t('Yêu cầu bảo hành đã gửi')}</h2><p class="muted">${t('Bạn chưa gửi yêu cầu bảo hành nào.')}</p>`;
       return;
