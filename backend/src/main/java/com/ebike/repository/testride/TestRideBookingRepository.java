@@ -57,6 +57,10 @@ public interface TestRideBookingRepository extends JpaRepository<TestRideBooking
         @Param("to") LocalDateTime to,
         @Param("statuses") Collection<String> statuses);
 
+    long countByStatus(String status);
+
+    long countByStatusAndSlotStartLessThanEqual(String status, LocalDateTime slotStart);
+
     boolean existsByUserIdAndSlotStartAndStatusIn(Long userId, LocalDateTime slotStart, Collection<String> statuses);
 
     long countByUserIdAndStatusInAndSlotStartGreaterThanEqual(Long userId, Collection<String> statuses, LocalDateTime from);

@@ -111,6 +111,7 @@ class TestRideSecurityTest {
             when(service.slots(any(), any())).thenReturn(List.of());
             when(service.mine(any())).thenReturn(List.of());
             when(service.schedule(any(), any(), any())).thenReturn(List.of());
+            when(service.backlog()).thenReturn(new com.ebike.dto.testride.TestRideBacklogResponse(0, 0));
             when(service.book(any(), any())).thenReturn(new TestRideResponse(
                 1L, 5L, "Bike", "bike", 10L, "Quan 1", "addr", null, "REQUESTED", "0901234567", null, null, "An", "an@example.com", true, List.of(), null));
             return service;
@@ -186,6 +187,9 @@ class TestRideSecurityTest {
 
     @Test void staffWhoOnlyViewOrdersMayReadTheScheduleButNotMoveABooking() throws Exception {
         assertEquals(200, statusOf(as(get("/api/v1/manager/test-rides"), STAFF_ROLE, VIEW_QUEUE)));
+        assertEquals(401, statusOf(get("/api/v1/manager/test-rides/backlog")));
+        assertEquals(403, statusOf(as(get("/api/v1/manager/test-rides/backlog"), CUSTOMER_ROLE, PROFILE)));
+        assertEquals(200, statusOf(as(get("/api/v1/manager/test-rides/backlog"), STAFF_ROLE, VIEW_QUEUE)));
         assertEquals(403, statusOf(as(patch("/api/v1/manager/test-rides/3"), STAFF_ROLE, VIEW_QUEUE).contentType(MediaType.APPLICATION_JSON).content(STEP)));
         int moved = statusOf(as(patch("/api/v1/manager/test-rides/3"), STAFF_ROLE, VIEW_QUEUE, MOVE).contentType(MediaType.APPLICATION_JSON).content(STEP));
         assertTrue(moved != 401 && moved != 403, "the write permission is enough, got " + moved);

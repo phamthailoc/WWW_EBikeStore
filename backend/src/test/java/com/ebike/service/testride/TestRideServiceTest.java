@@ -243,6 +243,15 @@ class TestRideServiceTest {
     }
 
     @Test
+    void theBacklogCountsWaitingRequestsAndConfirmedRidesPastTheirTime() {
+        when(bookings.countByStatus("REQUESTED")).thenReturn(4L);
+        when(bookings.countByStatusAndSlotStartLessThanEqual("CONFIRMED", NOW)).thenReturn(2L);
+        var backlog = service.backlog();
+        assertEquals(4L, backlog.pending());
+        assertEquals(2L, backlog.overdue());
+    }
+
+    @Test
     void theOpeningHoursOfTheShowroomDecideTheGrid() {
         showroom.setOpeningHours("08:30 - 17:30");
         assertEquals(HttpStatus.BAD_REQUEST, statusOf(() -> service.book("an", request("2026-11-22T09:00"))));

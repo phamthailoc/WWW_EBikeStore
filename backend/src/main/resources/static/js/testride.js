@@ -223,6 +223,24 @@ window.KineticTestRide = (() => {
 
   // ---- manager: schedule ----
   function setupManager(table) {
+    // what waits for the staff, even when it is beyond the rows the list shows
+    const backlog = document.createElement('p');
+    backlog.className = 'muted';
+    backlog.id = 'rideBacklog';
+    backlog.hidden = true;
+    table.parentNode.insertBefore(backlog, table);
+    const showBacklog = () => fetch('/api/v1/manager/test-rides/backlog', {credentials: 'same-origin', headers: {Accept: 'application/json'}})
+      .then(response => response.ok ? response.json() : null)
+      .then(counts => {
+        const parts = [];
+        if (counts && counts.pending > 0) parts.push(t('{n} yêu cầu đang chờ xác nhận.', {n: counts.pending}));
+        if (counts && counts.overdue > 0) parts.push(t('{n} lịch đã quá giờ nhưng chưa đóng (đã lái thử hoặc khách không đến).', {n: counts.overdue}));
+        backlog.textContent = parts.join(' ');
+        backlog.hidden = parts.length === 0;
+      })
+      .catch(() => { /* the list below still works */ });
+    showBacklog();
+    window.addEventListener('workspace:reload', showBacklog);
     // the showroom filter lists the active showrooms (the options are filled once they arrive)
     fetch('/api/v1/showrooms', {credentials: 'same-origin', headers: {Accept: 'application/json'}})
       .then(response => response.ok ? response.json() : [])

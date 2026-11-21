@@ -660,5 +660,7 @@
  "Bạn chưa đặt lịch lái thử nào. Mở trang một chiếc xe và bấm \"Đặt lịch lái thử\".": "You have not booked any test ride. Open the page of a bike and press \"Book a test ride\".",
  "Không có lịch lái thử nào đang chờ xử lý.": "No test rides are waiting to be handled.",
  "Không có lịch lái thử nào khớp bộ lọc.": "No test rides match the filter.",
- "Mọi cửa hàng": "All showrooms"
+ "Mọi cửa hàng": "All showrooms",
+ "{n} yêu cầu đang chờ xác nhận.": "{n} requests are waiting for confirmation.",
+ "{n} lịch đã quá giờ nhưng chưa đóng (đã lái thử hoặc khách không đến).": "{n} rides are past their time and not closed yet (mark them done or no-show)."
 }

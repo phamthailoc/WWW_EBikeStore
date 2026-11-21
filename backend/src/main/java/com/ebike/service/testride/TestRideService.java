@@ -1,6 +1,7 @@
 package com.ebike.service.testride;
 
 import com.ebike.common.i18n.RequestLanguage;
+import com.ebike.dto.testride.TestRideBacklogResponse;
 import com.ebike.dto.testride.TestRideCreateRequest;
 import com.ebike.dto.testride.TestRideResponse;
 import com.ebike.dto.testride.TestRideSlotResponse;
@@ -262,6 +263,14 @@ public class TestRideService {
         LocalDateTime now = LocalDateTime.now(clock);
         return bookings.findSchedule(from, to, statuses, showroomId == null ? 0L : showroomId, PageRequest.of(0, SCHEDULE_LIMIT, sort))
             .stream().map(booking -> toResponse(booking, now, true)).toList();
+    }
+
+    /** How many requests wait for a confirmation and how many confirmed rides are past their time and still not closed (the list shows at most {@link #SCHEDULE_LIMIT}). */
+    @Transactional(readOnly = true)
+    public TestRideBacklogResponse backlog() {
+        return new TestRideBacklogResponse(
+            bookings.countByStatus(TestRideBooking.REQUESTED),
+            bookings.countByStatusAndSlotStartLessThanEqual(TestRideBooking.CONFIRMED, LocalDateTime.now(clock)));
     }
 
     /** The staff move a booking to its next step, or change only the note the customer reads. */

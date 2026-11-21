@@ -1,5 +1,6 @@
 package com.ebike.controller.testride;
 
+import com.ebike.dto.testride.TestRideBacklogResponse;
 import com.ebike.dto.testride.TestRideCreateRequest;
 import com.ebike.dto.testride.TestRideResponse;
 import com.ebike.dto.testride.TestRideSlotResponse;
@@ -58,6 +59,11 @@ public class TestRideController {
         @RequestParam(required = false) String status
     ) {
         return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(testRideService.schedule(date, showroomId, status));
+    }
+
+    @GetMapping("/api/v1/manager/test-rides/backlog")
+    public ResponseEntity<TestRideBacklogResponse> backlog() {
+        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(testRideService.backlog());
     }
 
     @PatchMapping("/api/v1/manager/test-rides/{id}")
