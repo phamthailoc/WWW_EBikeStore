@@ -5,6 +5,8 @@ window.KineticInstallment = (() => {
   const page = document.body.dataset.page || '';
   const money = value => window.KineticCart ? window.KineticCart.money(value) : new Intl.NumberFormat('vi-VN').format(Number(value) || 0) + ' ₫';
   const localeTag = () => document.documentElement.lang === 'en' ? 'en-GB' : 'vi-VN';
+  // the rate comes from a DECIMAL column ("8.00"): shown as 8 or 8.5 (8,5 in Vietnamese), never with trailing zeros
+  const rate = value => new Intl.NumberFormat(localeTag(), {maximumFractionDigits: 2}).format(Number(value) || 0);
   const when = iso => { const d = new Date(iso); return isNaN(d) ? '—' : d.toLocaleString(localeTag(), {day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'}); };
   const statusText = {PENDING: t('Chờ duyệt'), APPROVED: t('Đã duyệt'), REJECTED: t('Bị từ chối'), CANCELLED: t('Đã hủy')};
   const SIMULATION = t('Đây là công cụ mô phỏng: chưa kết nối công ty tài chính nào và không phát sinh khoản vay thật. Lãi suất phẳng theo năm, tính trên số tiền còn lại sau khi trả trước.');
@@ -59,7 +61,7 @@ window.KineticInstallment = (() => {
         <div class="installment-main"><dt>${t('Trả mỗi tháng')}</dt><dd data-field="monthly">${esc(money(result.monthlyPayment))}</dd></div>
         <div><dt>${t('Trả trước')} (${result.downPaymentPercent}%)</dt><dd data-field="down">${esc(money(result.downPayment))}</dd></div>
         <div><dt>${t('Số tiền trả góp')}</dt><dd>${esc(money(result.financed))}</dd></div>
-        <div><dt>${t('Lãi suất')}</dt><dd>${esc(String(result.annualRatePercent))}%/${t('năm')}</dd></div>
+        <div><dt>${t('Lãi suất')}</dt><dd>${esc(rate(result.annualRatePercent))}%/${t('năm')}</dd></div>
         <div><dt>${t('Tổng tiền lãi')}</dt><dd>${esc(money(result.totalInterest))}</dd></div>
         <div><dt>${t('Tổng phải trả')}</dt><dd data-field="total">${esc(money(result.totalPayable))}</dd></div></dl>
         ${result.eligible ? '' : `<p class="installment-problem" role="alert">${esc(result.reason || '')}</p>`}`;
@@ -93,7 +95,7 @@ window.KineticInstallment = (() => {
       const start = Math.min(loaded.maxDownPaymentPercent, Math.max(loaded.minDownPaymentPercent, 30));
       root.innerHTML = `<label class="installment-slider">${t('Trả trước')} <b data-percent>${start}%</b>
           <input type="range" name="down" min="${loaded.minDownPaymentPercent}" max="${loaded.maxDownPaymentPercent}" step="5" value="${start}" aria-label="${esc(t('Phần trăm trả trước'))}"></label>
-        <fieldset class="installment-terms"><legend>${t('Kỳ hạn')}</legend>${loaded.terms.map((term, index) => `<label><input type="radio" name="term" value="${term.termMonths}" ${index === loaded.terms.length - 1 ? 'checked' : ''}> ${term.termMonths} ${t('tháng')} <small>${esc(String(term.annualRatePercent))}%/${t('năm')}</small></label>`).join('')}</fieldset>
+        <fieldset class="installment-terms"><legend>${t('Kỳ hạn')}</legend>${loaded.terms.map((term, index) => `<label><input type="radio" name="term" value="${term.termMonths}" ${index === loaded.terms.length - 1 ? 'checked' : ''}> ${term.termMonths} ${t('tháng')} <small>${esc(rate(term.annualRatePercent))}%/${t('năm')}</small></label>`).join('')}</fieldset>
         <div data-result aria-live="polite"></div>`;
       root.querySelector('[name="down"]').addEventListener('input', event => {
         root.querySelector('[data-percent]').textContent = event.target.value + '%';
@@ -247,7 +249,7 @@ window.KineticInstallment = (() => {
       ${row(t('Trả trước') + ' (' + a.downPaymentPercent + '%)', money(a.downPayment), 'down')}
       ${row(t('Số tiền trả góp'), money(a.financed))}
       ${row(t('Kỳ hạn'), a.termMonths + ' ' + t('tháng'))}
-      ${row(t('Lãi suất'), a.annualRatePercent + '%/' + t('năm'))}
+      ${row(t('Lãi suất'), rate(a.annualRatePercent) + '%/' + t('năm'))}
       ${row(t('Trả mỗi tháng'), money(a.monthlyPayment), 'monthly')}
       ${row(t('Tổng phải trả'), money(a.totalPayable))}
       ${a.idNumberMasked ? row(t('Số CCCD'), a.idNumberMasked) : ''}
