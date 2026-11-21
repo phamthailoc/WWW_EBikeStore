@@ -1,8 +1,10 @@
 package com.ebike.service.testride;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -13,14 +15,16 @@ public class TestRideJob {
     private static final Logger log = LoggerFactory.getLogger(TestRideJob.class);
 
     private final TestRideReminderService service;
+    private final ZoneId zone;
 
-    public TestRideJob(TestRideReminderService service) {
+    public TestRideJob(TestRideReminderService service, @Value("${app.time-zone:Asia/Ho_Chi_Minh}") String timeZone) {
         this.service = service;
+        this.zone = ZoneId.of(timeZone);
     }
 
-    @Scheduled(cron = "${app.test-ride.cron:0 */30 * * * *}")
+    @Scheduled(cron = "${app.test-ride.cron:0 */30 * * * *}", zone = "${app.time-zone:Asia/Ho_Chi_Minh}")
     public void run() {
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now(zone); // the showroom's local time, like the slots
         // the two tasks are independent: a failure of one must not stop the other, nor the next run
         try {
             int closed = service.expireUnconfirmed(now);

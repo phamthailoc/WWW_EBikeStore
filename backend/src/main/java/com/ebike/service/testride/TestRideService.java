@@ -20,6 +20,7 @@ import com.ebike.service.admin.AuditLogService;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeParseException;
 import java.util.Collection;
 import java.util.HashMap;
@@ -84,9 +85,11 @@ public class TestRideService {
         @Value("${app.test-ride.capacity-per-slot:" + DEFAULT_CAPACITY + "}") int capacity,
         @Value("${app.test-ride.lead-minutes:120}") int leadMinutes,
         @Value("${app.test-ride.max-open-per-customer:3}") int maxOpenPerCustomer,
-        @Value("${app.test-ride.reminder-hours:24}") int reminderHours
+        @Value("${app.test-ride.reminder-hours:24}") int reminderHours,
+        @Value("${app.time-zone:Asia/Ho_Chi_Minh}") String timeZone
     ) {
-        this(bookings, showrooms, products, users, auditLog, daysAhead, capacity, leadMinutes, maxOpenPerCustomer, reminderHours, Clock.systemDefaultZone());
+        // the opening hours are the showroom's local time, so "now" must be too, whatever zone the server runs in
+        this(bookings, showrooms, products, users, auditLog, daysAhead, capacity, leadMinutes, maxOpenPerCustomer, reminderHours, Clock.system(ZoneId.of(timeZone)));
     }
 
     TestRideService(
