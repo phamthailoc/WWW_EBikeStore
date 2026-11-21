@@ -7,6 +7,7 @@ import static org.mockito.Mockito.verify;
 import com.ebike.model.entity.auth.User;
 import com.ebike.repository.notification.NotificationRepository;
 import com.ebike.repository.product.StockAlertRepository;
+import com.ebike.repository.testride.TestRideBookingRepository;
 import com.ebike.repository.user.UserAddressRepository;
 import com.ebike.repository.user.UserFavoriteRepository;
 import com.ebike.repository.user.UserPreferenceRepository;
@@ -24,7 +25,7 @@ class AccountErasureStockAlertTest {
         WarrantyClaimRepository warrantyClaims = mock(WarrantyClaimRepository.class);
         AccountErasure erasure = new AccountErasure(
             mock(UserAddressRepository.class), mock(UserFavoriteRepository.class), mock(UserPreferenceRepository.class),
-            mock(NotificationRepository.class), stockAlerts, warrantyClaims, mock(ProductReviewService.class), mock(PasswordEncoder.class));
+            mock(NotificationRepository.class), stockAlerts, warrantyClaims, mock(TestRideBookingRepository.class), mock(ProductReviewService.class), mock(PasswordEncoder.class));
         User user = new User();
         user.setId(42L);
         erasure.erase(user);
