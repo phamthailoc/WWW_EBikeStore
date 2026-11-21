@@ -37,14 +37,17 @@ public interface InstallmentApplicationRepository extends JpaRepository<Installm
 
     long countByStatus(String status);
 
-    /** The staff queue: oldest first, so the application that has waited longest is on top. */
-    @EntityGraph(attributePaths = {"user", "order"})
+    /**
+     * The staff queue: oldest first, so the application that has waited longest is on top. The graph brings what a row shows in the same query; the
+     * vehicles of the orders (a collection, which a paged query cannot join) load in batches, see hibernate.default_batch_fetch_size.
+     */
+    @EntityGraph(attributePaths = {"user", "order", "order.payment", "order.shipment", "reviewedBy"})
     List<InstallmentApplication> findByStatusOrderByCreatedAtAsc(String status, Pageable pageable);
 
-    @EntityGraph(attributePaths = {"user", "order"})
+    @EntityGraph(attributePaths = {"user", "order", "order.payment", "order.shipment", "reviewedBy"})
     List<InstallmentApplication> findByStatusOrderByCreatedAtDesc(String status, Pageable pageable);
 
-    @EntityGraph(attributePaths = {"user", "order"})
+    @EntityGraph(attributePaths = {"user", "order", "order.payment", "order.shipment", "reviewedBy"})
     List<InstallmentApplication> findAllByOrderByCreatedAtDesc(Pageable pageable);
 
     /** The customer's own applications, newest first. */
