@@ -308,6 +308,7 @@ class WarrantySeleniumTest extends StorefrontSeleniumTest {
             call(client, "POST", "/api/v1/warranty/claims", Map.of("unitId", unit.path("id").asLong(), "description", "Selenium: nội dung riêng của khách"));
             long claimId = claimIdOf(manager, frame);
             // closed before the account goes, so no request of an erased account stays in the staff queue for good (the note stays on it)
+            call(manager, "PATCH", "/api/v1/manager/warranty-claims/" + claimId, Map.of("status", "RECEIVED"));
             call(manager, "PATCH", "/api/v1/manager/warranty-claims/" + claimId, Map.of("status", "DONE", "staffNote", "Selenium: ghi chú của cửa hàng"));
 
             call(client, "DELETE", "/api/v1/auth/account", Map.of("password", PASSWORD, "confirmEmail", email));
