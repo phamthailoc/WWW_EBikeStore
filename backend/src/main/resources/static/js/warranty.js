@@ -37,16 +37,18 @@ window.KineticWarranty = (() => {
   }
 
   /** A small dialog with one text box. Resolves with the text, or null when the person cancelled. */
-  function ask({title, intro, label, required, min, max, submit}) {
+  function ask({title, intro, warning, label, initial, required, min, max, submit}) {
     return new Promise(resolve => {
       const dialog = document.createElement('dialog');
       dialog.className = 'stock-dialog warranty-dialog';
       dialog.innerHTML = `<form novalidate><h2>${esc(title)}</h2>${intro ? `<p class="muted">${esc(intro)}</p>` : ''}
+        ${warning ? `<p class="notice error" role="note">${esc(warning)}</p>` : ''}
         <label>${esc(label)}<textarea name="text" rows="5" maxlength="${max}"></textarea></label>
         <p class="support-message error" role="alert" hidden></p>
         <p class="dialog-actions"><button type="submit" class="button compact" data-submit>${esc(submit)}</button><button type="button" class="button compact ghost" data-cancel>${t('Hủy')}</button></p></form>`;
       document.body.appendChild(dialog);
       const form = dialog.querySelector('form'), error = dialog.querySelector('.support-message');
+      form.elements.text.value = initial || '';
       let value = null;
       form.addEventListener('submit', event => {
         event.preventDefault();
@@ -124,16 +126,19 @@ window.KineticWarranty = (() => {
       if (!button) return;
       const status = button.dataset.status;
       const rejected = status === 'REJECTED';
+      // the box starts with the note the customer already sees, so a new text replaces it knowingly and an empty box clears it;
+      // an empty status is the "edit note" button: the step stays as it is. The server only asks for a non-empty reason on a rejection.
       const note = await ask({
-        title: statusText[status] || status,
+        title: status ? (statusText[status] || status) : t('Sửa ghi chú'),
         intro: t('Ghi chú này khách sẽ thấy trong sổ bảo hành.'),
         label: rejected ? t('Lý do từ chối') : t('Ghi chú cho khách (có thể để trống)'),
-        required: rejected, min: rejected ? 5 : 1, max: 3000, submit: t('Cập nhật')
+        initial: button.dataset.note || '',
+        required: rejected, min: 1, max: 3000, submit: t('Cập nhật')
       });
       if (note === null) return;
       button.disabled = true;
       try {
-        await request(`/api/v1/manager/warranty-claims/${Number(button.dataset.id)}`, 'PATCH', note ? {status, staffNote: note} : {status});
+        await request(`/api/v1/manager/warranty-claims/${Number(button.dataset.id)}`, 'PATCH', status ? {status, staffNote: note} : {staffNote: note});
         tell(t('Đã cập nhật yêu cầu bảo hành.'));
         window.dispatchEvent(new Event('workspace:reload'));
       } catch (err) {
