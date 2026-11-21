@@ -18,6 +18,7 @@ import com.ebike.repository.product.ProductRepository;
 import com.ebike.repository.testride.TestRideBookingRepository;
 import com.ebike.service.admin.AuditLogService;
 import java.time.Clock;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -64,6 +65,9 @@ public class TestRideService {
     public static final int MINE_LIMIT = 100;
     /** A confirmed ride the customer withdrew shows in the staff backlog when its slot is this near. */
     static final int CANCELLED_NOTICE_HOURS = 24;
+    /** One account may make at most this many bookings within {@link #BOOKING_RATE_WINDOW}, whatever became of them (a script that books and cancels in a loop would otherwise empty a day of slots). */
+    static final int MAX_BOOKINGS_PER_WINDOW = 10;
+    static final Duration BOOKING_RATE_WINDOW = Duration.ofMinutes(10);
     static final int MAX_NOTE = 500;
     static final int MAX_STAFF_NOTE = 1000;
     private static final LocalDateTime FAR_PAST = LocalDateTime.of(2000, 1, 1, 0, 0);
@@ -216,6 +220,10 @@ public class TestRideService {
         if (bookings.countByUserIdAndStatusInAndSlotStartGreaterThanEqual(user.getId(), TestRideRules.OPEN, now) >= maxOpenPerCustomer) {
             throw conflict("Bạn đang có tối đa " + maxOpenPerCustomer + " lịch lái thử chưa diễn ra. Vui lòng hủy bớt hoặc đợi sau buổi lái thử.",
                 "You already have " + maxOpenPerCustomer + " upcoming test rides, the most allowed. Cancel one or wait until after a ride.");
+        }
+        if (bookings.countByUserIdAndCreatedAtGreaterThanEqual(user.getId(), now.minus(BOOKING_RATE_WINDOW)) >= MAX_BOOKINGS_PER_WINDOW) {
+            throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS, RequestLanguage.text(
+                "Bạn đặt lịch quá nhanh. Vui lòng thử lại sau ít phút.", "You are booking too fast. Please try again in a few minutes."));
         }
         if (bookings.countAt(showroom.getId(), slot, TestRideRules.OPEN) >= capacity) {
             throw conflict("Khung giờ này đã đủ chỗ. Vui lòng chọn giờ khác.", "This time is full. Please choose another one.");

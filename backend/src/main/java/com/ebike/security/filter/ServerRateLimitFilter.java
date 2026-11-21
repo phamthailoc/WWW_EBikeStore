@@ -34,8 +34,9 @@ public class ServerRateLimitFilter extends OncePerRequestFilter {
         new RateLimitRule("vnpay-create", HttpMethod.POST.name(), "/api/v1/payments/vnpay/create", 10, Duration.ofMinutes(1)),
         // a frame number is a short code: slow down anyone trying many of them
         new RateLimitRule("warranty-lookup", HttpMethod.GET.name(), "/api/v1/warranty/lookup", 20, Duration.ofMinutes(1)),
-        // V23: each booking takes a place from other customers; a script must not fill a day of slots
-        new RateLimitRule("test-ride-book", HttpMethod.POST.name(), "/api/v1/test-rides", 10, Duration.ofMinutes(10))
+        // V23: only a flood guard per address, wide enough for a showroom's shared computer or an office behind one address, because a refused
+        // choice of a full slot counts here too. What stops one customer from filling a day of slots is the per-account limit in TestRideService.book.
+        new RateLimitRule("test-ride-book", HttpMethod.POST.name(), "/api/v1/test-rides", 60, Duration.ofMinutes(10))
     );
 
     private final boolean enabled;

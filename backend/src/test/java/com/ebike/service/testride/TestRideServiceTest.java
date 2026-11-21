@@ -158,6 +158,16 @@ class TestRideServiceTest {
     }
 
     @Test
+    void oneAccountCannotBookWithoutEndInAFewMinutes() {
+        when(bookings.countByUserIdAndCreatedAtGreaterThanEqual(1L, NOW.minusMinutes(10))).thenReturn(10L);
+        assertEquals(HttpStatus.TOO_MANY_REQUESTS, statusOf(() -> service.book("an", request("2026-11-22T09:00"))));
+        verify(bookings, never()).saveAndFlush(any(TestRideBooking.class));
+        when(bookings.countByUserIdAndCreatedAtGreaterThanEqual(1L, NOW.minusMinutes(10))).thenReturn(9L);
+        service.book("an", request("2026-11-22T09:00"));
+        verify(bookings).saveAndFlush(any(TestRideBooking.class));
+    }
+
+    @Test
     void anEmptyNoteIsNotStored() {
         service.book("an", new TestRideCreateRequest(5L, 10L, "2026-11-22T09:00", "0901234567", "   "));
         ArgumentCaptor<TestRideBooking> stored = ArgumentCaptor.forClass(TestRideBooking.class);

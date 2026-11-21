@@ -81,6 +81,9 @@ public interface TestRideBookingRepository extends JpaRepository<TestRideBooking
 
     long countByUserIdAndStatusInAndSlotStartGreaterThanEqual(Long userId, Collection<String> statuses, LocalDateTime from);
 
+    /** Bookings the customer made since {@code since}, whatever became of them: the rate of one account booking (and cancelling, and booking again). */
+    long countByUserIdAndCreatedAtGreaterThanEqual(Long userId, LocalDateTime since);
+
     /**
      * Confirmed bookings starting within the window whose reminder was not sent yet, soonest first (ids only; each is handled in its own transaction).
      * Bookings of a showroom that was switched off or of a bike no longer sold are left out: that ride will not take place.
