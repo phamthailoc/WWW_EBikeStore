@@ -94,6 +94,9 @@ public class WorkspaceController {
         model.addAttribute("links", links);
         model.addAttribute("activePath", path);
         model.addAttribute("vnpayEnabled", vnPayProperties.isConfigured());
+        // staff with the view permission only must not be offered buttons the server will refuse (confirming a test ride needs the update permission)
+        model.addAttribute("canUpdateOrders", authentication != null
+            && authentication.getAuthorities().stream().anyMatch(a -> PermissionConstants.OrderManagement.ORDER_UPDATE_STATUS.equals(a.getAuthority())));
         return "store/workspace";
     }
 

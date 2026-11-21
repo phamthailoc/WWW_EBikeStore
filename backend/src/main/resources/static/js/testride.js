@@ -251,6 +251,13 @@ window.KineticTestRide = (() => {
       .catch(() => { /* the list below still works */ });
     showBacklog();
     window.addEventListener('workspace:reload', showBacklog);
+    if (document.body.dataset.canUpdate !== 'true') {
+      // the server refuses a change from this account, so the page offers none
+      const viewOnly = document.createElement('p');
+      viewOnly.className = 'muted';
+      viewOnly.textContent = t('Tài khoản của bạn chỉ có quyền xem lịch lái thử.');
+      table.parentNode.insertBefore(viewOnly, table);
+    }
     // the showroom filter lists the active showrooms (the options are filled once they arrive)
     fetch('/api/v1/showrooms', {credentials: 'same-origin', headers: {Accept: 'application/json'}})
       .then(response => response.ok ? response.json() : [])

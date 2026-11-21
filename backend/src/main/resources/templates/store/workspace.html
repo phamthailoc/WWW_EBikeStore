@@ -5,7 +5,7 @@
   <title th:text="${title} + ' | KINETIC'">KINETIC</title>
   <link rel="stylesheet" th:href="@{/css/store.css(v=20261109-theme1)}"><link rel="stylesheet" th:href="@{/css/workspace.css(v=20261109-theme1)}"><link rel="stylesheet" th:href="@{/css/workspace-overrides.css(v=20261122-v23)}">
 <link rel="stylesheet" href="/css/commerce.css?v=20261121-v22b"><script src="/js/cart.js?v=20261121-status1"></script></head>
-<body class="workspace" th:attr="data-api=${api},data-mode=${mode},data-role=${workspaceRole},data-page=${activePath},data-secondary-api=${secondaryApi},data-vnpay-enabled=${vnpayEnabled}">
+<body class="workspace" th:attr="data-api=${api},data-mode=${mode},data-role=${workspaceRole},data-page=${activePath},data-secondary-api=${secondaryApi},data-vnpay-enabled=${vnpayEnabled},data-can-update=${canUpdateOrders}">
 <header class="top"><a class="brand" th:href="@{/}"><span>K</span> KINETIC</a><nav><a th:href="@{/products}"><th:block th:text="#{nav.store}">Cửa hàng</th:block></a><a th:href="@{/support}"><th:block th:text="#{nav.support}">Hỗ trợ</th:block></a><a th:href="@{/chatbot}"><th:block th:text="#{nav.advice}">Tư vấn</th:block></a></nav><div class="actions"><a th:href="@{/favorites}"><th:block th:text="#{nav.saved}">Đã lưu</th:block></a><span class="role-chip" th:text="${workspaceRole}">customer</span><button id="logout" class="link-button"><th:block th:text="#{nav.logout}">Đăng xuất</th:block></button></div></header>
 <div class="work-shell">
   <aside class="work-sidebar"><div class="workspace-brand"><strong>KINETIC</strong><small th:text="${workspaceRole == 'manager'} ? #{ws.roleManager} : (${workspaceRole == 'admin'} ? #{ws.roleAdmin} : #{ws.roleCustomer})">WORKSPACE</small><a th:href="@{/}"><th:block th:text="#{nav.home}">← Trang chủ</th:block></a></div><p class="eyebrow">KINETIC / <span th:text="${workspaceRole}">WORKSPACE</span></p><a th:each="link : ${links}" th:href="${link.href}" th:text="${link.label}" th:classappend="${activePath == link.href ? ' active' : ''}">Điều hướng</a><a class="side-back" th:href="@{/}"><th:block th:text="#{nav.backToStore}">← Về cửa hàng</th:block></a></aside>
@@ -19,10 +19,10 @@
 <script th:if="${mode == 'accounts' or mode == 'pricing'}" th:src="@{/js/admin.js(v=20261114-i18n3)}"></script>
 <script th:if="${workspaceRole == 'customer'}" th:src="@{/js/notifications.js(v=20261110-i18n2)}"></script>
 <script th:if="${mode == 'warranty' or activePath == '/manager/warranty'}" th:src="@{/js/warranty.js(v=20261121-v20c)}"></script>
-<script th:if="${mode == 'testride' or activePath == '/manager/test-rides'}" th:src="@{/js/testride.js(v=20261122-v24)}"></script>
+<script th:if="${mode == 'testride' or activePath == '/manager/test-rides'}" th:src="@{/js/testride.js(v=20261122-v25)}"></script>
 <script th:if="${mode == 'inventory'}" th:src="@{/js/stock.js(v=20261114-i18n3)}"></script>
 <script th:if="${mode == 'inventory'}" th:src="@{/js/images.js(v=20261114-i18n3)}"></script>
 <script th:src="@{/js/return-to.js(v=20261122-v23)}"></script>
-<script th:src="@{/js/workspace.js(v=20261122-v24)}"></script>
+<script th:src="@{/js/workspace.js(v=20261122-v25)}"></script>
 <script th:if="${mode == 'profile'}" th:src="@{/js/profile.js(v=20261110-i18n2)}"></script>
 </body></html>
