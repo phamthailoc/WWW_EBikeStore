@@ -19,6 +19,7 @@ import com.ebike.service.notification.NotificationStreamService;
 import com.ebike.service.warranty.WarrantyMessages;
 import com.ebike.service.stock.StockAlertMessages;
 import org.springframework.scheduling.annotation.Async;
+import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -109,30 +110,29 @@ public class NotificationCreationService {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void handleWarrantyClaimStatusChanged(WarrantyClaimStatusChangedEvent event) {
-        userRepository.findById(event.userId()).ifPresent(user -> createNotification(
-            user,
-            NotificationType.WARRANTY_CLAIM,
-            WarrantyMessages.claimTitle(languageOf(user)),
-            WarrantyMessages.claimBody(languageOf(user), event.productName(), event.frameNumber(), event.status()),
-            null,
-            null,
-            "/customer/warranty"
-        ));
+        userRepository.findById(event.userId()).ifPresent(user -> {
+            // the profile is read once: it gives the language of the words and the opt-out of the notification
+            Optional<UserPreference> preference = userPreferenceRepository.findByUserId(user.getId());
+            String language = languageOf(preference);
+            createNotification(user, preference, NotificationType.WARRANTY_CLAIM,
+                WarrantyMessages.claimTitle(language),
+                WarrantyMessages.claimBody(language, event.productName(), event.frameNumber(), event.status()),
+                null, null, "/customer/warranty", true);
+        });
     }
 
     // V20: a vehicle reached a maintenance milestone (counted from the delivery).
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void handleMaintenanceDue(MaintenanceDueEvent event) {
-        userRepository.findById(event.userId()).ifPresent(user -> createNotification(
-            user,
-            NotificationType.MAINTENANCE_DUE,
-            WarrantyMessages.maintenanceTitle(languageOf(user)),
-            WarrantyMessages.maintenanceBody(languageOf(user), event.productName(), event.frameNumber(), event.milestone()),
-            null,
-            null,
-            "/customer/warranty"
-        ));
+        userRepository.findById(event.userId()).ifPresent(user -> {
+            Optional<UserPreference> preference = userPreferenceRepository.findByUserId(user.getId());
+            String language = languageOf(preference);
+            createNotification(user, preference, NotificationType.MAINTENANCE_DUE,
+                WarrantyMessages.maintenanceTitle(language),
+                WarrantyMessages.maintenanceBody(language, event.productName(), event.frameNumber(), event.milestone()),
+                null, null, "/customer/warranty", true);
+        });
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
@@ -182,6 +182,23 @@ public class NotificationCreationService {
         String targetUrl,
         boolean honourOptOut
     ) {
+        // the profile is only looked up when it decides something
+        createNotification(user, honourOptOut ? userPreferenceRepository.findByUserId(user.getId()) : Optional.empty(),
+            type, title, message, orderId, paymentId, targetUrl, honourOptOut);
+    }
+
+    /** {@code preference} is the profile the caller has already read, so one notification costs one lookup. */
+    private void createNotification(
+        User user,
+        Optional<UserPreference> preference,
+        NotificationType type,
+        String title,
+        String message,
+        Long orderId,
+        Long paymentId,
+        String targetUrl,
+        boolean honourOptOut
+    ) {
         // An erased account (V6) gets nothing new: the shop may still close its old orders, but no data is added to it.
         if ("DELETED".equals(user.getAccountStatus())) {
             return;
@@ -189,8 +206,8 @@ public class NotificationCreationService {
         // A customer who switched notifications off in the profile gets none; no saved setting means on.
         // Not for a back-in-stock alert: the customer asked for that one on purpose (honourOptOut is false), and
         // dropping it silently would use up the request.
-        boolean optedOut = honourOptOut && userPreferenceRepository.findByUserId(user.getId())
-            .map(preference -> Boolean.FALSE.equals(preference.getNotificationsEnabled()))
+        boolean optedOut = honourOptOut && preference
+            .map(saved -> Boolean.FALSE.equals(saved.getNotificationsEnabled()))
             .orElse(false);
         if (optedOut) {
             return;
@@ -208,8 +225,8 @@ public class NotificationCreationService {
     }
 
     /** The language saved in the customer's profile ("vi" when there is none), for the words of a notice they did not ask for in a page. */
-    private String languageOf(User user) {
-        return userPreferenceRepository.findByUserId(user.getId()).map(UserPreference::getLanguage).orElse("vi");
+    private String languageOf(Optional<UserPreference> preference) {
+        return preference.map(UserPreference::getLanguage).orElse("vi");
     }
 
     private String formatOrderStatus(String status) {
