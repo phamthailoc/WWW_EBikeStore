@@ -197,6 +197,7 @@ public class OrderServiceImpl implements OrderService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Đơn hàng cần có ít nhất một sản phẩm.");
         }
 
+        lockCustomerForInstallment(request, authentication);
         User user = getAuthenticatedUserOrNull(authentication);
 
         Order order = new Order();
@@ -906,6 +907,19 @@ public class OrderServiceImpl implements OrderService {
         payment.setAmount(installment != null ? installment.plan().downPayment() : order.getTotalAmount());
         payment.setCurrency("VND");
         order.setPayment(payment);
+    }
+
+    /**
+     * V24: an order paid by instalments locks the customer's row before anything else is read. The limit of open applications is counted under that
+     * lock, and under REPEATABLE READ a plain SELECT made earlier would already have fixed a snapshot that cannot show an application another order
+     * committed while this one waited (the test-ride booking does the same).
+     */
+    private void lockCustomerForInstallment(OrderCreateRequest request, Authentication authentication) {
+        if (request.paymentMethod() == null || !PaymentMethod.INSTALLMENT.name().equalsIgnoreCase(request.paymentMethod().trim())
+            || authentication == null || authentication.getName() == null || authentication.getName().isBlank()) {
+            return;
+        }
+        userRepository.findLockedByUsername(authentication.getName());
     }
 
     /** V24: an instalment application is a customer's; Manager and Admin accounts can place orders too, but not apply for credit. */
