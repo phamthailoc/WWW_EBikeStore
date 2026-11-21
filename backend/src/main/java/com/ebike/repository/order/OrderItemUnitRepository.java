@@ -25,7 +25,8 @@ public interface OrderItemUnitRepository extends JpaRepository<OrderItemUnit, Lo
 
     /** Row lock taken before a warranty request is checked, so two requests for one bike cannot both pass the "no open request" check. */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    Optional<OrderItemUnit> findLockedById(Long id);
+    @Query("select u from OrderItemUnit u where u.id = :id and u.orderItem.order.user.username = :username")
+    Optional<OrderItemUnit> findLockedByIdAndOwner(@Param("id") Long id, @Param("username") String username);
 
     /** Row locks on every vehicle of an order, taken first by staff who save its numbers (see OrderUnitService.replaceUnits). */
     @Lock(LockModeType.PESSIMISTIC_WRITE)

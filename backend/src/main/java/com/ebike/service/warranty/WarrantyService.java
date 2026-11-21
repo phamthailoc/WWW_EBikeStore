@@ -146,12 +146,13 @@ public class WarrantyService {
         }
         // The lock is the first statement of the transaction on purpose: under REPEATABLE READ the first plain SELECT fixes the
         // snapshot, and a snapshot taken before the lock would not show a request that another transaction committed while we waited.
-        units.findLockedById(unitId);
+        units.findLockedByIdAndOwner(unitId, username)
+            .orElseThrow(WarrantyService::unitNotFound);
         User user = users.findByUsername(username)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authentication is required"));
         OrderItemUnit unit = units.findForWarrantyById(unitId)
             .filter(found -> ownedBy(found, username))
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, WarrantyMessages.text("Không tìm thấy xe này trong tài khoản của bạn.", "This vehicle was not found in your account.")));
+            .orElseThrow(WarrantyService::unitNotFound);
         if (unit.getOrderItem().getOrder().getStatus() != OrderStatus.DELIVERED) {
             throw bad("Xe chỉ được yêu cầu bảo hành sau khi đã giao.", "A warranty request can be made only after the vehicle was delivered.");
         }
@@ -308,6 +309,10 @@ public class WarrantyService {
         if (username == null || username.isBlank()) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authentication is required");
         }
+    }
+
+    private static ResponseStatusException unitNotFound() {
+        return new ResponseStatusException(HttpStatus.NOT_FOUND, WarrantyMessages.text("Không tìm thấy xe này trong tài khoản của bạn.", "This vehicle was not found in your account."));
     }
 
     private ResponseStatusException bad(String vietnamese, String english) {
