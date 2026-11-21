@@ -10,6 +10,7 @@ import com.ebike.event.notification.OrderStatusChangedEvent;
 import com.ebike.event.notification.PickupDeadlineChangedEvent;
 import com.ebike.event.notification.PaymentStatusChangedEvent;
 import com.ebike.event.notification.MaintenanceDueEvent;
+import com.ebike.event.notification.InstallmentNoticeEvent;
 import com.ebike.event.notification.StockAlertTriggeredEvent;
 import com.ebike.event.notification.TestRideNoticeEvent;
 import com.ebike.event.notification.WarrantyClaimStatusChangedEvent;
@@ -19,6 +20,7 @@ import com.ebike.repository.user.UserPreferenceRepository;
 import com.ebike.service.notification.NotificationStreamService;
 import com.ebike.service.warranty.WarrantyMessages;
 import com.ebike.service.testride.TestRideMessages;
+import com.ebike.service.installment.InstallmentMessages;
 import com.ebike.service.stock.StockAlertMessages;
 import org.springframework.scheduling.annotation.Async;
 import java.util.Optional;
@@ -239,6 +241,23 @@ public class NotificationCreationService {
                 TestRideMessages.title(language, event.kind()),
                 TestRideMessages.body(language, event.kind(), event.productName(), TestRideMessages.place(event.showroomName(), event.showroomAddress()), event.slotStart(), event.note()),
                 null, null, "/customer/test-rides", false);
+        });
+    }
+
+    // V24: the staff approved or rejected an instalment application; the link opens the order, where the customer pays the down payment.
+    // The customer applied for it, so the notice ignores the profile's notification switch (like the test-ride notices): a rejection
+    // cancels the order, and the customer must be told.
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void handleInstallmentNotice(InstallmentNoticeEvent event) {
+        userRepository.findById(event.userId()).ifPresent(user -> {
+            Optional<UserPreference> preference = userPreferenceRepository.findByUserId(user.getId());
+            String language = languageOf(preference);
+            createNotification(user, preference, NotificationType.INSTALLMENT,
+                InstallmentMessages.title(language, event.kind()),
+                InstallmentMessages.body(language, event.kind(), event.orderNumber(), event.downPayment(), event.monthlyPayment(),
+                    event.termMonths(), event.payBefore(), event.note()),
+                event.orderId(), null, "/customer/orders/" + event.orderId(), false);
         });
     }
 

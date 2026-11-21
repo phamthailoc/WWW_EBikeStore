@@ -10,5 +10,6 @@ public enum NotificationType {
     STOCK_ALERT,
     WARRANTY_CLAIM,
     MAINTENANCE_DUE,
-    TEST_RIDE
+    TEST_RIDE,
+    INSTALLMENT
 }
