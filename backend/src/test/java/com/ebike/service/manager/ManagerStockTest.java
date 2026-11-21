@@ -42,7 +42,7 @@ class ManagerStockTest {
     ProductVariant retired;
 
     @BeforeEach void setup() {
-        service = new ManagerServiceImpl(orders, payments, users, products, productService, org.mockito.Mockito.mock(com.ebike.service.admin.AuditLogService.class), stockAlerts, org.mockito.Mockito.mock(com.ebike.repository.installment.InstallmentApplicationRepository.class));
+        service = new ManagerServiceImpl(orders, payments, users, products, productService, org.mockito.Mockito.mock(com.ebike.service.admin.AuditLogService.class), stockAlerts, org.mockito.Mockito.mock(com.ebike.repository.installment.InstallmentApplicationRepository.class), java.time.Duration.ofHours(72));
         product = new Product();
         ReflectionTestUtils.setField(product, "id", 1L);
         white = variant(11L, 4, true);

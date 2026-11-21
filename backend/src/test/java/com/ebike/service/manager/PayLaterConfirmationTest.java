@@ -40,7 +40,7 @@ class PayLaterConfirmationTest {
     Payment payment;
 
     @BeforeEach void setup() {
-        service = new ManagerServiceImpl(orders, payments, users, products, productService, org.mockito.Mockito.mock(com.ebike.service.admin.AuditLogService.class), org.mockito.Mockito.mock(com.ebike.service.stock.StockAlertService.class), org.mockito.Mockito.mock(com.ebike.repository.installment.InstallmentApplicationRepository.class));
+        service = new ManagerServiceImpl(orders, payments, users, products, productService, org.mockito.Mockito.mock(com.ebike.service.admin.AuditLogService.class), org.mockito.Mockito.mock(com.ebike.service.stock.StockAlertService.class), org.mockito.Mockito.mock(com.ebike.repository.installment.InstallmentApplicationRepository.class), java.time.Duration.ofHours(72));
         order = new Order();
         order.setId(5L);
         order.setOrderNumber("ORD-TEST");

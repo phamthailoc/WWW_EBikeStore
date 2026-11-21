@@ -7,6 +7,7 @@ import com.ebike.dto.order.response.VnPayReturnResponse;
 import com.ebike.model.entity.order.Order;
 import com.ebike.model.entity.installment.InstallmentApplication;
 import com.ebike.repository.installment.InstallmentApplicationRepository;
+import com.ebike.service.installment.InstallmentRules;
 import com.ebike.model.entity.order.OrderStatus;
 import com.ebike.model.entity.order.Payment;
 import com.ebike.model.entity.order.PaymentMethod;
@@ -19,12 +20,14 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -44,19 +47,23 @@ public class VnPayServiceImpl implements VnPayService {
     private final PaymentRepository paymentRepository;
     private final InstallmentApplicationRepository installmentApplications;
     private final ObjectMapper objectMapper;
+    // how long an approved instalment application waits for its down payment (the expiry job and the order page read the same setting)
+    private final Duration downPaymentHold;
 
     public VnPayServiceImpl(
         VnPayProperties properties,
         OrderRepository orderRepository,
         PaymentRepository paymentRepository,
         InstallmentApplicationRepository installmentApplications,
-        ObjectMapper objectMapper
+        ObjectMapper objectMapper,
+        @Value("${app.order.installment-down-payment-hold:PT72H}") Duration downPaymentHold
     ) {
         this.properties = properties;
         this.orderRepository = orderRepository;
         this.paymentRepository = paymentRepository;
         this.installmentApplications = installmentApplications;
         this.objectMapper = objectMapper;
+        this.downPaymentHold = downPaymentHold;
     }
 
     @Override
@@ -86,15 +93,23 @@ public class VnPayServiceImpl implements VnPayService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, com.ebike.common.i18n.RequestLanguage.text(
                 "Đơn hàng đã bị hủy nên không thanh toán được.", "Cannot pay a cancelled order."));
         }
-        // V24: an instalment order is paid only after the staff approved the application, and then only for the down payment
-        if (installmentApplications.findByOrderId(order.getId()).map(a -> !InstallmentApplication.APPROVED.equals(a.getStatus())).orElse(false)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, com.ebike.common.i18n.RequestLanguage.text(
-                "Hồ sơ trả góp chưa được duyệt nên chưa thanh toán được khoản trả trước.", "The instalment application is not approved yet, so the down payment cannot be paid."));
+        Payment existingPayment = paymentRepository.findByOrderId(request.orderId()).orElse(null);
+        // V24: an instalment order (its payment row is an INSTALLMENT one, or it has an application) is paid only after the staff approved the application,
+        // only for the down payment, and only until the down payment is due. An instalment payment whose application row is missing is refused too.
+        InstallmentApplication application = installmentApplications.findByOrderId(order.getId()).orElse(null);
+        boolean installmentOrder = application != null || (existingPayment != null && existingPayment.getPaymentMethod() == PaymentMethod.INSTALLMENT);
+        if (installmentOrder) {
+            if (application == null || !InstallmentApplication.APPROVED.equals(application.getStatus())) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, com.ebike.common.i18n.RequestLanguage.text(
+                    "Hồ sơ trả góp chưa được duyệt nên chưa thanh toán được khoản trả trước.", "The instalment application is not approved yet, so the down payment cannot be paid."));
+            }
+            if (InstallmentRules.downPaymentOverdue(application.getReviewedAt(), downPaymentHold, LocalDateTime.now())) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, com.ebike.common.i18n.RequestLanguage.text(
+                    "Đã quá hạn thanh toán khoản trả trước nên đơn hàng sắp bị hủy tự động.", "The down payment is overdue, so the order is about to be cancelled automatically."));
+            }
         }
 
-        Payment payment = paymentRepository.findByOrderId(request.orderId())
-            .map(existing -> prepareExistingPayment(existing, order))
-            .orElseGet(() -> createPendingPayment(order));
+        Payment payment = existingPayment != null ? prepareExistingPayment(existingPayment, order) : createPendingPayment(order);
 
         LocalDateTime now = LocalDateTime.now(VNPAY_ZONE);
         LocalDateTime expireTime = now.plus(VnPayUtil.PAYMENT_WINDOW);

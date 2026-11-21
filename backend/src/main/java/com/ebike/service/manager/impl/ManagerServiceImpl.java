@@ -29,6 +29,7 @@ import com.ebike.model.entity.order.ShipmentStatus;
 import com.ebike.repository.installment.InstallmentApplicationRepository;
 import com.ebike.repository.order.OrderRepository;
 import com.ebike.repository.order.PaymentRepository;
+import com.ebike.service.installment.InstallmentRules;
 import com.ebike.util.order.VnPayUtil;
 import com.ebike.dto.product.response.ProductSummaryDto;
 import com.ebike.model.entity.product.Product;
@@ -38,6 +39,7 @@ import com.ebike.service.product.ProductService;
 import com.ebike.service.stock.StockAlertRules;
 import com.ebike.service.stock.StockAlertService;
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
@@ -50,6 +52,7 @@ import java.util.Locale;
 import java.util.Map;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Caching;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -71,6 +74,8 @@ public class ManagerServiceImpl implements ManagerService {
     private final AuditLogService auditLog;
     private final StockAlertService stockAlerts;
     private final InstallmentApplicationRepository installments;
+    // how long an approved instalment application waits for its down payment (the expiry job reads the same setting)
+    private final Duration downPaymentHold;
 
     public ManagerServiceImpl(
         OrderRepository orderRepository,
@@ -80,7 +85,8 @@ public class ManagerServiceImpl implements ManagerService {
         ProductService productService,
         AuditLogService auditLog,
         StockAlertService stockAlerts,
-        InstallmentApplicationRepository installments
+        InstallmentApplicationRepository installments,
+        @Value("${app.order.installment-down-payment-hold:PT72H}") Duration downPaymentHold
     ) {
         this.orderRepository = orderRepository;
         this.paymentRepository = paymentRepository;
@@ -90,6 +96,7 @@ public class ManagerServiceImpl implements ManagerService {
         this.auditLog = auditLog;
         this.stockAlerts = stockAlerts;
         this.installments = installments;
+        this.downPaymentHold = downPaymentHold;
     }
 
     @Override
@@ -179,9 +186,18 @@ public class ManagerServiceImpl implements ManagerService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, RequestLanguage.text(
                 "Chỉ xác nhận thủ công được khoản trả sau hoặc khoản trả trước của đơn trả góp.", "Only pay-later or instalment down payments can be confirmed manually."));
         }
-        if (installment && !installments.findByOrderId(payment.getOrder().getId()).map(a -> InstallmentApplication.APPROVED.equals(a.getStatus())).orElse(false)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, RequestLanguage.text(
-                "Hồ sơ trả góp chưa được duyệt nên chưa thu được khoản trả trước.", "The instalment application is not approved yet, so the down payment cannot be taken."));
+        if (installment) {
+            InstallmentApplication application = installments.findByOrderId(lockedOrder.getId()).orElse(null);
+            if (application == null || !InstallmentApplication.APPROVED.equals(application.getStatus())) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, RequestLanguage.text(
+                    "Hồ sơ trả góp chưa được duyệt nên chưa thu được khoản trả trước.", "The instalment application is not approved yet, so the down payment cannot be taken."));
+            }
+            // past the deadline the order is about to be cancelled by the expiry job: taking the money now would leave it to be refunded
+            if (InstallmentRules.downPaymentOverdue(application.getReviewedAt(), downPaymentHold, LocalDateTime.now())) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT, RequestLanguage.text(
+                    "Đã quá hạn thanh toán khoản trả trước nên đơn hàng sắp bị hủy tự động. Không thu thêm.",
+                    "The down payment is overdue, so the order is about to be cancelled automatically. Do not take it now."));
+            }
         }
         if (payment.getPaymentStatus() == PaymentStatus.PAID) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, RequestLanguage.text(

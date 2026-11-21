@@ -2,6 +2,8 @@ package com.ebike.service.installment;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -25,6 +27,14 @@ public final class InstallmentRules {
     private static final int MAX_QUOTE_SCALE = 4;
     private static final BigDecimal HUNDRED = BigDecimal.valueOf(100);
     private static final BigDecimal TWELVE = BigDecimal.valueOf(12);
+
+    /**
+     * True once the down payment of an application approved at {@code reviewedAt} is past its hold: the expiry job cancels the order at its next run,
+     * and until then nobody may still pay or collect the down payment (the money would arrive for an order that is about to be cancelled).
+     */
+    public static boolean downPaymentOverdue(LocalDateTime reviewedAt, Duration hold, LocalDateTime now) {
+        return reviewedAt != null && now.isAfter(reviewedAt.plus(hold));
+    }
 
     /** What an order may be financed for and by whom; the service reads the values from the settings. */
     public record Limits(BigDecimal minTotal, BigDecimal maxTotal, BigDecimal minIncome, BigDecimal maxIncome,

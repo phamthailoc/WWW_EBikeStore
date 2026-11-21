@@ -54,8 +54,8 @@ class InstallmentPaymentTest {
         properties.setHashSecret("unit-test-secret");
         properties.setPayUrl("https://sandbox.vnpayment.vn/paymentv2/vpcpay.html");
         properties.setReturnUrl("http://localhost:8080/payment/return");
-        vnpay = new VnPayServiceImpl(properties, orders, payments, installments, new ObjectMapper());
-        manager = new ManagerServiceImpl(orders, payments, null, null, null, mock(AuditLogService.class), null, installments);
+        vnpay = new VnPayServiceImpl(properties, orders, payments, installments, new ObjectMapper(), java.time.Duration.ofHours(72));
+        manager = new ManagerServiceImpl(orders, payments, null, null, null, mock(AuditLogService.class), null, installments, java.time.Duration.ofHours(72));
 
         order = new Order();
         order.setId(10L);
@@ -115,6 +115,24 @@ class InstallmentPaymentTest {
     }
 
     @Test
+    void aDownPaymentPastItsDeadlineCannotBePaidWhileTheOrderWaitsForTheExpiryJob() {
+        application.setReviewedAt(java.time.LocalDateTime.now().minusHours(73));
+        ResponseStatusException error = assertThrows(ResponseStatusException.class, () -> vnpay.createPaymentUrl(pay(), "127.0.0.1", null, true));
+        assertEquals(HttpStatus.BAD_REQUEST, error.getStatusCode());
+        verify(payments, never()).save(any());
+        application.setReviewedAt(java.time.LocalDateTime.now().minusHours(71));
+        vnpay.createPaymentUrl(pay(), "127.0.0.1", null, true);
+    }
+
+    @Test
+    void anInstalmentPaymentWhoseApplicationRowIsMissingIsRefusedNotLetThrough() {
+        when(installments.findByOrderId(10L)).thenReturn(Optional.empty());
+        assertThrows(ResponseStatusException.class, () -> vnpay.createPaymentUrl(pay(), "127.0.0.1", null, true));
+        assertThrows(ResponseStatusException.class, () -> manager.confirmPayLaterPayment(7L, new ManagerPaymentConfirmationRequest(null, null)));
+        verify(payments, never()).save(any());
+    }
+
+    @Test
     void anOrderWithoutAnApplicationIsPaidInFullAsBefore() {
         Order plain = new Order();
         plain.setId(11L);
@@ -135,6 +153,15 @@ class InstallmentPaymentTest {
         var response = manager.confirmPayLaterPayment(7L, new ManagerPaymentConfirmationRequest(null, "Thu tiền mặt"));
         assertEquals("PAID", response.paymentStatus());
         assertEquals(OrderStatus.CONFIRMED, order.getStatus());
+    }
+
+    @Test
+    void theStoreCannotTakeADownPaymentPastItsDeadline() {
+        application.setReviewedAt(java.time.LocalDateTime.now().minusHours(73));
+        ResponseStatusException error = assertThrows(ResponseStatusException.class, () -> manager.confirmPayLaterPayment(7L, new ManagerPaymentConfirmationRequest(null, null)));
+        assertEquals(HttpStatus.CONFLICT, error.getStatusCode());
+        assertEquals(PaymentStatus.PENDING, payment.getPaymentStatus());
+        assertEquals(OrderStatus.PENDING, order.getStatus());
     }
 
     @Test

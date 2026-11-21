@@ -42,7 +42,7 @@ class VnPayLateResultTest {
         properties.setHashSecret(SECRET);
         properties.setPayUrl("https://sandbox.vnpayment.vn/paymentv2/vpcpay.html");
         properties.setReturnUrl("http://localhost:8080/payment/return");
-        service = new VnPayServiceImpl(properties, orders, payments, org.mockito.Mockito.mock(com.ebike.repository.installment.InstallmentApplicationRepository.class), new ObjectMapper());
+        service = new VnPayServiceImpl(properties, orders, payments, org.mockito.Mockito.mock(com.ebike.repository.installment.InstallmentApplicationRepository.class), new ObjectMapper(), java.time.Duration.ofHours(72));
         order = new Order();
         order.setId(9L);
         order.setOrderNumber("ORD-LATE");

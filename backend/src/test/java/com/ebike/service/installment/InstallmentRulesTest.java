@@ -129,4 +129,14 @@ class InstallmentRulesTest {
         assertEquals("*****6789", InstallmentRules.maskIdNumber("123456789"));
         assertEquals("6789", InstallmentRules.maskIdNumber("6789"));
     }
+
+    @Test
+    void aDownPaymentIsOverdueOnlyAfterItsHoldFromTheApproval() {
+        java.time.LocalDateTime reviewed = java.time.LocalDateTime.of(2026, 11, 20, 9, 0);
+        java.time.Duration hold = java.time.Duration.ofHours(72);
+        assertFalse(InstallmentRules.downPaymentOverdue(reviewed, hold, reviewed.plusHours(71)));
+        assertFalse(InstallmentRules.downPaymentOverdue(reviewed, hold, reviewed.plusHours(72)));
+        assertTrue(InstallmentRules.downPaymentOverdue(reviewed, hold, reviewed.plusHours(72).plusMinutes(1)));
+        assertFalse(InstallmentRules.downPaymentOverdue(null, hold, reviewed.plusDays(30)));
+    }
 }
