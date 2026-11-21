@@ -292,7 +292,8 @@ public class TestRideService {
             if (!TestRideRules.timingAllows(next, booking.getSlotStart(), now)) {
                 throw bad(timingRefusalVi(next), timingRefusalEn(next));
             }
-            if (TestRideBooking.CANCELLED.equals(next) && (booking.getStaffNote() == null || booking.getStaffNote().isBlank())) {
+            // the reason must come with this very request: an older note (written at confirmation) is not a reason for the cancellation
+            if (TestRideBooking.CANCELLED.equals(next) && (request.staffNote() == null || request.staffNote().isBlank())) {
                 throw bad("Vui lòng ghi lý do khi hủy lịch.", "Please give a reason when cancelling a test ride.");
             }
             booking.setStatus(next);

@@ -400,11 +400,14 @@ class TestRideServiceTest {
     }
 
     @Test
-    void aReasonAlreadyOnTheBookingCanBeUsedToCancel() {
-        TestRideBooking booking = bookingIn("REQUESTED", NOW.plusDays(2));
-        booking.setStaffNote("Waiting for the bike");
-        service.update(77L, new TestRideUpdateRequest("CANCELLED", null));
+    void anOlderNoteOnTheBookingIsNotAReasonToCancel() {
+        TestRideBooking booking = bookingIn("CONFIRMED", NOW.plusDays(2));
+        booking.setStaffNote("Please bring your ID");
+        assertEquals(HttpStatus.BAD_REQUEST, statusOf(() -> service.update(77L, new TestRideUpdateRequest("CANCELLED", null))));
+        assertEquals(TestRideBooking.CONFIRMED, booking.getStatus());
+        service.update(77L, new TestRideUpdateRequest("CANCELLED", "The bike is in service"));
         assertEquals(TestRideBooking.CANCELLED, booking.getStatus());
+        assertEquals("The bike is in service", booking.getStaffNote());
     }
 
     @Test

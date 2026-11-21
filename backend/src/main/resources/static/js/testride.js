@@ -238,7 +238,7 @@ window.KineticTestRide = (() => {
         title: status ? (stepText[status] || status) : t('Sửa ghi chú'),
         intro: t('Ghi chú này khách sẽ thấy trong mục Lái thử của tài khoản.'),
         label: cancelling ? t('Lý do hủy (khách sẽ thấy)') : t('Ghi chú cho khách (có thể để trống)'),
-        initial: button.dataset.note || '',
+        initial: cancelling ? '' : button.dataset.note || '', // a cancellation needs its own reason, not the note written at confirmation
         required: cancelling, max: 1000, submit: t('Cập nhật')
       });
       if (note === null) return;
