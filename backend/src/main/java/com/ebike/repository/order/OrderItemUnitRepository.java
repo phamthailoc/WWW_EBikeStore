@@ -24,10 +24,14 @@ public interface OrderItemUnitRepository extends JpaRepository<OrderItemUnit, Lo
     @Query(WARRANTY_FETCH + "where usr.username = :username and o.status = com.ebike.model.entity.order.OrderStatus.DELIVERED order by u.id desc")
     List<OrderItemUnit> findDeliveredByUsername(@Param("username") String username);
 
-    /** Row lock taken before a warranty request is checked, so two requests for one bike cannot both pass the "no open request" check. */
+    /**
+     * Row lock on the one vehicle, taken before a warranty request is checked, so two requests for one bike cannot both pass the "no open request"
+     * check. It names no join on purpose: MariaDB has no FOR UPDATE OF, so a join would lock the order and the customer row as well.
+     * Whose vehicle it is gets checked by the caller on the next read.
+     */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("select u from OrderItemUnit u where u.id = :id and u.orderItem.order.user.username = :username")
-    Optional<OrderItemUnit> findLockedByIdAndOwner(@Param("id") Long id, @Param("username") String username);
+    @Query("select u from OrderItemUnit u where u.id = :id")
+    Optional<OrderItemUnit> findLockedById(@Param("id") Long id);
 
     /** Row locks on every vehicle of an order, taken first by staff who save its numbers (see OrderUnitService.replaceUnits). */
     @Lock(LockModeType.PESSIMISTIC_WRITE)

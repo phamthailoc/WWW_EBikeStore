@@ -69,7 +69,7 @@ class WarrantyServiceTest {
         ApplicationEventPublisher publisher = events::add;
         new NotificationEventBridge().setApplicationEventPublisher(publisher);
         when(claims.save(any(WarrantyClaim.class))).thenAnswer(call -> call.getArgument(0));
-        when(units.findLockedByIdAndOwner(any(), any())).thenReturn(Optional.of(new OrderItemUnit()));
+        when(units.findLockedById(any())).thenReturn(Optional.of(new OrderItemUnit()));
     }
 
     @AfterEach
@@ -146,13 +146,13 @@ class WarrantyServiceTest {
     }
 
     @Test
-    void createClaimLocksOnlyTheCustomersOwnBike() {
-        when(units.findLockedByIdAndOwner(7L, "me")).thenReturn(Optional.empty());
+    void createClaimOfAnUnknownBikeIsNotFound() {
+        when(units.findLockedById(7L)).thenReturn(Optional.empty());
 
         ResponseStatusException error = assertThrows(ResponseStatusException.class,
             () -> service.createClaim("me", 7L, "The motor makes a noise"));
 
-        // a bike that is not theirs (or was deleted a moment ago) is a 404 before anything else is read
+        // a bike that was deleted a moment ago is a 404 before anything else is read
         assertEquals(404, error.getStatusCode().value());
         verify(users, never()).findByUsername(any());
         verify(units, never()).findForWarrantyById(any());
@@ -195,7 +195,7 @@ class WarrantyServiceTest {
 
         // the lock comes before any plain read, or the read snapshot would predate it (REPEATABLE READ)
         InOrder order = inOrder(units, users, claims);
-        order.verify(units).findLockedByIdAndOwner(7L, "me");
+        order.verify(units).findLockedById(7L);
         order.verify(users).findByUsername("me");
         order.verify(claims).existsByUnitIdAndStatusIn(any(), any());
         assertEquals(WarrantyClaim.NEW, created.status());

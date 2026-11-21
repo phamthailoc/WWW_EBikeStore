@@ -153,7 +153,7 @@ public class WarrantyService {
         }
         // The lock is the first statement of the transaction on purpose: under REPEATABLE READ the first plain SELECT fixes the
         // snapshot, and a snapshot taken before the lock would not show a request that another transaction committed while we waited.
-        units.findLockedByIdAndOwner(unitId, username)
+        units.findLockedById(unitId)
             .orElseThrow(WarrantyService::unitNotFound);
         User user = users.findByUsername(username)
             .orElseThrow(WarrantyService::signInRequired);
