@@ -21,6 +21,7 @@ import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Dimension;
+import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
@@ -208,6 +209,11 @@ class TestRideSeleniumTest extends StorefrontSeleniumTest {
     private void filterDay(LocalDate day) {
         wait.until(d -> !d.findElements(By.cssSelector("#filters [name=date]")).isEmpty());
         js("const i=document.querySelector('#filters [name=date]');i.value=arguments[0];i.dispatchEvent(new Event('change',{bubbles:true}))", day.toString());
+    }
+
+    private void filterStatus(String status) {
+        wait.until(d -> !d.findElements(By.cssSelector("#filters [name=status]")).isEmpty());
+        js("const i=document.querySelector('#filters [name=status]');i.value=arguments[0];i.dispatchEvent(new Event('change',{bubbles:true}))", status);
     }
 
     private WebElement rowWith(String text) {
@@ -460,13 +466,20 @@ class TestRideSeleniumTest extends StorefrontSeleniumTest {
             logIn(managerUser, managerPassword);
             driver.get(baseUrl + "/manager/test-rides");
             filterDay(day);
-            WebElement fillerRow = rowWith(fillerPhones.get(fillerPhones.size() - 1));
-            click(fillerRow.findElement(By.cssSelector("[data-action='ride-step'][data-status='CANCELLED']")));
+            wait.until(d -> { // the list is reloaded after the day filter: look the row up again if it went stale
+                try {
+                    click(rowWith(fillerPhones.get(fillerPhones.size() - 1)).findElement(By.cssSelector("[data-action='ride-step'][data-status='CANCELLED']")));
+                    return true;
+                } catch (StaleElementReferenceException e) {
+                    return false;
+                }
+            });
             submitNote(""); // no reason: refused inside the dialog
             wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("dialog.warranty-dialog .support-message.error")));
             driver.findElement(NOTE_BOX).sendKeys("The bike is in service");
             click(By.cssSelector("dialog.warranty-dialog button[data-submit]"));
-            wait.until(d -> "CANCELLED".equals(rowWith(fillerPhones.get(fillerPhones.size() - 1)).findElement(By.cssSelector("td[data-field='status']")).getAttribute("data-raw")));
+            filterStatus("ALL"); // a cancelled booking leaves the default list of open bookings
+            wait.until(d -> { try { return "CANCELLED".equals(rowWith(fillerPhones.get(fillerPhones.size() - 1)).findElement(By.cssSelector("td[data-field='status']")).getAttribute("data-raw")); } catch (StaleElementReferenceException e) { return false; } });
             wait.until(d -> {
                 try {
                     return notificationsOfType(fillerClient, "TEST_RIDE") >= fillerBefore + 1;
