@@ -1,6 +1,7 @@
 package com.ebike.service.warranty;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
@@ -88,11 +89,21 @@ class MaintenanceReminderServiceTest {
     }
 
     @Test
-    void onlyVehiclesInsideTheLastMilestoneAreRead() {
+    void theReadWindowReachesPastTheLastMilestoneSoItIsNotMissed() {
         service.sendDueReminders(NOW);
 
-        // P1M,P6M,P12M: a bike handed over more than 12 months ago has nothing left to remind
-        verify(units).findDeliveredUnitIdsAfter(eq(0L), eq(NOW.minusMonths(12)), any(Pageable.class));
+        // P1M,P6M,P12M: a bike handed over 12 months ago at 10:00 is due only after the 08:00 run of that day, so the window is wider
+        LocalDateTime since = NOW.minusMonths(12).minusDays(MaintenanceReminderService.CATCH_UP_DAYS);
+        verify(units).findDeliveredUnitIdsAfter(eq(0L), eq(since), any(Pageable.class));
+        assertTrue(!since.isAfter(NOW.minusMonths(12).minusDays(1).withHour(10)));
+    }
+
+    @Test
+    void aBikeDeliveredAtTenTwelveMonthsAgoIsRemindedOnTheNextMorningRun() {
+        LocalDateTime delivered = NOW.minusDays(1).minusMonths(12).withHour(10);
+        serve(deliveredAt(delivered));
+
+        assertEquals(1, service.sendDueReminders(NOW));
     }
 
     @Test

@@ -40,6 +40,8 @@ public class MaintenanceReminderService {
 
     private static final Logger log = LoggerFactory.getLogger(MaintenanceReminderService.class);
     static final int DEFAULT_BATCH_SIZE = 100;
+    /** How long after the last milestone a vehicle is still read, so that milestone is not missed (see {@link #sendDueReminders}). */
+    static final int CATCH_UP_DAYS = 30;
 
     private final OrderItemUnitRepository units;
     private final MaintenanceReminderRepository reminders;
@@ -67,8 +69,10 @@ public class MaintenanceReminderService {
     public int sendDueReminders(LocalDateTime now) {
         int announced = 0;
         long afterId = 0;
-        // a vehicle handed over before the last milestone fell due has nothing left to remind: leave it out of the read
-        LocalDateTime since = now.minus(intervals.get(intervals.size() - 1));
+        // a vehicle handed over long before the last milestone has nothing left to remind: leave it out of the read. The window is
+        // wider than the last interval, so the last milestone is still caught on the day it falls due (the hand-over may have been
+        // later in the day than the job) and after the job was off for some days; a vehicle already handled is skipped by its stored rows.
+        LocalDateTime since = now.minus(intervals.get(intervals.size() - 1)).minusDays(CATCH_UP_DAYS);
         while (true) {
             List<Long> ids = units.findDeliveredUnitIdsAfter(afterId, since, PageRequest.of(0, batchSize));
             if (ids.isEmpty()) {
