@@ -21,12 +21,14 @@ import com.ebike.model.entity.order.Order;
 import com.ebike.model.entity.order.OrderItem;
 import com.ebike.model.entity.order.OrderItemUnit;
 import com.ebike.model.entity.order.OrderStatus;
+import com.ebike.model.entity.product.Product;
 import com.ebike.model.entity.warranty.WarrantyClaim;
 import com.ebike.repository.auth.UserRepository;
 import com.ebike.repository.order.OrderItemUnitRepository;
 import com.ebike.repository.warranty.WarrantyClaimRepository;
 import com.ebike.service.admin.AuditLogService;
 import java.time.Clock;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -99,6 +101,30 @@ class WarrantyServiceTest {
         claim.setUser(owner);
         claim.setStatus(status);
         when(claims.findLockedById(1L)).thenReturn(Optional.of(claim));
+        return claim;
+    }
+
+    @Test
+    void theNewestRequestOfASecondDecidesEvenWhenCreatedAtTies() {
+        User me = user(1L, "me");
+        OrderItemUnit unit = unitOf(me);
+        unit.getOrderItem().setProduct(new Product());
+        when(units.findDeliveredByUsername("me")).thenReturn(List.of(unit));
+        LocalDateTime sameSecond = LocalDateTime.of(2026, 11, 20, 9, 0, 0);
+        WarrantyClaim older = claimWith(10L, unit, WarrantyClaim.DONE, sameSecond);
+        WarrantyClaim newer = claimWith(11L, unit, WarrantyClaim.NEW, sameSecond);
+        // the repository gives them in no particular order
+        when(claims.findByUnitIdIn(any())).thenReturn(List.of(newer, older));
+
+        assertEquals(WarrantyClaim.NEW, service.book("me").get(0).claimStatus());
+    }
+
+    private static WarrantyClaim claimWith(long id, OrderItemUnit unit, String status, LocalDateTime createdAt) {
+        WarrantyClaim claim = new WarrantyClaim();
+        claim.setUnit(unit);
+        claim.setStatus(status);
+        ReflectionTestUtils.setField(claim, "id", id);
+        ReflectionTestUtils.setField(claim, "createdAt", createdAt);
         return claim;
     }
 

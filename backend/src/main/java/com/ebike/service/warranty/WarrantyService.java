@@ -20,6 +20,7 @@ import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Period;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -95,7 +96,8 @@ public class WarrantyService {
         if (!mine.isEmpty()) {
             // newest request wins: the list is read oldest to newest, so a later row overwrites an earlier one
             claims.findByUnitIdIn(mine.stream().map(OrderItemUnit::getId).toList()).stream()
-                .sorted((a, b) -> a.getCreatedAt().compareTo(b.getCreatedAt()))
+                // created_at is stored to the second, so the id breaks a tie: the later row of the same second is the newer request
+                .sorted(Comparator.comparing(WarrantyClaim::getCreatedAt).thenComparing(WarrantyClaim::getId))
                 .forEach(claim -> latestClaim.put(claim.getUnit().getId(), claim.getStatus()));
         }
         LocalDateTime now = LocalDateTime.now(clock);
