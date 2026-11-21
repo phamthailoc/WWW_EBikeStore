@@ -188,8 +188,18 @@ public class ManagerServiceImpl implements ManagerService {
         if (payment.getPaymentStatus() == PaymentStatus.REFUNDED) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Refunded payments cannot be confirmed again");
         }
-        if (payment.getPaymentStatus() != PaymentStatus.PENDING) {
+        // a down payment whose card payment failed can still be taken at the store; the failed attempt is forgotten
+        boolean retryAtStore = installment && payment.getPaymentStatus() == PaymentStatus.FAILED;
+        if (payment.getPaymentStatus() != PaymentStatus.PENDING && !retryAtStore) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chỉ xác nhận được khoản trả sau đang chờ thu.");
+        }
+        if (retryAtStore) {
+            payment.setProviderTxnId(null);
+            payment.setProviderResponse(null);
+            payment.setVnpayResponseCode(null);
+            payment.setVnpayBankCode(null);
+            payment.setVnpayCardType(null);
+            payment.setVnpaySecureHash(null);
         }
 
         payment.setPaymentStatus(PaymentStatus.PAID);

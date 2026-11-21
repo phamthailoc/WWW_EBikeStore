@@ -138,6 +138,25 @@ class InstallmentPaymentTest {
     }
 
     @Test
+    void aDownPaymentWhoseCardPaymentFailedCanStillBeTakenAtTheStore() {
+        payment.setPaymentStatus(PaymentStatus.FAILED);
+        payment.setVnpayResponseCode("24");
+        payment.setProviderResponse("{\"vnp_ResponseCode\":\"24\"}");
+        var response = manager.confirmPayLaterPayment(7L, new ManagerPaymentConfirmationRequest(null, "Thu tiền mặt"));
+        assertEquals("PAID", response.paymentStatus());
+        assertEquals(OrderStatus.CONFIRMED, order.getStatus());
+        assertEquals(null, payment.getVnpayResponseCode());
+        assertEquals("Thu tiền mặt", payment.getProviderResponse());
+    }
+
+    @Test
+    void aFailedPayLaterPaymentStillCannotBeConfirmedByHand() {
+        payment.setPaymentMethod(PaymentMethod.PAY_LATER);
+        payment.setPaymentStatus(PaymentStatus.FAILED);
+        assertThrows(ResponseStatusException.class, () -> manager.confirmPayLaterPayment(7L, new ManagerPaymentConfirmationRequest(null, null)));
+    }
+
+    @Test
     void theDownPaymentCannotBeTakenBeforeTheApplicationIsApproved() {
         application.setStatus(InstallmentApplication.PENDING);
         ResponseStatusException error = assertThrows(ResponseStatusException.class, () -> manager.confirmPayLaterPayment(7L, new ManagerPaymentConfirmationRequest(null, null)));
