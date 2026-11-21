@@ -104,6 +104,8 @@ window.KineticWarranty = (() => {
       const text = await ask({
         title: t('Yêu cầu bảo hành'),
         intro: button.dataset.frame ? `${button.dataset.name || ''} · ${t('Số khung')} ${button.dataset.frame}` : '',
+        // a bike out of warranty is repaired for a fee: say so before the customer sends the request, not after
+        warning: button.dataset.coverage === 'EXPIRED' ? t('Xe đã hết bảo hành, việc sửa chữa sẽ có tính phí.') : '',
         label: t('Mô tả lỗi'), required: true, min: 10, max: 2000, submit: t('Gửi yêu cầu')
       });
       if (text === null) return;
