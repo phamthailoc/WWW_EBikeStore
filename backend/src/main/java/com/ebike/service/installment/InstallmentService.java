@@ -123,6 +123,14 @@ public class InstallmentService {
         return rows.stream().map(row -> toResponse(row, true)).toList();
     }
 
+    /**
+     * How long the staff's note can be: an approval note as a whole, a rejection note less the prefix it gets in the order's cancellation reason (which has
+     * the same limit as a whole). The staff page asks for it through the config, so the form and the check here cannot drift apart.
+     */
+    public static int maxNoteLength(boolean approve) {
+        return approve ? MAX_NOTE_LENGTH : MAX_NOTE_LENGTH - REJECTED_REASON_PREFIX.length();
+    }
+
     @Transactional(readOnly = true)
     public InstallmentBacklogResponse backlog() {
         return new InstallmentBacklogResponse(applications.countByStatus(InstallmentApplication.PENDING));
@@ -138,7 +146,7 @@ public class InstallmentService {
         }
         String note = request.note() == null || request.note().isBlank() ? null : request.note().trim();
         // a rejection note becomes the tail of the order's cancellation reason, which has the same limit as a whole
-        int maxNote = approve ? MAX_NOTE_LENGTH : MAX_NOTE_LENGTH - REJECTED_REASON_PREFIX.length();
+        int maxNote = maxNoteLength(approve);
         if (note != null && note.length() > maxNote) {
             throw bad("Ghi chú tối đa " + maxNote + " ký tự.", "A note can have at most " + maxNote + " characters.");
         }

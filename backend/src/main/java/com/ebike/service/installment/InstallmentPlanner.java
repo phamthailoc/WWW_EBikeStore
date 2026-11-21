@@ -60,7 +60,8 @@ public class InstallmentPlanner {
         return new InstallmentConfigResponse(
             InstallmentRules.MIN_DOWN_PERCENT, InstallmentRules.MAX_DOWN_PERCENT, terms(),
             limits.minIncome(),
-            limits.maxPaymentShareOfIncome().movePointRight(2).intValue(), limits.maxOpenPerCustomer());
+            limits.maxPaymentShareOfIncome().movePointRight(2).intValue(), limits.maxOpenPerCustomer(),
+            InstallmentService.maxNoteLength(true), InstallmentService.maxNoteLength(false));
     }
 
     /** The plan for an amount; the percent and the term are checked, the amount only decides {@code eligible}. */

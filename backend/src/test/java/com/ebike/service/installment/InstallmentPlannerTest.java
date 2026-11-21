@@ -103,6 +103,9 @@ class InstallmentPlannerTest {
         assertEquals(50, config.maxDownPaymentPercent());
         assertEquals(60, config.maxPaymentPercentOfIncome());
         assertEquals(2, config.maxOpenApplications());
+        // a rejection note is part of the cancellation reason, so it has room for the prefix less than an approval note
+        assertEquals(1000, config.maxApprovalNoteLength());
+        assertEquals(1000 - InstallmentService.REJECTED_REASON_PREFIX.length(), config.maxRejectionNoteLength());
     }
 
     // ---- the quote ----
