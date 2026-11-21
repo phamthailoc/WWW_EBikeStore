@@ -82,6 +82,10 @@ public class OrderServiceImpl implements OrderService {
     @Value("${app.order.installment-down-payment-hold:PT72H}")
     private java.time.Duration installmentDownPaymentHold = java.time.Duration.ofHours(72);
 
+    // How long an application that the staff have not decided yet holds the stock (its own setting: it is not the pay-later hold).
+    @Value("${app.order.installment-review-hold:PT72H}")
+    private java.time.Duration installmentReviewHold = java.time.Duration.ofHours(72);
+
     @Value("${app.order.pickup-hold:P7D}")
     private java.time.Duration pickupHold = java.time.Duration.ofDays(7);
 
@@ -365,6 +369,10 @@ public class OrderServiceImpl implements OrderService {
         if (downPaymentCutoff.isAfter(latestCutoff)) {
             latestCutoff = downPaymentCutoff;
         }
+        LocalDateTime reviewCutoff = now.minus(installmentReviewHold);
+        if (reviewCutoff.isAfter(latestCutoff)) {
+            latestCutoff = reviewCutoff;
+        }
 
         List<Order> expired = new ArrayList<>();
         for (Order order : orderRepository.findLockedByStatusAndCreatedAtBefore(OrderStatus.PENDING, latestCutoff)) {
@@ -377,7 +385,7 @@ public class OrderServiceImpl implements OrderService {
                 InstallmentApplication application = installments.findByOrderId(order.getId()).orElse(null);
                 boolean approved = application != null && InstallmentApplication.APPROVED.equals(application.getStatus()) && application.getReviewedAt() != null;
                 LocalDateTime since = approved ? application.getReviewedAt() : order.getCreatedAt();
-                if (!since.isBefore(now.minus(approved ? installmentDownPaymentHold : payLaterExpiry))) {
+                if (!since.isBefore(now.minus(approved ? installmentDownPaymentHold : installmentReviewHold))) {
                     continue;
                 }
                 cancelOrder(order, approved
