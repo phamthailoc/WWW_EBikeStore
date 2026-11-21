@@ -74,8 +74,6 @@ public interface TestRideBookingRepository extends JpaRepository<TestRideBooking
     @Query("select count(b) from TestRideBooking b where b.status = 'REQUESTED' and b.slotStart > :now and b.showroom.active = true and b.product.active = true")
     long countRequestedAvailable(@Param("now") LocalDateTime now);
 
-    long countByStatus(String status);
-
     long countByStatusAndSlotStartLessThanEqual(String status, LocalDateTime slotStart);
 
     /** True when the customer has an open booking starting strictly between {@code after} and {@code before}: a ride that overlaps the one-hour slot in between. */
