@@ -36,11 +36,8 @@ CREATE TABLE IF NOT EXISTS `maintenance_reminders` (
 
 ALTER TABLE `orders` ADD COLUMN IF NOT EXISTS `delivered_at` DATETIME NULL;
 
--- Delivered orders from before V20 may have no delivery time; pin it now, so the warranty start does not move
--- every time the order row is saved again (the code falls back to orders.updated_at only when this is empty).
-UPDATE `shipments` s JOIN `orders` o ON o.id = s.order_id
-SET s.delivered_at = o.updated_at
-WHERE o.status = 'DELIVERED' AND s.delivered_at IS NULL;
+-- Delivered orders from before V20 have no pinned delivery time; pin it now (shipment time if there is one, else the last change
+-- of the order), so the warranty start does not move. The shipment rows are left as they are.
 
 UPDATE `orders` o LEFT JOIN `shipments` s ON s.order_id = o.id
 SET o.delivered_at = COALESCE(s.delivered_at, o.updated_at)
