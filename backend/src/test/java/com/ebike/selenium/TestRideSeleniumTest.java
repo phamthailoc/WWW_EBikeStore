@@ -143,6 +143,32 @@ class TestRideSeleniumTest extends StorefrontSeleniumTest {
         }
     }
 
+    /** Sends the request, expects it to fail with {@code code} and returns the whole failure text (the server's message is in it). */
+    private static String failureOf(int code, HttpClient client, String method, String path, Object body) throws Exception {
+        try {
+            call(client, method, path, body);
+        } catch (IllegalStateException e) {
+            assumeTrue(!e.getMessage().contains("-> 429"), "rate limit reached: start the app with APP_RATE_LIMIT_ENABLED=false (" + e.getMessage() + ")");
+            assertTrue(e.getMessage().contains("-> " + code), "expected " + code + " but got: " + e.getMessage());
+            return e.getMessage();
+        }
+        throw new AssertionError(method + " " + path + " should have failed with " + code);
+    }
+
+    /** Cancels what an aborted earlier run left open: the bookings of this run's customer and of the extra "Ride ..." customers. */
+    private static void cancelLeftovers(HttpClient manager) {
+        cancelAllOpen(api);
+        try {
+            for (JsonNode row : listOf(call(manager, "GET", "/api/v1/manager/test-rides", null))) {
+                if (row.path("customerName").asText().startsWith("Ride ")) {
+                    call(manager, "PATCH", "/api/v1/manager/test-rides/" + row.path("id").asLong(), Map.of("status", "CANCELLED", "staffNote", "leftover of an aborted test run"));
+                }
+            }
+        } catch (Exception ignored) {
+            // cleanup only
+        }
+    }
+
     private WebElement rowWith(String text) {
         return wait.until(d -> d.findElements(By.cssSelector("#data-table tbody tr")).stream()
             .filter(row -> row.getText().contains(text)).findFirst().orElse(null));
@@ -179,6 +205,7 @@ class TestRideSeleniumTest extends StorefrontSeleniumTest {
     }
 
     private void walkThroughTheBooking(HttpClient manager, String managerUser, String managerPassword, List<Customer> throwaways) throws Exception {
+        cancelLeftovers(manager); // filler accounts of a killed run would still hold places
         long productId = call(api, "GET", "/api/v1/products/" + rideSlug(), null).path("id").asLong();
         JsonNode showrooms = call(api, "GET", "/api/v1/showrooms", null);
         assumeTrue(showrooms.size() > 0, "no showroom to book at");
@@ -249,8 +276,9 @@ class TestRideSeleniumTest extends StorefrontSeleniumTest {
         Customer lateCustomer = newCustomer("Late");
         throwaways.add(lateCustomer);
         HttpClient late = lateCustomer.client();
-        assertEquals(409, status(late, "POST", "/api/v1/test-rides", Map.of(
-            "productId", productId, "showroomId", showroomId, "slotStart", start, "contactPhone", phone(60))), "the slot is full");
+        String fullText = failureOf(409, late, "POST", "/api/v1/test-rides", Map.of(
+            "productId", productId, "showroomId", showroomId, "slotStart", start, "contactPhone", phone(60)));
+        assertTrue(fullText.contains("đủ chỗ") || fullText.contains("is full"), "the slot is full: " + fullText);
         for (JsonNode slot : slotsOn(api, showroomId, day)) {
             if (start.equals(slot.path("start").asText())) {
                 assertEquals(0, slot.path("remaining").asInt());
@@ -264,8 +292,17 @@ class TestRideSeleniumTest extends StorefrontSeleniumTest {
         assertEquals("true", fullButton.getAttribute("disabled"), "a full slot cannot be chosen");
 
         // 5. the rules of the booking, through the API
-        assertEquals(409, status(api, "POST", "/api/v1/test-rides", Map.of(
-            "productId", productId, "showroomId", showroomId, "slotStart", start, "contactPhone", myPhone)), "the same customer, the same time");
+        // the same customer twice at a time that still has room, so only the duplicate rule can refuse it (the full slot above would refuse it for its capacity)
+        String roomy = otherFreeSlot(day, start, showroomId);
+        if (roomy == null) {
+            System.err.println("TestRideSeleniumTest: no second free slot on " + day + ", the duplicate-time check is not exercised in this run");
+        } else {
+            call(api, "POST", "/api/v1/test-rides", Map.of(
+                "productId", productId, "showroomId", showroomId, "slotStart", roomy, "contactPhone", phone(51)));
+            String duplicate = failureOf(409, api, "POST", "/api/v1/test-rides", Map.of(
+                "productId", productId, "showroomId", showroomId, "slotStart", roomy, "contactPhone", phone(51)));
+            assertTrue(duplicate.contains("đã có một lịch") || duplicate.contains("already have a test ride"), "the duplicate rule answered: " + duplicate);
+        }
         String night = day + "T03:00:00";
         assertEquals(400, status(late, "POST", "/api/v1/test-rides", Map.of(
             "productId", productId, "showroomId", showroomId, "slotStart", night, "contactPhone", phone(61))), "outside opening hours");
@@ -297,8 +334,20 @@ class TestRideSeleniumTest extends StorefrontSeleniumTest {
         driver.get(baseUrl + "/manager/test-rides");
         WebElement managerRow = rowWith(myPhone);
         assertEquals("REQUESTED", managerRow.findElement(By.cssSelector("td[data-field='status']")).getAttribute("data-raw"), managerRow.getText());
-        js("const i=document.querySelector('#filters [name=date]');i.value=arguments[0];i.dispatchEvent(new Event('change',{bubbles:true}))", day.plusDays(1).toString());
-        wait.until(d -> d.findElement(By.id("empty")).isDisplayed());
+        // a day on which no showroom has an open booking, so the filter must show the empty message (the filter covers every showroom)
+        LocalDate quietDay = null;
+        for (int ahead = 0; ahead <= 14 && quietDay == null; ahead++) {
+            LocalDate candidate = LocalDate.now().plusDays(ahead);
+            if (!listOf(call(manager, "GET", "/api/v1/manager/test-rides?date=" + candidate, null)).iterator().hasNext()) {
+                quietDay = candidate;
+            }
+        }
+        if (quietDay == null) {
+            System.err.println("TestRideSeleniumTest: every day of the window has an open booking, the empty-filter check is not exercised in this run");
+        } else {
+            js("const i=document.querySelector('#filters [name=date]');i.value=arguments[0];i.dispatchEvent(new Event('change',{bubbles:true}))", quietDay.toString());
+            wait.until(d -> d.findElement(By.id("empty")).isDisplayed());
+        }
         js("const i=document.querySelector('#filters [name=date]');i.value=arguments[0];i.dispatchEvent(new Event('change',{bubbles:true}))", day.toString());
         managerRow = rowWith(myPhone);
         click(managerRow.findElement(By.cssSelector("[data-action='ride-step'][data-status='CONFIRMED']")));
@@ -349,7 +398,17 @@ class TestRideSeleniumTest extends StorefrontSeleniumTest {
         assertEquals("true", driver.findElement(By.cssSelector("dialog.testride-dialog [data-submit]")).getAttribute("disabled"), "nothing is chosen any more");
 
         // 10. the manager cancels another customer's booking: a reason is needed, and that customer is told
-        if (filler != null) {
+        // with room for only one booking per slot there is no filler yet: another customer takes a different slot, so this step always runs
+        if (filler == null) {
+            String other = otherFreeSlot(day, start, showroomId);
+            assertNotNull(other, "a second free slot is needed for the manager-cancels step when the slot capacity is 1");
+            filler = newCustomer("Cancelled");
+            throwaways.add(filler);
+            fillerPhones.add(phone(80));
+            call(filler.client(), "POST", "/api/v1/test-rides", Map.of(
+                "productId", productId, "showroomId", showroomId, "slotStart", other, "contactPhone", fillerPhones.get(0), "note", "filler"));
+        }
+        {
             HttpClient fillerClient = filler.client();
             int fillerBefore = notificationsOfType(fillerClient, "TEST_RIDE");
             logIn(managerUser, managerPassword);
@@ -381,8 +440,8 @@ class TestRideSeleniumTest extends StorefrontSeleniumTest {
 
         // 11. the pages speak English when the device says so
         logIn(username, PASSWORD);
-        driver.get(baseUrl + "/lang/en?back=" + "/product/" + rideSlug());
         try {
+            driver.get(baseUrl + "/lang/en?back=" + "/product/" + rideSlug());
             assertEquals("Book a test ride", wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("bookTestRide"))).getText().trim());
             driver.get(baseUrl + "/customer/test-rides");
             WebElement englishRow = rowWith("Please bring your ID");
@@ -391,8 +450,32 @@ class TestRideSeleniumTest extends StorefrontSeleniumTest {
             openBookingDialog();
             assertTrue(driver.findElement(DIALOG).getText().contains("Book a test ride"), driver.findElement(DIALOG).getText());
         } finally {
-            driver.get(baseUrl + "/lang/vi?back=/");
+            resetLanguage();
         }
+    }
+
+    /** Puts the customer's saved language back to Vietnamese, through the browser and, if the browser is gone, through the REST client. */
+    private void resetLanguage() {
+        try {
+            driver.get(baseUrl + "/lang/vi?back=/");
+        } catch (RuntimeException browserFailed) {
+            try {
+                call(api, "GET", "/lang/vi?back=/", null);
+            } catch (Exception ignored) {
+                // the redirect target is not JSON; the request itself already saved the language
+            }
+        }
+    }
+
+    /** A bookable slot of the day, other than {@code except}, with every place free (or null). */
+    private String otherFreeSlot(LocalDate day, String except, long showroomId) throws Exception {
+        for (JsonNode slot : slotsOn(api, showroomId, day)) {
+            if (!except.equals(slot.path("start").asText()) && slot.path("bookable").asBoolean()
+                && slot.path("remaining").asInt() == slot.path("capacity").asInt()) {
+                return slot.path("start").asText();
+            }
+        }
+        return null;
     }
 
     private String productNameOf(long productId) throws Exception {
