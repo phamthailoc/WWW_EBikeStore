@@ -219,6 +219,8 @@
  "Mặc định": "Default",
  "Mọi phương thức": "Any method",
  "Mọi trạng thái": "Any status",
+ "Đang chờ xử lý": "Waiting to be handled",
+ "Tất cả": "All",
  "Mọi tình trạng": "Any condition",
  "Mỗi khách chỉ dùng một mã một lần; đơn bị hủy thì được dùng lại.": "Each customer can use a code once; if the order is cancelled the code can be used again.",
  "Một số xe hoặc màu không còn đủ số lượng bạn chọn.": "Some bikes or colours no longer have the quantity you chose.",

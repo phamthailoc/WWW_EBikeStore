@@ -8,6 +8,7 @@ import com.ebike.dto.warranty.WarrantyUnitResponse;
 import com.ebike.service.warranty.WarrantyService;
 import java.util.List;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -51,12 +52,14 @@ public class WarrantyController {
     }
 
     @GetMapping("/api/v1/manager/warranty-claims")
-    public List<WarrantyClaimResponse> listClaims(
+    public ResponseEntity<List<WarrantyClaimResponse>> listClaims(
         @RequestParam(required = false) String status,
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "" + WarrantyService.DEFAULT_PAGE_SIZE) int size
     ) {
-        return warrantyService.listClaims(status, page, size);
+        WarrantyService.ClaimPage found = warrantyService.listClaims(status, page, size);
+        // the page tells the staff screen whether a next page exists, so it never opens an empty one
+        return ResponseEntity.ok().header("X-Has-Next", String.valueOf(found.hasNext())).body(found.items());
     }
 
     @PatchMapping("/api/v1/manager/warranty-claims/{id}")

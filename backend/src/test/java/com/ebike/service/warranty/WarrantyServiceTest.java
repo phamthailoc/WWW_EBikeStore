@@ -32,12 +32,15 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.SliceImpl;
 import org.springframework.data.domain.Sort;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -282,9 +285,9 @@ class WarrantyServiceTest {
     }
 
     @Test
-    void theStaffQueueIsReadOnePageAtATimeNewestFirst() {
-        when(claims.findAllBy(any(Pageable.class))).thenReturn(List.of());
-        service.listClaims(null, 2, 25);
+    void theFullStaffQueueIsReadOnePageAtATimeNewestFirst() {
+        when(claims.findAllBy(any(Pageable.class))).thenReturn(new SliceImpl<>(List.of()));
+        service.listClaims("ALL", 2, 25);
         ArgumentCaptor<Pageable> page = ArgumentCaptor.forClass(Pageable.class);
         verify(claims).findAllBy(page.capture());
         assertEquals(2, page.getValue().getPageNumber());
@@ -294,17 +297,36 @@ class WarrantyServiceTest {
     }
 
     @Test
+    void theDefaultQueueHoldsOpenRequestsOldestFirst() {
+        when(claims.findByStatusIn(any(), any(Pageable.class))).thenReturn(new SliceImpl<>(List.of()));
+        service.listClaims(null, 0, 25);
+        ArgumentCaptor<Pageable> page = ArgumentCaptor.forClass(Pageable.class);
+        verify(claims).findByStatusIn(org.mockito.ArgumentMatchers.eq(Set.of(WarrantyClaim.NEW, WarrantyClaim.RECEIVED, WarrantyClaim.REPAIRING)), page.capture());
+        assertEquals(Sort.Direction.ASC, page.getValue().getSort().getOrderFor("createdAt").getDirection());
+        assertEquals(Sort.Direction.ASC, page.getValue().getSort().getOrderFor("id").getDirection());
+    }
+
+    @Test
+    void thePagerKnowsWhetherANextPageExists() {
+        Pageable asked = PageRequest.of(0, 1);
+        when(claims.findByStatus(any(), any(Pageable.class))).thenReturn(new SliceImpl<>(List.of(), asked, true));
+        assertTrue(service.listClaims("DONE", 0, 1).hasNext());
+        when(claims.findByStatus(any(), any(Pageable.class))).thenReturn(new SliceImpl<>(List.of(), asked, false));
+        assertFalse(service.listClaims("DONE", 0, 1).hasNext());
+    }
+
+    @Test
     void aStatusFilterIsPagedToo() {
-        when(claims.findByStatus(any(), any(Pageable.class))).thenReturn(List.of());
+        when(claims.findByStatus(any(), any(Pageable.class))).thenReturn(new SliceImpl<>(List.of()));
         service.listClaims("new", 0, 10);
         verify(claims).findByStatus(org.mockito.ArgumentMatchers.eq("NEW"), any(Pageable.class));
     }
 
     @Test
     void anOddPageOrSizeIsHeldInRange() {
-        when(claims.findAllBy(any(Pageable.class))).thenReturn(List.of());
-        service.listClaims(null, -5, 100000);
-        service.listClaims(null, 0, 0);
+        when(claims.findAllBy(any(Pageable.class))).thenReturn(new SliceImpl<>(List.of()));
+        service.listClaims("ALL", -5, 100000);
+        service.listClaims("ALL", 0, 0);
         ArgumentCaptor<Pageable> page = ArgumentCaptor.forClass(Pageable.class);
         verify(claims, times(2)).findAllBy(page.capture());
         assertEquals(0, page.getAllValues().get(0).getPageNumber());

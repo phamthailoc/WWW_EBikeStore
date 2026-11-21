@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Optional;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
@@ -25,11 +26,15 @@ public interface WarrantyClaimRepository extends JpaRepository<WarrantyClaim, Lo
 
     @EntityGraph(attributePaths = {"unit", "unit.orderItem", "unit.orderItem.order", "unit.orderItem.order.shipment", "unit.orderItem.order.payment",
         "unit.orderItem.product", "unit.orderItem.product.specification", "unit.orderItem.productVariant", "user", "user.preference"})
-    List<WarrantyClaim> findAllBy(Pageable pageable);
+    Slice<WarrantyClaim> findAllBy(Pageable pageable);
 
     @EntityGraph(attributePaths = {"unit", "unit.orderItem", "unit.orderItem.order", "unit.orderItem.order.shipment", "unit.orderItem.order.payment",
         "unit.orderItem.product", "unit.orderItem.product.specification", "unit.orderItem.productVariant", "user", "user.preference"})
-    List<WarrantyClaim> findByStatus(String status, Pageable pageable);
+    Slice<WarrantyClaim> findByStatus(String status, Pageable pageable);
+
+    @EntityGraph(attributePaths = {"unit", "unit.orderItem", "unit.orderItem.order", "unit.orderItem.order.shipment", "unit.orderItem.order.payment",
+        "unit.orderItem.product", "unit.orderItem.product.specification", "unit.orderItem.productVariant", "user", "user.preference"})
+    Slice<WarrantyClaim> findByStatusIn(Collection<String> statuses, Pageable pageable);
 
     /** Row lock for the staff who process a request: two managers moving the same request wait for each other instead of both passing the step check. */
     @Lock(LockModeType.PESSIMISTIC_WRITE)

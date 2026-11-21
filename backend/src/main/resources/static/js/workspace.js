@@ -1,7 +1,7 @@
 (() => {
   const body = document.body, page = body.dataset.page || '', api = body.dataset.api || '', secondaryApi = body.dataset.secondaryApi || '', mode = body.dataset.mode || 'table';
   const notice = document.querySelector('#notice'), loading = document.querySelector('#loading'), empty = document.querySelector('#empty'), table = document.querySelector('#data-table'), metrics = document.querySelector('#metrics'), profile = document.querySelector('#profile');
-  let promotions = [], records = [];
+  let promotions = [], records = [], lastHasNext = null;
   const names = {colorName:t('Màu'),frameNumber:t('Số khung'),warrantyEndsAt:t('Bảo hành đến'),coverage:t('Bảo hành'),nextMaintenanceAt:t('Bảo dưỡng tiếp theo'),claimStatus:t('Yêu cầu bảo hành'),outOfWarranty:t('Ngoài bảo hành'),customerName:t('Khách hàng'),subject:t('Tiêu đề'),message:t('Nội dung'),staffNote:t('Ghi chú xử lý'),stockStatus:t('Tình trạng kho'),paymentStatus:t('Trạng thái thanh toán'),role:t('Mã vai trò'),title:t('Vai trò'),permissions:t('Quyền'),actor:t('Người thực hiện'),action:t('Hành động'),target:t('Đối tượng'),createdAt:t('Thời gian'),id:t('Mã'),name:t('Tên'),slug:t('Đường dẫn'),description:t('Mô tả'),price:t('Giá'),discountPrice:t('Giá ưu đãi'),rating:t('Đánh giá'),reviewCount:t('Lượt đánh giá'),stockQuantity:t('Tồn kho'),featured:t('Nổi bật'),category:t('Danh mục'),images:t('Hình ảnh'),orderId:t('Mã đơn hàng'),orderNumber:t('Mã đơn hàng'),status:t('Trạng thái'),createdAt:t('Ngày tạo'),updatedAt:t('Cập nhật'),totalAmount:t('Tổng tiền'),paymentMethod:t('Phương thức thanh toán'),paymentStatus:t('Trạng thái thanh toán'),customerName:t('Khách hàng'),customerEmail:t('Email khách hàng'),email:'Email',phone:t('Điện thoại'),phoneNumber:t('Điện thoại'),role:t('Vai trò'),roles:t('Vai trò'),username:t('Tài khoản'),accountType:t('Loại tài khoản'),amount:t('Số tiền'),code:t('Mã ưu đãi'),campaignName:t('Chiến dịch'),discountType:t('Loại ưu đãi'),discountValue:t('Giá trị ưu đãi'),startsAt:t('Bắt đầu'),endsAt:t('Kết thúc'),totalOrders:t('Tổng đơn hàng'),successfulOrders:t('Đơn hoàn tất'),pendingOrders:t('Đơn đang chờ'),unpaidPayLaterOrders:t('Đơn trả sau chưa thu'),todayRevenue:t('Doanh thu hôm nay'),weekRevenue:t('Doanh thu tuần'),monthRevenue:t('Doanh thu tháng'),totalRevenue:t('Tổng doanh thu'),totalAccounts:t('Tổng tài khoản'),adminAccounts:t('Tài khoản quản trị'),customerAccounts:t('Tài khoản khách hàng'),lockedAccounts:t('Tài khoản bị khóa'),verified:t('Đã xác minh'),readAt:t('Ngày đã đọc'),action:t('Thao tác'),actor:t('Người thực hiện'),target:t('Mục tiêu'),ipAddress:t('Địa chỉ IP'),type:t('Loại'),message:t('Nội dung'),title:t('Tiêu đề'),quantitySold:t('Đã bán'),productName:t('Sản phẩm'),unit:t('Đơn vị'),effectiveFrom:t('Có hiệu lực từ'),transactionReference:t('Mã giao dịch'),paidAt:t('Ngày thanh toán'),subtotal:t('Tạm tính'),shippingFee:t('Phí giao xe'),discountAmount:t('Giảm giá'),registrationFee:t('Phí đăng ký'),includeRegistrationService:t('Dịch vụ hồ sơ'),notes:t('Ghi chú'),shipment:t('Giao nhận'),label:t('Kỳ báo cáo'),orderCount:t('Số đơn hàng'),revenue:'Doanh thu'};
   const warrantyNames = {productName:t('Xe'),description:t('Mô tả lỗi')};
   const label = key => (/warranty$/.test(page) && warrantyNames[key]) || names[key] || key.replace(/([A-Z])/g, ' $1').replace(/^./, c => c.toUpperCase());
@@ -44,7 +44,7 @@
   const tell = (message,error=false) => { notice.textContent=message; notice.hidden=false; notice.classList.toggle('error',error); };
   // Server errors come back as JSON ({status, error, message}); show only the message, not the raw body.
   const errorText = async(r,fallback) => { const body=await r.text(); try{const j=JSON.parse(body); if(j&&typeof j.message==='string'&&j.message.trim())return j.message.trim()}catch(ignored){} return body.slice(0,240)||fallback; };
-  const get = async url => { const r=await fetch(url,{credentials:'same-origin',headers:{Accept:'application/json'}}); if(r.status===401){location.href='/login?returnTo='+encodeURIComponent(location.pathname);throw Error(t('Vui lòng đăng nhập để tiếp tục.'))} if(!r.ok)throw Error(await errorText(r,t('Không tải được dữ liệu.'))); return r.status===204?null:r.json(); };
+  const get = async url => { const r=await fetch(url,{credentials:'same-origin',headers:{Accept:'application/json'}}); if(r.status===401){location.href='/login?returnTo='+encodeURIComponent(location.pathname);throw Error(t('Vui lòng đăng nhập để tiếp tục.'))} if(!r.ok)throw Error(await errorText(r,t('Không tải được dữ liệu.'))); lastHasNext=r.headers.get('X-Has-Next'); return r.status===204?null:r.json(); };
   const send = async(url,method,data) => { const r=await fetch(url,{method,credentials:'same-origin',headers:{'Content-Type':'application/json',Accept:'application/json'},body:data===undefined?undefined:JSON.stringify(data)});if(r.status===401){location.href='/login';throw Error(t('Phiên đăng nhập đã hết hạn.'))}if(!r.ok)throw Error(await errorText(r,t('Không thể lưu thay đổi.')));return r.status===204?null:r.json(); };
   const vnpayEnabled = body.dataset.vnpayEnabled === 'true';
   // VNPay orders have no payment row until the first payment URL is created, so a missing method also means VNPay.
@@ -285,7 +285,7 @@
     '/manager/payments':[{name:'paymentStatus',options:paymentStatusOptions,label:t('Trạng thái thanh toán')},{name:'paymentMethod',options:paymentMethodOptions,label:t('Phương thức thanh toán')},{name:'search',placeholder:t('Tìm mã đơn, email, người nhận hoặc mã giao dịch'),label:t('Tìm kiếm')}],
     '/customer/payments':[{name:'paymentStatus',client:true,options:paymentStatusOptions,label:t('Trạng thái thanh toán')}],
     '/manager/inventory':stockFilter(),'/manager/products':stockFilter(),'/admin/inventory':stockFilter(),'/admin/products':stockFilter(),
-    '/manager/warranty':[{name:'status',options:[['',t('Mọi trạng thái')],...Object.entries(warrantyStatusText)],label:t('Trạng thái')}],
+    '/manager/warranty':[{name:'status',options:[['',t('Đang chờ xử lý')],...Object.entries(warrantyStatusText),['ALL',t('Tất cả')]],label:t('Trạng thái')}],
     '/manager/customers':[{name:'search',placeholder:t('Tìm theo tên, email hoặc tài khoản'),label:t('Tìm kiếm')}],
     '/manager/reports':[{name:'period',options:[['day',t('Theo ngày')],['month',t('Theo tháng')],['quarter',t('Theo quý')],['year',t('Theo năm')]],label:t('Gộp theo')},{name:'from',type:'date',label:t('Từ ngày')},{name:'to',type:'date',label:t('Đến ngày')}]
   };
@@ -297,9 +297,10 @@
     if(page!=='/manager/warranty')return;
     const holder=document.querySelector('#data-panel');
     if(!holder)return;
-    const current=Number(filterQuery.get('page')||0),count=Array.isArray(rows)?rows.length:0;
+    // the server says whether another page follows (X-Has-Next), so the last page never leads to an empty one
+    const current=Number(filterQuery.get('page')||0),more=lastHasNext==='true';
     let bar=document.querySelector('#warrantyPager');
-    if(current===0&&count<WARRANTY_PAGE_SIZE){bar?.remove();return}
+    if(current===0&&!more){bar?.remove();return}
     if(!bar){
       bar=document.createElement('p');bar.id='warrantyPager';bar.className='dialog-actions';holder.appendChild(bar);
       bar.addEventListener('click',e=>{
@@ -309,7 +310,7 @@
         load();
       });
     }
-    bar.innerHTML=`<button type="button" class="button compact ghost" data-page-step="-1" ${current===0?'disabled':''}>${t('Trang trước')}</button> <span>${t('Trang {n}',{n:current+1})}</span> <button type="button" class="button compact ghost" data-page-step="1" ${count<WARRANTY_PAGE_SIZE?'disabled':''}>${t('Trang sau')}</button>`;
+    bar.innerHTML=`<button type="button" class="button compact ghost" data-page-step="-1" ${current===0?'disabled':''}>${t('Trang trước')}</button> <span>${t('Trang {n}',{n:current+1})}</span> <button type="button" class="button compact ghost" data-page-step="1" ${more?'':'disabled'}>${t('Trang sau')}</button>`;
   };
   const clientQuery={};
   // Rows get a readable stock status; client-side filters then keep only the rows that match.

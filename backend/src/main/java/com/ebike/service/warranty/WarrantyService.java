@@ -32,6 +32,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -47,6 +48,8 @@ public class WarrantyService {
 
     public static final int MAX_PAGE_SIZE = 100;
     public static final int DEFAULT_PAGE_SIZE = 50;
+    /** The status filter that lists every request, open or closed. */
+    public static final String ALL = "ALL";
     private static final Pattern FRAME = Pattern.compile("^[A-Z0-9-]{5,30}$");
     private static final Set<String> FILTERS = Set.of(
         WarrantyClaim.NEW, WarrantyClaim.RECEIVED, WarrantyClaim.REPAIRING, WarrantyClaim.DONE, WarrantyClaim.REJECTED);
@@ -178,18 +181,35 @@ public class WarrantyService {
         }
     }
 
-    /** The staff queue, newest first, one page at a time ({@code size} is held between 1 and {@link #MAX_PAGE_SIZE}). */
+    /** One page of the staff queue and whether another page follows it. */
+    public record ClaimPage(List<WarrantyClaimResponse> items, boolean hasNext) {
+    }
+
+    /**
+     * The staff queue, one page at a time ({@code size} is held between 1 and {@link #MAX_PAGE_SIZE}). With no status it holds the requests
+     * still open (NEW, RECEIVED, REPAIRING), oldest first, so the longest-waiting one is on top and closed ones do not push it away;
+     * {@code ALL} lists everything and a single status lists that status, newest first.
+     */
     @Transactional(readOnly = true)
-    public List<WarrantyClaimResponse> listClaims(String status, int page, int size) {
+    public ClaimPage listClaims(String status, int page, int size) {
         String filter = status == null || status.isBlank() ? null : status.trim().toUpperCase(Locale.ROOT);
-        if (filter != null && !FILTERS.contains(filter)) {
+        if (filter != null && !ALL.equals(filter) && !FILTERS.contains(filter)) {
             throw bad("Trạng thái không hợp lệ.", "Invalid status.");
         }
-        Pageable pageable = PageRequest.of(Math.max(page, 0), Math.min(Math.max(size, 1), MAX_PAGE_SIZE),
-            Sort.by(Sort.Order.desc("createdAt"), Sort.Order.desc("id")));
-        return (filter == null ? claims.findAllBy(pageable) : claims.findByStatus(filter, pageable))
-            .stream().map(this::toClaimResponse).toList();
+        boolean openQueue = filter == null || OPEN.contains(filter);
+        Sort sort = openQueue ? Sort.by(Sort.Order.asc("createdAt"), Sort.Order.asc("id")) : Sort.by(Sort.Order.desc("createdAt"), Sort.Order.desc("id"));
+        Pageable pageable = PageRequest.of(Math.max(page, 0), Math.min(Math.max(size, 1), MAX_PAGE_SIZE), sort);
+        Slice<WarrantyClaim> found;
+        if (filter == null) {
+            found = claims.findByStatusIn(OPEN, pageable);
+        } else if (ALL.equals(filter)) {
+            found = claims.findAllBy(pageable);
+        } else {
+            found = claims.findByStatus(filter, pageable);
+        }
+        return new ClaimPage(found.stream().map(this::toClaimResponse).toList(), found.hasNext());
     }
+
 
     @Transactional
     public WarrantyClaimResponse updateClaim(Long id, WarrantyClaimUpdateRequest request) {
