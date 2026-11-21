@@ -568,6 +568,8 @@
  "Cần nhập ít nhất {n} ký tự.": "Please enter at least {n} characters.",
  "Yêu cầu bảo hành đã gửi": "Warranty requests sent",
  "Bạn chưa gửi yêu cầu bảo hành nào.": "You have not sent any warranty request yet.",
+ "Chưa có xe nào được giao. Xe của bạn sẽ hiện ở đây sau khi đơn hàng được giao.": "No vehicle has been delivered yet. Your bike will appear here once its order is delivered.",
+ "Chưa có yêu cầu bảo hành nào.": "No warranty requests yet.",
  "Mô tả lỗi": "Describe the problem",
  "Ghi chú của cửa hàng": "Note from the store",
  "Ngày gửi": "Sent on",

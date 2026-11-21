@@ -17,9 +17,22 @@
     paymentStatus:{PENDING:t('Chờ thanh toán'),AUTHORIZED:t('Đã ủy quyền'),PAID:t('Đã thanh toán'),FAILED:t('Thất bại'),CANCELLED:t('Đã hủy'),REFUNDED:t('Đã hoàn tiền')},
     type:{WARRANTY_CLAIM:t('Yêu cầu bảo hành'),MAINTENANCE_DUE:t('Đến hạn bảo dưỡng'),ORDER_CREATED:t('Đơn hàng mới'),ORDER_STATUS_CHANGED:t('Cập nhật đơn hàng'),ORDER_STATUS:t('Cập nhật đơn hàng'),PAYMENT_STATUS_CHANGED:t('Cập nhật thanh toán'),PAYMENT_SUCCESS:t('Thanh toán thành công'),PAYMENT_FAILED:t('Thanh toán thất bại'),STOCK_ALERT:t('Xe có hàng lại')},
     paymentMethod:{PAY_LATER:t('Thanh toán khi nhận xe'),VNPAY:'VNPay'},
-    status:{...orderStatusText,...warrantyStatusText,NEW:t('Mới'),IN_PROGRESS:t('Đang xử lý'),RESOLVED:t('Đã giải quyết')}
+    // NEW is the support page's "Mới", but on the warranty queue it is "Mới gửi" like everywhere else in the warranty book
+    status:{...orderStatusText,...warrantyStatusText,NEW:/warranty$/.test(page)?warrantyStatusText.NEW:t('Mới'),IN_PROGRESS:t('Đang xử lý'),RESOLVED:t('Đã giải quyết')}
+  };
+  const emptyText = {'/customer/warranty':t('Chưa có xe nào được giao. Xe của bạn sẽ hiện ở đây sau khi đơn hàng được giao.'),'/manager/warranty':t('Chưa có yêu cầu bảo hành nào.')};
+  const localeTag = () => document.documentElement.lang === 'en' ? 'en-GB' : 'vi-VN';
+  const isoDateKeys = ['warrantyEndsAt','nextMaintenanceAt','createdAt','updatedAt'];
+  // Warranty pages show dates in the page language (the ISO value stays in data-iso); other pages keep what the API sent.
+  const warrantyDate = (value,key) => {
+    if (typeof value !== 'string' || !/warranty$/.test(page) || !isoDateKeys.includes(key)) return null;
+    if (key === 'createdAt' || key === 'updatedAt') { const when = new Date(value); return isNaN(when) ? null : when.toLocaleString(localeTag()); }
+    const [y,m,d] = value.slice(0,10).split('-').map(Number);
+    return new Date(y,m-1,d).toLocaleDateString(localeTag());
   };
   const human = (value,key='') => {
+    const when = warrantyDate(value,key);
+    if (when) return when;
     if (value == null) return '—';
     if (valueText[key] && valueText[key][value]) return valueText[key][value];
     if (typeof value === 'object') return Array.isArray(value) ? value.map(item=>typeof item==='object'?(item.name||item.colorName||''):String(item)).join(', ') : (value.name || value.colorName || value.label || '');
@@ -81,13 +94,13 @@
   };
   const renderTable = rows => {
     records=Array.isArray(rows)?rows:rows==null?[]:[rows]; loading.hidden=true;
-    if(!records.length){empty.hidden=false;table.hidden=true;return}
+    if(!records.length){if(emptyText[page])empty.textContent=emptyText[page];empty.hidden=false;table.hidden=true;return}
     empty.hidden=true;table.hidden=false;
     const available=[...new Set(records.flatMap(row=>Object.keys(row||{})))].filter(k=>!['items','variants','permissions','specification','addresses','category','images','shipment'].includes(k));
     const keys=(mode==='detail'?orderSummaryColumns:columnsForPage[page]||available.slice(0,9)).filter(k=>available.includes(k));
     const hasActions=records.some(row=>actionFor(row));
     table.querySelector('thead').innerHTML=`<tr>${keys.map(k=>`<th data-field="${escape(k)}">${escape(label(k))}</th>`).join('')}${hasActions?'<th>' + t('Thao tác') + '</th>':''}</tr>`;
-    table.querySelector('tbody').innerHTML=records.map(row=>`<tr>${keys.map(k=>`<td data-field="${escape(k)}">${escape(human(row[k],k))}</td>`).join('')}${hasActions?`<td>${actionFor(row)}</td>`:''}</tr>`).join('');
+    table.querySelector('tbody').innerHTML=records.map(row=>`<tr>${keys.map(k=>`<td data-field="${escape(k)}"${warrantyDate(row[k],k)?` data-iso="${escape(row[k])}"`:""}>${escape(human(row[k],k))}</td>`).join('')}${hasActions?`<td>${actionFor(row)}</td>`:''}</tr>`).join('');
   };
   const renderFavorites = rows => {
     const list=Array.isArray(rows)?rows:[]; loading.hidden=true; empty.hidden=!!list.length; table.hidden=true;
