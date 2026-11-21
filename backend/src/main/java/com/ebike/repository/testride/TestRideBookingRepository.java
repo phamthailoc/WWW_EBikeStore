@@ -26,15 +26,18 @@ public interface TestRideBookingRepository extends JpaRepository<TestRideBooking
     @Query("select b from TestRideBooking b where b.id = :id")
     Optional<TestRideBooking> findDetailedById(@Param("id") Long id);
 
-    /** The customer's bookings, the graph holds what the response reads. */
-    @EntityGraph(attributePaths = {"user", "product", "showroom"})
+    /**
+     * The customer's bookings, the graph holds what the response reads. The inverse one-to-one sides (the bike's specification, the customer's
+     * preference) are loaded eagerly and cannot be proxied, so without them in the graph each distinct bike and customer costs one more SELECT.
+     */
+    @EntityGraph(attributePaths = {"user", "user.preference", "product", "product.specification", "showroom"})
     List<TestRideBooking> findByUserUsername(String username, Pageable pageable);
 
     /**
      * The staff schedule. {@code showroomId} 0 means every showroom; the time window is half open ({@code from} inclusive, {@code to} exclusive).
      * The caller passes real values (not null) so the query reads the same on every database.
      */
-    @EntityGraph(attributePaths = {"user", "product", "showroom"})
+    @EntityGraph(attributePaths = {"user", "user.preference", "product", "product.specification", "showroom"})
     @Query("select b from TestRideBooking b where b.slotStart >= :from and b.slotStart < :to and b.status in :statuses "
         + "and (:showroomId = 0L or b.showroom.id = :showroomId)")
     List<TestRideBooking> findSchedule(
