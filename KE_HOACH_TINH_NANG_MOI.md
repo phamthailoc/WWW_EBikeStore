@@ -113,6 +113,7 @@ Ký hiệu: P1 nên làm trước; P2 làm tiếp nếu còn thời gian; P3 là
 - Một yêu cầu chưa ai xác nhận vẫn có thể được đánh dấu "đã lái thử" hoặc "khách không đến" từ giờ hẹn; job chỉ đóng (EXPIRED) yêu cầu khi cả khung giờ 1 tiếng đã qua.
 - Khách hủy lịch đã xác nhận không báo riêng cho nhân viên: cột `cancelled_by_customer_at` đánh dấu, và trang Manager hiện số lịch đã xác nhận bị khách hủy trong 24 giờ tới (lọc trạng thái Đã hủy để xem).
 - Tắt một cửa hàng hoặc ngừng bán một xe không tự hủy lịch đang mở: trang Manager hiện số lịch chưa đóng thuộc cửa hàng đã tắt hoặc xe ngừng bán để nhân viên hủy kèm lý do; danh sách của khách không còn nút "Xem xe" cho xe ngừng bán.
+- Xóa tài khoản hủy lịch đang mở và ghi sẵn lý do "Khách đã xóa tài khoản" vào ghi chú cửa hàng (trang dịch sang tiếng Anh) để nhân viên biết vì sao lịch bị hủy. **Còn chờ chủ sản phẩm xác nhận:** có nên xóa ghi chú cửa hàng của lịch đã đóng (đã lái thử, không đến) khi xóa tài khoản không; hiện đang xóa, khác phiếu bảo hành.
 
 ### V24. Trả góp (mô phỏng) — khoảng 2 ngày
 

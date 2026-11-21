@@ -107,7 +107,7 @@
   // A long fault description or note would make the queue row very tall: show the first lines and keep the whole text in the tooltip.
   const CLAMPED_KEYS = ['description','staffNote'];
   const cellHtml = (row,k) => {
-    const text = human(row[k],k);
+    const text = isRidePage && k === 'staffNote' && row[k] === 'Khách đã xóa tài khoản' ? t(row[k]) : human(row[k],k);
     if (page === '/manager/warranty' && CLAMPED_KEYS.includes(k) && typeof row[k] === 'string' && row[k].length > 120) {
       return `<span class="clamped-text" title="${escape(text)}">${escape(text)}</span>`;
     }

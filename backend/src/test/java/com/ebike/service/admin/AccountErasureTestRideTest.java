@@ -36,8 +36,9 @@ class AccountErasureTestRideTest {
         erasure.erase(user);
 
         var order = inOrder(testRides);
-        order.verify(testRides).cancelOpenOf(eq(42L), any(LocalDateTime.class));
+        // the note is cleared first so the reason written by the cancellation is the one that stays
         order.verify(testRides).clearPersonalDataOf(eq(42L), any(LocalDateTime.class));
+        order.verify(testRides).cancelOpenOf(eq(42L), any(LocalDateTime.class), eq(AccountErasure.TEST_RIDE_ERASED_NOTE));
         assertEquals(AccountErasure.DELETED, user.getAccountStatus());
     }
 }

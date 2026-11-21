@@ -81,14 +81,17 @@ public interface TestRideBookingRepository extends JpaRepository<TestRideBooking
     @Query("select b.id from TestRideBooking b where b.status = 'REQUESTED' and b.slotStart <= :cutoff order by b.slotStart, b.id")
     List<Long> findExpiredRequestIds(@Param("cutoff") LocalDateTime cutoff, Pageable pageable);
 
-    /** Account erasure: the customer's open bookings are cancelled so the places are free again. Returns how many rows changed. */
+    /**
+     * Account erasure: the customer's open bookings are cancelled so the places are free again, and {@code note} says why in the staff note (the
+     * schedule would otherwise show a cancelled row with no reason). Returns how many rows changed.
+     */
     @Modifying
-    @Query("update TestRideBooking b set b.status = 'CANCELLED', b.updatedAt = :now where b.user.id = :userId and b.status in ('REQUESTED', 'CONFIRMED')")
-    int cancelOpenOf(@Param("userId") Long userId, @Param("now") LocalDateTime now);
+    @Query("update TestRideBooking b set b.status = 'CANCELLED', b.staffNote = :note, b.updatedAt = :now where b.user.id = :userId and b.status in ('REQUESTED', 'CONFIRMED')")
+    int cancelOpenOf(@Param("userId") Long userId, @Param("now") LocalDateTime now, @Param("note") String note);
 
     /**
      * Account erasure: the phone number, the words of the customer and the shop's note go (staff tend to write a name or a number in it, and the
-     * customer could read it); the booking row itself stays as a record of the slot.
+     * customer could read it); the booking row itself stays as a record of the slot. Run it before {@code cancelOpenOf}, which writes the reason.
      */
     @Modifying
     @Query("update TestRideBooking b set b.contactPhone = '', b.customerNote = null, b.staffNote = null, b.updatedAt = :now where b.user.id = :userId")

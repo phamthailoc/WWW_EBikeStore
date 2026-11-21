@@ -30,6 +30,8 @@ public class AccountErasure {
     public static final String DELETED = "DELETED";
     /** What replaces the text of a warranty request: empty, so the staff page can show the marker in its own language (a description is never empty otherwise). */
     public static final String ERASED_DESCRIPTION = "";
+    /** The reason left on the test rides cancelled by an erasure; the schedule page translates it (the same text is a key of i18n/js-en.json). */
+    public static final String TEST_RIDE_ERASED_NOTE = "Khách đã xóa tài khoản";
 
     private final UserAddressRepository addresses;
     private final UserFavoriteRepository favorites;
@@ -73,8 +75,8 @@ public class AccountErasure {
         stockAlerts.deleteByUserId(id);
         warrantyClaims.clearDescriptionsOf(id, ERASED_DESCRIPTION);
         // V23: free the places the account held, then drop the phone number and the words of every booking (the rows stay as the shop's record)
-        testRides.cancelOpenOf(id, LocalDateTime.now());
         testRides.clearPersonalDataOf(id, LocalDateTime.now());
+        testRides.cancelOpenOf(id, LocalDateTime.now(), TEST_RIDE_ERASED_NOTE);
         reviews.removeReviewsOf(id);
 
         user.setUsername("deleted_" + id);
