@@ -49,6 +49,8 @@ import org.springframework.web.server.ResponseStatusException;
 public class TestRideService {
 
     public static final String DEFAULT_CAPACITY = "2";
+    /** The status filter that lists every status, open or closed. */
+    public static final String ALL = "ALL";
     /** A staff list shows at most this many bookings (a day of every showroom is far below it). */
     public static final int SCHEDULE_LIMIT = 200;
     /** What a customer's own list shows at most, newest slot first. */
@@ -232,14 +234,14 @@ public class TestRideService {
     }
 
     /**
-     * The staff schedule. With a date: every booking of that day (all statuses, or the one asked for), soonest first. Without a date: the
-     * bookings still open (requested or confirmed), soonest first, so an unconfirmed request and an unclosed past ride stay on top until handled;
-     * a closed status with no date lists the latest first. At most {@link #SCHEDULE_LIMIT} rows.
+     * The staff schedule. With no status it lists the bookings still open (requested or confirmed), soonest first, so an unconfirmed request and an
+     * unclosed past ride stay on top until handled; {@code ALL} lists every status and a closed status lists only that one, latest first when no date
+     * is given. A date narrows the list to that day (soonest first), a showroom to that showroom. At most {@link #SCHEDULE_LIMIT} rows.
      */
     @Transactional(readOnly = true)
     public List<TestRideResponse> schedule(String date, Long showroomId, String status) {
         String filter = status == null || status.isBlank() ? null : status.trim().toUpperCase(Locale.ROOT);
-        if (filter != null && !TestRideRules.isKnownStatus(filter)) {
+        if (filter != null && !ALL.equals(filter) && !TestRideRules.isKnownStatus(filter)) {
             throw bad("Trạng thái không hợp lệ.", "Invalid status.");
         }
         boolean hasDate = date != null && !date.isBlank();
@@ -250,7 +252,7 @@ public class TestRideService {
             from = day.atStartOfDay();
             to = day.plusDays(1).atStartOfDay();
         }
-        Collection<String> statuses = filter != null ? Set.of(filter) : hasDate ? TestRideRules.ALL : TestRideRules.OPEN;
+        Collection<String> statuses = filter == null ? TestRideRules.OPEN : ALL.equals(filter) ? TestRideRules.ALL : Set.of(filter);
         boolean soonestFirst = hasDate || TestRideRules.OPEN.containsAll(statuses);
         Sort sort = soonestFirst ? Sort.by(Sort.Order.asc("slotStart"), Sort.Order.asc("id")) : Sort.by(Sort.Order.desc("slotStart"), Sort.Order.desc("id"));
         LocalDateTime now = LocalDateTime.now(clock);
