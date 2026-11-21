@@ -3,7 +3,9 @@ package com.ebike.listener.notification;
 import com.ebike.event.notification.OrderCreatedEvent;
 import com.ebike.event.notification.OrderStatusChangedEvent;
 import com.ebike.model.entity.order.Order;
+import com.ebike.model.entity.order.OrderStatus;
 import com.ebike.model.entity.order.Payment;
+import com.ebike.service.installment.InstallmentService;
 import jakarta.persistence.PostPersist;
 import jakarta.persistence.PostUpdate;
 
@@ -30,6 +32,11 @@ public class OrderNotificationJpaListener {
             return;
         }
         if (order.getStatus() == order.getPreviousStatusForNotification()) {
+            return;
+        }
+        // a rejected instalment application cancels its order, and the customer already gets the notice and the email of the rejection (with the reason)
+        if (order.getStatus() == OrderStatus.CANCELLED && order.getCancellationReason() != null
+            && order.getCancellationReason().startsWith(InstallmentService.REJECTED_REASON_PREFIX)) {
             return;
         }
         Payment payment = order.getPayment();
