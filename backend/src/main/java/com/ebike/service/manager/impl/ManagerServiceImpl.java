@@ -184,10 +184,12 @@ public class ManagerServiceImpl implements ManagerService {
                 "Hồ sơ trả góp chưa được duyệt nên chưa thu được khoản trả trước.", "The instalment application is not approved yet, so the down payment cannot be taken."));
         }
         if (payment.getPaymentStatus() == PaymentStatus.PAID) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Payment is already marked as paid");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, RequestLanguage.text(
+                "Khoản thanh toán này đã được ghi nhận là đã thu.", "This payment is already marked as paid."));
         }
         if (payment.getPaymentStatus() == PaymentStatus.REFUNDED) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Refunded payments cannot be confirmed again");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, RequestLanguage.text(
+                "Khoản thanh toán đã hoàn tiền nên không xác nhận lại được.", "A refunded payment cannot be confirmed again."));
         }
         // while a card payment page may still be open the customer could pay there too, and the store would have taken the money a second time
         if (installment && payment.getPaymentStatus() == PaymentStatus.PENDING
@@ -199,7 +201,13 @@ public class ManagerServiceImpl implements ManagerService {
         // a down payment whose card payment failed can still be taken at the store; the failed attempt is forgotten
         boolean retryAtStore = installment && payment.getPaymentStatus() == PaymentStatus.FAILED;
         if (payment.getPaymentStatus() != PaymentStatus.PENDING && !retryAtStore) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chỉ xác nhận được khoản trả sau đang chờ thu.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, installment
+                ? RequestLanguage.text(
+                    "Chỉ thu được khoản trả trước đang chờ thanh toán hoặc có lần thanh toán thẻ bị lỗi.",
+                    "Only a down payment that is waiting, or whose card payment failed, can be taken.")
+                : RequestLanguage.text(
+                    "Chỉ xác nhận được khoản trả sau đang chờ thu.",
+                    "Only a pay-later payment that is waiting to be collected can be confirmed."));
         }
         if (retryAtStore) {
             payment.setProviderTxnId(null);

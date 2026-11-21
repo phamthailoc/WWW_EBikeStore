@@ -308,8 +308,9 @@ public class OrderServiceImpl implements OrderService {
             }
         }
         if (!nextStatuses(order).contains(nextStatus)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                "Cannot change an order from " + order.getStatus() + " to " + nextStatus);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, RequestLanguage.text(
+                "Không thể chuyển đơn hàng từ " + order.getStatus() + " sang " + nextStatus + ".",
+                "Cannot change an order from " + order.getStatus() + " to " + nextStatus + "."));
         }
 
         LocalDateTime cancellableAt = order.getStatus() == OrderStatus.READY_FOR_PICKUP ? order.getPickupDeadlineAt() : null;

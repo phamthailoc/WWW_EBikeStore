@@ -78,6 +78,27 @@ public final class InstallmentMessages {
                 + " Đơn hàng đã được hủy. Bạn có thể đặt lại và chọn hình thức thanh toán khác.";
     }
 
+    // ---- the payment of the down payment (in-app notification) ----
+
+    public static String downPaymentTitle(String language, boolean paid) {
+        boolean english = isEnglish(language);
+        return paid
+            ? (english ? "Down payment received" : "Đã nhận khoản trả trước")
+            : (english ? "Down payment not paid" : "Thanh toán khoản trả trước thất bại");
+    }
+
+    public static String downPaymentBody(String language, boolean paid, String orderNumber) {
+        boolean english = isEnglish(language);
+        if (paid) {
+            return english
+                ? "The down payment of order " + orderNumber + " was received. The store will now process your order."
+                : "Khoản trả trước của đơn " + orderNumber + " đã được thanh toán. Cửa hàng sẽ xử lý đơn hàng của bạn.";
+        }
+        return english
+            ? "The down payment of order " + orderNumber + " did not go through. Please try VNPay again on the order page, or pay it at the store."
+            : "Khoản trả trước của đơn " + orderNumber + " chưa thanh toán được. Vui lòng thử lại bằng VNPay ở trang đơn hàng hoặc thanh toán tại cửa hàng.";
+    }
+
     // ---- email ----
 
     /** The absolute link to the customer's order, or null when no public address of the shop is configured. */

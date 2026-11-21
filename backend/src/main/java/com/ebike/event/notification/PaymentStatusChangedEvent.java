@@ -5,6 +5,8 @@ public record PaymentStatusChangedEvent(
     Long orderId,
     Long paymentId,
     String orderNumber,
-    String paymentStatus
+    String paymentStatus,
+    // the payment method (PaymentMethod name): an instalment down payment is worded differently from a payment of a whole order
+    String paymentMethod
 ) {
 }

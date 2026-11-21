@@ -83,7 +83,8 @@ public class VnPayServiceImpl implements VnPayService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can only pay your own orders");
         }
         if (order.getStatus() == OrderStatus.CANCELLED) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot pay a cancelled order");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, com.ebike.common.i18n.RequestLanguage.text(
+                "Đơn hàng đã bị hủy nên không thanh toán được.", "Cannot pay a cancelled order."));
         }
         // V24: an instalment order is paid only after the staff approved the application, and then only for the down payment
         if (installmentApplications.findByOrderId(order.getId()).map(a -> !InstallmentApplication.APPROVED.equals(a.getStatus())).orElse(false)) {
@@ -204,7 +205,9 @@ public class VnPayServiceImpl implements VnPayService {
 
     private Payment prepareExistingPayment(Payment payment, Order order) {
         if (payment.getPaymentStatus() == PaymentStatus.PAID) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Order is already paid");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, com.ebike.common.i18n.RequestLanguage.text(
+                payment.getPaymentMethod() == PaymentMethod.INSTALLMENT ? "Khoản trả trước của đơn này đã được thanh toán." : "Đơn hàng đã được thanh toán.",
+                payment.getPaymentMethod() == PaymentMethod.INSTALLMENT ? "The down payment of this order is already paid." : "Order is already paid."));
         }
         // V24: the payment row of an instalment order is its down payment: it keeps its amount and its method, only the gateway attempt is new
         boolean installment = payment.getPaymentMethod() == PaymentMethod.INSTALLMENT;

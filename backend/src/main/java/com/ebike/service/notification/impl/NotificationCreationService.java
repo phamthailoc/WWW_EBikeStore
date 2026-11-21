@@ -143,14 +143,26 @@ public class NotificationCreationService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void handlePaymentStatusChanged(PaymentStatusChangedEvent event) {
         boolean paid = "PAID".equals(event.paymentStatus());
-        userRepository.findById(event.userId()).ifPresent(user -> createNotification(
-            user,
-            paid ? NotificationType.PAYMENT_SUCCESS : NotificationType.PAYMENT_FAILED,
-            paid ? "Thanh toán thành công" : "Thanh toán thất bại",
-            "Thanh toán cho đơn hàng " + event.orderNumber() + (paid ? " đã thành công." : " chưa thành công. Vui lòng thử lại hoặc chọn hình thức khác."),
-            event.orderId(),
-            event.paymentId()
-        ));
+        boolean downPayment = com.ebike.model.entity.order.PaymentMethod.INSTALLMENT.name().equals(event.paymentMethod());
+        userRepository.findById(event.userId()).ifPresent(user -> {
+            Optional<UserPreference> preference = userPreferenceRepository.findByUserId(user.getId());
+            String language = languageOf(preference);
+            boolean english = "en".equals(InstallmentMessages.normalize(language));
+            String title;
+            String message;
+            if (downPayment) {
+                // the down payment cannot be swapped for another method, so the failure notice does not suggest one
+                title = InstallmentMessages.downPaymentTitle(language, paid);
+                message = InstallmentMessages.downPaymentBody(language, paid, event.orderNumber());
+            } else {
+                title = paid ? (english ? "Payment successful" : "Thanh toán thành công") : (english ? "Payment failed" : "Thanh toán thất bại");
+                message = english
+                    ? "Payment for order " + event.orderNumber() + (paid ? " was successful." : " was not successful. Please try again or choose another payment method.")
+                    : "Thanh toán cho đơn hàng " + event.orderNumber() + (paid ? " đã thành công." : " chưa thành công. Vui lòng thử lại hoặc chọn hình thức khác.");
+            }
+            createNotification(user, preference, paid ? NotificationType.PAYMENT_SUCCESS : NotificationType.PAYMENT_FAILED,
+                title, message, event.orderId(), event.paymentId(), "/customer/orders", true);
+        });
     }
 
     private void createNotification(

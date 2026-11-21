@@ -92,6 +92,19 @@ class InstallmentMessagesTest {
     }
 
     @Test
+    void theDownPaymentNoticeIsInBothLanguagesAndDoesNotOfferAnotherPaymentMethod() {
+        assertEquals("Đã nhận khoản trả trước", InstallmentMessages.downPaymentTitle("vi", true));
+        assertEquals("Down payment received", InstallmentMessages.downPaymentTitle("en", true));
+        assertEquals("Down payment not paid", InstallmentMessages.downPaymentTitle("en", false));
+        String failedEn = InstallmentMessages.downPaymentBody("en", false, "ORD-10");
+        String failedVi = InstallmentMessages.downPaymentBody("vi", false, "ORD-10");
+        assertTrue(failedEn.contains("ORD-10") && failedEn.contains("at the store"));
+        assertTrue(failedVi.contains("ORD-10") && failedVi.contains("tại cửa hàng"));
+        assertFalse(failedVi.contains("hình thức khác"));
+        assertTrue(InstallmentMessages.downPaymentBody("en", true, "ORD-10").contains("was received"));
+    }
+
+    @Test
     void theEmailSubjectNamesTheOrderAndTheVerdictInBothLanguages() {
         assertEquals("Kinetic E-Bike: hồ sơ trả góp đơn ORD-10 đã được duyệt", InstallmentMessages.emailSubject("vi", InstallmentMessages.APPROVED, "ORD-10"));
         assertEquals("Kinetic E-Bike: your instalment application for ORD-10 was rejected", InstallmentMessages.emailSubject("en", InstallmentMessages.REJECTED, "ORD-10"));
