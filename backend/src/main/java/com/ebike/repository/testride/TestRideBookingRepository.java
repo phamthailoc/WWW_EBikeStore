@@ -1,0 +1,117 @@
+package com.ebike.repository.testride;
+
+import com.ebike.model.entity.testride.TestRideBooking;
+import jakarta.persistence.LockModeType;
+import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+public interface TestRideBookingRepository extends JpaRepository<TestRideBooking, Long> {
+
+    /** Row lock for whoever changes a booking: the customer cancelling and the staff moving it wait for each other instead of both passing the step check. */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select b from TestRideBooking b where b.id = :id")
+    Optional<TestRideBooking> findLockedById(@Param("id") Long id);
+
+    /**
+     * The customer's bookings, the graph holds what the response reads. The inverse one-to-one sides (the bike's specification, the customer's
+     * preference) are loaded eagerly and cannot be proxied, so without them in the graph each distinct bike and customer costs one more SELECT.
+     */
+    @EntityGraph(attributePaths = {"user", "user.preference", "product", "product.specification", "showroom"})
+    List<TestRideBooking> findByUserUsername(String username, Pageable pageable);
+
+    /**
+     * The staff schedule. {@code showroomId} 0 means every showroom; the time window is half open ({@code from} inclusive, {@code to} exclusive).
+     * The caller passes real values (not null) so the query reads the same on every database.
+     */
+    @EntityGraph(attributePaths = {"user", "user.preference", "product", "product.specification", "showroom"})
+    @Query("select b from TestRideBooking b where b.slotStart >= :from and b.slotStart < :to and b.status in :statuses "
+        + "and (:showroomId = 0L or b.showroom.id = :showroomId)")
+    List<TestRideBooking> findSchedule(
+        @Param("from") LocalDateTime from,
+        @Param("to") LocalDateTime to,
+        @Param("statuses") Collection<String> statuses,
+        @Param("showroomId") long showroomId,
+        Pageable pageable);
+
+    /** Open (requested or confirmed) bookings of one showroom slot: the places that are taken. */
+    @Query("select count(b) from TestRideBooking b where b.showroom.id = :showroomId and b.slotStart = :slot and b.status in :statuses")
+    long countAt(@Param("showroomId") Long showroomId, @Param("slot") LocalDateTime slot, @Param("statuses") Collection<String> statuses);
+
+    /** Places taken per slot over a time window of one showroom: rows of (slot start, count). */
+    @Query("select b.slotStart, count(b) from TestRideBooking b where b.showroom.id = :showroomId and b.slotStart >= :from and b.slotStart < :to "
+        + "and b.status in :statuses group by b.slotStart")
+    List<Object[]> countBySlot(
+        @Param("showroomId") Long showroomId,
+        @Param("from") LocalDateTime from,
+        @Param("to") LocalDateTime to,
+        @Param("statuses") Collection<String> statuses);
+
+    /** Confirmed rides the customer withdrew whose start is after {@code now} and at or before {@code until}: the staff may have a bike ready for them. */
+    @Query("select count(b) from TestRideBooking b where b.status = 'CANCELLED' and b.cancelledByCustomerAt is not null and b.slotStart > :now and b.slotStart <= :until")
+    long countCancelledByCustomerBetween(@Param("now") LocalDateTime now, @Param("until") LocalDateTime until);
+
+    /**
+     * Open bookings whose showroom was switched off or whose bike is no longer sold and whose hour is not over yet ({@code slotStart} after
+     * {@code cutoff}, the caller passes now minus one slot): nobody can be served, the staff must cancel them. Once the hour is over the booking can only
+     * be closed as done or no-show (or, for a request, by the timer), so it no longer belongs here.
+     */
+    @Query("select count(b) from TestRideBooking b where b.status in :statuses and b.slotStart > :cutoff and (b.showroom.active = false or b.product.active = false)")
+    long countOpenUnavailable(@Param("statuses") Collection<String> statuses, @Param("cutoff") LocalDateTime cutoff);
+
+    /**
+     * Requests nobody confirmed whose showroom and bike are both available and whose start time is still ahead of {@code now}: the ones the staff can still
+     * confirm (the others are counted by {@link #countOpenUnavailable}; a request whose start time has come is no longer counted and is closed by the timer once its hour is over).
+     */
+    @Query("select count(b) from TestRideBooking b where b.status = 'REQUESTED' and b.slotStart > :now and b.showroom.active = true and b.product.active = true")
+    long countRequestedAvailable(@Param("now") LocalDateTime now);
+
+    long countByStatusAndSlotStartLessThanEqual(String status, LocalDateTime slotStart);
+
+    /** True when the customer has an open booking starting strictly between {@code after} and {@code before}: a ride that overlaps the one-hour slot in between. */
+    boolean existsByUserIdAndStatusInAndSlotStartGreaterThanAndSlotStartLessThan(
+        Long userId, Collection<String> statuses, LocalDateTime after, LocalDateTime before);
+
+    long countByUserIdAndStatusInAndSlotStartGreaterThanEqual(Long userId, Collection<String> statuses, LocalDateTime from);
+
+    /** Bookings the customer made since {@code since}, whatever became of them: the rate of one account booking (and cancelling, and booking again). */
+    long countByUserIdAndCreatedAtGreaterThanEqual(Long userId, LocalDateTime since);
+
+    /**
+     * Confirmed bookings starting within the window whose reminder was not sent yet, soonest first (ids only; each is handled in its own transaction).
+     * Bookings of a showroom that was switched off or of a bike no longer sold are left out: that ride will not take place.
+     */
+    @Query("select b.id from TestRideBooking b where b.status = 'CONFIRMED' and b.reminderSentAt is null and b.slotStart > :now and b.slotStart <= :until "
+        + "and b.showroom.active = true and b.product.active = true order by b.slotStart, b.id")
+    List<Long> findReminderDueIds(@Param("now") LocalDateTime now, @Param("until") LocalDateTime until, Pageable pageable);
+
+    /** Requests nobody confirmed whose start time is at or before {@code cutoff} (the caller passes one hour before now: the whole hour is over and nobody confirmed). */
+    @Query("select b.id from TestRideBooking b where b.status = 'REQUESTED' and b.slotStart <= :cutoff order by b.slotStart, b.id")
+    List<Long> findExpiredRequestIds(@Param("cutoff") LocalDateTime cutoff, Pageable pageable);
+
+    /**
+     * Account erasure: the customer's open bookings are cancelled so the places are free again. The reason is the code {@code ERASED} in
+     * {@code cancel_source}, which each page words in its own language. A booking the staff had confirmed also gets {@code cancelled_by_customer_at},
+     * so the backlog tells them about a bike they may have prepared. MariaDB applies the assignments of one UPDATE from left to right, so the
+     * {@code case} reads the status before it is changed: keep it first. Returns how many rows changed.
+     */
+    @Modifying
+    @Query("update TestRideBooking b set b.cancelledByCustomerAt = case when b.status = 'CONFIRMED' then :now else b.cancelledByCustomerAt end, "
+        + "b.cancelSource = 'ERASED', b.status = 'CANCELLED', b.updatedAt = :now where b.user.id = :userId and b.status in ('REQUESTED', 'CONFIRMED')")
+    int cancelOpenOf(@Param("userId") Long userId, @Param("now") LocalDateTime now);
+
+    /**
+     * Account erasure: the phone number, the words of the customer and the shop's note go (staff tend to write a name or a number in it, and the
+     * customer could read it); the booking row itself stays as a record of the slot.     */
+    @Modifying
+    @Query("update TestRideBooking b set b.contactPhone = '', b.customerNote = null, b.staffNote = null, b.updatedAt = :now where b.user.id = :userId")
+    int clearPersonalDataOf(@Param("userId") Long userId, @Param("now") LocalDateTime now);
+}

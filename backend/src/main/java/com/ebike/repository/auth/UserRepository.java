@@ -4,8 +4,10 @@ import com.ebike.model.entity.auth.User;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -22,6 +24,16 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByEmail(String email);
 
     Optional<User> findByUsername(String username);
+
+    /** V23: row lock on the account, so one customer's parallel test-ride bookings are counted one after the other. */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select u from User u where u.username = :username")
+    Optional<User> findLockedByUsername(@Param("username") String username);
+
+    /** V23: the same row lock by id, taken by an account erasure before it touches the account's bookings (the order booking uses: the account first). */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select u from User u where u.id = :id")
+    Optional<User> findLockedById(@Param("id") Long id);
 
     @EntityGraph(attributePaths = {
         "roles",

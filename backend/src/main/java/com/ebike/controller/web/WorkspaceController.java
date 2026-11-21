@@ -41,6 +41,11 @@ public class WorkspaceController {
             // staff may open /customer pages, but the warranty book API belongs to customer accounts: send them to the queue they work in
             return "redirect:/manager/warranty";
         }
+        if (section.equals("customer/test-rides") && authentication != null
+            && authentication.getAuthorities().stream().noneMatch(a -> "ROLE_CUSTOMER".equals(a.getAuthority()))) {
+            // staff may open /customer pages, but the booking API belongs to customer accounts: send them to the schedule they work in
+            return "redirect:/manager/test-rides";
+        }
         String id = path.substring(path.lastIndexOf('/') + 1);
         String title;
         String api;
@@ -52,12 +57,14 @@ public class WorkspaceController {
             case "customer/payments" -> { title = m("page.payments", "Lịch sử thanh toán"); api = "/api/v1/payments/history"; description = m("page.paymentsDesc", "Các giao dịch thanh toán của bạn."); }
             case "customer/notifications" -> { title = m("page.notifications", "Thông báo"); api = "/api/v1/notifications"; description = m("page.notificationsDesc", "Cập nhật về đơn hàng và tài khoản."); }
             case "customer/warranty" -> { title = m("page.warranty", "Sổ bảo hành"); api = "/api/v1/warranty/units"; description = m("page.warrantyDesc", "Xe đã nhận, hạn bảo hành và yêu cầu bảo hành của bạn."); mode = "warranty"; }
+            case "customer/test-rides" -> { title = m("page.testRides", "Lịch lái thử"); api = "/api/v1/test-rides"; description = m("page.testRidesDesc", "Các lịch lái thử bạn đã đặt tại cửa hàng."); mode = "testride"; }
             case "customer/profile" -> { title = m("page.profile", "Hồ sơ cá nhân"); api = "/api/v1/auth/profile"; description = m("page.profileDesc", "Thông tin liên hệ và tùy chọn tài khoản."); mode = "profile"; }
             case "manager" -> { title = m("staff.1", "Tổng quan cửa hàng"); api = "/api/v1/manager/dashboard"; description = m("staff.2", "Đơn hàng, thanh toán và doanh thu cửa hàng."); mode = "dashboard"; }
             case "manager/orders" -> { title = m("staff.3", "Quản lý đơn hàng"); api = "/api/v1/orders"; description = m("staff.4", "Theo dõi và cập nhật các đơn xe."); }
             case "manager/payments" -> { title = m("staff.5", "Thanh toán"); api = "/api/v1/manager/payments"; description = m("staff.6", "Xác nhận giao dịch và thanh toán sau."); }
             case "manager/support" -> { title = m("staff.7", "Yêu cầu hỗ trợ"); api = "/api/v1/manager/support-requests"; description = m("staff.8", "Câu hỏi và khiếu nại khách gửi từ trang Hỗ trợ."); }
             case "manager/warranty" -> { title = m("staff.warranty", "Yêu cầu bảo hành"); api = "/api/v1/manager/warranty-claims"; description = m("staff.warrantyDesc", "Xử lý yêu cầu bảo hành khách gửi từ sổ bảo hành."); }
+            case "manager/test-rides" -> { title = m("staff.testRides", "Lịch lái thử"); api = "/api/v1/manager/test-rides"; description = m("staff.testRidesDesc", "Xác nhận và theo dõi lịch lái thử khách đặt."); }
             case "manager/customers" -> { title = m("staff.9", "Khách hàng"); api = "/api/v1/manager/customers"; description = m("staff.10", "Danh sách khách hàng và lịch sử mua."); }
             case "manager/inventory", "manager/products", "admin/inventory", "admin/products" -> { title = m("staff.11", "Kho sản phẩm"); api = "/api/v1/products"; description = m("staff.12", "Theo dõi tồn kho và tình trạng xe."); mode = "inventory"; }
             case "manager/reports" -> { title = m("staff.13", "Báo cáo doanh thu"); api = "/api/v1/manager/revenue-report"; description = m("staff.14", "Tổng hợp hoạt động kinh doanh."); mode = "dashboard"; }
@@ -74,9 +81,9 @@ public class WorkspaceController {
             }
         }
         List<Link> links = switch (role) {
-            case "admin" -> List.of(new Link(m("staff.29", "Tổng quan"), "/admin"), new Link(m("staff.30", "Sản phẩm"), "/admin/products"), new Link(m("staff.31", "Kho hàng"), "/admin/inventory"), new Link(m("staff.32", "Giá & khuyến mãi"), "/admin/pricing"), new Link(m("staff.33", "Tài khoản"), "/admin/accounts"), new Link(m("staff.34", "Vai trò"), "/admin/roles"), new Link(m("staff.35", "Nhật ký"), "/admin/audit-logs"), new Link(m("staff.25", "Người dùng"), "/admin/users"), new Link(m("staff.warrantyMenu", "Bảo hành"), "/manager/warranty"));
-            case "manager" -> List.of(new Link(m("staff.29", "Tổng quan"), "/manager"), new Link(m("staff.36", "Đơn hàng"), "/manager/orders"), new Link(m("staff.5", "Thanh toán"), "/manager/payments"), new Link(m("staff.9", "Khách hàng"), "/manager/customers"), new Link(m("staff.37", "Hỗ trợ"), "/manager/support"), new Link(m("staff.warrantyMenu", "Bảo hành"), "/manager/warranty"), new Link(m("staff.31", "Kho hàng"), "/manager/inventory"), new Link(m("staff.30", "Sản phẩm"), "/manager/products"), new Link(m("staff.38", "Báo cáo"), "/manager/reports"));
-            default -> List.of(new Link(m("menu.overview", "Tổng quan"), "/customer"), new Link(m("menu.orders", "Đơn hàng"), "/customer/orders"), new Link(m("menu.payments", "Thanh toán"), "/customer/payments"), new Link(m("menu.notifications", "Thông báo"), "/customer/notifications"), new Link(m("menu.warranty", "Bảo hành"), "/customer/warranty"), new Link(m("menu.profile", "Hồ sơ"), "/customer/profile"), new Link(m("menu.favourites", "Yêu thích"), "/favorites"));
+            case "admin" -> List.of(new Link(m("staff.29", "Tổng quan"), "/admin"), new Link(m("staff.30", "Sản phẩm"), "/admin/products"), new Link(m("staff.31", "Kho hàng"), "/admin/inventory"), new Link(m("staff.32", "Giá & khuyến mãi"), "/admin/pricing"), new Link(m("staff.33", "Tài khoản"), "/admin/accounts"), new Link(m("staff.34", "Vai trò"), "/admin/roles"), new Link(m("staff.35", "Nhật ký"), "/admin/audit-logs"), new Link(m("staff.25", "Người dùng"), "/admin/users"), new Link(m("staff.warrantyMenu", "Bảo hành"), "/manager/warranty"), new Link(m("staff.testRideMenu", "Lái thử"), "/manager/test-rides"));
+            case "manager" -> List.of(new Link(m("staff.29", "Tổng quan"), "/manager"), new Link(m("staff.36", "Đơn hàng"), "/manager/orders"), new Link(m("staff.5", "Thanh toán"), "/manager/payments"), new Link(m("staff.9", "Khách hàng"), "/manager/customers"), new Link(m("staff.37", "Hỗ trợ"), "/manager/support"), new Link(m("staff.warrantyMenu", "Bảo hành"), "/manager/warranty"), new Link(m("staff.testRideMenu", "Lái thử"), "/manager/test-rides"), new Link(m("staff.31", "Kho hàng"), "/manager/inventory"), new Link(m("staff.30", "Sản phẩm"), "/manager/products"), new Link(m("staff.38", "Báo cáo"), "/manager/reports"));
+            default -> List.of(new Link(m("menu.overview", "Tổng quan"), "/customer"), new Link(m("menu.orders", "Đơn hàng"), "/customer/orders"), new Link(m("menu.payments", "Thanh toán"), "/customer/payments"), new Link(m("menu.notifications", "Thông báo"), "/customer/notifications"), new Link(m("menu.warranty", "Bảo hành"), "/customer/warranty"), new Link(m("menu.testRide", "Lái thử"), "/customer/test-rides"), new Link(m("menu.profile", "Hồ sơ"), "/customer/profile"), new Link(m("menu.favourites", "Yêu thích"), "/favorites"));
         };
         model.addAttribute("workspaceRole", role);
         model.addAttribute("title", title);
@@ -87,6 +94,9 @@ public class WorkspaceController {
         model.addAttribute("links", links);
         model.addAttribute("activePath", path);
         model.addAttribute("vnpayEnabled", vnPayProperties.isConfigured());
+        // staff with the view permission only must not be offered buttons the server will refuse (confirming a test ride needs the update permission)
+        model.addAttribute("canUpdateOrders", authentication != null
+            && authentication.getAuthorities().stream().anyMatch(a -> PermissionConstants.OrderManagement.ORDER_UPDATE_STATUS.equals(a.getAuthority())));
         return "store/workspace";
     }
 

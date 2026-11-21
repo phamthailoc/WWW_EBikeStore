@@ -1,6 +1,12 @@
 package com.ebike.controller.web;
 
 import com.ebike.service.product.ProductService;
+import com.ebike.service.testride.TestRideRules;
+import java.time.Clock;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -13,7 +19,22 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class StorefrontController {
     private final ProductService products;
 
-    public StorefrontController(ProductService products) { this.products = products; }
+    /** V23: how many days ahead a test ride may be booked (the same setting the booking service enforces). */
+    private final int testRideDays;
+
+    /** The showroom's clock ({@code app.time-zone}): "today" of the booking dialog is the showroom's day, not the visitor's. */
+    private final Clock clock;
+
+    @Autowired
+    public StorefrontController(ProductService products, @Value("${app.test-ride.days-ahead:14}") int testRideDays, @Value("${app.time-zone:Asia/Ho_Chi_Minh}") String timeZone) {
+        this(products, testRideDays, Clock.system(ZoneId.of(timeZone)));
+    }
+
+    StorefrontController(ProductService products, int testRideDays, Clock clock) {
+        this.products = products;
+        this.testRideDays = Math.max(1, testRideDays);
+        this.clock = clock;
+    }
 
     @GetMapping({"/", "/shop"})
     public String home(@RequestParam(required = false) String q, Model model) {
@@ -77,7 +98,8 @@ public class StorefrontController {
 
     @GetMapping({"/bike/{slug}", "/product/{slug}", "/models/{slug}"})
     public String detail(@PathVariable String slug, Model model) {
-        model.addAttribute("product", products.getProductBySlug(slug));
+        var product = products.getProductBySlug(slug);
+        model.addAttribute("product", product);
         model.addAttribute("related", products.getRelatedProducts(slug, 4));
         // V22: "Notify me" is for visitors (who are sent to sign in) and customers; staff accounts do not get the button.
         var authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -87,6 +109,12 @@ public class StorefrontController {
         model.addAttribute("canNotifyStock", visitor || customer);
         // only a signed-in customer has a waiting list to ask for; guests and staff would just get 401/403
         model.addAttribute("stockAlertCustomer", customer);
+        // V23: "Book a test ride" is for visitors (sent to sign in) and customers, and only for a bike that can be ridden (not a battery, an accessory or a product without a vehicle type).
+        String vehicleType = product == null || product.specification() == null ? null : product.specification().vehicleType();
+        boolean rideable = TestRideRules.isRideableName(vehicleType); // the same rule the booking API applies
+        model.addAttribute("canTestRide", (visitor || customer) && rideable);
+        model.addAttribute("testRideDays", testRideDays);
+        model.addAttribute("testRideToday", LocalDate.now(clock).toString()); // the first day of the dialog's list, in the showroom's zone
         return "store/detail";
     }
 

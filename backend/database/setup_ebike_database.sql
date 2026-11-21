@@ -467,6 +467,34 @@ CREATE TABLE `maintenance_reminders` (
     CONSTRAINT fk_maintenance_reminders_unit FOREIGN KEY (order_item_unit_id) REFERENCES order_item_units(id) ON DELETE RESTRICT,
     CONSTRAINT uk_maintenance_reminders_unit_milestone UNIQUE (order_item_unit_id, milestone)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+DROP TABLE IF EXISTS `test_ride_bookings`;
+CREATE TABLE `test_ride_bookings` (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    product_id BIGINT NOT NULL,
+    showroom_id BIGINT NOT NULL,
+    slot_start DATETIME NOT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'REQUESTED',
+    contact_phone VARCHAR(20) NOT NULL,
+    customer_note VARCHAR(500) NULL,
+    staff_note VARCHAR(1000) NULL,
+    confirmed_at DATETIME NULL,
+    reminder_sent_at DATETIME NULL,
+    cancelled_by_customer_at DATETIME NULL,
+    cancel_source VARCHAR(10) NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    active_user_slot VARCHAR(40) AS (IF(status IN ('REQUESTED', 'CONFIRMED'), CONCAT(user_id, '@', slot_start), NULL)) VIRTUAL,
+    CONSTRAINT fk_test_ride_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_test_ride_product FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE RESTRICT,
+    CONSTRAINT fk_test_ride_showroom FOREIGN KEY (showroom_id) REFERENCES showrooms(id) ON DELETE RESTRICT,
+    CONSTRAINT chk_test_ride_status CHECK (status IN ('REQUESTED', 'CONFIRMED', 'DONE', 'CANCELLED', 'NO_SHOW')),
+    CONSTRAINT chk_test_ride_cancel_source CHECK (cancel_source IS NULL OR cancel_source IN ('CUSTOMER', 'STORE', 'EXPIRED', 'ERASED')),
+    CONSTRAINT uk_test_ride_active_user_slot UNIQUE (active_user_slot)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE INDEX `idx_test_ride_showroom_slot` ON `test_ride_bookings` (showroom_id, slot_start, status);
+CREATE INDEX `idx_test_ride_user_slot` ON `test_ride_bookings` (user_id, slot_start);
+CREATE INDEX `idx_test_ride_status_slot` ON `test_ride_bookings` (status, slot_start);
 CREATE INDEX `idx_stock_alerts_pending` ON `stock_alerts` (notified_at, variant_id);
 CREATE INDEX `idx_pricing_rules_status` ON `pricing_rules` (status);
 CREATE INDEX `idx_promotions_status` ON `promotions` (status);

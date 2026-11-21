@@ -9,5 +9,6 @@ public enum NotificationType {
     PAYMENT_FAILED,
     STOCK_ALERT,
     WARRANTY_CLAIM,
-    MAINTENANCE_DUE
+    MAINTENANCE_DUE,
+    TEST_RIDE
 }

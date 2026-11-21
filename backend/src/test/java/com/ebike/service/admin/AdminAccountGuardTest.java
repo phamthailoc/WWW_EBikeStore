@@ -20,6 +20,7 @@ import com.ebike.repository.admin.PromotionRepository;
 import com.ebike.repository.auth.RoleRepository;
 import com.ebike.repository.auth.UserRepository;
 import com.ebike.repository.order.OrderRepository;
+import com.ebike.repository.testride.TestRideBookingRepository;
 import com.ebike.repository.warranty.WarrantyClaimRepository;
 import com.ebike.service.admin.impl.AdminServiceImpl;
 import java.util.HashSet;
@@ -62,7 +63,7 @@ class AdminAccountGuardTest {
 
     @BeforeEach void setup() {
         service = new AdminServiceImpl(pricingRules, promotions, audits, users, roles, encoder, orders,
-            new AccountErasure(addresses, favorites, preferences, notifications, stockAlerts, mock(WarrantyClaimRepository.class), reviews, encoder),
+            new AccountErasure(addresses, favorites, preferences, notifications, stockAlerts, mock(WarrantyClaimRepository.class), mock(TestRideBookingRepository.class), users, reviews, encoder, "Asia/Ho_Chi_Minh"),
             auditLog);
         me = account(1L, "admin.user", "ADMIN");
         otherAdmin = account(2L, "second.admin", "ADMIN");
