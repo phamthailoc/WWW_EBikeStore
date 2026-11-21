@@ -19,6 +19,8 @@ public final class TestRideMessages {
     /** Nobody confirmed the request before its time came. */
     public static final String EXPIRED = "EXPIRED";
     public static final String REMINDER = "REMINDER";
+    /** The store changed only the note of a confirmed ride (arrival time, where to ask...): in-app only. */
+    public static final String NOTE_UPDATED = "NOTE_UPDATED";
 
     private static final DateTimeFormatter VI = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy", Locale.ROOT);
     private static final DateTimeFormatter EN = DateTimeFormatter.ofPattern("dd/MM/yyyy 'at' HH:mm", Locale.ENGLISH);
@@ -44,6 +46,7 @@ public final class TestRideMessages {
             case CANCELLED -> english ? "Test ride cancelled" : "Lịch lái thử đã bị hủy";
             case NO_SHOW -> english ? "Test ride missed" : "Lịch lái thử đã bỏ lỡ";
             case EXPIRED -> english ? "Test ride request expired" : "Yêu cầu lái thử đã hết hạn";
+            case NOTE_UPDATED -> english ? "New note on your test ride" : "Lịch lái thử có ghi chú mới";
             default -> english ? "Test ride reminder" : "Nhắc lịch lái thử";
         };
     }
@@ -71,6 +74,9 @@ public final class TestRideMessages {
             case EXPIRED -> english
                 ? "Your test ride request was not confirmed in time and has been closed: " + bike + ". You can book another time."
                 : "Yêu cầu lái thử chưa được xác nhận kịp và đã được đóng: " + bike + ". Bạn có thể đặt lại khung giờ khác.";
+            case NOTE_UPDATED -> english
+                ? "The store updated the note on your test ride: " + bike + "." + reason
+                : "Cửa hàng vừa cập nhật ghi chú cho lịch lái thử của bạn: " + bike + "." + reason;
             default -> english
                 ? "Your test ride is coming up: " + bike + ". Please bring your ID. If you cannot come, cancel it so another customer can have the place."
                 : "Sắp đến lịch lái thử của bạn: " + bike + ". Vui lòng mang theo giấy tờ tùy thân. Nếu không đến được, hãy hủy lịch để nhường chỗ cho khách khác.";

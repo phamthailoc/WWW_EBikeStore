@@ -15,7 +15,8 @@ class TestRideMessagesTest {
 
     private static final LocalDateTime SLOT = LocalDateTime.of(2026, 11, 22, 9, 5);
     private static final List<String> KINDS = List.of(
-        TestRideMessages.CONFIRMED, TestRideMessages.CANCELLED, TestRideMessages.NO_SHOW, TestRideMessages.EXPIRED, TestRideMessages.REMINDER);
+        TestRideMessages.CONFIRMED, TestRideMessages.CANCELLED, TestRideMessages.NO_SHOW, TestRideMessages.EXPIRED, TestRideMessages.REMINDER,
+        TestRideMessages.NOTE_UPDATED);
 
     @Test
     void anythingButEnglishIsVietnamese() {
@@ -63,6 +64,7 @@ class TestRideMessagesTest {
         assertTrue(TestRideMessages.sendsEmail(TestRideMessages.REMINDER));
         assertFalse(TestRideMessages.sendsEmail(TestRideMessages.NO_SHOW));
         assertFalse(TestRideMessages.sendsEmail(TestRideMessages.EXPIRED));
+        assertFalse(TestRideMessages.sendsEmail(TestRideMessages.NOTE_UPDATED));
     }
 
     @Test

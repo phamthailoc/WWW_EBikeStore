@@ -568,15 +568,27 @@ class TestRideServiceTest {
     }
 
     @Test
-    void changingOnlyTheNoteKeepsTheStepAndTellsNobody() {
+    void changingOnlyTheNoteOfAConfirmedRideKeepsTheStepAndTellsTheCustomer() {
         TestRideBooking booking = bookingIn("CONFIRMED", NOW.plusDays(2));
         service.update(77L, new TestRideUpdateRequest(null, "  Bring the helmet  "));
         assertEquals("Bring the helmet", booking.getStaffNote());
         assertEquals(TestRideBooking.CONFIRMED, booking.getStatus());
-        assertTrue(events.isEmpty());
+        assertEquals(1, events.size());
+        assertEquals(TestRideMessages.NOTE_UPDATED, ((TestRideNoticeEvent) events.get(0)).kind());
+        // saving the same note again changes nothing, so nobody is told twice
+        service.update(77L, new TestRideUpdateRequest(null, "Bring the helmet"));
+        assertEquals(1, events.size());
         service.update(77L, new TestRideUpdateRequest("", ""));
         assertNull(booking.getStaffNote(), "an empty note clears it");
+        assertEquals(1, events.size(), "clearing a note tells nobody");
         assertEquals(HttpStatus.BAD_REQUEST, statusOf(() -> service.update(77L, new TestRideUpdateRequest(null, "x".repeat(1001)))));
+    }
+
+    @Test
+    void aNoteOnAnUnconfirmedRequestTellsNobody() {
+        bookingIn("REQUESTED", NOW.plusDays(2));
+        service.update(77L, new TestRideUpdateRequest(null, "We will call you"));
+        assertTrue(events.isEmpty());
     }
 
     @Test

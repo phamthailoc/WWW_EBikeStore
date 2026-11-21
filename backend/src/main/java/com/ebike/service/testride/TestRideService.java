@@ -384,6 +384,9 @@ public class TestRideService {
             if (kind != null) {
                 NotificationEventBridge.publish(noticeOf(saved, kind));
             }
+        } else if (changed && TestRideBooking.CONFIRMED.equals(saved.getStatus()) && saved.getStaffNote() != null) {
+            // only the note changed (as the warranty book does): the customer is told, so a new arrival time or instruction is not missed. Clearing a note tells nobody.
+            NotificationEventBridge.publish(noticeOf(saved, TestRideMessages.NOTE_UPDATED));
         }
         return toResponse(saved, now, true);
     }
