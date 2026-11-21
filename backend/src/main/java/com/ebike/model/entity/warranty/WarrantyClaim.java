@@ -44,7 +44,7 @@ public class WarrantyClaim {
     @Column(nullable = false, length = 30)
     private String status = NEW;
 
-    /** True when the warranty had ended (or was unknown) when the request was sent: the repair is then charged. */
+    /** True only when the warranty had ended when the request was sent: the repair is then charged. A bike with no warranty length on record (UNKNOWN) is not charged. */
     @Column(name = "out_of_warranty", nullable = false)
     private boolean outOfWarranty;
 
