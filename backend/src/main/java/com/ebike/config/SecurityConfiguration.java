@@ -130,6 +130,8 @@ public class SecurityConfiguration {
                     PermissionConstants.Customer.PROFILE_VIEW,
                     PermissionConstants.OrderManagement.ORDER_VIEW_ALL
                 )
+                // V20: moving a warranty request changes its status and messages the customer, so it needs the write permission, not only the view one.
+                .requestMatchers(HttpMethod.PATCH, "/api/v1/manager/warranty-claims/*").hasAuthority(PermissionConstants.OrderManagement.ORDER_UPDATE_STATUS)
                 .requestMatchers("/api/v1/manager/**").hasAuthority(PermissionConstants.OrderManagement.ORDER_VIEW_ALL)
                 .requestMatchers("/api/v1/admin/**").hasAuthority(PermissionConstants.AccessControl.PERMISSION_MANAGE)
                 .anyRequest().denyAll()
