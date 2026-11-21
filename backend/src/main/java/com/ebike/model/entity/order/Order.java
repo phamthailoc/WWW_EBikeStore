@@ -83,6 +83,10 @@ public class Order {
     @Column(name = "pickup_deadline_at")
     private LocalDateTime pickupDeadlineAt;
 
+    // Fixed the first time the order is saved as DELIVERED; the warranty (V20) counts from here, so it does not move with updated_at.
+    @Column(name = "delivered_at")
+    private LocalDateTime deliveredAt;
+
     @Column(name = "cancellation_reason", columnDefinition = "TEXT")
     private String cancellationReason;
 
@@ -128,6 +132,9 @@ public class Order {
     @PreUpdate
     void onUpdate() {
         updatedAt = LocalDateTime.now();
+        if (status == OrderStatus.DELIVERED && deliveredAt == null) {
+            deliveredAt = updatedAt;
+        }
     }
 
     @PostLoad
@@ -290,6 +297,14 @@ public class Order {
 
     public void setPickupDeadlineAt(LocalDateTime pickupDeadlineAt) {
         this.pickupDeadlineAt = pickupDeadlineAt;
+    }
+
+    public LocalDateTime getDeliveredAt() {
+        return deliveredAt;
+    }
+
+    public void setDeliveredAt(LocalDateTime deliveredAt) {
+        this.deliveredAt = deliveredAt;
     }
 
     public LocalDateTime getCancellationReviewedAt() {

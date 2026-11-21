@@ -263,7 +263,9 @@ public class WarrantyService {
         if (order.getStatus() != OrderStatus.DELIVERED) {
             return null;
         }
-        return WarrantyRules.startsAt(order.getShipment() == null ? null : order.getShipment().getDeliveredAt(), order.getUpdatedAt());
+        LocalDateTime shipped = order.getShipment() == null ? null : order.getShipment().getDeliveredAt();
+        // orders.delivered_at is fixed when the order became DELIVERED; updated_at moves on every save, so it is the last resort
+        return WarrantyRules.startsAt(shipped != null ? shipped : order.getDeliveredAt(), order.getUpdatedAt());
     }
 
     static Integer warrantyMonths(OrderItemUnit unit) {
