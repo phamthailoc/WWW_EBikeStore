@@ -203,7 +203,14 @@ class TestRideRulesTest {
         assertEquals(eightToNine, TestRideRules.parseOpeningHours("8 - 21h"));
         assertEquals(eightToNine, TestRideRules.parseOpeningHours("8-21h"));
         assertEquals(eightToNine, TestRideRules.parseOpeningHours("Mở cửa 8 - 21h hằng ngày"));
+        // "8 - 9 PM" would be one hour in the evening, so the 8 stays in the morning
         assertEquals(eightToNine, TestRideRules.parseOpeningHours("8 - 9 PM"));
+        // the bare hour shares the PM of the closing time when that leaves a sensible stretch
+        assertEquals(new TestRideRules.Hours(LocalTime.of(17, 0), LocalTime.of(21, 0)), TestRideRules.parseOpeningHours("5 - 9 PM"));
+        assertEquals(new TestRideRules.Hours(LocalTime.of(19, 0), LocalTime.of(23, 0)), TestRideRules.parseOpeningHours("7 - 11 PM"));
+        assertEquals(new TestRideRules.Hours(LocalTime.of(8, 0), LocalTime.of(11, 0)), TestRideRules.parseOpeningHours("8 - 11 AM"));
+        assertEquals(new TestRideRules.Hours(LocalTime.of(9, 0), LocalTime.of(18, 0)), TestRideRules.parseOpeningHours("9 - 6 PM"));
+        assertEquals(new TestRideRules.Hours(LocalTime.of(8, 0), LocalTime.of(12, 0)), TestRideRules.parseOpeningHours("8 - 12 PM"));
         assertEquals(new TestRideRules.Hours(LocalTime.of(9, 0), LocalTime.of(17, 30)), TestRideRules.parseOpeningHours("9 - 17:30"));
         assertEquals(new TestRideRules.Hours(LocalTime.of(11, 0), LocalTime.of(13, 0)), TestRideRules.parseOpeningHours("11 - 1 PM"));
         // the 2 of "T2" and "Thứ 2" are days, not an opening hour

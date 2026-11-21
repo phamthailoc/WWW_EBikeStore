@@ -62,6 +62,8 @@ public final class TestRideRules {
         Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
     /** "thứ hai" ... "thứ bảy" (lower case): group 1 the number written as a word. */
     private static final Pattern DAY_NAME = Pattern.compile("th[uứ]\\s*(hai|ba|tư|tu|năm|nam|sáu|sau|bảy|bay)");
+    /** A bare opening hour takes the AM/PM of the closing time only when the showroom is then open at least this long. */
+    private static final Duration MIN_SHARED_SPAN = Duration.ofHours(3);
     private static final Pattern PHONE = Pattern.compile("^0\\d{9,10}$");
 
     private TestRideRules() {
@@ -238,8 +240,14 @@ public final class TestRideRules {
             open = time(matcher.group(1), matcher.group(2) != null ? matcher.group(2) : matcher.group(3), matcher.group(4) != null ? matcher.group(4) : matcher.group(5));
             close = time(matcher.group(6), matcher.group(7) != null ? matcher.group(7) : matcher.group(8), matcher.group(9) != null ? matcher.group(9) : matcher.group(10));
         } else if ((matcher = HOURS_BARE_OPEN.matcher(text)).find()) {
+            String meridiem = matcher.group(5) != null ? matcher.group(5) : matcher.group(6);
             open = time(matcher.group(1), null, null);
-            close = time(matcher.group(2), matcher.group(3) != null ? matcher.group(3) : matcher.group(4), matcher.group(5) != null ? matcher.group(5) : matcher.group(6));
+            close = time(matcher.group(2), matcher.group(3) != null ? matcher.group(3) : matcher.group(4), meridiem);
+            // "5 - 9 PM" is the afternoon on both sides: the bare opening hour shares the PM when that gives at least MIN_OPEN_SPAN ("8 - 9 PM" stays 08:00 - 21:00)
+            LocalTime shared = meridiem == null ? null : time(matcher.group(1), null, meridiem);
+            if (shared != null && close != null && !Duration.between(shared, close).minus(MIN_SHARED_SPAN).isNegative()) {
+                open = shared;
+            }
         } else {
             Matcher plain = PLAIN_HOURS.matcher(text);
             if (!plain.matches()) {
