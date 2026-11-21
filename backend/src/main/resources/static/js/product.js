@@ -15,6 +15,9 @@
   };
   const gallery = document.querySelector('#productGallery');
   const item = {id:Number(root.dataset.id), name:root.dataset.name, price:Number(root.dataset.price), slug:root.dataset.slug, image:baseImage, quantity:1, stock:Number(root.dataset.stock)};
+  // V24: the instalment calculator (installment.js) asks what is being bought: the chosen colour's price times the quantity, and hears when it changes.
+  window.kineticProductAmount = () => item.price * item.quantity;
+  const amountChanged = () => window.dispatchEvent(new CustomEvent('kinetic:amount'));
   function message(text, error=false) {
     notice.hidden=false; notice.classList.toggle('error', error); notice.textContent=text;
   }
@@ -22,6 +25,7 @@
     const max=cart.limit(item);
     quantity.max=max; quantity.value=Math.min(Math.max(1, Number(value) || 1), Math.max(1,max));
     item.quantity=Number(quantity.value);
+    amountChanged();
     document.querySelector('#addToCart').disabled=max < 1;
     document.querySelector('#buyNow').disabled=max < 1;
     document.querySelector('#quantityMinus').disabled=item.quantity <= 1;
