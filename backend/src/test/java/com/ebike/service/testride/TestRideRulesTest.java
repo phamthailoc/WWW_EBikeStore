@@ -117,6 +117,28 @@ class TestRideRulesTest {
     }
 
     @Test
+    void aListOfDaysOffIsReadWhateverItsLengthAndOrder() {
+        java.time.DayOfWeek sat = java.time.DayOfWeek.SATURDAY;
+        java.time.DayOfWeek sun = java.time.DayOfWeek.SUNDAY;
+        // the "off" first, then the days
+        days("Nghỉ T7, CN", sat, sun);
+        days("Closed: Saturday, Sunday", sat, sun);
+        days("Mon-Fri 8:00-17:00, closed Sat, Sun", sat, sun);
+        days("8h-17h, nghỉ T6, T7, CN", java.time.DayOfWeek.FRIDAY, sat, sun);
+        // the days first, then the "off"
+        days("T6, T7, CN nghỉ", java.time.DayOfWeek.FRIDAY, sat, sun);
+        days("Thứ 2, Thứ 3, Thứ 4, Thứ 5 nghỉ", java.time.DayOfWeek.MONDAY, java.time.DayOfWeek.TUESDAY, java.time.DayOfWeek.WEDNESDAY, java.time.DayOfWeek.THURSDAY);
+        // a clause about holidays after the days does not lose them
+        days("CN, ngày lễ: nghỉ", sun);
+        // the list in brackets after the hours
+        TestRideRules.Hours bracket = days("08:00 - 21:00 (T7, CN nghỉ)", sat, sun);
+        assertEquals(LocalTime.of(21, 0), bracket.close());
+        // days off do not leak into a later clause that has nothing to do with them
+        days("T7, 8-17h, CN nghỉ", sun);
+        days("Nghỉ T7, 8h-17h", sat);
+    }
+
+    @Test
     void offAndClosedAreWholeWordsOnly() {
         TestRideRules.Hours fallback = new TestRideRules.Hours(TestRideRules.DEFAULT_OPEN, TestRideRules.DEFAULT_CLOSE);
         // "nghi" is inside "nghiệp" and "off" inside "official": neither is a day off or a shut showroom

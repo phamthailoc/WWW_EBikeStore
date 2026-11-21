@@ -86,7 +86,8 @@ public final class TestRideRules {
      * Reads "08:00 - 21:00" (also "8h - 21h", "8 - 21h", "8:00 AM - 9:00 PM", "08:00 - 24:00", "08:30-17:00", and "Thứ 2-7: 08:00 - 21:00" as 08:00 - 21:00) from the
      * free text of {@code showrooms.opening_hours}. A clause that gives a day off with no hours in it ("CN đóng cửa", "Sunday closed", "T7 nghỉ", "T7-CN nghỉ",
      * "Sat-Sun closed") makes those weekdays (a range counts every day in it) take no bookings; the same goes for a day off written after the hours in one
-     * clause ("Mon-Sat 8:00 - 21:00 Sun closed"). Text whose every clause says the showroom is shut ("Đóng cửa", "Tạm nghỉ", "Closed") and gives no hours takes
+     * clause ("Mon-Sat 8:00 - 21:00 Sun closed"). A list of days split by commas is read whatever its length and wherever the "off" stands ("Nghỉ T7, CN",
+     * "T6, T7, CN nghỉ", "closed Sat, Sun", "08:00 - 21:00 (T7, CN nghỉ)", "CN, ngày lễ: nghỉ"). Text whose every clause says the showroom is shut ("Đóng cửa", "Tạm nghỉ", "Closed") and gives no hours takes
      * no bookings at all; "Mở cửa hằng ngày, đóng cửa ngày lễ" is not that, since it also says "open" and names a holiday. Anything else that cannot be read
      * as a same-day range falls back to 08:00 - 21:00, so a showroom with a note such as "by appointment" still takes bookings.
      *
@@ -100,26 +101,42 @@ public final class TestRideRules {
         }
         // clauses that only give a weekday off are taken out first, so "CN đóng cửa" is not read as "the showroom is shut"
         Set<DayOfWeek> closedDays = EnumSet.noneOf(DayOfWeek.class);
-        Set<DayOfWeek> listed = EnumSet.noneOf(DayOfWeek.class); // the clause just before this one, when it names only weekdays ("T7, CN đóng cửa")
+        Set<DayOfWeek> listed = EnumSet.noneOf(DayOfWeek.class); // the clauses just before this one that name only weekdays ("T6, T7, CN nghỉ")
+        boolean afterOff = false; // the clause before was a day off, so a clause of weekdays that follows is off too ("Nghỉ T7, CN")
         StringBuilder rest = new StringBuilder();
         for (String clause : text.split("[;|\n,]")) {
             Matcher hours = hoursIn(clause);
             if (hours != null) {
                 // "Mon-Sat 8:00 - 21:00 Sun closed": a day off written after the hours of the same clause
                 String tail = clause.substring(hours.end());
+                listed.clear();
+                afterOff = false;
                 if (DAY_OFF.matcher(tail).find() && addWeekdays(tail, closedDays)) {
                     clause = clause.substring(0, hours.end());
+                    afterOff = true;
+                } else if (tail.indexOf('(') >= 0 && onlyWeekdays(tail)) {
+                    addWeekdays(tail, listed); // "08:00 - 21:00 (T7, CN nghỉ)": the list goes on in the next clause
+                }
+            } else if (DAY_OFF.matcher(clause).find()) {
+                Set<DayOfWeek> named = EnumSet.noneOf(DayOfWeek.class);
+                if (addWeekdays(clause, named) || !listed.isEmpty()) { // "CN, ngày lễ: nghỉ": the Sunday before it is off too
+                    closedDays.addAll(named);
+                    closedDays.addAll(listed);
+                    listed.clear();
+                    afterOff = true;
+                    continue;
                 }
                 listed.clear();
-            } else if (DAY_OFF.matcher(clause).find() && addWeekdays(clause, closedDays)) {
-                closedDays.addAll(listed);
-                listed.clear();
-                continue;
+                afterOff = false;
+            } else if (onlyWeekdays(clause)) {
+                if (afterOff) {
+                    addWeekdays(clause, closedDays);
+                    continue;
+                }
+                addWeekdays(clause, listed);
             } else {
                 listed.clear();
-                if (onlyWeekdays(clause)) {
-                    addWeekdays(clause, listed);
-                }
+                afterOff = false;
             }
             rest.append(clause).append(' ');
         }
@@ -140,7 +157,7 @@ public final class TestRideRules {
     /** True when the clause is nothing but weekdays and the words that join them ("T7", "Thứ 6 và Thứ 7", "Sat & Sun"). */
     private static boolean onlyWeekdays(String clause) {
         String left = WEEKDAYS.matcher(clause).replaceAll("");
-        return !left.equals(clause) && left.replaceAll("(?iu)(?<![\\p{L}\\d])(?:và|and)(?![\\p{L}\\d])|[\\s&/:.\\-–—]", "").isEmpty();
+        return !left.equals(clause) && left.replaceAll("(?iu)(?<![\\p{L}\\d])(?:và|and)(?![\\p{L}\\d])|[\\s&/:.()\\-–—]", "").isEmpty();
     }
 
     /** Adds the weekdays named in the clause (a range such as "T2-T6" or "Mon-Fri" gives every day in it) to {@code days}; false when it names none. */
