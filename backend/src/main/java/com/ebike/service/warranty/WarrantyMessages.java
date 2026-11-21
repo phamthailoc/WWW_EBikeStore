@@ -29,16 +29,22 @@ public final class WarrantyMessages {
     }
 
     /** Picks the text for the language of the current request. */
+    /** Picks the text for the language of a given request (for code that runs before the request is bound to the thread). */
+    public static String text(HttpServletRequest request, String vietnamese, String english) {
+        return "en".equals(requestLanguage(request)) ? english : vietnamese;
+    }
+
     public static String text(String vietnamese, String english) {
         return "en".equals(requestLanguage()) ? english : vietnamese;
     }
 
     public static String requestLanguage() {
         RequestAttributes attributes = RequestContextHolder.getRequestAttributes();
-        if (!(attributes instanceof ServletRequestAttributes servlet)) {
-            return "vi";
-        }
-        HttpServletRequest request = servlet.getRequest();
+        return attributes instanceof ServletRequestAttributes servlet ? requestLanguage(servlet.getRequest()) : "vi";
+    }
+
+    /** The same choice for a request that is not bound to the current thread yet (a servlet filter). */
+    public static String requestLanguage(HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
             for (Cookie cookie : cookies) {

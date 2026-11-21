@@ -46,7 +46,7 @@ public class WarrantyController {
 
     /** Open to everyone; the answer carries no owner data. */
     @GetMapping("/api/v1/warranty/lookup")
-    public WarrantyLookupResponse lookup(@RequestParam("frame") String frame) {
+    public WarrantyLookupResponse lookup(@RequestParam(value = "frame", required = false) String frame) {
         return warrantyService.lookup(frame);
     }
 

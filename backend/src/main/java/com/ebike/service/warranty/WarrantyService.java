@@ -150,7 +150,7 @@ public class WarrantyService {
         units.findLockedByIdAndOwner(unitId, username)
             .orElseThrow(WarrantyService::unitNotFound);
         User user = users.findByUsername(username)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authentication is required"));
+            .orElseThrow(WarrantyService::signInRequired);
         OrderItemUnit unit = units.findForWarrantyById(unitId)
             .filter(found -> ownedBy(found, username))
             .orElseThrow(WarrantyService::unitNotFound);
@@ -317,12 +317,16 @@ public class WarrantyService {
 
     private void requireUsername(String username) {
         if (username == null || username.isBlank()) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authentication is required");
+            throw signInRequired();
         }
     }
 
     private static ResponseStatusException openRequestExists() {
         return new ResponseStatusException(HttpStatus.CONFLICT, WarrantyMessages.text("Xe này đang có một yêu cầu bảo hành chưa xử lý xong.", "This vehicle already has an open warranty request."));
+    }
+
+    private static ResponseStatusException signInRequired() {
+        return new ResponseStatusException(HttpStatus.UNAUTHORIZED, WarrantyMessages.text("Vui lòng đăng nhập để tiếp tục.", "Please sign in to continue."));
     }
 
     private static ResponseStatusException unitNotFound() {

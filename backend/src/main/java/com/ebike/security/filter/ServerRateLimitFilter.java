@@ -9,6 +9,7 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import com.ebike.service.warranty.WarrantyMessages;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -62,7 +63,7 @@ public class ServerRateLimitFilter extends OncePerRequestFilter {
         TokenBucket bucket = buckets.computeIfAbsent(bucketKey, ignored -> new TokenBucket(rule.capacity(), rule.window()));
         RateLimitDecision decision = bucket.tryConsume();
         if (!decision.allowed()) {
-            writeTooManyRequests(response, decision.retryAfterSeconds());
+            writeTooManyRequests(request, response, decision.retryAfterSeconds());
             return;
         }
 
@@ -86,11 +87,12 @@ public class ServerRateLimitFilter extends OncePerRequestFilter {
         return request.getRemoteAddr();
     }
 
-    private void writeTooManyRequests(HttpServletResponse response, long retryAfterSeconds) throws IOException {
+    private void writeTooManyRequests(HttpServletRequest request, HttpServletResponse response, long retryAfterSeconds) throws IOException {
         response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
         response.setContentType("application/json;charset=UTF-8");
         response.setHeader("Retry-After", String.valueOf(Math.max(1, retryAfterSeconds)));
-        response.getWriter().write("{\"message\":\"Bạn thao tác quá nhanh. Vui lòng thử lại sau ít phút.\"}");
+        String message = WarrantyMessages.text(request, "Bạn thao tác quá nhanh. Vui lòng thử lại sau ít phút.", "You are doing that too fast. Please try again in a few minutes.");
+        response.getWriter().write("{\"message\":\"" + message + "\"}");
     }
 
     private void cleanupStaleBuckets() {
