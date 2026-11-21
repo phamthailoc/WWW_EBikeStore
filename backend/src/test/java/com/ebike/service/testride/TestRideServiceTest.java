@@ -592,6 +592,24 @@ class TestRideServiceTest {
     }
 
     @Test
+    void aDeletedAccountIsShownWithAPlaceholderNameNotTheStoredOne() {
+        bookingIn("CONFIRMED", NOW.plusDays(2));
+        an.setFirstName("Tài khoản");
+        an.setLastName("đã xóa");
+        an.setAccountStatus("DELETED");
+        assertEquals("Tài khoản đã xóa", service.update(77L, new TestRideUpdateRequest(null, "note")).customerName());
+        org.springframework.web.context.request.RequestContextHolder.setRequestAttributes(
+            new org.springframework.web.context.request.ServletRequestAttributes(new org.springframework.mock.web.MockHttpServletRequest()));
+        org.springframework.context.i18n.LocaleContextHolder.setLocale(java.util.Locale.ENGLISH);
+        try {
+            assertEquals("Deleted account", service.update(77L, new TestRideUpdateRequest(null, "note 2")).customerName());
+        } finally {
+            org.springframework.web.context.request.RequestContextHolder.resetRequestAttributes();
+            org.springframework.context.i18n.LocaleContextHolder.resetLocaleContext();
+        }
+    }
+
+    @Test
     void theStaffResponseOffersOnlyTheStepsThatAreAllowedNow() {
         bookingIn("REQUESTED", NOW.plusDays(2));
         TestRideResponse response = service.update(77L, new TestRideUpdateRequest(null, "note"));

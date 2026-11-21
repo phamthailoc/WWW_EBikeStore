@@ -16,6 +16,7 @@ import com.ebike.repository.auth.UserRepository;
 import com.ebike.repository.order.ShowroomRepository;
 import com.ebike.repository.product.ProductRepository;
 import com.ebike.repository.testride.TestRideBookingRepository;
+import com.ebike.service.admin.AccountErasure;
 import com.ebike.service.admin.AuditLogService;
 import java.time.Clock;
 import java.time.Duration;
@@ -400,6 +401,10 @@ public class TestRideService {
     private TestRideResponse toResponse(TestRideBooking booking, LocalDateTime now, boolean forStaff) {
         User user = booking.getUser();
         String name = ((user.getFirstName() == null ? "" : user.getFirstName()) + " " + (user.getLastName() == null ? "" : user.getLastName())).trim();
+        if (AccountErasure.DELETED.equals(user.getAccountStatus())) {
+            // the erasure wrote its Vietnamese placeholder into the name: the page shows it in the language of the request instead
+            name = RequestLanguage.text("Tài khoản đã xóa", "Deleted account");
+        }
         Showroom showroom = booking.getShowroom();
         Product product = booking.getProduct();
         return new TestRideResponse(
