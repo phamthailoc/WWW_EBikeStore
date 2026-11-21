@@ -11,6 +11,7 @@ import com.ebike.repository.order.OrderRepository;
 import com.ebike.repository.warranty.MaintenanceReminderRepository;
 import com.ebike.repository.warranty.WarrantyClaimRepository;
 import com.ebike.service.admin.AuditLogService;
+import com.ebike.service.warranty.WarrantyMessages;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -148,7 +149,8 @@ public class OrderUnitService {
         if (!touchedIds.isEmpty() && (!warrantyClaims.findByUnitIdIn(touchedIds).isEmpty()
             || !maintenanceReminders.findByUnitIdIn(touchedIds).isEmpty())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT,
-                "Xe này đã có yêu cầu bảo hành hoặc mốc nhắc bảo dưỡng, không thể đổi hoặc xóa số khung của xe.");
+                WarrantyMessages.text("Xe này đã có yêu cầu bảo hành hoặc mốc nhắc bảo dưỡng, không thể đổi hoặc xóa số khung của xe.",
+                    "This vehicle already has a warranty request or a service reminder, so its frame number cannot be changed or deleted."));
         }
         // Delete first and flush, so a number that moved to another line is free again before it is inserted.
         if (!removed.isEmpty()) {

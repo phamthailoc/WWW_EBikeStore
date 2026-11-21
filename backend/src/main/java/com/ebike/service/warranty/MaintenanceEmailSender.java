@@ -31,19 +31,16 @@ public class MaintenanceEmailSender {
         this.mailEnabled = mailEnabled;
     }
 
-    public void send(String email, String productName, String frameNumber, String milestone) {
+    /** {@code language} is the customer's saved language ("vi" or "en"). */
+    public void send(String email, String productName, String frameNumber, String milestone, String language) {
         if (!mailEnabled || smtpHost == null || smtpHost.isBlank() || email == null || email.isBlank()) {
             return;
         }
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom(fromAddress);
         message.setTo(email);
-        message.setSubject("Kinetic E-Bike: xe " + productName + " đến hạn bảo dưỡng");
-        message.setText("""
-            Xe %s (số khung %s) đã đến mốc bảo dưỡng định kỳ, %s kể từ ngày giao.
-
-            Vui lòng mang xe đến cửa hàng Kinetic để được kiểm tra. Xem sổ bảo hành của bạn tại trang Bảo hành trong tài khoản. Bạn nhận email này vì đã mua xe tại Kinetic và đang bật nhận thông báo.
-            """.formatted(productName, frameNumber, MaintenanceMilestones.describe(milestone)));
+        message.setSubject(WarrantyMessages.maintenanceEmailSubject(language, productName));
+        message.setText(WarrantyMessages.maintenanceEmailBody(language, productName, frameNumber, milestone));
         try {
             mailSender.send(message);
         } catch (MailException exception) {

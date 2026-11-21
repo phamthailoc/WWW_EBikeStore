@@ -13,9 +13,10 @@ import com.ebike.event.notification.MaintenanceDueEvent;
 import com.ebike.event.notification.StockAlertTriggeredEvent;
 import com.ebike.event.notification.WarrantyClaimStatusChangedEvent;
 import com.ebike.repository.notification.NotificationRepository;
+import com.ebike.model.entity.user.UserPreference;
 import com.ebike.repository.user.UserPreferenceRepository;
 import com.ebike.service.notification.NotificationStreamService;
-import com.ebike.service.warranty.MaintenanceMilestones;
+import com.ebike.service.warranty.WarrantyMessages;
 import com.ebike.service.stock.StockAlertMessages;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -111,9 +112,8 @@ public class NotificationCreationService {
         userRepository.findById(event.userId()).ifPresent(user -> createNotification(
             user,
             NotificationType.WARRANTY_CLAIM,
-            "Cập nhật yêu cầu bảo hành",
-            "Yêu cầu bảo hành xe " + event.productName() + " (số khung " + event.frameNumber() + ") "
-                + formatClaimStatus(event.status()) + ".",
+            WarrantyMessages.claimTitle(languageOf(user)),
+            WarrantyMessages.claimBody(languageOf(user), event.productName(), event.frameNumber(), event.status()),
             null,
             null,
             "/customer/warranty"
@@ -127,9 +127,8 @@ public class NotificationCreationService {
         userRepository.findById(event.userId()).ifPresent(user -> createNotification(
             user,
             NotificationType.MAINTENANCE_DUE,
-            "Đến hạn bảo dưỡng",
-            "Xe " + event.productName() + " (số khung " + event.frameNumber() + ") đã đến mốc bảo dưỡng định kỳ ("
-                + MaintenanceMilestones.describe(event.milestone()) + " kể từ ngày giao). Vui lòng mang xe đến cửa hàng.",
+            WarrantyMessages.maintenanceTitle(languageOf(user)),
+            WarrantyMessages.maintenanceBody(languageOf(user), event.productName(), event.frameNumber(), event.milestone()),
             null,
             null,
             "/customer/warranty"
@@ -208,20 +207,9 @@ public class NotificationCreationService {
         notificationStreamService.sendUnreadCount(user.getId());
     }
 
-    private String formatClaimStatus(String status) {
-        if ("RECEIVED".equals(status)) {
-            return "đã được cửa hàng tiếp nhận";
-        }
-        if ("REPAIRING".equals(status)) {
-            return "đang được xử lý";
-        }
-        if ("DONE".equals(status)) {
-            return "đã hoàn tất";
-        }
-        if ("REJECTED".equals(status)) {
-            return "không được chấp nhận, xem ghi chú của cửa hàng";
-        }
-        return "đã chuyển sang trạng thái " + status;
+    /** The language saved in the customer's profile ("vi" when there is none), for the words of a notice they did not ask for in a page. */
+    private String languageOf(User user) {
+        return userPreferenceRepository.findByUserId(user.getId()).map(UserPreference::getLanguage).orElse("vi");
     }
 
     private String formatOrderStatus(String status) {

@@ -2,6 +2,8 @@ package com.ebike.service.warranty;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -25,6 +27,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Pageable;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.test.util.ReflectionTestUtils;
 
 /** V20: a maintenance reminder is announced once; milestones that were skipped are stored as passed over. */
@@ -41,7 +45,9 @@ class MaintenanceReminderServiceTest {
     void setUp() {
         units = mock(OrderItemUnitRepository.class);
         reminders = mock(MaintenanceReminderRepository.class);
-        service = new MaintenanceReminderService(units, reminders, "P1M,P6M,P12M");
+        service = new MaintenanceReminderService(units, reminders, mock(PlatformTransactionManager.class), "P1M,P6M,P12M", 2);
+        // by default the first page holds the given vehicles and the next page is empty
+        when(units.findDeliveredUnitIdsAfter(anyLong(), any(Pageable.class))).thenReturn(List.of());
         ApplicationEventPublisher publisher = events::add;
         new NotificationEventBridge().setApplicationEventPublisher(publisher);
     }
@@ -52,6 +58,10 @@ class MaintenanceReminderServiceTest {
     }
 
     private static OrderItemUnit deliveredAt(LocalDateTime deliveredAt) {
+        return deliveredAt(deliveredAt, 7L);
+    }
+
+    private static OrderItemUnit deliveredAt(LocalDateTime deliveredAt, long id) {
         User owner = new User();
         owner.setId(1L);
         Shipment shipment = new Shipment();
@@ -65,15 +75,22 @@ class MaintenanceReminderServiceTest {
         item.setProductName("Test bike");
         OrderItemUnit unit = new OrderItemUnit();
         unit.setOrderItem(item);
-        unit.setFrameNumber("FRAME12345");
-        ReflectionTestUtils.setField(unit, "id", 7L);
+        unit.setFrameNumber("FRAME" + id);
+        ReflectionTestUtils.setField(unit, "id", id);
         return unit;
+    }
+
+    /** One page that holds all the given vehicles (fewer than the batch size, so the run ends after it). */
+    private void serve(OrderItemUnit... delivered) {
+        List<Long> ids = java.util.Arrays.stream(delivered).map(OrderItemUnit::getId).toList();
+        when(units.findDeliveredUnitIdsAfter(eq(0L), any(Pageable.class))).thenReturn(ids);
+        when(units.findForWarrantyByIdIn(ids)).thenReturn(List.of(delivered));
     }
 
     @Test
     @SuppressWarnings("unchecked")
     void severalDueMilestonesAnnounceOnlyTheLatest() {
-        when(units.findAllDeliveredForWarranty()).thenReturn(List.of(deliveredAt(NOW.minusMonths(7))));
+        serve(deliveredAt(NOW.minusMonths(7)));
         when(reminders.findByUnitIdIn(any())).thenReturn(List.of());
 
         int announced = service.sendDueReminders(NOW);
@@ -96,30 +113,69 @@ class MaintenanceReminderServiceTest {
         MaintenanceReminder done = new MaintenanceReminder();
         done.setUnit(unit);
         done.setMilestone("P1M");
-        when(units.findAllDeliveredForWarranty()).thenReturn(List.of(unit));
+        serve(unit);
         when(reminders.findByUnitIdIn(any())).thenReturn(List.of(done));
 
         int announced = service.sendDueReminders(NOW);
 
         assertEquals(0, announced);
         assertEquals(0, events.size());
-        verify(reminders).saveAll(List.of());
+        verify(reminders, never()).saveAll(any());
     }
 
     @Test
     void aBikeNotDueYetIsLeftAlone() {
-        when(units.findAllDeliveredForWarranty()).thenReturn(List.of(deliveredAt(NOW.minusDays(5))));
+        serve(deliveredAt(NOW.minusDays(5)));
         when(reminders.findByUnitIdIn(any())).thenReturn(List.of());
 
         assertEquals(0, service.sendDueReminders(NOW));
         assertEquals(0, events.size());
+        verify(reminders, never()).saveAll(any());
     }
 
     @Test
     void noDeliveredBikesMeansNothingToDo() {
-        when(units.findAllDeliveredForWarranty()).thenReturn(List.of());
-
         assertEquals(0, service.sendDueReminders(NOW));
         verify(reminders, never()).saveAll(any());
+        verify(units, never()).findForWarrantyByIdIn(any());
+    }
+
+    @Test
+    void vehiclesAreReadPageByPageUntilAShortPage() {
+        OrderItemUnit a = deliveredAt(NOW.minusMonths(2), 1L);
+        OrderItemUnit b = deliveredAt(NOW.minusMonths(2), 2L);
+        OrderItemUnit c = deliveredAt(NOW.minusMonths(2), 3L);
+        when(units.findDeliveredUnitIdsAfter(eq(0L), any(Pageable.class))).thenReturn(List.of(1L, 2L));
+        when(units.findDeliveredUnitIdsAfter(eq(2L), any(Pageable.class))).thenReturn(List.of(3L));
+        when(units.findForWarrantyByIdIn(List.of(1L, 2L))).thenReturn(List.of(a, b));
+        when(units.findForWarrantyByIdIn(List.of(3L))).thenReturn(List.of(c));
+        when(reminders.findByUnitIdIn(any())).thenReturn(List.of());
+
+        assertEquals(3, service.sendDueReminders(NOW));
+        assertEquals(3, events.size());
+        verify(reminders, org.mockito.Mockito.times(3)).saveAll(any());
+    }
+
+    @Test
+    void oneVehicleThatFailsDoesNotStopTheOthers() {
+        OrderItemUnit bad = deliveredAt(NOW.minusMonths(2), 1L);
+        OrderItemUnit good = deliveredAt(NOW.minusMonths(2), 2L);
+        serve(bad, good);
+        when(reminders.findByUnitIdIn(any())).thenReturn(List.of());
+        when(reminders.saveAll(any())).thenThrow(new IllegalStateException("duplicate")).thenAnswer(invocation -> invocation.getArgument(0));
+
+        assertEquals(1, service.sendDueReminders(NOW));
+        assertEquals(1, events.size());
+    }
+
+    @Test
+    void aBatchThatCannotBeReadIsSkippedAndTheRunGoesOn() {
+        when(units.findDeliveredUnitIdsAfter(eq(0L), any(Pageable.class))).thenReturn(List.of(1L, 2L));
+        when(units.findDeliveredUnitIdsAfter(eq(2L), any(Pageable.class))).thenReturn(List.of(3L));
+        when(units.findForWarrantyByIdIn(List.of(1L, 2L))).thenThrow(new IllegalStateException("db down"));
+        when(units.findForWarrantyByIdIn(List.of(3L))).thenReturn(List.of(deliveredAt(NOW.minusMonths(2), 3L)));
+        when(reminders.findByUnitIdIn(any())).thenReturn(List.of());
+
+        assertEquals(1, service.sendDueReminders(NOW));
     }
 }

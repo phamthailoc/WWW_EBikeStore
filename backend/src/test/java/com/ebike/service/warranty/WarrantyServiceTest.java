@@ -31,6 +31,12 @@ import java.util.Optional;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.server.ResponseStatusException;
@@ -212,5 +218,55 @@ class WarrantyServiceTest {
         WarrantyClaimResponse created = service.createClaim("me", 7L, "The motor makes a noise");
 
         assertFalse(created.outOfWarranty());
+    }
+
+    @Test
+    void theStaffQueueIsReadOnePageAtATimeNewestFirst() {
+        when(claims.findAllBy(any(Pageable.class))).thenReturn(List.of());
+        service.listClaims(null, 2, 25);
+        ArgumentCaptor<Pageable> page = ArgumentCaptor.forClass(Pageable.class);
+        verify(claims).findAllBy(page.capture());
+        assertEquals(2, page.getValue().getPageNumber());
+        assertEquals(25, page.getValue().getPageSize());
+        assertEquals(Sort.Direction.DESC, page.getValue().getSort().getOrderFor("createdAt").getDirection());
+        assertEquals(Sort.Direction.DESC, page.getValue().getSort().getOrderFor("id").getDirection());
+    }
+
+    @Test
+    void aStatusFilterIsPagedToo() {
+        when(claims.findByStatus(any(), any(Pageable.class))).thenReturn(List.of());
+        service.listClaims("new", 0, 10);
+        verify(claims).findByStatus(org.mockito.ArgumentMatchers.eq("NEW"), any(Pageable.class));
+    }
+
+    @Test
+    void anOddPageOrSizeIsHeldInRange() {
+        when(claims.findAllBy(any(Pageable.class))).thenReturn(List.of());
+        service.listClaims(null, -5, 100000);
+        service.listClaims(null, 0, 0);
+        ArgumentCaptor<Pageable> page = ArgumentCaptor.forClass(Pageable.class);
+        verify(claims, org.mockito.Mockito.times(2)).findAllBy(page.capture());
+        assertEquals(0, page.getAllValues().get(0).getPageNumber());
+        assertEquals(WarrantyService.MAX_PAGE_SIZE, page.getAllValues().get(0).getPageSize());
+        assertEquals(1, page.getAllValues().get(1).getPageSize());
+    }
+
+    @Test
+    void errorsAreEnglishForAnEnglishRequest() {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.addHeader("Accept-Language", "en-US");
+        RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
+        try {
+            ResponseStatusException error = assertThrows(ResponseStatusException.class, () -> service.lookup("ab"));
+            assertEquals("A frame number has 5 to 30 letters, digits or hyphens.", error.getReason());
+        } finally {
+            RequestContextHolder.resetRequestAttributes();
+        }
+    }
+
+    @Test
+    void errorsAreVietnameseByDefault() {
+        ResponseStatusException error = assertThrows(ResponseStatusException.class, () -> service.lookup("ab"));
+        assertEquals("Số khung gồm 5 đến 30 ký tự chữ, số hoặc dấu gạch ngang.", error.getReason());
     }
 }

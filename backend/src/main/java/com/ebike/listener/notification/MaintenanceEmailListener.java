@@ -32,11 +32,11 @@ public class MaintenanceEmailListener {
             if ("DELETED".equals(user.getAccountStatus())) {
                 return;
             }
-            boolean optedOut = userPreferenceRepository.findByUserId(user.getId())
-                .map(preference -> Boolean.FALSE.equals(preference.getNotificationsEnabled()))
-                .orElse(false);
+            var preference = userPreferenceRepository.findByUserId(user.getId());
+            boolean optedOut = preference.map(saved -> Boolean.FALSE.equals(saved.getNotificationsEnabled())).orElse(false);
             if (!optedOut) {
-                emailSender.send(user.getEmail(), event.productName(), event.frameNumber(), event.milestone());
+                String language = preference.map(saved -> saved.getLanguage()).orElse("vi");
+                emailSender.send(user.getEmail(), event.productName(), event.frameNumber(), event.milestone(), language);
             }
         });
     }

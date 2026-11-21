@@ -10,16 +10,21 @@ public final class MaintenanceMilestones {
     }
 
     public static String describe(String milestone) {
+        return describe(milestone, "vi");
+    }
+
+    public static String describe(String milestone, String language) {
+        boolean english = "en".equals(WarrantyMessages.normalize(language));
         try {
             Period period = Period.parse(milestone).normalized();
             long months = period.toTotalMonths();
             if (months > 0 && period.getDays() == 0) {
-                return months + " tháng";
+                return english ? months + (months == 1 ? " month" : " months") : months + " tháng";
             }
             if (months == 0 && period.getDays() > 0) {
-                return period.getDays() + " ngày";
+                return english ? period.getDays() + (period.getDays() == 1 ? " day" : " days") : period.getDays() + " ngày";
             }
-            return months + " tháng " + period.getDays() + " ngày";
+            return english ? months + " months " + period.getDays() + " days" : months + " tháng " + period.getDays() + " ngày";
         } catch (DateTimeParseException exception) {
             return milestone;
         }

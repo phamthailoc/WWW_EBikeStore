@@ -51,8 +51,12 @@ public class WarrantyController {
     }
 
     @GetMapping("/api/v1/manager/warranty-claims")
-    public List<WarrantyClaimResponse> listClaims(@RequestParam(required = false) String status) {
-        return warrantyService.listClaims(status);
+    public List<WarrantyClaimResponse> listClaims(
+        @RequestParam(required = false) String status,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "" + WarrantyService.DEFAULT_PAGE_SIZE) int size
+    ) {
+        return warrantyService.listClaims(status, page, size);
     }
 
     @PatchMapping("/api/v1/manager/warranty-claims/{id}")

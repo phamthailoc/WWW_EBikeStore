@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import jakarta.persistence.LockModeType;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
@@ -32,6 +33,11 @@ public interface OrderItemUnitRepository extends JpaRepository<OrderItemUnit, Lo
     @Query(WARRANTY_FETCH + "where u.frameNumber = :frame")
     Optional<OrderItemUnit> findForWarrantyByFrameNumber(@Param("frame") String frame);
 
-    @Query(WARRANTY_FETCH + "where o.status = com.ebike.model.entity.order.OrderStatus.DELIVERED and usr is not null")
-    List<OrderItemUnit> findAllDeliveredForWarranty();
+    /** One page of the ids of delivered vehicles that belong to an account, after {@code afterId}; the reminder job walks all of them page by page. */
+    @Query("select u.id from OrderItemUnit u join u.orderItem i join i.order o where o.status = com.ebike.model.entity.order.OrderStatus.DELIVERED "
+        + "and o.user is not null and u.id > :afterId order by u.id")
+    List<Long> findDeliveredUnitIdsAfter(@Param("afterId") Long afterId, Pageable pageable);
+
+    @Query(WARRANTY_FETCH + "where u.id in :ids order by u.id")
+    List<OrderItemUnit> findForWarrantyByIdIn(@Param("ids") Collection<Long> ids);
 }
