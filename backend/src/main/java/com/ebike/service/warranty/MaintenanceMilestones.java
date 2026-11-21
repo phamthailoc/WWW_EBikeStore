@@ -24,7 +24,10 @@ public final class MaintenanceMilestones {
             if (months == 0 && period.getDays() > 0) {
                 return english ? period.getDays() + (period.getDays() == 1 ? " day" : " days") : period.getDays() + " ngày";
             }
-            return english ? months + " months " + period.getDays() + " days" : months + " tháng " + period.getDays() + " ngày";
+            if (!english) {
+                return months + " tháng " + period.getDays() + " ngày";
+            }
+            return months + (months == 1 ? " month " : " months ") + period.getDays() + (period.getDays() == 1 ? " day" : " days");
         } catch (DateTimeParseException exception) {
             return milestone;
         }
