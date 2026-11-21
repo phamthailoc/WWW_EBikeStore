@@ -20,6 +20,9 @@ public final class InstallmentRules {
     /** A Vietnamese citizen ID card has 12 digits; the old 9-digit identity card is still in use. */
     private static final int[] ID_LENGTHS = {9, 12};
     private static final int VISIBLE_DIGITS = 4;
+    /** The largest amount a quote is worked out for: far above any order, and small enough that the arithmetic below stays instant. */
+    public static final BigDecimal MAX_QUOTE_AMOUNT = new BigDecimal("1000000000000");
+    private static final int MAX_QUOTE_SCALE = 4;
     private static final BigDecimal HUNDRED = BigDecimal.valueOf(100);
     private static final BigDecimal TWELVE = BigDecimal.valueOf(12);
 
@@ -42,6 +45,14 @@ public final class InstallmentRules {
 
     public static boolean isValidDownPercent(int percent) {
         return percent >= MIN_DOWN_PERCENT && percent <= MAX_DOWN_PERCENT;
+    }
+
+    /**
+     * Whether an amount typed into a public quote is safe to compute with. A number such as {@code 1e20000000} is a valid BigDecimal, but rounding it
+     * or multiplying it would build a number of twenty million digits, so the scale and the size are checked first (both checks are cheap).
+     */
+    public static boolean isQuotableAmount(BigDecimal amount) {
+        return amount != null && amount.scale() <= MAX_QUOTE_SCALE && amount.signum() > 0 && amount.compareTo(MAX_QUOTE_AMOUNT) <= 0;
     }
 
     /** The plan for an order total; the caller has checked the percent and the term. */

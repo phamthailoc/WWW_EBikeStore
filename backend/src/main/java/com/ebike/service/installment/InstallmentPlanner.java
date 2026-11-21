@@ -68,6 +68,10 @@ public class InstallmentPlanner {
         if (amount == null || amount.signum() <= 0) {
             throw bad("Số tiền cần tính trả góp phải lớn hơn 0.", "The amount to finance must be greater than 0.");
         }
+        // the quote is public: refuse a number that would make the arithmetic build a huge value before computing anything
+        if (!InstallmentRules.isQuotableAmount(amount)) {
+            throw bad("Số tiền cần tính trả góp không hợp lệ.", "The amount to finance is not valid.");
+        }
         InstallmentRules.Plan plan = planFor(amount, downPercent, termMonths);
         boolean eligible = InstallmentRules.totalInRange(plan.orderTotal(), limits);
         String reason = eligible ? null : RequestLanguage.text(totalOutOfRangeVi(), totalOutOfRangeEn());

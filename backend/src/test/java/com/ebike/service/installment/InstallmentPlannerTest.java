@@ -132,6 +132,10 @@ class InstallmentPlannerTest {
         assertEquals(HttpStatus.BAD_REQUEST, refused(() -> planner.quote(BigDecimal.ZERO, 30, 12)).getStatusCode());
         assertEquals(HttpStatus.BAD_REQUEST, refused(() -> planner.quote(new BigDecimal("-5"), 30, 12)).getStatusCode());
         assertEquals(HttpStatus.BAD_REQUEST, refused(() -> planner.quote(null, 30, 12)).getStatusCode());
+        // numbers in exponent form would make the arithmetic build values of millions of digits: refused before any computation
+        assertEquals(HttpStatus.BAD_REQUEST, refused(() -> planner.quote(new BigDecimal("1e20000000"), 30, 12)).getStatusCode());
+        assertEquals(HttpStatus.BAD_REQUEST, refused(() -> planner.quote(new BigDecimal("1e-20000000"), 30, 12)).getStatusCode());
+        assertEquals(HttpStatus.BAD_REQUEST, refused(() -> planner.quote(new BigDecimal("2000000000000"), 30, 12)).getStatusCode());
         rate("INSTALLMENT_RATE_12", "10", "INACTIVE", LocalDateTime.now().minusDays(1));
         assertEquals(HttpStatus.BAD_REQUEST, refused(() -> planner.quote(new BigDecimal("30000000"), 30, 12)).getStatusCode());
     }
