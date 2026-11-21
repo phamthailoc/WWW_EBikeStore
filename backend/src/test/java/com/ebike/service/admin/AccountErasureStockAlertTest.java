@@ -10,6 +10,7 @@ import com.ebike.repository.product.StockAlertRepository;
 import com.ebike.repository.user.UserAddressRepository;
 import com.ebike.repository.user.UserFavoriteRepository;
 import com.ebike.repository.user.UserPreferenceRepository;
+import com.ebike.repository.warranty.WarrantyClaimRepository;
 import com.ebike.service.product.ProductReviewService;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -22,7 +23,7 @@ class AccountErasureStockAlertTest {
         StockAlertRepository stockAlerts = mock(StockAlertRepository.class);
         AccountErasure erasure = new AccountErasure(
             mock(UserAddressRepository.class), mock(UserFavoriteRepository.class), mock(UserPreferenceRepository.class),
-            mock(NotificationRepository.class), stockAlerts, mock(ProductReviewService.class), mock(PasswordEncoder.class));
+            mock(NotificationRepository.class), stockAlerts, mock(WarrantyClaimRepository.class), mock(ProductReviewService.class), mock(PasswordEncoder.class));
         User user = new User();
         user.setId(42L);
         erasure.erase(user);

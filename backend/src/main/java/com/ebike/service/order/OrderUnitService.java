@@ -8,6 +8,7 @@ import com.ebike.model.entity.order.OrderItemUnit;
 import com.ebike.model.entity.order.OrderStatus;
 import com.ebike.repository.order.OrderItemUnitRepository;
 import com.ebike.repository.order.OrderRepository;
+import com.ebike.repository.warranty.MaintenanceReminderRepository;
 import com.ebike.repository.warranty.WarrantyClaimRepository;
 import com.ebike.service.admin.AuditLogService;
 import java.util.ArrayList;
@@ -16,6 +17,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Pattern;
 import org.springframework.http.HttpStatus;
@@ -35,12 +37,14 @@ public class OrderUnitService {
     private final OrderItemUnitRepository unitRepository;
     private final AuditLogService auditLog;
     private final WarrantyClaimRepository warrantyClaims;
+    private final MaintenanceReminderRepository maintenanceReminders;
 
     public OrderUnitService(OrderRepository orders, OrderItemUnitRepository unitRepository, AuditLogService auditLog,
-                            WarrantyClaimRepository warrantyClaims) {
+                            WarrantyClaimRepository warrantyClaims, MaintenanceReminderRepository maintenanceReminders) {
         this.orders = orders;
         this.unitRepository = unitRepository;
         this.warrantyClaims = warrantyClaims;
+        this.maintenanceReminders = maintenanceReminders;
         this.auditLog = auditLog;
     }
 
@@ -97,21 +101,18 @@ public class OrderUnitService {
         }
 
         // Keep the rows that already exist (warranty requests and maintenance reminders hang off their ids): a vehicle
-        // whose frame number stays is updated in place, a changed number reuses a spare row of the same line.
+        // whose frame number stays on the same order line is updated in place. A number moved to another line counts as
+        // a dropped row plus a new one, so it meets the same 409 check (orphanRemoval would delete the row and, with it,
+        // the warranty history, even though the frame number reappears on the other line).
         Map<String, OrderItemUnit> byFrame = new HashMap<>();
         order.getItems().forEach(item -> item.getUnits().forEach(unit -> byFrame.put(unit.getFrameNumber(), unit)));
         Set<OrderItemUnit> kept = new HashSet<>();
         List<NormalizedEntry> unmatched = new ArrayList<>();
         for (NormalizedEntry entry : normalized) {
             OrderItemUnit unit = byFrame.get(entry.frame());
-            if (unit == null) {
+            if (unit == null || unit.getOrderItem() != entry.item()) {
                 unmatched.add(entry);
                 continue;
-            }
-            if (unit.getOrderItem() != entry.item()) {
-                unit.getOrderItem().getUnits().remove(unit);
-                unit.setOrderItem(entry.item());
-                entry.item().getUnits().add(unit);
             }
             unit.setEngineNumber(entry.engine());
             kept.add(unit);
@@ -124,26 +125,47 @@ public class OrderUnitService {
                 }
             }
         }
+        // A changed number reuses a spare row of the same line (a typo fix before anything hangs off the row).
+        List<OrderItemUnit> reused = new ArrayList<>();
+        List<NormalizedEntry> reuseEntries = new ArrayList<>();
+        List<NormalizedEntry> created = new ArrayList<>();
+        List<OrderItemUnit> removed = new ArrayList<>(spare);
         for (NormalizedEntry entry : unmatched) {
-            OrderItemUnit reuse = spare.stream().filter(unit -> unit.getOrderItem() == entry.item()).findFirst().orElse(null);
+            OrderItemUnit reuse = removed.stream().filter(unit -> unit.getOrderItem() == entry.item()
+                && !byFrame.containsKey(entry.frame())).findFirst().orElse(null);
             if (reuse == null) {
-                OrderItemUnit unit = new OrderItemUnit();
-                unit.setOrderItem(entry.item());
-                unit.setFrameNumber(entry.frame());
-                unit.setEngineNumber(entry.engine());
-                entry.item().getUnits().add(unit);
+                created.add(entry);
             } else {
-                spare.remove(reuse);
-                reuse.setFrameNumber(entry.frame());
-                reuse.setEngineNumber(entry.engine());
+                removed.remove(reuse);
+                reused.add(reuse);
+                reuseEntries.add(entry);
             }
         }
-        List<Long> removedIds = spare.stream().map(OrderItemUnit::getId).filter(java.util.Objects::nonNull).toList();
-        if (!removedIds.isEmpty() && !warrantyClaims.findByUnitIdIn(removedIds).isEmpty()) {
+        // The frame number of a vehicle that has a warranty request or a service reminder is its identity: no edit, no delete.
+        List<Long> touchedIds = spare.stream().map(OrderItemUnit::getId).filter(Objects::nonNull).toList();
+        // Lock the rows first: a warranty request being filed at this moment waits for us instead of being cascaded away.
+        touchedIds.forEach(unitRepository::findLockedById);
+        if (!touchedIds.isEmpty() && (!warrantyClaims.findByUnitIdIn(touchedIds).isEmpty()
+            || !maintenanceReminders.findByUnitIdIn(touchedIds).isEmpty())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT,
-                "Xe đã có yêu cầu bảo hành, không thể xóa số khung của xe này.");
+                "Xe này đã có yêu cầu bảo hành hoặc mốc nhắc bảo dưỡng, không thể đổi hoặc xóa số khung của xe.");
         }
-        spare.forEach(unit -> unit.getOrderItem().getUnits().remove(unit));
+        // Delete first and flush, so a number that moved to another line is free again before it is inserted.
+        if (!removed.isEmpty()) {
+            removed.forEach(unit -> unit.getOrderItem().getUnits().remove(unit));
+            orders.saveAndFlush(order);
+        }
+        for (int i = 0; i < reused.size(); i++) {
+            reused.get(i).setFrameNumber(reuseEntries.get(i).frame());
+            reused.get(i).setEngineNumber(reuseEntries.get(i).engine());
+        }
+        for (NormalizedEntry entry : created) {
+            OrderItemUnit unit = new OrderItemUnit();
+            unit.setOrderItem(entry.item());
+            unit.setFrameNumber(entry.frame());
+            unit.setEngineNumber(entry.engine());
+            entry.item().getUnits().add(unit);
+        }
         orders.saveAndFlush(order);
         auditLog.record("nhập số khung, số máy", order.getOrderNumber() + ": " + normalized.size() + " xe");
 

@@ -20,6 +20,7 @@ import com.ebike.model.entity.product.ProductSpecification;
 import com.ebike.model.entity.product.VehicleType;
 import com.ebike.repository.order.OrderItemUnitRepository;
 import com.ebike.repository.order.OrderRepository;
+import com.ebike.repository.warranty.MaintenanceReminderRepository;
 import com.ebike.repository.warranty.WarrantyClaimRepository;
 import com.ebike.service.admin.AuditLogService;
 import java.util.List;
@@ -39,6 +40,7 @@ class OrderUnitServiceTest {
     @Mock OrderItemUnitRepository unitRepository;
     @Mock AuditLogService auditLog;
     @Mock WarrantyClaimRepository warrantyClaims;
+    @Mock MaintenanceReminderRepository reminders;
     OrderUnitService service;
     Order order;
     OrderItem bikes;
@@ -58,7 +60,7 @@ class OrderUnitServiceTest {
     }
 
     @BeforeEach void setup() {
-        service = new OrderUnitService(orders, unitRepository, auditLog, warrantyClaims);
+        service = new OrderUnitService(orders, unitRepository, auditLog, warrantyClaims, reminders);
         bikes = line(1L, VehicleType.E_MOTORBIKE, 2);
         accessory = line(2L, VehicleType.ACCESSORY, 1);
         order = new Order();
@@ -156,5 +158,47 @@ class OrderUnitServiceTest {
         var ex = assertThrows(ResponseStatusException.class, () -> service.replaceUnits(10L, new OrderUnitsRequest(List.of())));
         assertEquals(409, ex.getStatusCode().value());
         assertEquals(1, bikes.getUnits().size());
+    }
+
+    @Test void aVehicleWithReminderCannotLoseItsNumbers() {
+        existing(7L, "RLHABC12345", "M1234567");
+        when(reminders.findByUnitIdIn(any())).thenReturn(List.of(new com.ebike.model.entity.warranty.MaintenanceReminder()));
+        var ex = assertThrows(ResponseStatusException.class, () -> service.replaceUnits(10L, new OrderUnitsRequest(List.of())));
+        assertEquals(409, ex.getStatusCode().value());
+        assertEquals(1, bikes.getUnits().size());
+        verify(orders, never()).saveAndFlush(any());
+    }
+
+    @Test void changingTheFrameOfAVehicleWithWarrantyHistoryIsRefused() {
+        existing(7L, "RLHABC12345", "M1234567");
+        when(warrantyClaims.findByUnitIdIn(any())).thenReturn(List.of(new com.ebike.model.entity.warranty.WarrantyClaim()));
+        var ex = assertThrows(ResponseStatusException.class, () -> service.replaceUnits(10L,
+            new OrderUnitsRequest(List.of(new Entry(1L, "RLHABC99999", "M1234567")))));
+        assertEquals(409, ex.getStatusCode().value());
+        assertEquals("RLHABC12345", bikes.getUnits().iterator().next().getFrameNumber());
+    }
+
+    @Test void movingAFrameToAnotherLineWithWarrantyHistoryIsRefused() {
+        OrderItem otherBikes = line(3L, VehicleType.E_MOTORBIKE, 1);
+        order.getItems().add(otherBikes);
+        existing(7L, "RLHABC12345", "M1234567");
+        when(reminders.findByUnitIdIn(any())).thenReturn(List.of(new com.ebike.model.entity.warranty.MaintenanceReminder()));
+        var ex = assertThrows(ResponseStatusException.class, () -> service.replaceUnits(10L,
+            new OrderUnitsRequest(List.of(new Entry(3L, "RLHABC12345", "M1234567")))));
+        assertEquals(409, ex.getStatusCode().value());
+        assertEquals(1, bikes.getUnits().size());
+        assertTrue(otherBikes.getUnits().isEmpty());
+    }
+
+    @Test void movingAFrameToAnotherLineWithoutHistoryDeletesThenInserts() {
+        OrderItem otherBikes = line(3L, VehicleType.E_MOTORBIKE, 1);
+        order.getItems().add(otherBikes);
+        existing(7L, "RLHABC12345", "M1234567");
+        service.replaceUnits(10L, new OrderUnitsRequest(List.of(new Entry(3L, "RLHABC12345", "M1234567"))));
+        assertTrue(bikes.getUnits().isEmpty());
+        assertEquals(1, otherBikes.getUnits().size());
+        assertEquals("RLHABC12345", otherBikes.getUnits().iterator().next().getFrameNumber());
+        // one flush for the delete, one for the insert, so the unique frame number is free in between
+        verify(orders, org.mockito.Mockito.times(2)).saveAndFlush(any());
     }
 }
