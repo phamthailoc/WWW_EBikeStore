@@ -58,12 +58,12 @@ class TestRideEmailListenerTest {
     }
 
     @Test
-    void aCustomerWhoSwitchedNotificationsOffGetsNoEmail() {
+    void aCustomerWhoSwitchedNotificationsOffStillGetsTheEmailOfTheirOwnBooking() {
         UserPreference off = new UserPreference();
         off.setNotificationsEnabled(false);
         when(preferences.findByUserId(7L)).thenReturn(Optional.of(off));
         listener.onTestRideNotice(event(TestRideMessages.CONFIRMED));
-        verify(sender, never()).send(any(), any(), any(), any(), any(), any(), any(), any());
+        verify(sender).send("an@example.test", TestRideMessages.CONFIRMED, "Kinetic X", "Quan 1", "187 Nguyen Thai Hoc", SLOT, "note", "vi");
     }
 
     @Test

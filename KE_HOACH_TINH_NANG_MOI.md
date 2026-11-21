@@ -109,6 +109,7 @@ Ký hiệu: P1 nên làm trước; P2 làm tiếp nếu còn thời gian; P3 là
 - Nhân viên không nhận thông báo riêng; trang Manager hiện số yêu cầu chờ xác nhận và số lịch đã quá giờ chưa đóng. Danh sách Manager tối đa 200 dòng, của khách tối đa 100 dòng, chưa phân trang.
 - "14 ngày tới" nghĩa là ngày cuối được đặt là hôm nay cộng 14 ngày (số ngày đọc từ `APP_TEST_RIDE_DAYS_AHEAD`, hộp thoại cũng đọc từ server).
 - Xóa tài khoản xóa số điện thoại, ghi chú của khách và ghi chú của cửa hàng ở mọi lịch của tài khoản đó (khác với phiếu bảo hành, nơi ghi chú cửa hàng được giữ).
+- Quyết định: thông báo và email về lịch lái thử của chính khách (xác nhận, cửa hàng hủy, nhắc lịch, đóng quá hạn) **không** bị công tắc thông báo trong hồ sơ chặn, giống cảnh báo hết hàng của V22; công tắc chỉ còn chặn thông báo đơn hàng và thanh toán.
 
 ### V24. Trả góp (mô phỏng) — khoảng 2 ngày
 

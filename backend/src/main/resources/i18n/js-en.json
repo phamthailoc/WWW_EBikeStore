@@ -642,7 +642,7 @@
  "Vui lòng chọn khung giờ.": "Please choose a time slot.",
  "Số điện thoại chưa hợp lệ. Vui lòng nhập số bắt đầu bằng 0 và gồm 10-11 chữ số.": "The phone number is not valid. Enter a number that starts with 0 and has 10 or 11 digits.",
  "Đã gửi yêu cầu lái thử": "Test ride request sent",
- "Cửa hàng sẽ xác nhận lịch và báo cho bạn qua thông báo trong tài khoản (và email nếu bạn bật nhận thông báo).": "The showroom will confirm the booking and tell you through a notification in your account (and by email if you have notifications turned on).",
+ "Cửa hàng sẽ xác nhận lịch và báo cho bạn qua thông báo trong tài khoản và email.": "The showroom will confirm the booking and tell you through a notification in your account and by email.",
  "Xem lịch của tôi": "See my bookings",
  "Chưa có cửa hàng nào": "No showrooms yet",
  "Chưa có cửa hàng nào nhận lịch lái thử.": "No showroom takes test ride bookings yet.",

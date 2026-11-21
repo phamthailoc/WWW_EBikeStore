@@ -40,13 +40,10 @@ public class TestRideEmailListener {
             if ("DELETED".equals(user.getAccountStatus())) {
                 return;
             }
-            var preference = userPreferenceRepository.findByUserId(user.getId());
-            boolean optedOut = preference.map(saved -> Boolean.FALSE.equals(saved.getNotificationsEnabled())).orElse(false);
-            if (!optedOut) {
-                String language = preference.map(saved -> saved.getLanguage()).orElse("vi");
-                emailSender.send(user.getEmail(), event.kind(), event.productName(), event.showroomName(), event.showroomAddress(),
-                    event.slotStart(), event.note(), language);
-            }
+            // Like the in-app notice, this email is about a booking the customer made: the profile's notification switch does not stop it.
+            String language = userPreferenceRepository.findByUserId(user.getId()).map(saved -> saved.getLanguage()).orElse("vi");
+            emailSender.send(user.getEmail(), event.kind(), event.productName(), event.showroomName(), event.showroomAddress(),
+                event.slotStart(), event.note(), language);
         });
     }
 }

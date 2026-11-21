@@ -108,8 +108,8 @@ public final class TestRideMessages {
             text.append(english ? "Your test rides: " : "Lịch lái thử của bạn: ").append(link).append("\n\n");
         }
         text.append(english
-            ? "You are receiving this email because you booked a test ride at Kinetic and have notifications turned on.\n"
-            : "Bạn nhận email này vì đã đặt lịch lái thử tại Kinetic và đang bật nhận thông báo.\n");
+            ? "You are receiving this email because you booked a test ride at Kinetic.\n"
+            : "Bạn nhận email này vì đã đặt lịch lái thử tại Kinetic.\n");
         return text.toString();
     }
 

@@ -73,10 +73,10 @@ class TestRideNotificationTest {
         assertTrue(notification.getMessage().contains("09:00 22/11/2026"), notification.getMessage());
     }
 
-    @Test void customerWhoSwitchedNotificationsOffGetsNone() {
+    @Test void customerWhoSwitchedNotificationsOffStillGetsNoticesOfTheirOwnBooking() {
         profile("en", false);
-        service.handleTestRideNotice(event(TestRideMessages.CONFIRMED));
-        verify(notifications, never()).save(org.mockito.ArgumentMatchers.any());
+        service.handleTestRideNotice(event(TestRideMessages.CANCELLED));
+        assertEquals("Test ride cancelled", saved().getTitle());
     }
 
     @Test void erasedAccountGetsNone() {

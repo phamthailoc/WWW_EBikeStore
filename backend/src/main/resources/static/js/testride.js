@@ -158,7 +158,7 @@ window.KineticTestRide = (() => {
         }, location.pathname + '?testRide=1');
         form.innerHTML = `<h2>${t('Đã gửi yêu cầu lái thử')}</h2>
           <p data-field="done">${esc(saved.productName)} · ${esc(saved.showroomName)} · ${esc(new Date(saved.slotStart).toLocaleString(localeTag(), {dateStyle: 'full', timeStyle: 'short'}))}</p>
-          <p class="muted">${t('Cửa hàng sẽ xác nhận lịch và báo cho bạn qua thông báo trong tài khoản (và email nếu bạn bật nhận thông báo).')}</p>
+          <p class="muted">${t('Cửa hàng sẽ xác nhận lịch và báo cho bạn qua thông báo trong tài khoản và email.')}</p>
           <p class="dialog-actions"><a class="button compact" href="/customer/test-rides">${t('Xem lịch của tôi')}</a><button type="button" class="button compact ghost" data-close>${t('Đóng')}</button></p>`;
         form.querySelector('[data-close]').addEventListener('click', () => dialog.close());
       } catch (err) {

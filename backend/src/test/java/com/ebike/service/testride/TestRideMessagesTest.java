@@ -71,11 +71,11 @@ class TestRideMessagesTest {
             SLOT, null, TestRideMessages.bookingsUrl("https://shop.example/"));
         assertTrue(text.contains("Quan 1, 187 Nguyen Thai Hoc"), text);
         assertTrue(text.contains("https://shop.example/customer/test-rides"), text);
-        assertTrue(text.contains("notifications turned on"), text);
+        assertTrue(text.contains("you booked a test ride"), text);
         String vi = TestRideMessages.emailBody("vi", TestRideMessages.CONFIRMED, "Kinetic X", "Quan 1", null, SLOT, null, null);
         assertTrue(vi.contains("Quan 1"), vi);
         assertFalse(vi.contains("customer/test-rides"), "no link without a configured address");
-        assertTrue(vi.contains("đang bật nhận thông báo"), vi);
+        assertTrue(vi.contains("đã đặt lịch lái thử"), vi);
     }
 
     @Test

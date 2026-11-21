@@ -227,6 +227,8 @@ public class NotificationCreationService {
     }
 
     // V23: a test-ride booking was confirmed, cancelled by the store, missed or closed unconfirmed, or is coming up; the link opens the customer's bookings.
+    // The customer asked for this booking, so the notices about it ignore the profile's notification switch (like the back-in-stock alert): a customer whose
+    // ride the store cancelled must be told, or they come for nothing.
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void handleTestRideNotice(TestRideNoticeEvent event) {
@@ -236,7 +238,7 @@ public class NotificationCreationService {
             createNotification(user, preference, NotificationType.TEST_RIDE,
                 TestRideMessages.title(language, event.kind()),
                 TestRideMessages.body(language, event.kind(), event.productName(), event.showroomName(), event.slotStart(), event.note()),
-                null, null, "/customer/test-rides", true);
+                null, null, "/customer/test-rides", false);
         });
     }
 
