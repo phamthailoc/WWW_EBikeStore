@@ -52,9 +52,9 @@ public final class TestRideRules {
     private static final Pattern PLAIN_HOURS = Pattern.compile("^\\s*(\\d{1,2})\\s*[-\\u2013\\u2014]\\s*(\\d{1,2})\\s*$");
     /** An hour with no unit before a dash and a time that has one: "8 - 21h", "8-9 PM". Group 1 the opening hour, groups 2-6 the closing time. A number that follows a letter (the 2 of "T2") is not an hour. */
     private static final Pattern HOURS_BARE_OPEN = Pattern.compile("(?<![\\p{L}\\d:.\\-–—])(\\d{1,2})\\s*[-–—]\\s*" + TIME);
-    /** A phrase that says the showroom is shut (Đóng cửa, Tạm nghỉ, Closed); it counts only when the whole text says nothing else. */
+    /** A phrase that says the showroom is shut (Đóng cửa, Tạm nghỉ, Closed, Off); it counts only when the whole text says nothing else. A date or a reason beside it ("Tạm nghỉ đến 01/12", "Closed for renovation") does not stop it: the showroom is read as shut for good until the text is changed. */
     private static final Pattern SHUT = Pattern.compile(
-        "(?<![\\p{L}\\d])(?:đóng\\s*cửa|dong\\s*cua|tạm\\s*(?:nghỉ|ngưng|ngừng)|tam\\s*(?:nghi|ngung)|ngừng\\s*hoạt\\s*động|ngưng\\s*hoạt\\s*động|nghỉ|closed)(?![\\p{L}\\d])",
+        "(?<![\\p{L}\\d])(?:đóng\\s*cửa|dong\\s*cua|tạm\\s*(?:nghỉ|ngưng|ngừng)|tam\\s*(?:nghi|ngung)|ngừng\\s*hoạt\\s*động|ngưng\\s*hoạt\\s*động|nghỉ|closed|off)(?![\\p{L}\\d])",
         Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
     /** Words that make a "closed" only part of the story: a holiday, a break, a part of the day, or the showroom being open too. */
     private static final Pattern SHUT_QUALIFIER = Pattern.compile(
@@ -98,7 +98,8 @@ public final class TestRideRules {
      *
      * <p>Only the first range is read: a lunch break ("8:00 - 12:00, 13:30 - 21:00"), hours that differ by weekday, hours past midnight ("22:00 - 02:00")
      * and holidays are not understood (the first two use the first range, the third falls back to the default hours). The manager must keep the text to one
-     * simple range and, at most, a weekday off.
+     * simple range and, at most, a weekday off. A text that only says the showroom is shut, even with a date or a reason ("Tạm nghỉ đến 01/12", "Closed for renovation"),
+     * is read as shut for good, and a day off with an hour ("CN nghỉ từ 12h") is read as the whole day off.
      */
     public static Hours parseOpeningHours(String text) {
         if (text == null) {

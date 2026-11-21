@@ -245,7 +245,7 @@ class TestRideRulesTest {
 
     @Test
     void aShowroomThatSaysItIsShutTakesNoBookings() {
-        for (String text : List.of("Đóng cửa", "Tạm nghỉ", "Dong cua", "Closed", "Tạm ngưng hoạt động", "Đóng   cửa")) {
+        for (String text : List.of("Đóng cửa", "Tạm nghỉ", "Dong cua", "Closed", "Tạm ngưng hoạt động", "Đóng   cửa", "Off", "off")) {
             assertEquals(TestRideRules.Hours.CLOSED, TestRideRules.parseOpeningHours(text), text);
         }
         LocalDate day = LocalDate.of(2026, 11, 22);
