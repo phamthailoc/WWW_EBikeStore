@@ -46,7 +46,7 @@ window.KineticInstallment = (() => {
    * The sliders and the figures, shared by the bike page and checkout. {@code amount()} says what is being financed (null: not known yet); the figures
    * follow the slider and the term after a short pause, and an answer that arrives late for an older choice is dropped.
    */
-  function simulator(root, amount, onResult) {
+  function simulator(root, amount, onResult, emptyText) {
     let offer = null, sequence = 0, timer = null, last = null;
     root.innerHTML = `<p class="muted">${t('Đang tải bảng lãi suất…')}</p>`;
     const view = () => ({percent: Number(root.querySelector('[name="down"]')?.value), term: Number(root.querySelector('[name="term"]:checked')?.value)});
@@ -54,7 +54,7 @@ window.KineticInstallment = (() => {
       const box = root.querySelector('[data-result]');
       if (!box) return;
       if (problem) { box.innerHTML = `<p class="installment-problem" role="alert">${esc(problem)}</p>`; return; }
-      if (!result) { box.innerHTML = `<p class="muted">${t('Chọn xe để xem khoản trả góp.')}</p>`; return; }
+      if (!result) { box.innerHTML = `<p class="muted">${esc(emptyText || t('Chọn xe để xem khoản trả góp.'))}</p>`; return; }
       box.innerHTML = `<dl class="installment-figures">
         <div class="installment-main"><dt>${t('Trả mỗi tháng')}</dt><dd data-field="monthly">${esc(money(result.monthlyPayment))}</dd></div>
         <div><dt>${t('Trả trước')} (${result.downPaymentPercent}%)</dt><dd data-field="down">${esc(money(result.downPayment))}</dd></div>
@@ -114,6 +114,11 @@ window.KineticInstallment = (() => {
     if (!box || !window.kineticProductAmount) return;
     const body = box.querySelector('[data-body]');
     const sim = simulator(body, () => window.kineticProductAmount());
+    // the figures are on the price of the bike alone: the exact amount is worked out at checkout, with delivery, registration and a discount code
+    const note = document.createElement('p');
+    note.className = 'muted';
+    note.textContent = SIMULATION + ' ' + t('Chưa gồm phí giao hàng, phí đăng ký và mã giảm giá; số tiền chính xác được tính ở bước thanh toán.');
+    box.append(note);
     window.addEventListener('kinetic:amount', () => sim.refresh());
     box.hidden = false;
   }
@@ -152,7 +157,7 @@ window.KineticInstallment = (() => {
         simulatorReady = !failed;
         problem = failed ? t('Hiện chưa chọn được kỳ hạn trả góp. Vui lòng chọn hình thức thanh toán khác.') : result && !result.eligible ? result.reason : null;
         refreshAffordability();
-      });
+      }, t('Chọn hình thức nhận hàng để tính khoản trả góp.'));
       form.querySelector('[name="monthlyIncome"]').addEventListener('input', refreshAffordability);
     };
     const identify = async () => {
