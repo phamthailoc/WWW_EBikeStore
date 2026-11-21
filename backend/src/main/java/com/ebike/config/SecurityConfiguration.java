@@ -93,6 +93,8 @@ public class SecurityConfiguration {
                 .requestMatchers(HttpMethod.GET, "/api/v1/stock-alerts").hasRole("CUSTOMER")
                 .requestMatchers(HttpMethod.POST, "/api/v1/stock-alerts").hasRole("CUSTOMER")
                 .requestMatchers(HttpMethod.DELETE, "/api/v1/stock-alerts/*").hasRole("CUSTOMER")
+                // V23: booking a test ride is for customers; Manager and Admin hold the same permissions, so the role decides (like stock alerts).
+                .requestMatchers("/api/v1/test-rides", "/api/v1/test-rides/**").hasRole("CUSTOMER")
                 .requestMatchers(HttpMethod.GET, "/api/v1/notifications", "/api/v1/notifications/unread-count", "/api/v1/notifications/stream").authenticated()
                 .requestMatchers(HttpMethod.PATCH, "/api/v1/notifications/*/read", "/api/v1/notifications/read-all").authenticated()
                 .requestMatchers(HttpMethod.GET, "/api/v1/payments/history").hasAnyAuthority(
@@ -136,6 +138,8 @@ public class SecurityConfiguration {
                 )
                 // V20: moving a warranty request changes its status and messages the customer, so it needs the write permission, not only the view one.
                 .requestMatchers(HttpMethod.PATCH, "/api/v1/manager/warranty-claims/*").hasAuthority(PermissionConstants.OrderManagement.ORDER_UPDATE_STATUS)
+                // V23: confirming, closing or cancelling a test ride messages the customer, so it needs the write permission, not only the view one.
+                .requestMatchers(HttpMethod.PATCH, "/api/v1/manager/test-rides/*").hasAuthority(PermissionConstants.OrderManagement.ORDER_UPDATE_STATUS)
                 .requestMatchers("/api/v1/manager/**").hasAuthority(PermissionConstants.OrderManagement.ORDER_VIEW_ALL)
                 .requestMatchers("/api/v1/admin/**").hasAuthority(PermissionConstants.AccessControl.PERMISSION_MANAGE)
                 .anyRequest().denyAll()
