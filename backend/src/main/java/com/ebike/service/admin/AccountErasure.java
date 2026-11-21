@@ -10,8 +10,11 @@ import com.ebike.repository.user.UserFavoriteRepository;
 import com.ebike.repository.user.UserPreferenceRepository;
 import com.ebike.repository.warranty.WarrantyClaimRepository;
 import com.ebike.service.product.ProductReviewService;
+import java.time.Clock;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -42,6 +45,8 @@ public class AccountErasure {
     private final UserRepository users;
     private final ProductReviewService reviews;
     private final PasswordEncoder passwordEncoder;
+    /** The showroom's clock ({@code app.time-zone}): the cancellation stamps match the booking times, which are the showroom's local time. */
+    private final Clock clock;
 
     public AccountErasure(
         UserAddressRepository addresses,
@@ -53,7 +58,8 @@ public class AccountErasure {
         TestRideBookingRepository testRides,
         UserRepository users,
         ProductReviewService reviews,
-        PasswordEncoder passwordEncoder
+        PasswordEncoder passwordEncoder,
+        @Value("${app.time-zone:Asia/Ho_Chi_Minh}") String timeZone
     ) {
         this.addresses = addresses;
         this.favorites = favorites;
@@ -65,6 +71,7 @@ public class AccountErasure {
         this.users = users;
         this.reviews = reviews;
         this.passwordEncoder = passwordEncoder;
+        this.clock = Clock.system(ZoneId.of(timeZone));
     }
 
     /** Runs inside the caller's transaction; the caller saves the user. */
@@ -81,8 +88,9 @@ public class AccountErasure {
         warrantyClaims.clearDescriptionsOf(id, ERASED_DESCRIPTION);
         // V23: drop the phone number and the words of every booking, then cancel the open ones so their places are free (the rows stay as the shop's
         // record; the cancellation carries the code ERASED, which each page words in its own language)
-        testRides.clearPersonalDataOf(id, LocalDateTime.now());
-        testRides.cancelOpenOf(id, LocalDateTime.now());
+        LocalDateTime now = LocalDateTime.now(clock);
+        testRides.clearPersonalDataOf(id, now);
+        testRides.cancelOpenOf(id, now);
         reviews.removeReviewsOf(id);
 
         user.setUsername("deleted_" + id);

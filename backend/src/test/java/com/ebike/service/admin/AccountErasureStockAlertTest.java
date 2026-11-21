@@ -26,7 +26,7 @@ class AccountErasureStockAlertTest {
         WarrantyClaimRepository warrantyClaims = mock(WarrantyClaimRepository.class);
         AccountErasure erasure = new AccountErasure(
             mock(UserAddressRepository.class), mock(UserFavoriteRepository.class), mock(UserPreferenceRepository.class),
-            mock(NotificationRepository.class), stockAlerts, warrantyClaims, mock(TestRideBookingRepository.class), mock(UserRepository.class), mock(ProductReviewService.class), mock(PasswordEncoder.class));
+            mock(NotificationRepository.class), stockAlerts, warrantyClaims, mock(TestRideBookingRepository.class), mock(UserRepository.class), mock(ProductReviewService.class), mock(PasswordEncoder.class), "Asia/Ho_Chi_Minh");
         User user = new User();
         user.setId(42L);
         erasure.erase(user);
