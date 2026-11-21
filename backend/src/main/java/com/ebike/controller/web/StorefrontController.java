@@ -1,6 +1,8 @@
 package com.ebike.controller.web;
 
 import com.ebike.service.product.ProductService;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -77,6 +79,14 @@ public class StorefrontController {
     public String detail(@PathVariable String slug, Model model) {
         model.addAttribute("product", products.getProductBySlug(slug));
         model.addAttribute("related", products.getRelatedProducts(slug, 4));
+        // V22: "Notify me" is for visitors (who are sent to sign in) and customers; staff accounts do not get the button.
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        boolean visitor = authentication == null || !authentication.isAuthenticated()
+            || authentication instanceof AnonymousAuthenticationToken;
+        boolean customer = !visitor && authentication.getAuthorities().stream().anyMatch(a -> "ROLE_CUSTOMER".equals(a.getAuthority()));
+        model.addAttribute("canNotifyStock", visitor || customer);
+        // only a signed-in customer has a waiting list to ask for; guests and staff would just get 401/403
+        model.addAttribute("stockAlertCustomer", customer);
         return "store/detail";
     }
 

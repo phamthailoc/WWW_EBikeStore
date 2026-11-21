@@ -463,6 +463,7 @@ CREATE TABLE `maintenance_reminders` (
     CONSTRAINT fk_maintenance_reminders_unit FOREIGN KEY (order_item_unit_id) REFERENCES order_item_units(id) ON DELETE CASCADE,
     CONSTRAINT uk_maintenance_reminders_unit_milestone UNIQUE (order_item_unit_id, milestone)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE INDEX `idx_stock_alerts_pending` ON `stock_alerts` (notified_at, variant_id);
 CREATE INDEX `idx_pricing_rules_status` ON `pricing_rules` (status);
 CREATE INDEX `idx_promotions_status` ON `promotions` (status);
 CREATE INDEX `idx_promotions_code` ON `promotions` (code);

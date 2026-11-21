@@ -10,7 +10,7 @@ Mỗi mục ghi: vì sao nên làm, làm gì, dùng lại phần nào đã có, 
 |---|---|---|---|---|
 | V20. Sổ bảo hành điện tử và nhắc bảo dưỡng | P1 | 2–3 ngày | 🟡 Code xong, chưa kiểm thử Selenium (20/11): sổ bảo hành `/customer/warranty`, tra cứu `/warranty`, hàng đợi `/manager/warranty`, job nhắc bảo dưỡng (mốc `P1M,P6M,…,P36M`); xe hết hạn vẫn được gửi yêu cầu, đánh dấu sửa có tính phí; chạy `update_warranty_book.sql` trước | `feat/warranty-book` |
 | V21. Chạy test tự động trên GitHub Actions (CI) | P1 | 1 ngày | 🟡 Đã viết workflow, **chưa chạy thử trên GitHub** (20/11): job Unit test + job Selenium (MariaDB trong Docker, tài khoản thử tạo bằng SQL, app nền, Selenium headless); mặc định chạy Selenium cho mọi PR vào `develop` hoặc `main`; bỏ qua `ChatbotMemorySeleniumTest` nếu chưa có secret `GEMINI_AI_KEY` | `feat/ci-github-actions` (`.github/workflows/test.yml`) |
-| V22. Báo khi có hàng lại | P1 | 1 ngày | 🟡 Code xong (20/11), chưa kiểm thử Selenium: bảng `stock_alerts`, `POST/GET/DELETE /api/v1/stock-alerts`, nút ở trang xe, danh sách ở trang yêu thích, thông báo (bấm được) + email khi tồn kho 0 lên >0, kể cả khi hủy đơn trả hàng về kho; đã viết `StockAlertSeleniumTest`, chưa chạy | `feat/back-in-stock-alerts` |
+| V22. Báo khi có hàng lại | P1 | 1 ngày | 🟡 Code xong (21/11), chưa kiểm thử Selenium: bảng `stock_alerts`, `POST/GET/DELETE /api/v1/stock-alerts` (chỉ vai trò khách hàng, Manager/Admin nhận 403 và không thấy nút), thông báo (bấm được) + email VI/EN theo ngôn ngữ hồ sơ, gửi email nền có timeout 5 giây, mỗi lượt chỉ báo một lần dù nhiều người cùng cập nhật, quét 5 phút một lần cho màu bán lại; trang yêu thích hiện "Đã có hàng lại" khi còn hàng; đã viết `StockAlertSeleniumTest`, chưa chạy | `feat/back-in-stock-alerts` |
 | V23. Đặt lịch lái thử | P2 | 1–2 ngày | ⬜ Chưa làm | – |
 | V24. Trả góp (mô phỏng) | P2 | 2 ngày | ⬜ Chưa làm | – |
 | V25. Phụ kiện và gợi ý mua kèm | P2 | 2 ngày | ⬜ Chưa làm | – |
@@ -78,6 +78,16 @@ Ký hiệu: P1 nên làm trước; P2 làm tiếp nếu còn thời gian; P3 là
 **Dùng lại:** tồn kho theo màu (V17), hệ thống thông báo, cache sản phẩm (nhớ xóa cache khi đổi tồn kho, đã có).
 
 **Kiểm thử:** Selenium đặt một màu về 0, khách đăng ký báo, Manager nhập thêm, khách thấy thông báo; đăng ký lần hai không tạo bản trùng.
+
+**Giới hạn đã biết (V22):**
+- Báo hàng được gửi ngay sau khi giao dịch tồn kho commit, trong giao dịch riêng; nếu bước báo lỗi thì chỉ ghi log, việc nhập kho không bị hoàn tác.
+- Thông báo trong ứng dụng và email là "tối đa một lần": dòng chờ được đánh dấu `notified_at` cùng lúc với việc tạo sự kiện. Nếu sau đó SMTP lỗi, hàng đợi email đầy (email bị bỏ, có log cảnh báo) hoặc ứng dụng sập giữa chừng, khách không được báo lại. Khi tắt ứng dụng bình thường, hàng đợi được chờ tối đa 30 giây.
+- Báo hàng (thông báo trong ứng dụng và email) vẫn được gửi khi khách đã tắt thông báo trong hồ sơ, vì đây là yêu cầu chủ động của khách; công tắc đó chỉ áp dụng cho thông báo đơn hàng và thanh toán.
+- Khách đăng ký đúng lúc Manager nhập hàng có thể không được báo ngay; việc đăng ký đọc lại tồn kho sau khi lưu (bằng câu truy vấn scalar, không dùng entity đã nạp sẵn do open-in-view) và báo luôn nếu màu đã có hàng; việc này chưa có test tích hợp với DB thật, còn job quét 5 phút một lần là lưới an toàn.
+- Xe không có màu nào (`ManagerServiceImpl.updateProductStock` vẫn hỗ trợ loại xe này) bán hết thì không có nút "Báo tôi khi có hàng": bảng `stock_alerts` gắn với màu (`variant_id`), nên chỉ đăng ký báo được theo màu. Muốn hỗ trợ cần thêm cách đăng ký theo xe (`product_id`) và sửa luồng báo; chưa làm.
+- Hai test Selenium V22/V17 đánh dấu `@Execution(SAME_THREAD)`/`@ResourceLock`; dự án không bật chạy song song của JUnit nên các dòng này chưa có tác dụng. Dòng chờ còn sót của khách `selenium*` từ lần chạy bị dừng giữa chừng có thể được báo khi test trả lại tồn kho; dọn bằng `DELETE FROM stock_alerts WHERE user_id IN (SELECT id FROM users WHERE username LIKE 'selenium%')` trước khi chạy.
+- V22 đổi hành vi toàn ứng dụng ở hai chỗ, không chỉ cho báo hàng: (1) `CacheConfiguration` bọc cache manager bằng `TransactionAwareCacheManagerProxy`, nên mọi lần xóa/ghi cache trong giao dịch (sản phẩm, đơn hàng, đánh giá...) dời tới sau khi giao dịch commit; (2) `AsyncConfiguration` bật `@EnableAsync` và khai báo lại `applicationTaskExecutor`/`taskExecutor` bằng `TaskExecutorBuilder` của Boot. `CacheAndAsyncConfigurationTest` kiểm tra việc nối bean và thời điểm xóa cache; chưa có test khởi động cả context với DB thật, nên khi chạy Selenium cần kiểm tra thủ công rằng trang sản phẩm, đơn hàng và đánh giá vẫn hiện dữ liệu mới sau khi sửa.
+- Nhánh này chứa 2 commit của V21 (`43c498e` workflow CI `.github/workflows/test.yml`, `4a8f602` dòng V21 trong kế hoạch) vì được tách ra từ nhánh V21. Khi mở PR cho V22 phải nói rõ điều này và review/gộp `feat/ci-github-actions` trước, hoặc chấp nhận workflow CI đi cùng PR; rebase bỏ 2 commit này gây xung đột ở file kế hoạch nên chưa làm. Cả hai commit đã có trong `origin/develop`: PR vào `develop` không thêm gì từ chúng, còn PR vào nhánh khác thì vẫn kéo theo workflow CI.
 
 ---
 

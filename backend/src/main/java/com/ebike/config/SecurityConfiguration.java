@@ -85,9 +85,10 @@ public class SecurityConfiguration {
                 .requestMatchers(HttpMethod.DELETE, "/api/v1/favorites/*").hasAuthority(PermissionConstants.Customer.FAVORITE_UPDATE)
                 .requestMatchers(HttpMethod.GET, "/api/v1/warranty/lookup").permitAll()
                 .requestMatchers("/api/v1/warranty/**").hasAuthority(PermissionConstants.Customer.PROFILE_VIEW)
-                .requestMatchers(HttpMethod.GET, "/api/v1/stock-alerts").hasAuthority(PermissionConstants.Customer.FAVORITE_VIEW)
-                .requestMatchers(HttpMethod.POST, "/api/v1/stock-alerts").hasAuthority(PermissionConstants.Customer.FAVORITE_UPDATE)
-                .requestMatchers(HttpMethod.DELETE, "/api/v1/stock-alerts/*").hasAuthority(PermissionConstants.Customer.FAVORITE_UPDATE)
+                // V22: back-in-stock requests belong to customers; Manager and Admin hold the favourites permission too, so the role decides.
+                .requestMatchers(HttpMethod.GET, "/api/v1/stock-alerts").hasRole("CUSTOMER")
+                .requestMatchers(HttpMethod.POST, "/api/v1/stock-alerts").hasRole("CUSTOMER")
+                .requestMatchers(HttpMethod.DELETE, "/api/v1/stock-alerts/*").hasRole("CUSTOMER")
                 .requestMatchers(HttpMethod.GET, "/api/v1/notifications", "/api/v1/notifications/unread-count", "/api/v1/notifications/stream").authenticated()
                 .requestMatchers(HttpMethod.PATCH, "/api/v1/notifications/*/read", "/api/v1/notifications/read-all").authenticated()
                 .requestMatchers(HttpMethod.GET, "/api/v1/payments/history").hasAnyAuthority(

@@ -13,3 +13,5 @@ CREATE TABLE IF NOT EXISTS `stock_alerts` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE INDEX IF NOT EXISTS `idx_stock_alerts_variant_pending` ON `stock_alerts` (variant_id, notified_at);
+-- the periodic sweep looks for waiting rows (notified_at IS NULL) across all colours
+CREATE INDEX IF NOT EXISTS `idx_stock_alerts_pending` ON `stock_alerts` (notified_at, variant_id);

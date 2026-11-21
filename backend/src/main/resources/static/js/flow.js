@@ -7,14 +7,29 @@
   const cart=()=>{try{return JSON.parse(localStorage.getItem('kinetic_cart')||'[]')}catch{return[]}};
   const finish=()=>{document.querySelector('#loading').hidden=true};
   // V22: colours the customer asked to be told about when they are back in stock, listed under the favourites.
+  // The server's error body is JSON ({"detail":...} or {"message":...}); show its text, not the raw body.
+  const apiMessage=err=>{try{const b=JSON.parse(err.message);return t(b.detail||b.message||b.error||err.message)}catch{return t(err.message)}};
+  // A waiting row is "back" as soon as the colour has stock; a used row of a colour that sold out again must be re-requested on the bike page.
+  const stockTag=r=>!r.onSale?['out',t('Đã ngừng bán')]:r.stockQuantity>0?['ok',t('Đã có hàng lại')]:r.notifiedAt?['out',t('Đã hết hàng lại')]:['low',t('Đang chờ hàng')];
+  // Still waiting: "Stop alert". Already told, or the colour is withdrawn: just "Remove" the row. Sold out again after the notice: also offer "Notify me again".
+  const alertButtons=r=>{const waiting=r.onSale&&r.stockQuantity<1&&!r.notifiedAt;const again=r.onSale&&r.stockQuantity<1&&r.notifiedAt?`<button class="table-action" data-renew-alert="${r.variantId}">${t('Báo lại')}</button> `:'';return again+`<button class="table-action" data-cancel-alert="${r.variantId}">${waiting?t('Dừng báo hàng'):t('Xóa')}</button>`};
   const loadStockAlerts=async()=>{
     let box=document.querySelector('#stock-alerts');
     if(!box){box=document.createElement('section');box.id='stock-alerts';box.className='stock-alerts';target.after(box);
-      box.addEventListener('click',async e=>{const b=e.target.closest('[data-cancel-alert]');if(!b)return;try{await post(`/api/v1/stock-alerts/${Number(b.dataset.cancelAlert)}`,{},'DELETE');tell(t('Đã hủy đăng ký báo hàng.'));loadStockAlerts()}catch(err){tell(err.message,true)}})}
+      // One request at a time: every button of the list is locked while one is being sent, so a double click cannot send twice.
+      const lock=on=>box.querySelectorAll('button').forEach(x=>{x.disabled=on});
+      box.addEventListener('click',async e=>{const renew=e.target.closest('[data-renew-alert]'),cancel=e.target.closest('[data-cancel-alert]'),b=renew||cancel;if(!b||b.disabled)return;lock(true);
+        try{
+          if(renew){const saved=await post('/api/v1/stock-alerts',{variantId:Number(renew.dataset.renewAlert)});tell(saved&&(saved.notifiedAt||saved.stockQuantity>0)?t('Màu xe này đang còn hàng, bạn có thể đặt mua ngay.'):t('Đã đăng ký. Chúng tôi sẽ báo khi màu này có hàng lại.'))}
+          else{await post(`/api/v1/stock-alerts/${Number(cancel.dataset.cancelAlert)}`,{},'DELETE');tell(t('Đã hủy đăng ký báo hàng.'))}
+          loadStockAlerts()}
+        catch(err){lock(false);tell(apiMessage(err),true)}})
+      box.innerHTML=`<h2>${t('Xe đang chờ có hàng')}</h2><p class="empty">${t('Đang tải…')}</p>`}
+
     try{const rows=await get('/api/v1/stock-alerts');
-      if(!rows||!rows.length){box.innerHTML='';return}
-      box.innerHTML=`<h2>${t('Xe đang chờ có hàng')}</h2><ul class="stock-alert-list">${rows.map(r=>`<li><a href="/product/${encodeURIComponent(r.productSlug)}">${escape(r.productName)} · ${escape(r.colorName)}</a> <span class="stock-tag ${r.notifiedAt?'ok':'low'}">${r.notifiedAt?t('Đã có hàng lại'):t('Đang chờ hàng')}</span> <button class="table-action" data-cancel-alert="${r.variantId}">${t('Hủy đăng ký')}</button></li>`).join('')}</ul>`}
-    catch(err){box.innerHTML=''}
+      if(!rows||!rows.length){box.innerHTML=`<h2>${t('Xe đang chờ có hàng')}</h2><p class="empty">${t('Bạn chưa đăng ký báo xe nào. Khi một màu xe hết hàng, nút "Báo tôi khi có hàng" ở trang xe sẽ nhắn bạn khi có lại.')}</p>`;return}
+      box.innerHTML=`<h2>${t('Xe đang chờ có hàng')}</h2><ul class="stock-alert-list">${rows.map(r=>`<li data-variant-id="${r.variantId}">${r.onSale?`<a href="/product/${encodeURIComponent(r.productSlug)}">${escape(r.productName)} · ${escape(r.colorName)}</a>`:`<span class="stock-alert-name">${escape(r.productName)} · ${escape(r.colorName)}</span>`} <span class="stock-tag ${stockTag(r)[0]}">${stockTag(r)[1]}</span> ${alertButtons(r)}</li>`).join('')}</ul>`}
+    catch(err){if(/\b403\b|Forbidden/i.test(err.message)){box.innerHTML=`<h2>${t('Xe đang chờ có hàng')}</h2><p class="empty">${t('Chỉ tài khoản khách hàng mới đăng ký báo hàng được. Hãy đăng nhập bằng tài khoản khách hàng.')}</p>`}else{box.innerHTML=`<h2>${t('Xe đang chờ có hàng')}</h2><p class="empty">${t('Không tải được danh sách báo hàng. Vui lòng thử lại sau.')}</p>`}}
   };
   const productCard=p=>`<article class="favorite-card"><a href="/product/${encodeURIComponent(p.slug)}"><img src="${escape(p.images?.[0]||'/images/hero-fallback.svg')}" alt="${escape(p.name)}"><p class="eyebrow">${escape(p.category?.name||'KINETIC SELECT')}</p><h2>${escape(p.name)}</h2><p class="favorite-price">${Number(p.discountPrice||p.price||0).toLocaleString('vi-VN')} ₫</p></a><div class="product-action"><a class="button compact ghost" href="/product/${encodeURIComponent(p.slug)}">${t('Xem chi tiết')}</a><button class="table-action" data-remove-product="${p.id}">${flow==='favorites'?t('Bỏ yêu thích'):t('Bỏ so sánh')}</button></div></article>`;
   const renderProducts=(products,emptyText)=>{finish();if(!products.length){target.innerHTML=`<p class="empty">${emptyText}</p>`;return}target.innerHTML=`<div class="favorite-grid">${products.map(productCard).join('')}</div>`};

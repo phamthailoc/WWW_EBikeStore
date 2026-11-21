@@ -18,36 +18,37 @@ public class StockAlertEmailSender {
     private final String fromAddress;
     private final String smtpHost;
     private final boolean mailEnabled;
+    private final String publicBaseUrl;
 
     public StockAlertEmailSender(
         JavaMailSender mailSender,
-        @Value("${app.order.email-otp.from:no-reply@ebike.local}") String fromAddress,
+        @Value("${app.stock-alert.from:${app.order.email-otp.from:no-reply@ebike.local}}") String fromAddress,
         @Value("${spring.mail.host:}") String smtpHost,
-        @Value("${app.order.email-otp.mail-enabled:true}") boolean mailEnabled
+        @Value("${app.stock-alert.mail-enabled:true}") boolean mailEnabled,
+        @Value("${app.public-base-url:}") String publicBaseUrl
     ) {
         this.mailSender = mailSender;
         this.fromAddress = fromAddress;
         this.smtpHost = smtpHost;
         this.mailEnabled = mailEnabled;
+        this.publicBaseUrl = publicBaseUrl;
     }
 
-    public void send(String email, String productName, String colorName) {
+    /** {@code userId} is only for the log: a customer's address does not belong in the log file. */
+    public void send(Long userId, String email, String productName, String colorName, String productSlug, String language) {
         if (!mailEnabled || smtpHost == null || smtpHost.isBlank() || email == null || email.isBlank()) {
             return;
         }
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom(fromAddress);
         message.setTo(email);
-        message.setSubject("Kinetic E-Bike: " + productName + " (" + colorName + ") đã có hàng lại");
-        message.setText("""
-            Xe %s, màu %s mà bạn đang chờ đã có hàng lại.
-
-            Vào cửa hàng Kinetic và mở trang xe để đặt mua. Số lượng có hạn, bạn nên đặt sớm. Bạn nhận email này vì đã chọn "Báo tôi khi có hàng".
-            """.formatted(productName, colorName));
+        message.setSubject(StockAlertMessages.emailSubject(language, productName, colorName));
+        message.setText(StockAlertMessages.emailBody(language, productName, colorName, StockAlertMessages.productUrl(publicBaseUrl, productSlug)));
         try {
             mailSender.send(message);
         } catch (MailException exception) {
-            log.warn("Could not send back-in-stock email to {}: {}", email, exception.getMessage());
+            // The exception text is left out: mail failures usually quote the recipient's address.
+            log.warn("Could not send back-in-stock email to customer {} ({})", userId, exception.getClass().getSimpleName());
         }
     }
 }

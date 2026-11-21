@@ -10,6 +10,7 @@ import com.ebike.dto.order.request.OrderQuoteRequest;
 import com.ebike.dto.order.request.OrderStatusUpdateRequest;
 import com.ebike.dto.order.response.OrderItemResponse;
 import com.ebike.dto.order.response.OrderItemUnitResponse;
+import com.ebike.service.admin.AuditLogService;
 import com.ebike.service.order.OrderUnits;
 import com.ebike.service.stock.StockAlertRules;
 import com.ebike.service.stock.StockAlertService;
@@ -95,7 +96,7 @@ public class OrderServiceImpl implements OrderService {
     private final OrderEmailVerificationService orderEmailVerificationService;
     private final PricingService pricingService;
 
-    private final com.ebike.service.admin.AuditLogService auditLog;
+    private final AuditLogService auditLog;
     private final StockAlertService stockAlerts;
 
     public OrderServiceImpl(
@@ -106,7 +107,7 @@ public class OrderServiceImpl implements OrderService {
         PromotionRepository promotionRepository,
         OrderEmailVerificationService orderEmailVerificationService,
         PricingService pricingService,
-        com.ebike.service.admin.AuditLogService auditLog,
+        AuditLogService auditLog,
         StockAlertService stockAlerts
     ) {
         this.orderRepository = orderRepository;

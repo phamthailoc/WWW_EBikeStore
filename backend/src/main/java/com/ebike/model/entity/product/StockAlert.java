@@ -34,7 +34,7 @@ public class StockAlert {
     @JoinColumn(name = "variant_id", nullable = false)
     private ProductVariant variant;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
     @Column(name = "notified_at")
@@ -67,6 +67,11 @@ public class StockAlert {
 
     public LocalDateTime getCreatedAt() {
         return createdAt;
+    }
+
+    /** When the customer asked; set again when a used row is armed again, so the list shows the newest request first. */
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 
     public LocalDateTime getNotifiedAt() {
