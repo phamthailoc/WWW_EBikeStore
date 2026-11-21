@@ -65,3 +65,6 @@ JOIN `order_items` i ON i.id = u.order_item_id
 JOIN `product_specifications` sp ON sp.product_id = i.product_id
 SET u.warranty_months = sp.warranty_months
 WHERE u.warranty_months IS NULL AND sp.warranty_months IS NOT NULL;
+
+-- Erased accounts used to leave the text "[đã xóa]" in warranty requests; it is now an empty text that the staff page translates.
+UPDATE `warranty_claims` SET description = '' WHERE description = '[đã xóa]';

@@ -31,6 +31,7 @@
     return new Date(y,m-1,d).toLocaleDateString(localeTag());
   };
   const human = (value,key='') => {
+    if (key === 'description' && value === '' && page === '/manager/warranty') return t('(đã xóa)');
     const when = warrantyDate(value,key);
     if (when) return when;
     if (value == null) return '—';

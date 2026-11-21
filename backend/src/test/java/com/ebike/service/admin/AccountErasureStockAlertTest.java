@@ -21,13 +21,15 @@ class AccountErasureStockAlertTest {
     @Test
     void erasingAnAccountDeletesItsStockAlerts() {
         StockAlertRepository stockAlerts = mock(StockAlertRepository.class);
+        WarrantyClaimRepository warrantyClaims = mock(WarrantyClaimRepository.class);
         AccountErasure erasure = new AccountErasure(
             mock(UserAddressRepository.class), mock(UserFavoriteRepository.class), mock(UserPreferenceRepository.class),
-            mock(NotificationRepository.class), stockAlerts, mock(WarrantyClaimRepository.class), mock(ProductReviewService.class), mock(PasswordEncoder.class));
+            mock(NotificationRepository.class), stockAlerts, warrantyClaims, mock(ProductReviewService.class), mock(PasswordEncoder.class));
         User user = new User();
         user.setId(42L);
         erasure.erase(user);
         verify(stockAlerts).deleteByUserId(42L);
+        verify(warrantyClaims).clearDescriptionsOf(42L, AccountErasure.ERASED_DESCRIPTION);
         assertEquals(AccountErasure.DELETED, user.getAccountStatus());
     }
 }

@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.ebike.service.admin.AccountErasure;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -259,7 +260,7 @@ class WarrantySeleniumTest extends StorefrontSeleniumTest {
                 }
             }
             assertTrue(kept != null, "the request stays for the shop's records");
-            assertEquals("[đã xóa]", kept.path("description").asText(), "the customer's own words are gone");
+            assertEquals(AccountErasure.ERASED_DESCRIPTION, kept.path("description").asText(), "the customer's own words are gone");
             assertEquals("Selenium: ghi chú của cửa hàng", kept.path("staffNote").asText(), "the shop's own note stays");
             assertFalse(kept.toString().contains(email), "the erased account's email is no longer on the request: " + kept);
             assertEquals(frame, call(newClient(), "GET", "/api/v1/warranty/lookup?frame=" + frame, null).path("frameNumber").asText());
