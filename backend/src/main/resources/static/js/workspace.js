@@ -101,7 +101,7 @@
     const keys=(mode==='detail'?orderSummaryColumns:columnsForPage[page]||available.slice(0,9)).filter(k=>available.includes(k));
     const hasActions=records.some(row=>actionFor(row));
     table.querySelector('thead').innerHTML=`<tr>${keys.map(k=>`<th data-field="${escape(k)}">${escape(label(k))}</th>`).join('')}${hasActions?'<th>' + t('Thao tác') + '</th>':''}</tr>`;
-    table.querySelector('tbody').innerHTML=records.map(row=>`<tr>${keys.map(k=>`<td data-field="${escape(k)}"${warrantyDate(row[k],k)?` data-iso="${escape(row[k])}"`:""}>${escape(human(row[k],k))}</td>`).join('')}${hasActions?`<td>${actionFor(row)}</td>`:''}</tr>`).join('');
+    table.querySelector('tbody').innerHTML=records.map(row=>`<tr>${keys.map(k=>`<td data-field="${escape(k)}"${warrantyDate(row[k],k)?` data-iso="${escape(row[k])}"`:""}${valueText[k]&&typeof row[k]==="string"?` data-raw="${escape(row[k])}"`:""}>${escape(human(row[k],k))}</td>`).join('')}${hasActions?`<td>${actionFor(row)}</td>`:''}</tr>`).join('');
   };
   const renderFavorites = rows => {
     const list=Array.isArray(rows)?rows:[]; loading.hidden=true; empty.hidden=!!list.length; table.hidden=true;

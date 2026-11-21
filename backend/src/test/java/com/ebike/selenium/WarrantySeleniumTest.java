@@ -13,6 +13,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -91,16 +92,27 @@ class WarrantySeleniumTest extends StorefrontSeleniumTest {
         assertFalse(frame.isBlank(), "the delivered order has a frame number");
         JsonNode product = call(api, "GET", "/api/v1/products/" + productSlug, null);
         JsonNode monthsNode = product.path("specification").path("warrantyMonths");
-        String startText = order.path("shipment").path("deliveredAt").asText(order.path("updatedAt").asText());
-        String expectedEnd = monthsNode.isNumber()
-            ? LocalDate.parse(startText.substring(0, 10)).plusMonths(monthsNode.asInt()).toString() : null;
+        // The end date comes from the server (delivery time plus the pinned months): the pages must show exactly that. The date worked out here
+        // from the order is only a sanity check, one day either way, because the delivery time and this machine may be in different time zones.
+        String expectedEnd = null;
+        for (JsonNode mine : listOf(call(api, "GET", "/api/v1/warranty/units", null))) {
+            if (frame.equals(mine.path("frameNumber").asText()) && mine.path("warrantyEndsAt").isTextual()) {
+                expectedEnd = mine.path("warrantyEndsAt").asText();
+            }
+        }
+        assertEquals(monthsNode.isNumber(), expectedEnd != null, "a bike with a warranty length has an end date");
+        if (expectedEnd != null) {
+            String startText = order.path("shipment").path("deliveredAt").asText(order.path("updatedAt").asText());
+            long drift = Math.abs(ChronoUnit.DAYS.between(LocalDate.parse(startText.substring(0, 10)).plusMonths(monthsNode.asInt()), LocalDate.parse(expectedEnd)));
+            assertTrue(drift <= 1, "the end date " + expectedEnd + " is the delivery plus " + monthsNode.asInt() + " months");
+        }
 
         // 2. the customer's warranty book lists the bike with the right end date and offers the request button
         driver.get(baseUrl + "/customer/warranty");
         WebElement row = rowWith(frame);
         if (expectedEnd != null) {
-            assertEquals(expectedEnd, row.findElement(By.cssSelector("td[data-field='warrantyEndsAt']")).getText(), row.getText());
-            assertTrue(row.findElement(By.cssSelector("td[data-field='coverage']")).getText().contains("Còn bảo hành"), row.getText());
+            assertEquals(expectedEnd, row.findElement(By.cssSelector("td[data-field='warrantyEndsAt']")).getAttribute("data-iso"), row.getText());
+            assertEquals("ACTIVE", row.findElement(By.cssSelector("td[data-field='coverage']")).getAttribute("data-raw"), row.getText());
         }
         assertFalse(row.findElements(By.cssSelector("[data-action='warranty-claim']")).isEmpty(), "a bike with no open request offers the button");
         assertFalse(driver.findElements(By.cssSelector("#data-table th")).isEmpty());
@@ -140,10 +152,11 @@ class WarrantySeleniumTest extends StorefrontSeleniumTest {
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("dialog.warranty-dialog .support-message")));
         driver.findElement(DIALOG_TEXT).clear();
         submitDialog("Selenium: pin sạc không đầy, đèn báo nhấp nháy");
-        assertTrue(notice().contains("Đã gửi yêu cầu bảo hành"), notice());
+        assertFalse(notice().isBlank(), "the page confirms the request");
+        assertFalse(driver.findElement(By.id("notice")).getAttribute("class").contains("error"), "the confirmation is not an error: " + notice());
         WebElement sent = wait.until(d -> d.findElements(By.cssSelector("#warrantyClaims tbody tr")).stream()
             .filter(r -> r.getText().contains(frame)).findFirst().orElse(null));
-        assertTrue(sent.getText().contains("Mới gửi"), sent.getText());
+        assertEquals("NEW", sent.findElement(By.cssSelector("td[data-field='claimStatus']")).getAttribute("data-status"), sent.getText());
         wait.until(d -> rowWith(frame).findElements(By.cssSelector("[data-action='warranty-claim']")).isEmpty());
         // a second open request for the same bike is refused by the server
         long unitId = unitIdOf(frame);
@@ -166,14 +179,19 @@ class WarrantySeleniumTest extends StorefrontSeleniumTest {
         call(other, "POST", "/api/v1/auth/register", Map.of("username", otherName, "email", otherName + "@example.com",
             "password", PASSWORD, "firstName", "Selenium", "lastName", "Other"));
         call(other, "POST", "/api/v1/auth/login", Map.of("usernameOrEmail", otherName, "password", PASSWORD));
-        assertTrue(assertThrows(IllegalStateException.class, () -> call(other, "POST", "/api/v1/warranty/claims",
-            Map.of("unitId", unitId, "description", "Selenium: xe không phải của tôi"))).getMessage().contains("404"));
-        assertFalse(listOf(call(other, "GET", "/api/v1/warranty/units", null)).iterator().hasNext(), "another customer's book is empty");
-        assertTrue(assertThrows(IllegalStateException.class, () -> call(other, "GET", "/api/v1/manager/warranty-claims", null)).getMessage().contains("403"));
-        assertTrue(assertThrows(IllegalStateException.class, () -> call(api, "PATCH", "/api/v1/manager/warranty-claims/1", Map.of("status", "RECEIVED"))).getMessage().contains("403"));
-        assertTrue(assertThrows(IllegalStateException.class, () -> call(anonymous, "GET", "/api/v1/warranty/claims", null)).getMessage().contains("401"));
-        assertTrue(assertThrows(IllegalStateException.class, () -> call(api, "POST", "/api/v1/warranty/claims",
-            Map.of("unitId", unitId, "description", "ngắn"))).getMessage().contains("400"), "a description that is too short is refused by the server too");
+        try {
+            assertTrue(assertThrows(IllegalStateException.class, () -> call(other, "POST", "/api/v1/warranty/claims",
+                Map.of("unitId", unitId, "description", "Selenium: xe không phải của tôi"))).getMessage().contains("404"));
+            assertFalse(listOf(call(other, "GET", "/api/v1/warranty/units", null)).iterator().hasNext(), "another customer's book is empty");
+            assertTrue(assertThrows(IllegalStateException.class, () -> call(other, "GET", "/api/v1/manager/warranty-claims", null)).getMessage().contains("403"));
+            assertTrue(assertThrows(IllegalStateException.class, () -> call(api, "PATCH", "/api/v1/manager/warranty-claims/1", Map.of("status", "RECEIVED"))).getMessage().contains("403"));
+            assertTrue(assertThrows(IllegalStateException.class, () -> call(anonymous, "GET", "/api/v1/warranty/claims", null)).getMessage().contains("401"));
+            assertTrue(assertThrows(IllegalStateException.class, () -> call(api, "POST", "/api/v1/warranty/claims",
+                Map.of("unitId", unitId, "description", "ngắn"))).getMessage().contains("400"), "a description that is too short is refused by the server too");
+        } finally {
+            // the throwaway customer is erased again, so test runs do not pile up accounts
+            call(other, "DELETE", "/api/v1/auth/account", Map.of("password", PASSWORD, "confirmEmail", otherName + "@example.com"));
+        }
 
         // 5. the manager receives it with a note
         int before = notificationsOfType("WARRANTY_CLAIM");
@@ -183,7 +201,7 @@ class WarrantySeleniumTest extends StorefrontSeleniumTest {
         assertTrue(queued.getText().contains("Selenium: pin sạc không đầy"), queued.getText());
         click(queued.findElement(By.cssSelector("[data-action='warranty-status'][data-status='RECEIVED']")));
         submitDialog("Selenium: mời anh mang xe tới cửa hàng");
-        wait.until(d -> rowWith(frame).getText().contains("Đã tiếp nhận"));
+        wait.until(d -> "RECEIVED".equals(rowWith(frame).findElement(By.cssSelector("td[data-field='status']")).getAttribute("data-raw")));
 
         // 6. later steps over the API (REPAIRING -> DONE); a finished request cannot move back
         long claimId = claimIdOf(manager, frame);
@@ -205,14 +223,15 @@ class WarrantySeleniumTest extends StorefrontSeleniumTest {
         click(link);
         wait.until(d -> d.getCurrentUrl().endsWith("/customer/warranty"));
         WebElement done = wait.until(d -> d.findElements(By.cssSelector("#warrantyClaims tbody tr")).stream()
-            .filter(r -> r.getText().contains(frame) && r.getText().contains("Đã hoàn tất")).findFirst().orElse(null));
+            .filter(r -> r.getText().contains(frame) && !r.findElements(By.cssSelector("td[data-status='DONE']")).isEmpty()).findFirst().orElse(null));
         assertTrue(done.getText().contains("Đã thay bộ sạc"), done.getText());
         // finished: the bike offers the button again
         assertFalse(rowWith(frame).findElements(By.cssSelector("[data-action='warranty-claim']")).isEmpty());
 
         // 8. the staff queue is paged and filtered on the server
         assertTrue(listSize(call(manager, "GET", "/api/v1/manager/warranty-claims?size=1", null)) <= 1);
-        assertTrue(mentions(call(manager, "GET", "/api/v1/manager/warranty-claims?status=DONE&size=100", null), frame));
+        assertTrue(claimsOf(manager, "DONE").stream().anyMatch(c -> frame.equals(c.path("frameNumber").asText())));
+        assertTrue(claimsOf(manager, "").stream().noneMatch(c -> frame.equals(c.path("frameNumber").asText())), "the default queue holds open requests only");
         assertTrue(assertThrows(IllegalStateException.class, () -> call(manager, "GET", "/api/v1/manager/warranty-claims?status=BOGUS", null))
             .getMessage().contains("400"));
         // 9. a new request on the same bike is possible once the last one is closed; rejecting needs a reason
@@ -234,6 +253,17 @@ class WarrantySeleniumTest extends StorefrontSeleniumTest {
         assertTrue(tooShort.contains("5 to 30 letters"), tooShort);
         // a language this shop does not have falls back to Vietnamese
         assertTrue(body("/api/v1/warranty/lookup?frame=AB", "fr").contains("5 đến 30 ký tự"));
+    }
+
+    @Test
+    void theLookupPageAnswersInEnglishWhenTheLanguageIsEnglish() {
+        driver.get(baseUrl + "/lang/en?back=/warranty");
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("warrantyLookupForm")));
+        fill("frame", "ZZZ-NO-SUCH-0003");
+        click(By.cssSelector("#warrantyLookupForm button[type=submit]"));
+        WebElement error = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("#warrantyLookupResult .notice.error")));
+        assertTrue(error.getText().contains("No vehicle with this frame number was found."), error.getText());
+        assertTrue(driver.findElement(By.id("warrantyLookupForm")).getText().contains("Look up"), "the form is in English too");
     }
 
     @Test
@@ -260,7 +290,7 @@ class WarrantySeleniumTest extends StorefrontSeleniumTest {
             call(client, "DELETE", "/api/v1/auth/account", Map.of("password", PASSWORD, "confirmEmail", email));
 
             JsonNode kept = null;
-            for (JsonNode claim : listOf(call(manager, "GET", "/api/v1/manager/warranty-claims?size=100", null))) {
+            for (JsonNode claim : claimsOf(manager, "ALL")) {
                 if (claim.path("id").asLong() == claimId) {
                     kept = claim;
                 }
@@ -361,8 +391,21 @@ class WarrantySeleniumTest extends StorefrontSeleniumTest {
         throw new AssertionError("frame " + frame + " not in the warranty book");
     }
 
+    /** Every request of the staff queue with the given status ("ALL" for every status), newest first: pages are followed until a short one. */
+    private static List<JsonNode> claimsOf(HttpClient manager, String status) throws Exception {
+        List<JsonNode> found = new ArrayList<>();
+        for (int page = 0; page < 200; page++) {
+            int before = found.size();
+            listOf(call(manager, "GET", "/api/v1/manager/warranty-claims?status=" + status + "&size=100&page=" + page, null)).forEach(found::add);
+            if (found.size() - before < 100) {
+                return found;
+            }
+        }
+        return found;
+    }
+
     private static long claimIdOf(HttpClient manager, String frame) throws Exception {
-        for (JsonNode claim : listOf(call(manager, "GET", "/api/v1/manager/warranty-claims?size=100", null))) {
+        for (JsonNode claim : claimsOf(manager, "ALL")) {
             if (frame.equals(claim.path("frameNumber").asText())) {
                 return claim.path("id").asLong();
             }
