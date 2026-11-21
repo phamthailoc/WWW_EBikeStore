@@ -98,7 +98,7 @@ class WarrantyServiceTest {
         claim.setUnit(unitOf(owner));
         claim.setUser(owner);
         claim.setStatus(status);
-        when(claims.findById(1L)).thenReturn(Optional.of(claim));
+        when(claims.findLockedById(1L)).thenReturn(Optional.of(claim));
         return claim;
     }
 

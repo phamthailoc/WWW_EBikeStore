@@ -3,9 +3,12 @@ package com.ebike.repository.warranty;
 import com.ebike.model.entity.warranty.WarrantyClaim;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -27,6 +30,11 @@ public interface WarrantyClaimRepository extends JpaRepository<WarrantyClaim, Lo
     @EntityGraph(attributePaths = {"unit", "unit.orderItem", "unit.orderItem.order", "unit.orderItem.order.shipment", "unit.orderItem.order.payment",
         "unit.orderItem.product", "unit.orderItem.product.specification", "unit.orderItem.productVariant", "user", "user.preference"})
     List<WarrantyClaim> findByStatus(String status, Pageable pageable);
+
+    /** Row lock for the staff who process a request: two managers moving the same request wait for each other instead of both passing the step check. */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select c from WarrantyClaim c where c.id = :id")
+    Optional<WarrantyClaim> findLockedById(@Param("id") Long id);
 
     boolean existsByUnitIdAndStatusIn(Long unitId, Collection<String> statuses);
 

@@ -191,7 +191,7 @@ public class WarrantyService {
 
     @Transactional
     public WarrantyClaimResponse updateClaim(Long id, WarrantyClaimUpdateRequest request) {
-        WarrantyClaim claim = claims.findById(id)
+        WarrantyClaim claim = claims.findLockedById(id)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, WarrantyMessages.text("Không tìm thấy yêu cầu bảo hành.", "Warranty request not found.")));
         String previous = claim.getStatus();
         String previousNote = claim.getStaffNote();
