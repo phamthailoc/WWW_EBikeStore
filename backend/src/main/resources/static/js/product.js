@@ -81,7 +81,7 @@
   };
   document.querySelector('#addFavorite').onclick=async()=>{
     try{await cart.request('/api/v1/favorites',{productId:item.id});message(t('Đã thêm xe vào danh sách yêu thích.'));}
-    catch(error){if(/Unauthorized|401/i.test(error.message)){location.href='/login?returnTo='+encodeURIComponent(location.pathname);return;}message(error.message,true);}
+    catch(error){if(/Unauthorized|401|đăng nhập|sign in/i.test(error.message)){location.href='/login?returnTo='+encodeURIComponent(location.pathname);return;}message(error.message,true);}
   };
   const notifyButton=document.querySelector('#notifyStock');
   const goToLogin=variantId=>{location.href='/login?returnTo='+encodeURIComponent(location.pathname+'?notify='+variantId);};
@@ -117,9 +117,9 @@
       notifyLabel();
     }
     catch(error){
-      if(/Unauthorized|401/i.test(error.message)){if(!auto)goToLogin(variantId);return;}
+      if(/Unauthorized|401|đăng nhập|sign in/i.test(error.message)){if(!auto)goToLogin(variantId);return;}
       // 403: a staff account (Manager, Admin...) is signed in; only customers can ask to be told.
-      if(/\b403\b|Forbidden/i.test(error.message)){message(t('Chỉ tài khoản khách hàng mới đăng ký báo hàng được. Hãy đăng nhập bằng tài khoản khách hàng.'),true);}
+      if(/\b403\b|Forbidden|permission|quyền/i.test(error.message)){message(t('Chỉ tài khoản khách hàng mới đăng ký báo hàng được. Hãy đăng nhập bằng tài khoản khách hàng.'),true);}
       else message(t(error.message),true);
     }
     finally{notifyButton.disabled=false;}
