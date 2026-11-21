@@ -278,7 +278,7 @@ public class OrderServiceImpl implements OrderService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "status is required");
         }
 
-        Order order = orderRepository.findById(id)
+        Order order = orderRepository.findLockedById(id)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
 
         OrderStatus nextStatus;
@@ -361,7 +361,7 @@ public class OrderServiceImpl implements OrderService {
         }
 
         List<Order> expired = new ArrayList<>();
-        for (Order order : orderRepository.findByStatusAndCreatedAtBefore(OrderStatus.PENDING, latestCutoff)) {
+        for (Order order : orderRepository.findLockedByStatusAndCreatedAtBefore(OrderStatus.PENDING, latestCutoff)) {
             Payment payment = order.getPayment();
             if (payment != null && payment.getPaymentStatus() == PaymentStatus.PAID) {
                 continue;
@@ -418,9 +418,10 @@ public class OrderServiceImpl implements OrderService {
         com.ebike.config.CacheNames.PRODUCT_DETAIL_CACHE
     }, allEntries = true)
     public OrderResponse requestCancellation(Long id, OrderCancellationRequest request, Authentication authentication) {
-        User currentUser = getAuthenticatedUser(authentication);
-        Order order = orderRepository.findById(id)
+        // the order row is locked first (before the account is read), see OrderRepository.findLockedById
+        Order order = orderRepository.findLockedById(id)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
+        User currentUser = getAuthenticatedUser(authentication);
 
         if (order.getUser() == null || !order.getUser().getId().equals(currentUser.getId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can only cancel your own orders");

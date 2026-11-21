@@ -20,6 +20,10 @@ public interface InstallmentApplicationRepository extends JpaRepository<Installm
     @Query("select a from InstallmentApplication a where a.id = :id")
     Optional<InstallmentApplication> findLockedById(@Param("id") Long id);
 
+    /** The order of an application, read without loading the application, so the order row can be locked before the application row. */
+    @Query("select a.order.id from InstallmentApplication a where a.id = :id")
+    Optional<Long> findOrderIdById(@Param("id") Long id);
+
     Optional<InstallmentApplication> findByOrderId(Long orderId);
 
     /** Applications that still hold an order's stock: waiting for the staff, or approved with the down payment not paid yet (the order is still PENDING). */

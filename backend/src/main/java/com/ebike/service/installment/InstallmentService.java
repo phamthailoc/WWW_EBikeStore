@@ -17,6 +17,7 @@ import com.ebike.model.entity.order.Payment;
 import com.ebike.model.entity.order.PaymentStatus;
 import com.ebike.repository.auth.UserRepository;
 import com.ebike.repository.installment.InstallmentApplicationRepository;
+import com.ebike.repository.order.OrderRepository;
 import com.ebike.service.admin.AccountErasure;
 import com.ebike.service.admin.AuditLogService;
 import com.ebike.service.order.OrderService;
@@ -51,6 +52,7 @@ public class InstallmentService {
     private final InstallmentApplicationRepository applications;
     private final UserRepository users;
     private final OrderService orders;
+    private final OrderRepository orderRepository;
     private final AuditLogService auditLog;
     // how long an approved application waits for its down payment before the order is cancelled (the expiry job reads the same setting)
     private final Duration downPaymentHold;
@@ -59,12 +61,14 @@ public class InstallmentService {
         InstallmentApplicationRepository applications,
         UserRepository users,
         OrderService orders,
+        OrderRepository orderRepository,
         AuditLogService auditLog,
         @Value("${app.order.installment-down-payment-hold:PT72H}") Duration downPaymentHold
     ) {
         this.applications = applications;
         this.users = users;
         this.orders = orders;
+        this.orderRepository = orderRepository;
         this.auditLog = auditLog;
         this.downPaymentHold = downPaymentHold;
     }
@@ -120,14 +124,16 @@ public class InstallmentService {
         if (!approve && note == null) {
             throw bad("Vui lòng nhập lý do từ chối (khách sẽ thấy).", "Please give the reason for rejecting (the customer will see it).");
         }
-        // the row lock: an approval and a rejection pressed at once (or a cancellation of the order) wait for each other
+        // The locks, always in this order (every cancellation of an order takes them the same way): the order row first, then the application row. So an
+        // approval and a rejection pressed at once, or a cancellation of the order, wait for each other and then see what the winner did.
+        Long orderId = applications.findOrderIdById(id).orElseThrow(InstallmentService::notFound);
+        Order order = orderRepository.findLockedById(orderId).orElseThrow(InstallmentService::notFound);
         InstallmentApplication application = applications.findLockedById(id).orElseThrow(InstallmentService::notFound);
         if (!InstallmentApplication.PENDING.equals(application.getStatus())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, RequestLanguage.text(
                 "Hồ sơ này đã được xử lý hoặc đơn đã bị hủy. Hãy tải lại danh sách.",
                 "This application was already decided or its order was cancelled. Please reload the list."));
         }
-        Order order = application.getOrder();
         if (order.getStatus() != OrderStatus.PENDING) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, RequestLanguage.text(
                 "Đơn hàng không còn ở trạng thái chờ xác nhận nên không duyệt được hồ sơ.",

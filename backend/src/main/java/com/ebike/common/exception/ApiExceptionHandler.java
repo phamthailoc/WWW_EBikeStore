@@ -2,6 +2,7 @@ package com.ebike.common.exception;
 
 import com.ebike.common.i18n.RequestLanguage;
 import java.time.OffsetDateTime;
+import org.springframework.dao.PessimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -40,6 +41,15 @@ public class ApiExceptionHandler {
     public ResponseEntity<ApiErrorResponse> handleBadArgument(MethodArgumentTypeMismatchException exception) {
         return badRequest(RequestLanguage.text("Giá trị của tham số \"" + exception.getName() + "\" không hợp lệ.",
             "The value of the parameter \"" + exception.getName() + "\" is not valid."));
+    }
+
+    /** A row lock that could not be had, or a deadlock the database broke: nothing was saved, so the person can simply try again. */
+    @ExceptionHandler(PessimisticLockingFailureException.class)
+    public ResponseEntity<ApiErrorResponse> handleLockFailure(PessimisticLockingFailureException exception) {
+        HttpStatus status = HttpStatus.CONFLICT;
+        return ResponseEntity.status(status).body(new ApiErrorResponse(status.value(), status.getReasonPhrase(),
+            RequestLanguage.text("Dữ liệu đang được người khác xử lý cùng lúc. Vui lòng tải lại và thử lại.", "Someone else is changing the same data at this moment. Please reload and try again."),
+            OffsetDateTime.now().toString()));
     }
 
     private static ResponseEntity<ApiErrorResponse> badRequest(String message) {

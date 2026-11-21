@@ -54,7 +54,7 @@ class OrderStatusUpdateTest {
         order.setId(10L);
         order.setStatus(OrderStatus.PENDING);
         order.getItems().add(item);
-        org.mockito.Mockito.lenient().when(orders.findById(10L)).thenReturn(Optional.of(order));
+        org.mockito.Mockito.lenient().when(orders.findLockedById(10L)).thenReturn(Optional.of(order));
     }
 
     private void saves() { when(orders.save(any())).thenAnswer(invocation -> invocation.getArgument(0)); }

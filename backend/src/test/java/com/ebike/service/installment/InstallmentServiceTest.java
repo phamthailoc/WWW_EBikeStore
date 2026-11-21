@@ -28,6 +28,7 @@ import com.ebike.model.entity.order.PaymentStatus;
 import com.ebike.model.entity.product.Product;
 import com.ebike.repository.auth.UserRepository;
 import com.ebike.repository.installment.InstallmentApplicationRepository;
+import com.ebike.repository.order.OrderRepository;
 import com.ebike.service.admin.AccountErasure;
 import com.ebike.service.admin.AuditLogService;
 import com.ebike.service.order.OrderService;
@@ -52,6 +53,7 @@ class InstallmentServiceTest {
     private InstallmentApplicationRepository applications;
     private UserRepository users;
     private OrderService orders;
+    private OrderRepository orderRepository;
     private InstallmentService service;
     private User customer;
     private User staffUser;
@@ -63,7 +65,8 @@ class InstallmentServiceTest {
         applications = mock(InstallmentApplicationRepository.class);
         users = mock(UserRepository.class);
         orders = mock(OrderService.class);
-        service = new InstallmentService(applications, users, orders, mock(AuditLogService.class), Duration.ofHours(72));
+        orderRepository = mock(OrderRepository.class);
+        service = new InstallmentService(applications, users, orders, orderRepository, mock(AuditLogService.class), Duration.ofHours(72));
 
         customer = user(7L, "khach", "An", "Nguyen");
         staffUser = user(2L, "quanly", "Binh", "Tran");
@@ -103,6 +106,8 @@ class InstallmentServiceTest {
         application.setMonthlyPayment(new BigDecimal("1925000"));
         application.setTotalPayable(new BigDecimal("32100000"));
         when(applications.findLockedById(5L)).thenReturn(Optional.of(application));
+        when(applications.findOrderIdById(5L)).thenReturn(Optional.of(10L));
+        when(orderRepository.findLockedById(10L)).thenReturn(Optional.of(order));
         when(applications.findByOrderId(10L)).thenReturn(Optional.of(application));
         when(applications.saveAndFlush(any(InstallmentApplication.class))).thenAnswer(invocation -> invocation.getArgument(0));
     }
@@ -215,6 +220,14 @@ class InstallmentServiceTest {
         assertEquals("APPROVED", response.status());
         assertTrue(response.canPay());
         verify(orders, never()).updateOrderStatus(any(), any(), any());
+    }
+
+    @Test
+    void theOrderRowIsLockedBeforeTheApplicationRow() {
+        service.decide(5L, new InstallmentDecisionRequest("APPROVE", null), staff());
+        var locks = org.mockito.Mockito.inOrder(orderRepository, applications);
+        locks.verify(orderRepository).findLockedById(10L);
+        locks.verify(applications).findLockedById(5L);
     }
 
     @Test

@@ -68,7 +68,7 @@ class UnpaidOrderExpiryTest {
     }
 
     private void stale(Order... found) {
-        when(orders.findByStatusAndCreatedAtBefore(eq(OrderStatus.PENDING), any())).thenReturn(List.of(found));
+        when(orders.findLockedByStatusAndCreatedAtBefore(eq(OrderStatus.PENDING), any())).thenReturn(List.of(found));
     }
 
     @Test void vnpayOrderLeftUnpaidForOver30MinutesIsCancelledAndStockReturned() {
