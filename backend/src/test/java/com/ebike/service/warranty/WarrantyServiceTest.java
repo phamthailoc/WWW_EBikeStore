@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -301,7 +302,7 @@ class WarrantyServiceTest {
         when(claims.findByStatusIn(any(), any(Pageable.class))).thenReturn(new SliceImpl<>(List.of()));
         service.listClaims(null, 0, 25);
         ArgumentCaptor<Pageable> page = ArgumentCaptor.forClass(Pageable.class);
-        verify(claims).findByStatusIn(org.mockito.ArgumentMatchers.eq(Set.of(WarrantyClaim.NEW, WarrantyClaim.RECEIVED, WarrantyClaim.REPAIRING)), page.capture());
+        verify(claims).findByStatusIn(eq(Set.of(WarrantyClaim.NEW, WarrantyClaim.RECEIVED, WarrantyClaim.REPAIRING)), page.capture());
         assertEquals(Sort.Direction.ASC, page.getValue().getSort().getOrderFor("createdAt").getDirection());
         assertEquals(Sort.Direction.ASC, page.getValue().getSort().getOrderFor("id").getDirection());
     }
@@ -319,7 +320,7 @@ class WarrantyServiceTest {
     void aStatusFilterIsPagedToo() {
         when(claims.findByStatus(any(), any(Pageable.class))).thenReturn(new SliceImpl<>(List.of()));
         service.listClaims("new", 0, 10);
-        verify(claims).findByStatus(org.mockito.ArgumentMatchers.eq("NEW"), any(Pageable.class));
+        verify(claims).findByStatus(eq("NEW"), any(Pageable.class));
     }
 
     @Test

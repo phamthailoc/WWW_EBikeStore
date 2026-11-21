@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import com.ebike.service.admin.AccountErasure;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -13,12 +14,17 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
+import org.junit.jupiter.api.parallel.ResourceLock;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -32,8 +38,8 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
  * test customer is not erased (the base class still reads its orders after the tests).
  */
 @Tag("selenium")
-@org.junit.jupiter.api.parallel.Execution(org.junit.jupiter.api.parallel.ExecutionMode.SAME_THREAD)
-@org.junit.jupiter.api.parallel.ResourceLock("product-stock")
+@Execution(ExecutionMode.SAME_THREAD)
+@ResourceLock("product-stock")
 @EnabledIfSystemProperty(named = "selenium.baseUrl", matches = "https?://.+")
 class WarrantySeleniumTest extends StorefrontSeleniumTest {
 
@@ -108,8 +114,8 @@ class WarrantySeleniumTest extends StorefrontSeleniumTest {
         }
         List<String> keys = new ArrayList<>();
         lookup.fieldNames().forEachRemaining(keys::add);
-        assertEquals(java.util.Set.of("frameNumber", "productName", "colorName", "warrantyMonths", "warrantyStartsAt", "warrantyEndsAt", "coverage"),
-            new java.util.HashSet<>(keys), "the public answer has the bike and its dates only, no owner data");
+        assertEquals(Set.of("frameNumber", "productName", "colorName", "warrantyMonths", "warrantyStartsAt", "warrantyEndsAt", "coverage"),
+            new HashSet<>(keys), "the public answer has the bike and its dates only, no owner data");
         assertThrows(IllegalStateException.class, () -> call(anonymous, "GET", "/api/v1/warranty/lookup?frame=ZZZ-NO-SUCH-0001", null));
         assertThrows(IllegalStateException.class, () -> call(anonymous, "GET", "/api/v1/warranty/units", null)); // the book itself needs sign-in
 
@@ -305,7 +311,7 @@ class WarrantySeleniumTest extends StorefrontSeleniumTest {
                 color = variant;
             }
         }
-        org.junit.jupiter.api.Assumptions.assumeTrue(color == null || color.path("stockQuantity").asInt() > 0, "every colour of " + productSlug + " is sold out");
+        assumeTrue(color == null || color.path("stockQuantity").asInt() > 0, "every colour of " + productSlug + " is sold out");
         long showroom = listOf(call(api, "GET", "/api/v1/showrooms", null)).iterator().next().path("id").asLong();
         Map<String, Object> item = new LinkedHashMap<>();
         item.put("productId", product.path("id").asLong());

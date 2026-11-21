@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -19,6 +20,7 @@ import com.ebike.repository.admin.PromotionRepository;
 import com.ebike.repository.auth.RoleRepository;
 import com.ebike.repository.auth.UserRepository;
 import com.ebike.repository.order.OrderRepository;
+import com.ebike.repository.warranty.WarrantyClaimRepository;
 import com.ebike.service.admin.impl.AdminServiceImpl;
 import java.util.HashSet;
 import java.util.List;
@@ -60,7 +62,7 @@ class AdminAccountGuardTest {
 
     @BeforeEach void setup() {
         service = new AdminServiceImpl(pricingRules, promotions, audits, users, roles, encoder, orders,
-            new AccountErasure(addresses, favorites, preferences, notifications, stockAlerts, org.mockito.Mockito.mock(com.ebike.repository.warranty.WarrantyClaimRepository.class), reviews, encoder),
+            new AccountErasure(addresses, favorites, preferences, notifications, stockAlerts, mock(WarrantyClaimRepository.class), reviews, encoder),
             auditLog);
         me = account(1L, "admin.user", "ADMIN");
         otherAdmin = account(2L, "second.admin", "ADMIN");

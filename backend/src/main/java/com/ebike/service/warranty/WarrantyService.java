@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Pattern;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -241,7 +242,7 @@ public class WarrantyService {
         if (WarrantyClaim.REJECTED.equals(claim.getStatus()) && !WarrantyClaim.REJECTED.equals(previous) && (claim.getStaffNote() == null || claim.getStaffNote().isBlank())) {
             throw bad("Vui lòng ghi lý do khi từ chối yêu cầu.", "Please give a reason when rejecting a request.");
         }
-        boolean changed = !previous.equals(claim.getStatus()) || !java.util.Objects.equals(previousNote, claim.getStaffNote());
+        boolean changed = !previous.equals(claim.getStatus()) || !Objects.equals(previousNote, claim.getStaffNote());
         WarrantyClaim saved = claims.save(claim);
         if (changed) {
             auditLog.record("xử lý yêu cầu bảo hành", "#" + saved.getId() + ": " + previous + " → " + saved.getStatus());

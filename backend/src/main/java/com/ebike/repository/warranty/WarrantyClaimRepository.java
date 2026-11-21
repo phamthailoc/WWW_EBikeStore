@@ -19,7 +19,6 @@ public interface WarrantyClaimRepository extends JpaRepository<WarrantyClaim, Lo
     // The graph holds everything WarrantyService.toClaimResponse reads, including the inverse one-to-one sides (order.payment, user.preference) that
     // Hibernate would otherwise load with one extra SELECT per row, so a list is one query instead of several per row.
 
-
     @EntityGraph(attributePaths = {"unit", "unit.orderItem", "unit.orderItem.order", "unit.orderItem.order.shipment", "unit.orderItem.order.payment",
         "unit.orderItem.product", "unit.orderItem.product.specification", "unit.orderItem.productVariant", "user", "user.preference"})
     List<WarrantyClaim> findByUserUsernameOrderByCreatedAtDesc(String username);
