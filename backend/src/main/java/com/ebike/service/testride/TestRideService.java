@@ -191,6 +191,9 @@ public class TestRideService {
         if (!TestRideRules.isWithinWindow(slot, now, daysAhead)) {
             throw bad("Chỉ đặt lịch trong " + daysAhead + " ngày tới.", "You can book only within the next " + daysAhead + " days.");
         }
+        if (slot.isBefore(now)) {
+            throw bad("Khung giờ này đã qua.", "This time has already passed.");
+        }
         if (!TestRideRules.isFarEnough(slot, now, leadMinutes)) {
             throw bad("Vui lòng đặt trước ít nhất " + leadText(true) + ".", "Please book at least " + leadText(false) + " ahead.");
         }

@@ -234,6 +234,15 @@ class TestRideServiceTest {
     }
 
     @Test
+    void aTimeThatHasPassedSaysSoInsteadOfTalkingAboutLeadTime() {
+        ResponseStatusException past = assertThrows(ResponseStatusException.class, () -> service.book("an", request("2026-11-20T09:00")));
+        assertEquals(HttpStatus.BAD_REQUEST.value(), past.getStatusCode().value());
+        assertTrue(past.getReason().contains("đã qua"), past.getReason());
+        ResponseStatusException soon = assertThrows(ResponseStatusException.class, () -> service.book("an", request("2026-11-21T11:00")));
+        assertTrue(soon.getReason().contains("trước"), soon.getReason());
+    }
+
+    @Test
     void theOpeningHoursOfTheShowroomDecideTheGrid() {
         showroom.setOpeningHours("08:30 - 17:30");
         assertEquals(HttpStatus.BAD_REQUEST, statusOf(() -> service.book("an", request("2026-11-22T09:00"))));
