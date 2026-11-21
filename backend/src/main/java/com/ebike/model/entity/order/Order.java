@@ -117,6 +117,8 @@ public class Order {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
+    // the items of a list of orders (the instalment queue) load in batches of 50 orders instead of one query per row; only this collection is batched
+    @org.hibernate.annotations.BatchSize(size = 50)
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<OrderItem> items = new LinkedHashSet<>();
 
