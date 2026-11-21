@@ -27,7 +27,7 @@ class TestRideRulesTest {
     void readsOtherWaysToWriteTheHours() {
         assertEquals(new TestRideRules.Hours(LocalTime.of(8, 0), LocalTime.of(21, 0)), TestRideRules.parseOpeningHours("8h - 21h"));
         assertEquals(new TestRideRules.Hours(LocalTime.of(8, 30), LocalTime.of(17, 0)), TestRideRules.parseOpeningHours("08:30-17:00"));
-        assertEquals(new TestRideRules.Hours(LocalTime.of(9, 0), LocalTime.of(18, 30)), TestRideRules.parseOpeningHours("Thứ 2 - Thứ 7: 9h00 – 18h30"));
+        assertEquals(new TestRideRules.Hours(LocalTime.of(9, 0), LocalTime.of(18, 30)), hoursOnly("Thứ 2 - Thứ 7: 9h00 – 18h30"));
     }
 
     @Test
@@ -43,7 +43,7 @@ class TestRideRulesTest {
     void readsTwelveHourTimes() {
         assertEquals(new TestRideRules.Hours(LocalTime.of(8, 0), LocalTime.of(21, 0)), TestRideRules.parseOpeningHours("8:00 AM - 9:00 PM"));
         assertEquals(new TestRideRules.Hours(LocalTime.of(8, 0), LocalTime.of(21, 0)), TestRideRules.parseOpeningHours("8:00am - 9:00pm"));
-        assertEquals(new TestRideRules.Hours(LocalTime.of(8, 30), LocalTime.of(17, 0)), TestRideRules.parseOpeningHours("Mon-Sat: 8:30 a.m. - 5 p.m."));
+        assertEquals(new TestRideRules.Hours(LocalTime.of(8, 30), LocalTime.of(17, 0)), hoursOnly("Mon-Sat: 8:30 a.m. - 5 p.m."));
         assertEquals(new TestRideRules.Hours(LocalTime.of(9, 0), LocalTime.of(18, 0)), TestRideRules.parseOpeningHours("9 AM - 6 PM"));
         assertEquals(new TestRideRules.Hours(LocalTime.of(0, 0), LocalTime.of(12, 0)), TestRideRules.parseOpeningHours("12:00 AM - 12:00 PM"));
         // a word that merely starts with "am" or "pm" is not a meridiem
@@ -80,8 +80,15 @@ class TestRideRulesTest {
         assertEquals(TestRideRules.DEFAULT_OPEN, dayOffOnly.open());
         assertEquals(java.util.Set.of(java.time.DayOfWeek.SUNDAY), dayOffOnly.closedDays());
         // a clause with hours in it is never a day off
-        assertTrue(TestRideRules.parseOpeningHours("Thứ 2-7: 08:00 - 21:00").closedDays().isEmpty());
-        assertTrue(TestRideRules.parseOpeningHours("CN: 9h - 12h").closedDays().isEmpty());
+        assertEquals(java.util.Set.of(java.time.DayOfWeek.SUNDAY), TestRideRules.parseOpeningHours("Thứ 2-7: 08:00 - 21:00").closedDays(), "Sunday has no hours");
+        assertTrue(TestRideRules.parseOpeningHours("08:00 - 21:00").closedDays().isEmpty());
+        assertTrue(TestRideRules.parseOpeningHours("Mở cửa 9h - 12h").closedDays().isEmpty());
+    }
+
+    /** The opening and closing time only, without the weekdays that the text leaves shut. */
+    private static TestRideRules.Hours hoursOnly(String text) {
+        TestRideRules.Hours hours = TestRideRules.parseOpeningHours(text);
+        return new TestRideRules.Hours(hours.open(), hours.close());
     }
 
     private static TestRideRules.Hours days(String text, java.time.DayOfWeek... expected) {
@@ -139,6 +146,32 @@ class TestRideRulesTest {
     }
 
     @Test
+    void weekdaysWrittenAsWordsAreReadAndDaysWithNoHoursAreShut() {
+        java.time.DayOfWeek sat = java.time.DayOfWeek.SATURDAY;
+        java.time.DayOfWeek sun = java.time.DayOfWeek.SUNDAY;
+        days("8:00 - 21:00, Thứ Bảy nghỉ", sat);
+        days("8:00 - 21:00, thu bay nghi", sat);
+        days("Chủ nhật nghỉ", sun);
+        days("chu nhat dong cua", sun);
+        days("Thứ Hai - Thứ Sáu nghỉ", java.time.DayOfWeek.MONDAY, java.time.DayOfWeek.TUESDAY, java.time.DayOfWeek.WEDNESDAY,
+            java.time.DayOfWeek.THURSDAY, java.time.DayOfWeek.FRIDAY);
+        days("Thứ Tư nghỉ", java.time.DayOfWeek.WEDNESDAY);
+        days("Thứ Năm nghỉ", java.time.DayOfWeek.THURSDAY);
+        // "except"
+        days("8:00 - 21:00 trừ Chủ nhật", sun);
+        days("8:00 - 21:00 except Sunday", sun);
+        days("8:00 - 21:00 trừ T7, CN", sat, sun);
+        // hours written for some days only: the others are shut
+        TestRideRules.Hours monToSat = days("T2 - T7: 8:00 - 20:00", sun);
+        assertEquals(LocalTime.of(20, 0), monToSat.close());
+        days("Thứ Hai - Thứ Sáu: 8h - 17h", sat, sun);
+        days("Mon-Fri 8:00-17:00, Sat 9:00-12:00", sun);
+        // hours with no day in front are for every day
+        days("8:00 - 21:00");
+        days("Mở cửa 8:00 - 21:00 hằng ngày");
+    }
+
+    @Test
     void offAndClosedAreWholeWordsOnly() {
         TestRideRules.Hours fallback = new TestRideRules.Hours(TestRideRules.DEFAULT_OPEN, TestRideRules.DEFAULT_CLOSE);
         // "nghi" is inside "nghiệp" and "off" inside "official": neither is a day off or a shut showroom
@@ -174,9 +207,9 @@ class TestRideRulesTest {
         assertEquals(new TestRideRules.Hours(LocalTime.of(9, 0), LocalTime.of(17, 30)), TestRideRules.parseOpeningHours("9 - 17:30"));
         assertEquals(new TestRideRules.Hours(LocalTime.of(11, 0), LocalTime.of(13, 0)), TestRideRules.parseOpeningHours("11 - 1 PM"));
         // the 2 of "T2" and "Thứ 2" are days, not an opening hour
-        assertEquals(eightToNine, TestRideRules.parseOpeningHours("T2 - 8h-21h"));
-        assertEquals(eightToNine, TestRideRules.parseOpeningHours("T2-T7: 8 - 21h"));
-        assertEquals(eightToNine, TestRideRules.parseOpeningHours("Thứ 2 - Thứ 7: 8 - 21h"));
+        assertEquals(eightToNine, hoursOnly("T2 - 8h-21h"));
+        assertEquals(eightToNine, hoursOnly("T2-T7: 8 - 21h"));
+        assertEquals(eightToNine, hoursOnly("Thứ 2 - Thứ 7: 8 - 21h"));
         // a closing time before the opening one falls back
         assertEquals(eightToNine, TestRideRules.parseOpeningHours("21 - 8h"));
     }
@@ -184,8 +217,8 @@ class TestRideRulesTest {
     @Test
     void theDaysOfTheWeekAreNotTakenForTheHours() {
         TestRideRules.Hours expected = new TestRideRules.Hours(LocalTime.of(8, 0), LocalTime.of(21, 0));
-        assertEquals(expected, TestRideRules.parseOpeningHours("Thứ 2-7: 08:00 - 21:00"));
-        assertEquals(expected, TestRideRules.parseOpeningHours("T2-T7: 8h - 21h"));
+        assertEquals(expected, hoursOnly("Thứ 2-7: 08:00 - 21:00"));
+        assertEquals(expected, hoursOnly("T2-T7: 8h - 21h"));
         assertEquals(new TestRideRules.Hours(LocalTime.of(9, 0), LocalTime.of(17, 0)), TestRideRules.parseOpeningHours("9-17"));
         // days only, no clock time: nothing to read, so the default hours
         assertEquals(expected, TestRideRules.parseOpeningHours("Thứ 2-7"));

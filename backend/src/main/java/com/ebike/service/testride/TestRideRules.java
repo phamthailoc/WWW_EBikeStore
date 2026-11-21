@@ -39,15 +39,15 @@ public final class TestRideRules {
     private static final String TIME = "(\\d{1,2})(?:(?::(\\d{2})|[hH](\\d{2})?)\\s*(?:([AaPp])\\.?[Mm]\\b\\.?)?|\\s*([AaPp])\\.?[Mm]\\b\\.?)";
     /** Two clock times joined by a dash: groups 1-5 are the opening time, 6-10 the closing time. */
     private static final Pattern HOURS = Pattern.compile(TIME + "\\s*[-\\u2013\\u2014]\\s*" + TIME);
-    /** A weekday written as a word or abbreviation: Thứ 2 ... Thứ 7, T2 ... T7, CN, Chủ nhật, Mon ... Sun (also Monday ...). Case-insensitive. */
-    private static final String DAY = "(?:thứ\\s*[2-7]|t[2-7]|cn|chủ\\s*nhật|(?:monday|tuesday|wednesday|thursday|friday|saturday|sunday|mon|tues|tue|wed|thurs|thur|thu|fri|sat|sun)s?)";
+    /** A weekday written as a word or abbreviation: Thứ 2 ... Thứ 7, Thứ Hai ... Thứ Bảy (also without accents), T2 ... T7, CN, Chủ nhật, Mon ... Sun (also Monday ...). Case-insensitive. */
+    private static final String DAY = "(?:thứ\\s*(?:[2-7]|hai|ba|tư|năm|sáu|bảy)|thu\\s*(?:[2-7]|hai|ba|tu|nam|sau|bay)|t[2-7]|cn|chủ\\s*nhật|chu\\s*nhat|(?:monday|tuesday|wednesday|thursday|friday|saturday|sunday|mon|tues|tue|wed|thurs|thur|thu|fri|sat|sun)s?)";
     /** One weekday or a range of them ("T2-T6", "Thứ 2 - Thứ 6", "Thứ 2-6", "Mon-Fri", "Sat to Sun"; "month" is no weekday): group 1 the first day, group 2 the last day of a range (a day or a bare 2-7). */
     private static final Pattern WEEKDAYS = Pattern.compile(
         "(?<![\\p{L}\\d])(" + DAY + ")(?:\\s*(?:[-–—]|to|đến|tới)\\s*(" + DAY + "|[2-7]))?(?![\\p{L}\\d])",
         Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
-    /** A clause that gives a weekday off: "CN đóng cửa", "Sunday closed", "T7 nghỉ". Each word stands alone, so "nghiệp" or "official" do not count. */
+    /** A clause that gives a weekday off: "CN đóng cửa", "Sunday closed", "T7 nghỉ", "trừ Chủ nhật", "except Sunday". Each word stands alone, so "nghiệp" or "official" do not count. */
     private static final Pattern DAY_OFF = Pattern.compile(
-        "(?<![\\p{L}\\d])(?:đóng\\s*cửa|dong\\s*cua|nghỉ|nghi|closed|off)(?![\\p{L}\\d])", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+        "(?<![\\p{L}\\d])(?:đóng\\s*cửa|dong\\s*cua|nghỉ|nghi|closed|off|trừ|tru|except|excluding)(?![\\p{L}\\d])", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
     /** The whole text is just "8 - 21": written with no minutes and no "h", it can only be hours. */
     private static final Pattern PLAIN_HOURS = Pattern.compile("^\\s*(\\d{1,2})\\s*[-\\u2013\\u2014]\\s*(\\d{1,2})\\s*$");
     /** An hour with no unit before a dash and a time that has one: "8 - 21h", "8-9 PM". Group 1 the opening hour, groups 2-6 the closing time. A number that follows a letter (the 2 of "T2") is not an hour. */
@@ -60,6 +60,8 @@ public final class TestRideRules {
     private static final Pattern SHUT_QUALIFIER = Pattern.compile(
         "(?<![\\p{L}\\d])(?:lễ|tết|holidays?|trưa|lunch|break|buổi|sáng|chiều|tối|đêm|morning|afternoon|evening|night|mở\\s*cửa|mo\\s*cua|open)(?![\\p{L}\\d])",
         Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+    /** "thứ hai" ... "thứ bảy" (lower case): group 1 the number written as a word. */
+    private static final Pattern DAY_NAME = Pattern.compile("th[uứ]\\s*(hai|ba|tư|tu|năm|nam|sáu|sau|bảy|bay)");
     private static final Pattern PHONE = Pattern.compile("^0\\d{9,10}$");
 
     private TestRideRules() {
@@ -86,7 +88,8 @@ public final class TestRideRules {
      * Reads "08:00 - 21:00" (also "8h - 21h", "8 - 21h", "8:00 AM - 9:00 PM", "08:00 - 24:00", "08:30-17:00", and "Thứ 2-7: 08:00 - 21:00" as 08:00 - 21:00) from the
      * free text of {@code showrooms.opening_hours}. A clause that gives a day off with no hours in it ("CN đóng cửa", "Sunday closed", "T7 nghỉ", "T7-CN nghỉ",
      * "Sat-Sun closed") makes those weekdays (a range counts every day in it) take no bookings; the same goes for a day off written after the hours in one
-     * clause ("Mon-Sat 8:00 - 21:00 Sun closed"). A list of days split by commas is read whatever its length and wherever the "off" stands ("Nghỉ T7, CN",
+     * clause ("Mon-Sat 8:00 - 21:00 Sun closed", "8:00 - 21:00 trừ Chủ nhật", "8:00 - 21:00 except Sunday"). When every range of hours is written after
+     * the weekdays it is for ("T2 - T7: 8:00 - 20:00"), the other weekdays are shut. Weekdays may be written "Thứ Hai" ... "Thứ Bảy" too. A list of days split by commas is read whatever its length and wherever the "off" stands ("Nghỉ T7, CN",
      * "T6, T7, CN nghỉ", "closed Sat, Sun", "08:00 - 21:00 (T7, CN nghỉ)", "CN, ngày lễ: nghỉ"). Text whose every clause says the showroom is shut ("Đóng cửa", "Tạm nghỉ", "Closed") and gives no hours takes
      * no bookings at all; "Mở cửa hằng ngày, đóng cửa ngày lễ" is not that, since it also says "open" and names a holiday. Anything else that cannot be read
      * as a same-day range falls back to 08:00 - 21:00, so a showroom with a note such as "by appointment" still takes bookings.
@@ -102,11 +105,19 @@ public final class TestRideRules {
         // clauses that only give a weekday off are taken out first, so "CN đóng cửa" is not read as "the showroom is shut"
         Set<DayOfWeek> closedDays = EnumSet.noneOf(DayOfWeek.class);
         Set<DayOfWeek> listed = EnumSet.noneOf(DayOfWeek.class); // the clauses just before this one that name only weekdays ("T6, T7, CN nghỉ")
+        Set<DayOfWeek> openDays = EnumSet.noneOf(DayOfWeek.class); // the weekdays written in front of hours ("T2 - T7: 8 - 20")
+        boolean everyHoursNamesDays = true;
         boolean afterOff = false; // the clause before was a day off, so a clause of weekdays that follows is off too ("Nghỉ T7, CN")
         StringBuilder rest = new StringBuilder();
         for (String clause : text.split("[;|\n,]")) {
             Matcher hours = hoursIn(clause);
             if (hours != null) {
+                String head = clause.substring(0, hours.start());
+                if (onlyWeekdays(head)) {
+                    addWeekdays(head, openDays);
+                } else {
+                    everyHoursNamesDays = false;
+                }
                 // "Mon-Sat 8:00 - 21:00 Sun closed": a day off written after the hours of the same clause
                 String tail = clause.substring(hours.end());
                 listed.clear();
@@ -139,6 +150,14 @@ public final class TestRideRules {
                 afterOff = false;
             }
             rest.append(clause).append(' ');
+        }
+        if (everyHoursNamesDays && !openDays.isEmpty()) {
+            // "T2 - T7: 8:00 - 20:00": a weekday that no hours are written for is shut
+            for (DayOfWeek day : DayOfWeek.values()) {
+                if (!openDays.contains(day)) {
+                    closedDays.add(day);
+                }
+            }
         }
         Hours base = parseRange(closedDays.isEmpty() ? text : rest.toString());
         return closedDays.isEmpty() ? base : new Hours(base.open(), base.close(), closedDays);
@@ -188,6 +207,17 @@ public final class TestRideRules {
         }
         if (w.startsWith("cn") || w.startsWith("ch")) {
             return DayOfWeek.SUNDAY;
+        }
+        Matcher named = DAY_NAME.matcher(w);
+        if (named.matches()) { // "thứ hai" ... "thứ bảy", with or without accents
+            return switch (named.group(1)) {
+                case "hai" -> DayOfWeek.MONDAY;
+                case "ba" -> DayOfWeek.TUESDAY;
+                case "tư", "tu" -> DayOfWeek.WEDNESDAY;
+                case "năm", "nam" -> DayOfWeek.THURSDAY;
+                case "sáu", "sau" -> DayOfWeek.FRIDAY;
+                default -> DayOfWeek.SATURDAY;
+            };
         }
         return switch (w.substring(0, 3)) {
             case "mon" -> DayOfWeek.MONDAY;
