@@ -237,9 +237,7 @@ window.KineticTestRide = (() => {
     backlog.id = 'rideBacklog';
     backlog.hidden = true;
     table.parentNode.insertBefore(backlog, table);
-    const showBacklog = () => fetch('/api/v1/manager/test-rides/backlog', {credentials: 'same-origin', headers: {Accept: 'application/json'}})
-      .then(response => response.ok ? response.json() : null)
-      .then(counts => {
+    const renderBacklog = counts => {
         const parts = [];
         if (counts && counts.pending > 0) parts.push(t('{n} yêu cầu đang chờ xác nhận.', {n: counts.pending}));
         if (counts && counts.overdue > 0) parts.push(t('{n} lịch đã quá giờ nhưng chưa đóng (đã lái thử hoặc khách không đến).', {n: counts.overdue}));
@@ -247,10 +245,19 @@ window.KineticTestRide = (() => {
         if (counts && counts.unavailable > 0) parts.push(t('{n} lịch chưa đóng thuộc cửa hàng đã tắt hoặc xe ngừng bán. Hãy hủy và ghi lý do.', {n: counts.unavailable}));
         backlog.textContent = parts.join(' ');
         backlog.hidden = parts.length === 0;
-      })
-      .catch(() => { /* the list below still works */ });
-    showBacklog();
-    window.addEventListener('workspace:reload', showBacklog);
+    };
+    if (document.querySelector('.work-sidebar a[href="/manager/test-rides"]')) {
+      // workspace.js already reads the counts for the menu badge on every load and reload: share that one answer instead of asking again
+      window.addEventListener('testride:backlog', event => renderBacklog(event.detail));
+      if (window.rideBacklog) renderBacklog(window.rideBacklog);
+    } else {
+      const showBacklog = () => fetch('/api/v1/manager/test-rides/backlog', {credentials: 'same-origin', headers: {Accept: 'application/json'}})
+        .then(response => response.ok ? response.json() : null)
+        .then(renderBacklog)
+        .catch(() => { /* the list below still works */ });
+      showBacklog();
+      window.addEventListener('workspace:reload', showBacklog);
+    }
     if (document.body.dataset.canUpdate !== 'true') {
       // the server refuses a change from this account, so the page offers none
       const viewOnly = document.createElement('p');
