@@ -255,6 +255,7 @@ public class TestRideService {
             booking.setCancelledByCustomerAt(now); // the staff had agreed to it: the backlog tells them
         }
         booking.setStatus(TestRideBooking.CANCELLED);
+        booking.setCancelSource(TestRideBooking.BY_CUSTOMER);
         return toResponse(bookings.save(booking), now, false);
     }
 
@@ -335,6 +336,9 @@ public class TestRideService {
                 throw bad("Vui lòng ghi lý do khi hủy lịch.", "Please give a reason when cancelling a test ride.");
             }
             booking.setStatus(next);
+            if (TestRideBooking.CANCELLED.equals(next)) {
+                booking.setCancelSource(TestRideBooking.BY_STORE);
+            }
             if (TestRideBooking.CONFIRMED.equals(next)) {
                 booking.setConfirmedAt(now);
                 if (!booking.getSlotStart().isAfter(now.plusHours(reminderHours))) {
@@ -392,7 +396,9 @@ public class TestRideService {
             user.getEmail(),
             !forStaff && TestRideRules.canCustomerCancel(booking.getStatus(), booking.getSlotStart(), now),
             forStaff ? TestRideRules.nextSteps(booking.getStatus(), booking.getSlotStart(), now) : List.of(),
-            booking.getCreatedAt());
+            booking.getCreatedAt(),
+            TestRideBooking.CANCELLED.equals(booking.getStatus()) ? booking.getCancelSource() : null,
+            booking.getCancelledByCustomerAt());
     }
 
     private String leadText(boolean vietnamese) {

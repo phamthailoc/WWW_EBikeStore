@@ -13,6 +13,8 @@
   const rideStatusText={REQUESTED:t('Chờ xác nhận'),CONFIRMED:t('Đã xác nhận'),DONE:t('Đã lái thử'),CANCELLED:t('Đã hủy'),NO_SHOW:t('Không đến')};
   const rideStepText={CONFIRMED:t('Xác nhận'),DONE:t('Đã lái thử'),NO_SHOW:t('Khách không đến'),CANCELLED:t('Hủy lịch')};
   const isRidePage=/test-rides$/.test(page);
+  // who cancelled a test ride (cancelledBy comes from the API); the staff read it as "customer cancelled", the customer as "you cancelled"
+  const rideCancelText=row=>{const staff=page==='/manager/test-rides';return {CUSTOMER:staff?(row.cancelledByCustomerAt?t('Khách hủy sau khi đã xác nhận'):t('Khách hủy')):t('Bạn đã hủy'),STORE:t('Cửa hàng hủy'),EXPIRED:t('Hết hạn, cửa hàng chưa xác nhận'),ERASED:t('Khách đã xóa tài khoản')}[row.cancelledBy]||null};
   const warrantyNext={NEW:['RECEIVED','REJECTED'],RECEIVED:['REPAIRING','DONE','REJECTED'],REPAIRING:['DONE','REJECTED']};
   const valueText = {
     claimStatus:warrantyStatusText,
@@ -107,7 +109,7 @@
   // A long fault description or note would make the queue row very tall: show the first lines and keep the whole text in the tooltip.
   const CLAMPED_KEYS = ['description','staffNote'];
   const cellHtml = (row,k) => {
-    const text = isRidePage && k === 'staffNote' && row[k] === 'Khách đã xóa tài khoản' ? t(row[k]) : human(row[k],k);
+    const text = isRidePage && k === 'status' && row.status === 'CANCELLED' && rideCancelText(row) ? rideCancelText(row) : human(row[k],k);
     if (page === '/manager/warranty' && CLAMPED_KEYS.includes(k) && typeof row[k] === 'string' && row[k].length > 120) {
       return `<span class="clamped-text" title="${escape(text)}">${escape(text)}</span>`;
     }

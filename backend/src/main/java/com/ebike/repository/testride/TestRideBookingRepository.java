@@ -82,17 +82,19 @@ public interface TestRideBookingRepository extends JpaRepository<TestRideBooking
     List<Long> findExpiredRequestIds(@Param("cutoff") LocalDateTime cutoff, Pageable pageable);
 
     /**
-     * Account erasure: the customer's open bookings are cancelled so the places are free again, and {@code note} says why in the staff note (the
-     * schedule would otherwise show a cancelled row with no reason). Returns how many rows changed.
+     * Account erasure: the customer's open bookings are cancelled so the places are free again. The reason is the code {@code ERASED} in
+     * {@code cancel_source}, which each page words in its own language. A booking the staff had confirmed also gets {@code cancelled_by_customer_at},
+     * so the backlog tells them about a bike they may have prepared. MariaDB applies the assignments of one UPDATE from left to right, so the
+     * {@code case} reads the status before it is changed: keep it first. Returns how many rows changed.
      */
     @Modifying
-    @Query("update TestRideBooking b set b.status = 'CANCELLED', b.staffNote = :note, b.updatedAt = :now where b.user.id = :userId and b.status in ('REQUESTED', 'CONFIRMED')")
-    int cancelOpenOf(@Param("userId") Long userId, @Param("now") LocalDateTime now, @Param("note") String note);
+    @Query("update TestRideBooking b set b.cancelledByCustomerAt = case when b.status = 'CONFIRMED' then :now else b.cancelledByCustomerAt end, "
+        + "b.cancelSource = 'ERASED', b.status = 'CANCELLED', b.updatedAt = :now where b.user.id = :userId and b.status in ('REQUESTED', 'CONFIRMED')")
+    int cancelOpenOf(@Param("userId") Long userId, @Param("now") LocalDateTime now);
 
     /**
      * Account erasure: the phone number, the words of the customer and the shop's note go (staff tend to write a name or a number in it, and the
-     * customer could read it); the booking row itself stays as a record of the slot. Run it before {@code cancelOpenOf}, which writes the reason.
-     */
+     * customer could read it); the booking row itself stays as a record of the slot.     */
     @Modifying
     @Query("update TestRideBooking b set b.contactPhone = '', b.customerNote = null, b.staffNote = null, b.updatedAt = :now where b.user.id = :userId")
     int clearPersonalDataOf(@Param("userId") Long userId, @Param("now") LocalDateTime now);

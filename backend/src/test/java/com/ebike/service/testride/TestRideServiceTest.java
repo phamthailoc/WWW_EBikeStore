@@ -380,6 +380,8 @@ class TestRideServiceTest {
         TestRideResponse response = service.cancelOwn("an", 77L);
         assertEquals(TestRideBooking.CANCELLED, booking.getStatus());
         assertEquals("CANCELLED", response.status());
+        assertEquals(TestRideBooking.BY_CUSTOMER, response.cancelledBy());
+        assertEquals(NOW, response.cancelledByCustomerAt());
         assertFalse(response.canCancel());
         assertTrue(events.isEmpty(), "the customer needs no message about their own cancellation");
         assertEquals(NOW, booking.getCancelledByCustomerAt(), "a ride the staff had confirmed is marked for the backlog");
@@ -450,8 +452,9 @@ class TestRideServiceTest {
         assertEquals(HttpStatus.BAD_REQUEST, statusOf(() -> service.update(77L, new TestRideUpdateRequest("CANCELLED", "   "))));
         assertEquals(TestRideBooking.CONFIRMED, booking.getStatus());
         assertTrue(events.isEmpty());
-        service.update(77L, new TestRideUpdateRequest("CANCELLED", "The bike is in service"));
+        TestRideResponse cancelled = service.update(77L, new TestRideUpdateRequest("CANCELLED", "The bike is in service"));
         assertEquals(TestRideBooking.CANCELLED, booking.getStatus());
+        assertEquals(TestRideBooking.BY_STORE, cancelled.cancelledBy());
         assertEquals(TestRideMessages.CANCELLED, ((TestRideNoticeEvent) events.get(0)).kind());
     }
 

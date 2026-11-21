@@ -481,6 +481,7 @@ CREATE TABLE `test_ride_bookings` (
     confirmed_at DATETIME NULL,
     reminder_sent_at DATETIME NULL,
     cancelled_by_customer_at DATETIME NULL,
+    cancel_source VARCHAR(10) NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     active_user_slot VARCHAR(40) AS (IF(status IN ('REQUESTED', 'CONFIRMED'), CONCAT(user_id, '@', slot_start), NULL)) VIRTUAL,
@@ -488,6 +489,7 @@ CREATE TABLE `test_ride_bookings` (
     CONSTRAINT fk_test_ride_product FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE RESTRICT,
     CONSTRAINT fk_test_ride_showroom FOREIGN KEY (showroom_id) REFERENCES showrooms(id) ON DELETE RESTRICT,
     CONSTRAINT chk_test_ride_status CHECK (status IN ('REQUESTED', 'CONFIRMED', 'DONE', 'CANCELLED', 'NO_SHOW')),
+    CONSTRAINT chk_test_ride_cancel_source CHECK (cancel_source IS NULL OR cancel_source IN ('CUSTOMER', 'STORE', 'EXPIRED', 'ERASED')),
     CONSTRAINT uk_test_ride_active_user_slot UNIQUE (active_user_slot)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 CREATE INDEX `idx_test_ride_showroom_slot` ON `test_ride_bookings` (showroom_id, slot_start, status);

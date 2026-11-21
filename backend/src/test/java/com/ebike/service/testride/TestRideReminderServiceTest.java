@@ -130,6 +130,7 @@ class TestRideReminderServiceTest {
         assertEquals(1, service.expireUnconfirmed(NOW));
 
         assertEquals(TestRideBooking.CANCELLED, late.getStatus());
+        assertEquals(TestRideBooking.BY_EXPIRY, late.getCancelSource());
         verify(bookings).save(late);
         assertEquals(TestRideMessages.EXPIRED, ((TestRideNoticeEvent) events.get(0)).kind());
     }

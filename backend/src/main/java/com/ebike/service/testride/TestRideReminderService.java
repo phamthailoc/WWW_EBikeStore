@@ -98,6 +98,7 @@ public class TestRideReminderService {
             return false;
         }
         booking.setStatus(TestRideBooking.CANCELLED);
+        booking.setCancelSource(TestRideBooking.BY_EXPIRY);
         bookings.save(booking);
         NotificationEventBridge.publish(TestRideService.noticeOf(booking, TestRideMessages.EXPIRED));
         return true;

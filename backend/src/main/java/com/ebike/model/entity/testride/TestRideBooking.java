@@ -27,6 +27,12 @@ public class TestRideBooking {
     public static final String CANCELLED = "CANCELLED";
     public static final String NO_SHOW = "NO_SHOW";
 
+    /** Who closed a CANCELLED booking: the customer, the shop's staff, the timer (nobody confirmed the request) or the erasure of the customer's account. */
+    public static final String BY_CUSTOMER = "CUSTOMER";
+    public static final String BY_STORE = "STORE";
+    public static final String BY_EXPIRY = "EXPIRED";
+    public static final String BY_ERASURE = "ERASED";
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -64,6 +70,10 @@ public class TestRideBooking {
     /** Set when the customer withdrew a booking the staff had already confirmed: the staff may have prepared a bike, so the backlog shows it until the slot. */
     @Column(name = "cancelled_by_customer_at")
     private LocalDateTime cancelledByCustomerAt;
+
+    /** One of the BY_ codes, set together with the status CANCELLED (null on older rows and on every other status): the lists say who cancelled, in the reader's language. */
+    @Column(name = "cancel_source", length = 10)
+    private String cancelSource;
 
     /** Set when the "tomorrow" reminder was sent (or was not needed because the booking was confirmed inside the last 24 hours). */
     @Column(name = "reminder_sent_at")
@@ -107,6 +117,8 @@ public class TestRideBooking {
     public void setConfirmedAt(LocalDateTime confirmedAt) { this.confirmedAt = confirmedAt; }
     public LocalDateTime getCancelledByCustomerAt() { return cancelledByCustomerAt; }
     public void setCancelledByCustomerAt(LocalDateTime cancelledByCustomerAt) { this.cancelledByCustomerAt = cancelledByCustomerAt; }
+    public String getCancelSource() { return cancelSource; }
+    public void setCancelSource(String cancelSource) { this.cancelSource = cancelSource; }
     public LocalDateTime getReminderSentAt() { return reminderSentAt; }
     public void setReminderSentAt(LocalDateTime reminderSentAt) { this.reminderSentAt = reminderSentAt; }
     public LocalDateTime getCreatedAt() { return createdAt; }

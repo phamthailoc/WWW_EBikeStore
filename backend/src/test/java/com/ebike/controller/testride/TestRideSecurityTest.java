@@ -113,7 +113,7 @@ class TestRideSecurityTest {
             when(service.schedule(any(), any(), any())).thenReturn(List.of());
             when(service.backlog()).thenReturn(new com.ebike.dto.testride.TestRideBacklogResponse(0, 0, 0, 0));
             when(service.book(any(), any())).thenReturn(new TestRideResponse(
-                1L, 5L, "Bike", "bike", 10L, "Quan 1", "addr", null, "REQUESTED", "0901234567", null, null, "An", "an@example.com", true, List.of(), null));
+                1L, 5L, "Bike", "bike", 10L, "Quan 1", "addr", null, "REQUESTED", "0901234567", null, null, "An", "an@example.com", true, List.of(), null, null, null));
             return service;
         }
 
