@@ -117,6 +117,18 @@ public final class TestRideRules {
         return type != null && type != VehicleType.BATTERY && type != VehicleType.ACCESSORY;
     }
 
+    /** The same rule for the name of a vehicle type as a page or response carries it; null and a name that is no vehicle type are not rideable. */
+    public static boolean isRideableName(String vehicleTypeName) {
+        if (vehicleTypeName == null) {
+            return false;
+        }
+        try {
+            return isRideable(VehicleType.valueOf(vehicleTypeName.trim()));
+        } catch (IllegalArgumentException unknown) {
+            return false;
+        }
+    }
+
     /** Vietnamese mobile or landline number: starts with 0 and has 10 or 11 digits. */
     public static boolean isValidPhone(String phone) {
         return phone != null && PHONE.matcher(phone).matches();

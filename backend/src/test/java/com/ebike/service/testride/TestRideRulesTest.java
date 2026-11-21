@@ -31,6 +31,15 @@ class TestRideRulesTest {
     }
 
     @Test
+    void theVehicleTypeNameFollowsTheSameRuleAsTheEnum() {
+        for (com.ebike.model.entity.product.VehicleType type : com.ebike.model.entity.product.VehicleType.values()) {
+            assertEquals(TestRideRules.isRideable(type), TestRideRules.isRideableName(type.name()), type.name());
+        }
+        assertFalse(TestRideRules.isRideableName(null));
+        assertFalse(TestRideRules.isRideableName("HOVERBOARD"));
+    }
+
+    @Test
     void theDaysOfTheWeekAreNotTakenForTheHours() {
         TestRideRules.Hours expected = new TestRideRules.Hours(LocalTime.of(8, 0), LocalTime.of(21, 0));
         assertEquals(expected, TestRideRules.parseOpeningHours("Thứ 2-7: 08:00 - 21:00"));

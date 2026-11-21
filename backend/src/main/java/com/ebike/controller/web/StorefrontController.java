@@ -1,6 +1,7 @@
 package com.ebike.controller.web;
 
 import com.ebike.service.product.ProductService;
+import com.ebike.service.testride.TestRideRules;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -97,7 +98,7 @@ public class StorefrontController {
         model.addAttribute("stockAlertCustomer", customer);
         // V23: "Book a test ride" is for visitors (sent to sign in) and customers, and only for a bike that can be ridden (not a battery, an accessory or a product without a vehicle type).
         String vehicleType = product == null || product.specification() == null ? null : product.specification().vehicleType();
-        boolean rideable = vehicleType != null && !"BATTERY".equals(vehicleType) && !"ACCESSORY".equals(vehicleType);
+        boolean rideable = TestRideRules.isRideableName(vehicleType); // the same rule the booking API applies
         model.addAttribute("canTestRide", (visitor || customer) && rideable);
         model.addAttribute("testRideDays", testRideDays);
         return "store/detail";
