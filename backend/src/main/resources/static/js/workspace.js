@@ -94,15 +94,24 @@
     '/manager/warranty':['id','customerName','productName','frameNumber','description','status','outOfWarranty','staffNote','createdAt'],
     '/customer/notifications':['id','title','message','type','createdAt','readAt']
   };
+  // A long fault description or note would make the queue row very tall: show the first lines and keep the whole text in the tooltip.
+  const CLAMPED_KEYS = ['description','staffNote'];
+  const cellHtml = (row,k) => {
+    const text = human(row[k],k);
+    if (page === '/manager/warranty' && CLAMPED_KEYS.includes(k) && typeof row[k] === 'string' && row[k].length > 120) {
+      return `<span class="clamped-text" title="${escape(text)}">${escape(text)}</span>`;
+    }
+    return escape(text);
+  };
   const renderTable = rows => {
     records=Array.isArray(rows)?rows:rows==null?[]:[rows]; loading.hidden=true;
-    if(!records.length){if(emptyText[page])empty.textContent=page==='/manager/warranty'&&!filterQuery.get('status')?t('Không có yêu cầu bảo hành nào đang chờ xử lý.'):emptyText[page];empty.hidden=false;table.hidden=true;return}
+    if(!records.length){if(emptyText[page])empty.textContent=page==='/manager/warranty'&&!filterQuery.get('status')?t('Không có yêu cầu bảo hành nào đang chờ xử lý.'):page==='/manager/warranty'&&filterQuery.get('status')!=='ALL'?t('Không có yêu cầu nào ở trạng thái này.'):emptyText[page];empty.hidden=false;table.hidden=true;return}
     empty.hidden=true;table.hidden=false;
     const available=[...new Set(records.flatMap(row=>Object.keys(row||{})))].filter(k=>!['items','variants','permissions','specification','addresses','category','images','shipment'].includes(k));
     const keys=(mode==='detail'?orderSummaryColumns:columnsForPage[page]||available.slice(0,9)).filter(k=>available.includes(k));
     const hasActions=records.some(row=>actionFor(row));
     table.querySelector('thead').innerHTML=`<tr>${keys.map(k=>`<th data-field="${escape(k)}">${escape(label(k))}</th>`).join('')}${hasActions?'<th>' + t('Thao tác') + '</th>':''}</tr>`;
-    table.querySelector('tbody').innerHTML=records.map(row=>`<tr>${keys.map(k=>`<td data-field="${escape(k)}"${warrantyDate(row[k],k)?` data-iso="${escape(row[k])}"`:""}${valueText[k]&&typeof row[k]==="string"?` data-raw="${escape(row[k])}"`:""}>${escape(human(row[k],k))}</td>`).join('')}${hasActions?`<td>${actionFor(row)}</td>`:''}</tr>`).join('');
+    table.querySelector('tbody').innerHTML=records.map(row=>`<tr>${keys.map(k=>`<td data-field="${escape(k)}"${warrantyDate(row[k],k)?` data-iso="${escape(row[k])}"`:""}${valueText[k]&&typeof row[k]==="string"?` data-raw="${escape(row[k])}"`:""}>${cellHtml(row,k)}</td>`).join('')}${hasActions?`<td>${actionFor(row)}</td>`:''}</tr>`).join('');
   };
   const renderFavorites = rows => {
     const list=Array.isArray(rows)?rows:[]; loading.hidden=true; empty.hidden=!!list.length; table.hidden=true;

@@ -124,3 +124,5 @@ h1,h2,h3,.brand,.eyebrow,.metric b,.metric small{font-family:'Space Grotesk','Se
 .unit-row{display:grid;grid-template-columns:56px 1fr 1fr;gap:10px;align-items:center;margin:6px 0}
 .unit-row input{padding:8px 10px;border:1px solid var(--c-cfd8d6);background:var(--c-ffffff);color:inherit;font:inherit;text-transform:uppercase}
 @media(max-width:640px){.unit-row{grid-template-columns:1fr}}
+
+.clamped-text{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:4;line-clamp:4;overflow:hidden;max-width:36ch;overflow-wrap:anywhere}
