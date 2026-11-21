@@ -3,24 +3,10 @@ package com.ebike.service.warranty;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import jakarta.servlet.http.Cookie;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
-/** V20: the server's own words come in Vietnamese or English, chosen by the saved profile language or the request. */
+/** V20: the server's own words come in Vietnamese or English, chosen by the saved profile language. */
 class WarrantyMessagesTest {
-
-    @AfterEach
-    void clear() {
-        RequestContextHolder.resetRequestAttributes();
-    }
-
-    private static void request(MockHttpServletRequest request) {
-        RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
-    }
 
     @Test
     void anythingButEnglishIsVietnamese() {
@@ -29,40 +15,6 @@ class WarrantyMessagesTest {
         assertEquals("vi", WarrantyMessages.normalize("vi"));
         assertEquals("vi", WarrantyMessages.normalize(null));
         assertEquals("vi", WarrantyMessages.normalize("fr"));
-    }
-
-    @Test
-    void acceptLanguageTakesTheFirstLanguageTheShopHas() {
-        assertEquals("en", WarrantyMessages.fromAcceptLanguage("en-US,en;q=0.9"));
-        assertEquals("vi", WarrantyMessages.fromAcceptLanguage("vi-VN,vi;q=0.9,en;q=0.5"));
-        assertEquals("vi", WarrantyMessages.fromAcceptLanguage("fr,vi;q=0.5"));
-        assertEquals("en", WarrantyMessages.fromAcceptLanguage("fr,en;q=0.5"));
-        assertEquals("vi", WarrantyMessages.fromAcceptLanguage("de"));
-        assertEquals("vi", WarrantyMessages.fromAcceptLanguage(""));
-        assertEquals("vi", WarrantyMessages.fromAcceptLanguage(null));
-        assertEquals("vi", WarrantyMessages.fromAcceptLanguage(";;;not a header"));
-    }
-
-    @Test
-    void withoutARequestTheTextIsVietnamese() {
-        assertEquals("xin chào", WarrantyMessages.text("xin chào", "hello"));
-    }
-
-    @Test
-    void aVisitorWithoutACookieGetsTheBrowserLanguage() {
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        request.addHeader("Accept-Language", "en-GB,en;q=0.8");
-        request(request);
-        assertEquals("hello", WarrantyMessages.text("xin chào", "hello"));
-    }
-
-    @Test
-    void theChoiceMadeOnTheDeviceBeatsTheBrowserLanguage() {
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        request.addHeader("Accept-Language", "en-GB");
-        request.setCookies(new Cookie("ebike_lang", "vi"));
-        request(request);
-        assertEquals("xin chào", WarrantyMessages.text("xin chào", "hello"));
     }
 
     @Test

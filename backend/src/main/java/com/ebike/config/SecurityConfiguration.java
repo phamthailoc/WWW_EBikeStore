@@ -2,7 +2,7 @@ package com.ebike.config;
 
 import com.ebike.security.filter.JwtAuthenticationFilter;
 import com.ebike.common.constants.PermissionConstants;
-import com.ebike.service.warranty.WarrantyMessages;
+import com.ebike.common.i18n.RequestLanguage;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,8 +22,11 @@ public class SecurityConfiguration {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    public SecurityConfiguration(JwtAuthenticationFilter jwtAuthenticationFilter) {
+    private final UserLocaleResolver localeResolver;
+
+    public SecurityConfiguration(JwtAuthenticationFilter jwtAuthenticationFilter, UserLocaleResolver localeResolver) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+        this.localeResolver = localeResolver;
     }
 
     @Bean
@@ -140,7 +143,7 @@ public class SecurityConfiguration {
             .exceptionHandling(exceptions -> exceptions
                 .authenticationEntryPoint((request, response, exception) -> {
                     if (request.getRequestURI().startsWith("/api/v1/")) {
-                    writeJson(request, response, HttpServletResponse.SC_UNAUTHORIZED, "Bạn cần đăng nhập.", "Please sign in.");
+                        writeJson(request, response, HttpServletResponse.SC_UNAUTHORIZED, "Bạn cần đăng nhập.", "Please sign in.");
                     } else {
                         response.sendRedirect("/login?returnTo=" + java.net.URLEncoder.encode(request.getRequestURI(), java.nio.charset.StandardCharsets.UTF_8));
                     }
@@ -159,11 +162,11 @@ public class SecurityConfiguration {
         return http.build();
     }
 
-    /** An API error in the language of the request (the same cookie and header rules as the rest of the shop). */
-    private static void writeJson(jakarta.servlet.http.HttpServletRequest request, HttpServletResponse response, int status, String vietnamese, String english) throws java.io.IOException {
+    /** An API error in the language of the request: the device's choice, else the account's language, else Vietnamese (as the pages). */
+    private void writeJson(jakarta.servlet.http.HttpServletRequest request, HttpServletResponse response, int status, String vietnamese, String english) throws java.io.IOException {
         response.setStatus(status);
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
-        response.getWriter().write("{\"message\":\"" + WarrantyMessages.text(request, vietnamese, english) + "\"}");
+        response.getWriter().write("{\"message\":\"" + RequestLanguage.text(request, localeResolver, vietnamese, english) + "\"}");
     }
 }

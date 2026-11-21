@@ -1,5 +1,6 @@
 package com.ebike.service.warranty;
 
+import com.ebike.common.i18n.RequestLanguage;
 import com.ebike.dto.warranty.WarrantyClaimResponse;
 import com.ebike.dto.warranty.WarrantyClaimUpdateRequest;
 import com.ebike.dto.warranty.WarrantyLookupResponse;
@@ -117,12 +118,12 @@ public class WarrantyService {
             throw bad("Số khung gồm 5 đến 30 ký tự chữ, số hoặc dấu gạch ngang.", "A frame number has 5 to 30 letters, digits or hyphens.");
         }
         OrderItemUnit unit = units.findForWarrantyByFrameNumber(normalized)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, WarrantyMessages.text("Không tìm thấy xe có số khung này.", "No vehicle with this frame number was found.")));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, RequestLanguage.text("Không tìm thấy xe có số khung này.", "No vehicle with this frame number was found.")));
         LocalDateTime now = LocalDateTime.now(clock);
         LocalDateTime starts = startsAt(unit);
         if (starts == null) {
             // not handed over yet: answer like an unknown frame, so the page cannot be used to probe frames of open orders
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, WarrantyMessages.text("Không tìm thấy xe có số khung này.", "No vehicle with this frame number was found."));
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, RequestLanguage.text("Không tìm thấy xe có số khung này.", "No vehicle with this frame number was found."));
         }
         Integer months = warrantyMonths(unit);
         return new WarrantyLookupResponse(
@@ -216,7 +217,7 @@ public class WarrantyService {
     @Transactional
     public WarrantyClaimResponse updateClaim(Long id, WarrantyClaimUpdateRequest request) {
         WarrantyClaim claim = claims.findLockedById(id)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, WarrantyMessages.text("Không tìm thấy yêu cầu bảo hành.", "Warranty request not found.")));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, RequestLanguage.text("Không tìm thấy yêu cầu bảo hành.", "Warranty request not found.")));
         String previous = claim.getStatus();
         String previousNote = claim.getStaffNote();
         boolean closed = WarrantyClaim.DONE.equals(previous) || WarrantyClaim.REJECTED.equals(previous);
@@ -346,18 +347,18 @@ public class WarrantyService {
     }
 
     private static ResponseStatusException openRequestExists() {
-        return new ResponseStatusException(HttpStatus.CONFLICT, WarrantyMessages.text("Xe này đang có một yêu cầu bảo hành chưa xử lý xong.", "This vehicle already has an open warranty request."));
+        return new ResponseStatusException(HttpStatus.CONFLICT, RequestLanguage.text("Xe này đang có một yêu cầu bảo hành chưa xử lý xong.", "This vehicle already has an open warranty request."));
     }
 
     private static ResponseStatusException signInRequired() {
-        return new ResponseStatusException(HttpStatus.UNAUTHORIZED, WarrantyMessages.text("Vui lòng đăng nhập để tiếp tục.", "Please sign in to continue."));
+        return new ResponseStatusException(HttpStatus.UNAUTHORIZED, RequestLanguage.text("Vui lòng đăng nhập để tiếp tục.", "Please sign in to continue."));
     }
 
     private static ResponseStatusException unitNotFound() {
-        return new ResponseStatusException(HttpStatus.NOT_FOUND, WarrantyMessages.text("Không tìm thấy xe này trong tài khoản của bạn.", "This vehicle was not found in your account."));
+        return new ResponseStatusException(HttpStatus.NOT_FOUND, RequestLanguage.text("Không tìm thấy xe này trong tài khoản của bạn.", "This vehicle was not found in your account."));
     }
 
     private ResponseStatusException bad(String vietnamese, String english) {
-        return new ResponseStatusException(HttpStatus.BAD_REQUEST, WarrantyMessages.text(vietnamese, english));
+        return new ResponseStatusException(HttpStatus.BAD_REQUEST, RequestLanguage.text(vietnamese, english));
     }
 }

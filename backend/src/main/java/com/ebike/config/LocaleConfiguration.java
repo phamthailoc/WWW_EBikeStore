@@ -11,7 +11,7 @@ public class LocaleConfiguration {
 
     // The bean must be called "localeResolver": that is the name Spring MVC looks the resolver up by.
     @Bean
-    public LocaleResolver localeResolver(UserRepository users, UserPreferenceRepository preferences) {
+    public UserLocaleResolver localeResolver(UserRepository users, UserPreferenceRepository preferences) {
         return new UserLocaleResolver(users, preferences);
     }
 }
