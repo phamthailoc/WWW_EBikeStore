@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.net.http.HttpClient;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -43,6 +44,13 @@ import org.openqa.selenium.support.ui.Select;
 @Execution(ExecutionMode.SAME_THREAD)
 @EnabledIfSystemProperty(named = "selenium.baseUrl", matches = "https?://.+")
 class TestRideSeleniumTest extends StorefrontSeleniumTest {
+
+    /** The showroom's zone (the server's app.time-zone; -Dselenium.timeZone when it was changed): the days the server accepts are counted in it, not in the zone of the machine that runs this test. */
+    private static final ZoneId SHOWROOM_ZONE = ZoneId.of(System.getProperty("selenium.timeZone", "Asia/Ho_Chi_Minh"));
+
+    private static LocalDate today() {
+        return LocalDate.now(SHOWROOM_ZONE);
+    }
 
     private static final By DIALOG = By.cssSelector("dialog.testride-dialog");
     private static final By NOTE_BOX = By.cssSelector("dialog.warranty-dialog textarea[name=text]");
@@ -79,9 +87,9 @@ class TestRideSeleniumTest extends StorefrontSeleniumTest {
     private Customer newCustomer(String tag) throws Exception {
         HttpClient client = newClient();
         String name = "ride" + tag + System.currentTimeMillis();
-        call(client, "POST", "/api/v1/auth/register", Map.of(
+        callOrSkip(client, "POST", "/api/v1/auth/register", Map.of(
             "username", name, "email", name + "@example.com", "password", PASSWORD, "firstName", "Ride", "lastName", tag));
-        call(client, "POST", "/api/v1/auth/login", Map.of("usernameOrEmail", name, "password", PASSWORD));
+        callOrSkip(client, "POST", "/api/v1/auth/login", Map.of("usernameOrEmail", name, "password", PASSWORD));
         return new Customer(client, name + "@example.com");
     }
 
@@ -92,6 +100,16 @@ class TestRideSeleniumTest extends StorefrontSeleniumTest {
             call(customer.client(), "DELETE", "/api/v1/auth/account", Map.of("password", PASSWORD, "confirmEmail", customer.email()));
         } catch (Exception ignored) {
             // cleanup only: an account that cannot be erased stays as a harmless test customer
+        }
+    }
+
+    /** {@link #call}, but a 429 (a rate limit of the running app) skips the test with the hint instead of failing it. */
+    private static JsonNode callOrSkip(HttpClient client, String method, String path, Object body) throws Exception {
+        try {
+            return call(client, method, path, body);
+        } catch (IllegalStateException e) {
+            assumeTrue(!e.getMessage().contains("-> 429"), "rate limit reached: start the app with APP_RATE_LIMIT_ENABLED=false (" + e.getMessage() + ")");
+            throw e;
         }
     }
 
@@ -155,18 +173,41 @@ class TestRideSeleniumTest extends StorefrontSeleniumTest {
         throw new AssertionError(method + " " + path + " should have failed with " + code);
     }
 
-    /** Cancels what an aborted earlier run left open: the bookings of this run's customer and of the extra "Ride ..." customers. */
+    /**
+     * Cancels what an aborted earlier run left open (the bookings of this run's customer and of the extra "Ride ..." customers) and erases those extra
+     * accounts, which a killed run never got to erase. Their emails are in the schedule rows; the password is the one of every test customer.
+     */
     private static void cancelLeftovers(HttpClient manager) {
         cancelAllOpen(api);
+        java.util.Set<String> leftoverEmails = new java.util.LinkedHashSet<>();
         try {
-            for (JsonNode row : listOf(call(manager, "GET", "/api/v1/manager/test-rides", null))) {
-                if (row.path("customerName").asText().startsWith("Ride ")) {
+            for (JsonNode row : listOf(call(manager, "GET", "/api/v1/manager/test-rides?status=ALL", null))) {
+                if (!row.path("customerName").asText().startsWith("Ride ")) {
+                    continue;
+                }
+                leftoverEmails.add(row.path("customerEmail").asText());
+                if (row.path("nextSteps").toString().contains("CANCELLED")) {
                     call(manager, "PATCH", "/api/v1/manager/test-rides/" + row.path("id").asLong(), Map.of("status", "CANCELLED", "staffNote", "leftover of an aborted test run"));
                 }
             }
         } catch (Exception ignored) {
             // cleanup only
         }
+        for (String email : leftoverEmails) {
+            try {
+                HttpClient leftover = newClient();
+                call(leftover, "POST", "/api/v1/auth/login", Map.of("usernameOrEmail", email, "password", PASSWORD));
+                call(leftover, "DELETE", "/api/v1/auth/account", Map.of("password", PASSWORD, "confirmEmail", email));
+            } catch (Exception ignored) {
+                // cleanup only: an account that cannot be erased stays as a harmless test customer
+            }
+        }
+    }
+
+    /** Narrows the manager schedule to one day, so the row a step looks for is never lost among the 200 rows of the default list of a busy database. */
+    private void filterDay(LocalDate day) {
+        wait.until(d -> !d.findElements(By.cssSelector("#filters [name=date]")).isEmpty());
+        js("const i=document.querySelector('#filters [name=date]');i.value=arguments[0];i.dispatchEvent(new Event('change',{bubbles:true}))", day.toString());
     }
 
     private WebElement rowWith(String text) {
@@ -188,6 +229,12 @@ class TestRideSeleniumTest extends StorefrontSeleniumTest {
         wait.until(ExpectedConditions.visibilityOfElementLocated(DIALOG));
         // the showroom list arrives with a second request
         wait.until(d -> !"true".equals(d.findElement(By.cssSelector("dialog.testride-dialog select[name=showroom]")).getAttribute("disabled")));
+    }
+
+    /** This class registers a customer of its own (in the base class) and erases it when the class is done, like the extra customers it makes. */
+    @org.junit.jupiter.api.BeforeAll
+    static void eraseTheCustomerWhenDone() {
+        eraseCustomerWhenDone = true;
     }
 
     @Test
@@ -217,10 +264,10 @@ class TestRideSeleniumTest extends StorefrontSeleniumTest {
         String start = null;
         int capacity = 0;
         for (int ahead = 3; ahead <= 12 && start == null; ahead++) {
-            JsonNode slots = slotsOn(api, showroomId, LocalDate.now().plusDays(ahead));
+            JsonNode slots = slotsOn(api, showroomId, today().plusDays(ahead));
             for (JsonNode slot : slots) {
                 if (slot.path("bookable").asBoolean() && slot.path("remaining").asInt() == slot.path("capacity").asInt()) {
-                    day = LocalDate.now().plusDays(ahead);
+                    day = today().plusDays(ahead);
                     start = slot.path("start").asText();
                     capacity = slot.path("capacity").asInt();
                     break;
@@ -238,7 +285,7 @@ class TestRideSeleniumTest extends StorefrontSeleniumTest {
             throwaways.add(filler);
             String fillerPhone = phone(i + 1);
             fillerPhones.add(fillerPhone);
-            call(filler.client(), "POST", "/api/v1/test-rides", Map.of(
+            callOrSkip(filler.client(), "POST", "/api/v1/test-rides", Map.of(
                 "productId", productId, "showroomId", showroomId, "slotStart", start, "contactPhone", fillerPhone, "note", "filler"));
         }
         JsonNode before = slotsOn(api, showroomId, day);
@@ -297,7 +344,7 @@ class TestRideSeleniumTest extends StorefrontSeleniumTest {
         if (roomy == null) {
             System.err.println("TestRideSeleniumTest: no second free slot on " + day + ", the duplicate-time check is not exercised in this run");
         } else {
-            call(api, "POST", "/api/v1/test-rides", Map.of(
+            callOrSkip(api, "POST", "/api/v1/test-rides", Map.of(
                 "productId", productId, "showroomId", showroomId, "slotStart", roomy, "contactPhone", phone(51)));
             String duplicate = failureOf(409, api, "POST", "/api/v1/test-rides", Map.of(
                 "productId", productId, "showroomId", showroomId, "slotStart", roomy, "contactPhone", phone(51)));
@@ -310,9 +357,9 @@ class TestRideSeleniumTest extends StorefrontSeleniumTest {
         assertEquals(400, status(late, "POST", "/api/v1/test-rides", Map.of(
             "productId", productId, "showroomId", showroomId, "slotStart", between, "contactPhone", phone(62))), "half past is between two slots");
         assertEquals(400, status(late, "POST", "/api/v1/test-rides", Map.of(
-            "productId", productId, "showroomId", showroomId, "slotStart", LocalDate.now().minusDays(1) + "T09:00:00", "contactPhone", phone(63))), "in the past");
+            "productId", productId, "showroomId", showroomId, "slotStart", today().minusDays(1) + "T09:00:00", "contactPhone", phone(63))), "in the past");
         assertEquals(400, status(late, "POST", "/api/v1/test-rides", Map.of(
-            "productId", productId, "showroomId", showroomId, "slotStart", LocalDate.now().plusDays(30) + "T09:00:00", "contactPhone", phone(64))), "beyond the window");
+            "productId", productId, "showroomId", showroomId, "slotStart", today().plusDays(30) + "T09:00:00", "contactPhone", phone(64))), "beyond the window");
         assertEquals(400, status(late, "POST", "/api/v1/test-rides", Map.of(
             "productId", productId, "showroomId", showroomId, "slotStart", day.plusDays(1) + "T09:00:00", "contactPhone", "12345")), "a wrong phone number");
         assertEquals(401, status(newClient(), "POST", "/api/v1/test-rides", Map.of(
@@ -332,12 +379,10 @@ class TestRideSeleniumTest extends StorefrontSeleniumTest {
         // 7. the manager finds it in the schedule (the date filter narrows the list) and confirms it with a note
         logIn(managerUser, managerPassword);
         driver.get(baseUrl + "/manager/test-rides");
-        WebElement managerRow = rowWith(myPhone);
-        assertEquals("REQUESTED", managerRow.findElement(By.cssSelector("td[data-field='status']")).getAttribute("data-raw"), managerRow.getText());
         // a day on which no showroom has an open booking, so the filter must show the empty message (the filter covers every showroom)
         LocalDate quietDay = null;
         for (int ahead = 0; ahead <= 14 && quietDay == null; ahead++) {
-            LocalDate candidate = LocalDate.now().plusDays(ahead);
+            LocalDate candidate = today().plusDays(ahead);
             if (!listOf(call(manager, "GET", "/api/v1/manager/test-rides?date=" + candidate, null)).iterator().hasNext()) {
                 quietDay = candidate;
             }
@@ -345,11 +390,12 @@ class TestRideSeleniumTest extends StorefrontSeleniumTest {
         if (quietDay == null) {
             System.err.println("TestRideSeleniumTest: every day of the window has an open booking, the empty-filter check is not exercised in this run");
         } else {
-            js("const i=document.querySelector('#filters [name=date]');i.value=arguments[0];i.dispatchEvent(new Event('change',{bubbles:true}))", quietDay.toString());
+            filterDay(quietDay);
             wait.until(d -> d.findElement(By.id("empty")).isDisplayed());
         }
-        js("const i=document.querySelector('#filters [name=date]');i.value=arguments[0];i.dispatchEvent(new Event('change',{bubbles:true}))", day.toString());
-        managerRow = rowWith(myPhone);
+        filterDay(day);
+        WebElement managerRow = rowWith(myPhone);
+        assertEquals("REQUESTED", managerRow.findElement(By.cssSelector("td[data-field='status']")).getAttribute("data-raw"), managerRow.getText());
         click(managerRow.findElement(By.cssSelector("[data-action='ride-step'][data-status='CONFIRMED']")));
         submitNote("Please bring your ID");
         wait.until(d -> "CONFIRMED".equals(rowWith(myPhone).findElement(By.cssSelector("td[data-field='status']")).getAttribute("data-raw")));
@@ -387,7 +433,7 @@ class TestRideSeleniumTest extends StorefrontSeleniumTest {
         assertTrue(lastPlace.findElement(By.tagName("small")).getText().matches("Còn 1 chỗ|1 left"), lastPlace.getText());
         click(lastPlace);
         driver.findElement(By.cssSelector("dialog.testride-dialog input[name=phone]")).sendKeys(phone(70));
-        call(late, "POST", "/api/v1/test-rides", Map.of(
+        callOrSkip(late, "POST", "/api/v1/test-rides", Map.of(
             "productId", productId, "showroomId", showroomId, "slotStart", start, "contactPhone", phone(71)));
         click(By.cssSelector("dialog.testride-dialog [data-submit]"));
         By dialogError = By.cssSelector("dialog.testride-dialog .support-message.error");
@@ -405,7 +451,7 @@ class TestRideSeleniumTest extends StorefrontSeleniumTest {
             filler = newCustomer("Cancelled");
             throwaways.add(filler);
             fillerPhones.add(phone(80));
-            call(filler.client(), "POST", "/api/v1/test-rides", Map.of(
+            callOrSkip(filler.client(), "POST", "/api/v1/test-rides", Map.of(
                 "productId", productId, "showroomId", showroomId, "slotStart", other, "contactPhone", fillerPhones.get(0), "note", "filler"));
         }
         {
@@ -413,6 +459,7 @@ class TestRideSeleniumTest extends StorefrontSeleniumTest {
             int fillerBefore = notificationsOfType(fillerClient, "TEST_RIDE");
             logIn(managerUser, managerPassword);
             driver.get(baseUrl + "/manager/test-rides");
+            filterDay(day);
             WebElement fillerRow = rowWith(fillerPhones.get(fillerPhones.size() - 1));
             click(fillerRow.findElement(By.cssSelector("[data-action='ride-step'][data-status='CANCELLED']")));
             submitNote(""); // no reason: refused inside the dialog
@@ -445,7 +492,8 @@ class TestRideSeleniumTest extends StorefrontSeleniumTest {
             assertEquals("Book a test ride", wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("bookTestRide"))).getText().trim());
             driver.get(baseUrl + "/customer/test-rides");
             WebElement englishRow = rowWith("Please bring your ID");
-            assertEquals("Cancelled", englishRow.findElement(By.cssSelector("td[data-field='status']")).getText());
+            // the customer cancelled it themselves, so the status column says who cancelled
+            assertEquals("You cancelled", englishRow.findElement(By.cssSelector("td[data-field='status']")).getText());
             assertTrue(driver.findElement(By.tagName("h1")).getText().contains("Test rides"), driver.findElement(By.tagName("h1")).getText());
             openBookingDialog();
             assertTrue(driver.findElement(DIALOG).getText().contains("Book a test ride"), driver.findElement(DIALOG).getText());
@@ -535,6 +583,8 @@ class TestRideSeleniumTest extends StorefrontSeleniumTest {
         assertTrue(driver.findElements(By.id("bookTestRide")).isEmpty(), "staff are not offered the button");
         driver.get(baseUrl + "/customer/test-rides");
         wait.until(ExpectedConditions.urlContains("/manager/test-rides"));
-        assertThrows(IllegalStateException.class, () -> call(managerApi(), "GET", "/api/v1/test-rides", null), "the booking API refuses staff");
+        HttpClient staff = managerApi();
+        IllegalStateException refused = assertThrows(IllegalStateException.class, () -> call(staff, "GET", "/api/v1/test-rides", null), "the booking API refuses staff");
+        assertTrue(refused.getMessage().contains("-> 403"), "refused with 403, not with some other failure: " + refused.getMessage());
     }
 }

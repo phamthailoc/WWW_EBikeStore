@@ -59,6 +59,9 @@ abstract class StorefrontSeleniumTest {
     /** REST client logged in as the test customer. */
     protected static HttpClient api;
 
+    /** A class that wants its own test customer erased when it is done sets this in a @BeforeAll; the @AfterAll below then erases the account and clears it. */
+    protected static boolean eraseCustomerWhenDone;
+
     protected WebDriver driver;
     protected WebDriverWait wait;
 
@@ -100,6 +103,14 @@ abstract class StorefrontSeleniumTest {
                 } catch (IllegalStateException e) {
                     // e.g. a test moved the shipment to SHIPPED on purpose; leave that order as it is
                 }
+            }
+        }
+        if (eraseCustomerWhenDone) {
+            eraseCustomerWhenDone = false;
+            try {
+                call(api, "DELETE", "/api/v1/auth/account", Map.of("password", PASSWORD, "confirmEmail", username + "@example.com"));
+            } catch (Exception ignored) {
+                // cleanup only: the account stays as a harmless test customer
             }
         }
     }
