@@ -273,7 +273,14 @@ class InstallmentSeleniumTest extends StorefrontSeleniumTest {
                 payment = row;
             }
             assertEquals(0, payment.path("amount").decimalValue().compareTo(approved.path("downPayment").decimalValue()), "the payment is the down payment, not the whole order");
-            call(manager, "PATCH", "/api/v1/manager/payments/" + paymentId + "/confirm", Map.of("note", "Thu tại cửa hàng"));
+            // the manager presses the button on the payments page (an unapproved application showed none: the API refused above)
+            logIn(System.getProperty("selenium.managerUser"), System.getProperty("selenium.managerPassword"));
+            driver.get(baseUrl + "/manager/payments");
+            WebElement paymentRow = wait.until(d -> d.findElements(By.cssSelector("#data-table tbody tr")).stream()
+                .filter(r -> r.getText().contains(orderNumber) && !r.findElements(By.cssSelector("[data-action='confirm-payment']")).isEmpty()).findFirst().orElse(null));
+            click(paymentRow.findElement(By.cssSelector("[data-action='confirm-payment']")));
+            wait.until(d -> "CONFIRMED".equals(orderStatusOf(orderId)));
+            logIn(username, PASSWORD);
             assertEquals("CONFIRMED", call(api, "GET", "/api/v1/orders/" + orderId, null).path("status").asText());
             assertFalse(applicationOf(api, orderId).path("canPay").asBoolean(), "nothing left to pay once the down payment is in");
 
@@ -283,6 +290,14 @@ class InstallmentSeleniumTest extends StorefrontSeleniumTest {
         } finally {
             driver.get(baseUrl + "/lang/vi?back=/");
             cancelQuietly(orderId);
+        }
+    }
+
+    private static String orderStatusOf(long orderId) {
+        try {
+            return call(api, "GET", "/api/v1/orders/" + orderId, null).path("status").asText();
+        } catch (Exception e) {
+            return "";
         }
     }
 

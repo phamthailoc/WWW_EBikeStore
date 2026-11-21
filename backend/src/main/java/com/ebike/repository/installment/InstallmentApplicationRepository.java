@@ -3,6 +3,7 @@ package com.ebike.repository.installment;
 import com.ebike.model.entity.installment.InstallmentApplication;
 import jakarta.persistence.LockModeType;
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Pageable;
@@ -25,6 +26,9 @@ public interface InstallmentApplicationRepository extends JpaRepository<Installm
     Optional<Long> findOrderIdById(@Param("id") Long id);
 
     Optional<InstallmentApplication> findByOrderId(Long orderId);
+
+    /** The applications of several orders at once, so a list of orders does not ask once per row. */
+    List<InstallmentApplication> findByOrderIdIn(Collection<Long> orderIds);
 
     /** Applications that still hold an order's stock: waiting for the staff, or approved with the down payment not paid yet (the order is still PENDING). */
     @Query("select count(a) from InstallmentApplication a where a.user.id = :userId and a.status in ('PENDING', 'APPROVED') "

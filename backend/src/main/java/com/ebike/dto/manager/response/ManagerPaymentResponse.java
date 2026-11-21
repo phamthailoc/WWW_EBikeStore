@@ -18,6 +18,8 @@ public record ManagerPaymentResponse(
     String note,
     LocalDateTime paidAt,
     LocalDateTime orderCreatedAt,
-    String orderStatus
+    String orderStatus,
+    /** V24: the status of the instalment application when this is the down payment of an instalment order, else null. */
+    String installmentStatus
 ) {
 }

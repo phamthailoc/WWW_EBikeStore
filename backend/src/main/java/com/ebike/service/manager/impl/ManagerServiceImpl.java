@@ -131,12 +131,23 @@ public class ManagerServiceImpl implements ManagerService {
     @Override
     @Transactional(readOnly = true)
     public List<ManagerPaymentResponse> getPayments(String paymentStatus, String paymentMethod, String search) {
-        return paymentRepository.findAll().stream()
+        List<Payment> shown = paymentRepository.findAll().stream()
             .filter(payment -> matchesPaymentStatus(payment, paymentStatus))
             .filter(payment -> matchesPaymentMethod(payment, paymentMethod))
             .filter(payment -> matchesPaymentSearch(payment, search))
             .sorted(Comparator.comparing((Payment payment) -> payment.getOrder().getCreatedAt()).reversed())
-            .map(this::toPaymentResponse)
+            .toList();
+        // one query for the applications of the instalment payments shown, not one per row
+        List<Long> instalmentOrderIds = shown.stream()
+            .filter(payment -> payment.getPaymentMethod() == PaymentMethod.INSTALLMENT)
+            .map(payment -> payment.getOrder().getId())
+            .toList();
+        java.util.Map<Long, String> installmentStatuses = new java.util.HashMap<>();
+        if (!instalmentOrderIds.isEmpty()) {
+            installments.findByOrderIdIn(instalmentOrderIds).forEach(a -> installmentStatuses.put(a.getOrder().getId(), a.getStatus()));
+        }
+        return shown.stream()
+            .map(payment -> toPaymentResponse(payment, installmentStatuses.get(payment.getOrder().getId())))
             .toList();
     }
 
@@ -557,6 +568,12 @@ public class ManagerServiceImpl implements ManagerService {
     }
 
     private ManagerPaymentResponse toPaymentResponse(Payment payment) {
+        String installmentStatus = payment.getPaymentMethod() != PaymentMethod.INSTALLMENT ? null
+            : installments.findByOrderId(payment.getOrder().getId()).map(InstallmentApplication::getStatus).orElse(null);
+        return toPaymentResponse(payment, installmentStatus);
+    }
+
+    private ManagerPaymentResponse toPaymentResponse(Payment payment, String installmentStatus) {
         Order order = payment.getOrder();
         Shipment shipment = order.getShipment();
 
@@ -575,7 +592,8 @@ public class ManagerServiceImpl implements ManagerService {
             payment.getProviderResponse(),
             payment.getPaidAt(),
             order.getCreatedAt(),
-            order.getStatus().name()
+            order.getStatus().name(),
+            installmentStatus
         );
     }
 
