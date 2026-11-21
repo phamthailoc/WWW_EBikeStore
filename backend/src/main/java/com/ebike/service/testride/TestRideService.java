@@ -381,7 +381,7 @@ public class TestRideService {
 
     private static String timingRefusalVi(String next) {
         if (TestRideBooking.CONFIRMED.equals(next)) {
-            return "Giờ hẹn đã bắt đầu, không thể xác nhận nữa. Hãy hủy lịch.";
+            return "Giờ hẹn đã bắt đầu, không thể xác nhận nữa. Hãy đánh dấu kết quả hoặc hủy lịch.";
         }
         if (TestRideBooking.DONE.equals(next)) {
             return "Chưa đến giờ lái thử, chưa thể đánh dấu đã lái thử.";
@@ -391,7 +391,7 @@ public class TestRideService {
 
     private static String timingRefusalEn(String next) {
         if (TestRideBooking.CONFIRMED.equals(next)) {
-            return "The slot has already begun, so it can no longer be confirmed. Cancel it instead.";
+            return "The slot has already begun, so it can no longer be confirmed. Mark its outcome or cancel it.";
         }
         if (TestRideBooking.DONE.equals(next)) {
             return "The ride has not started yet, so it cannot be marked done.";

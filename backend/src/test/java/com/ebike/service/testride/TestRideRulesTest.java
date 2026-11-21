@@ -126,8 +126,8 @@ class TestRideRulesTest {
     void stepsFollowTheOrderRequestedConfirmedThenClosed() {
         assertTrue(TestRideRules.canMove("REQUESTED", "CONFIRMED"));
         assertTrue(TestRideRules.canMove("REQUESTED", "CANCELLED"));
-        assertFalse(TestRideRules.canMove("REQUESTED", "DONE"), "a ride cannot be done before it was confirmed");
-        assertFalse(TestRideRules.canMove("REQUESTED", "NO_SHOW"));
+        assertTrue(TestRideRules.canMove("REQUESTED", "DONE"), "a customer may ride at an unconfirmed request");
+        assertTrue(TestRideRules.canMove("REQUESTED", "NO_SHOW"));
         assertTrue(TestRideRules.canMove("CONFIRMED", "DONE"));
         assertTrue(TestRideRules.canMove("CONFIRMED", "NO_SHOW"));
         assertTrue(TestRideRules.canMove("CONFIRMED", "CANCELLED"));
@@ -150,8 +150,10 @@ class TestRideRulesTest {
         // from the start on, the customer may be absent
         assertEquals(List.of("DONE", "NO_SHOW", "CANCELLED"), TestRideRules.nextSteps("CONFIRMED", NOW, NOW));
         assertEquals(List.of("DONE", "NO_SHOW", "CANCELLED"), TestRideRules.nextSteps("CONFIRMED", NOW.minusDays(1), NOW));
-        // a request whose slot began can no longer be confirmed, only cancelled
-        assertEquals(List.of("CANCELLED"), TestRideRules.nextSteps("REQUESTED", NOW.minusMinutes(1), NOW));
+        // a request whose slot began can no longer be confirmed, but the staff can still record what happened
+        assertEquals(List.of("DONE", "NO_SHOW", "CANCELLED"), TestRideRules.nextSteps("REQUESTED", NOW.minusMinutes(1), NOW));
+        // before the start a request can only be confirmed or cancelled
+        assertEquals(List.of("CONFIRMED", "CANCELLED"), TestRideRules.nextSteps("REQUESTED", NOW.plusHours(2), NOW));
         assertTrue(TestRideRules.nextSteps("DONE", NOW.minusDays(1), NOW).isEmpty());
     }
 

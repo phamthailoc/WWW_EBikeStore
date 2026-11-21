@@ -129,10 +129,15 @@ public final class TestRideRules {
         return status != null && ALL.contains(status);
     }
 
-    /** Which step may follow which. REQUESTED goes to CONFIRMED or CANCELLED; CONFIRMED to DONE, NO_SHOW or CANCELLED; the rest are final. */
+    /**
+     * Which step may follow which. REQUESTED goes to CONFIRMED or CANCELLED, and also to DONE or NO_SHOW (a customer who came at the time of a
+     * request nobody had confirmed is still a ride that happened, or a no-show; the clock rules of {@link #timingAllows} keep it from being early);
+     * CONFIRMED to DONE, NO_SHOW or CANCELLED; the rest are final.
+     */
     public static boolean canMove(String from, String to) {
         if (TestRideBooking.REQUESTED.equals(from)) {
-            return TestRideBooking.CONFIRMED.equals(to) || TestRideBooking.CANCELLED.equals(to);
+            return TestRideBooking.CONFIRMED.equals(to) || TestRideBooking.CANCELLED.equals(to)
+                || TestRideBooking.DONE.equals(to) || TestRideBooking.NO_SHOW.equals(to);
         }
         if (TestRideBooking.CONFIRMED.equals(from)) {
             return TestRideBooking.DONE.equals(to) || TestRideBooking.NO_SHOW.equals(to) || TestRideBooking.CANCELLED.equals(to);
@@ -171,6 +176,11 @@ public final class TestRideRules {
     /** A customer may cancel an open booking until its slot begins; after that only the staff close it. */
     public static boolean canCustomerCancel(String status, LocalDateTime slotStart, LocalDateTime now) {
         return OPEN.contains(status) && now.isBefore(slotStart);
+    }
+
+    /** The last start time of a request that is too old to wait for a confirmation: its whole slot is over by {@code now}. */
+    public static LocalDateTime expiryCutoff(LocalDateTime now) {
+        return now.minus(SLOT);
     }
 
     /** The reminder goes to a confirmed booking that starts within the next {@code hours}, once. */

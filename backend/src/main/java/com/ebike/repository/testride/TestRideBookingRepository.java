@@ -67,9 +67,9 @@ public interface TestRideBookingRepository extends JpaRepository<TestRideBooking
     @Query("select b.id from TestRideBooking b where b.status = 'CONFIRMED' and b.reminderSentAt is null and b.slotStart > :now and b.slotStart <= :until order by b.slotStart, b.id")
     List<Long> findReminderDueIds(@Param("now") LocalDateTime now, @Param("until") LocalDateTime until, Pageable pageable);
 
-    /** Requests nobody confirmed that reached their start time. */
-    @Query("select b.id from TestRideBooking b where b.status = 'REQUESTED' and b.slotStart <= :now order by b.slotStart, b.id")
-    List<Long> findExpiredRequestIds(@Param("now") LocalDateTime now, Pageable pageable);
+    /** Requests nobody confirmed whose start time is at or before {@code cutoff} (the caller passes now minus one slot, so the slot is over). */
+    @Query("select b.id from TestRideBooking b where b.status = 'REQUESTED' and b.slotStart <= :cutoff order by b.slotStart, b.id")
+    List<Long> findExpiredRequestIds(@Param("cutoff") LocalDateTime cutoff, Pageable pageable);
 
     /** Account erasure: the customer's open bookings are cancelled so the places are free again. Returns how many rows changed. */
     @Modifying

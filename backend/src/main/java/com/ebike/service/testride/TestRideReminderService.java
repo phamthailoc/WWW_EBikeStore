@@ -17,7 +17,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 /**
  * V23: the two things the test-ride job does on a timer. It reminds customers of a confirmed ride that starts within the next
- * {@code app.test-ride.reminder-hours} (once), and it closes requests that nobody confirmed before their time came, telling the customer.
+ * {@code app.test-ride.reminder-hours} (once), and it closes requests that nobody confirmed or closed by hand before their slot was over, telling the customer.
  *
  * <p>Like the maintenance reminders (V20), each booking is handled in its own transaction: one that fails is logged and left for the next
  * run, and the notice and email go out only after that booking's row was saved. A run handles at most {@code max-per-run} bookings of each kind
@@ -65,11 +65,13 @@ public class TestRideReminderService {
 
     /** Returns how many requests were closed. */
     public int expireUnconfirmed(LocalDateTime now) {
-        List<Long> ids = bookings.findExpiredRequestIds(now, PageRequest.of(0, maxPerRun));
+        // a request is closed only when its whole slot is over: the staff can still mark a ride that happened or a no-show while the slot runs
+        LocalDateTime cutoff = TestRideRules.expiryCutoff(now);
+        List<Long> ids = bookings.findExpiredRequestIds(cutoff, PageRequest.of(0, maxPerRun));
         int closed = 0;
         for (Long id : ids) {
             try {
-                Boolean done = perBooking.execute(status -> expire(id, now));
+                Boolean done = perBooking.execute(status -> expire(id, cutoff));
                 closed += Boolean.TRUE.equals(done) ? 1 : 0;
             } catch (RuntimeException exception) {
                 log.warn("Closing test ride request {} failed, left for the next run: {}", id, exception.getMessage());
@@ -90,9 +92,9 @@ public class TestRideReminderService {
         return true;
     }
 
-    private boolean expire(Long id, LocalDateTime now) {
+    private boolean expire(Long id, LocalDateTime cutoff) {
         TestRideBooking booking = bookings.findLockedById(id).orElse(null);
-        if (booking == null || !TestRideBooking.REQUESTED.equals(booking.getStatus()) || booking.getSlotStart().isAfter(now)) {
+        if (booking == null || !TestRideBooking.REQUESTED.equals(booking.getStatus()) || booking.getSlotStart().isAfter(cutoff)) {
             return false;
         }
         booking.setStatus(TestRideBooking.CANCELLED);
