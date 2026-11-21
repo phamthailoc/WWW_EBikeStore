@@ -181,7 +181,9 @@ public class InstallmentService {
         application.setStatus(approve ? InstallmentApplication.APPROVED : InstallmentApplication.REJECTED);
         applications.saveAndFlush(application);
         if (!approve) {
-            // the order goes back with its stock; the closing of the open application skips a rejected one, so the verdict stays
+            // the order goes back with its stock; the closing of the open application skips a rejected one, so the verdict stays.
+            // The customer is told by the notice and the email of the rejection below, not by the generic "order cancelled" notice too.
+            order.setSuppressStatusNotice(true);
             orders.updateOrderStatus(order.getId(), new OrderStatusUpdateRequest("CANCELLED", REJECTED_REASON_PREFIX + note), authentication);
         }
         auditLog.record(approve ? "duyệt hồ sơ trả góp" : "từ chối hồ sơ trả góp", order.getOrderNumber());

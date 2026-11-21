@@ -33,7 +33,7 @@ class OrderNotificationJpaListenerTest {
         new NotificationEventBridge().setApplicationEventPublisher(null);
     }
 
-    private static Order cancelledOrder(String reason) {
+    private static Order cancelledOrder(String reason, boolean suppressNotice) {
         User user = new User();
         user.setId(7L);
         Order order = new Order();
@@ -42,19 +42,26 @@ class OrderNotificationJpaListenerTest {
         order.setUser(user);
         order.setStatus(OrderStatus.CANCELLED);
         order.setCancellationReason(reason);
+        order.setSuppressStatusNotice(suppressNotice);
         ReflectionTestUtils.setField(order, "previousStatusForNotification", OrderStatus.PENDING);
         return order;
     }
 
     @Test
     void aCancellationForARejectedApplicationSendsNoOrderNotice() {
-        listener.afterUpdate(cancelledOrder(InstallmentService.REJECTED_REASON_PREFIX + "Thu nhập chưa đủ"));
+        listener.afterUpdate(cancelledOrder(InstallmentService.REJECTED_REASON_PREFIX + "Thu nhập chưa đủ", true));
         verify(publisher, never()).publishEvent(any(Object.class));
     }
 
     @Test
+    void aStaffCancellationWhoseReasonHappensToStartTheSameWayStillSendsTheNotice() {
+        listener.afterUpdate(cancelledOrder(InstallmentService.REJECTED_REASON_PREFIX + "gõ tay", false));
+        verify(publisher).publishEvent(any(OrderStatusChangedEvent.class));
+    }
+
+    @Test
     void anotherCancellationStillSendsTheOrderNotice() {
-        listener.afterUpdate(cancelledOrder("Đổi ý"));
+        listener.afterUpdate(cancelledOrder("Đổi ý", false));
         verify(publisher).publishEvent(any(OrderStatusChangedEvent.class));
     }
 }

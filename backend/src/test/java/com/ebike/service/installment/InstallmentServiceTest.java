@@ -248,6 +248,14 @@ class InstallmentServiceTest {
         verify(orders).updateOrderStatus(eq(10L), cancel.capture(), eq(staff));
         assertEquals("CANCELLED", cancel.getValue().status());
         assertTrue(cancel.getValue().reason().contains("Thu nhập chưa đủ"));
+        // the customer gets the notice of the rejection, so the generic cancellation notice is switched off
+        assertTrue(order.isSuppressStatusNotice());
+    }
+
+    @Test
+    void anApprovalLeavesTheOrderNoticesAlone() {
+        service.decide(5L, new InstallmentDecisionRequest("APPROVE", null), staff());
+        assertFalse(order.isSuppressStatusNotice());
     }
 
     @Test
