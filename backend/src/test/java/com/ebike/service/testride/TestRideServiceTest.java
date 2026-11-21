@@ -148,6 +148,8 @@ class TestRideServiceTest {
         assertEquals("0901234567", stored.getValue().getContactPhone(), "spaces are taken out of the number");
         assertEquals("first time", stored.getValue().getCustomerNote());
         assertEquals(SLOT, stored.getValue().getSlotStart());
+        assertEquals(NOW, stored.getValue().getCreatedAt(), "the stamps come from the showroom clock, not the server zone");
+        assertEquals(NOW, stored.getValue().getUpdatedAt());
         assertEquals("REQUESTED", saved.status());
         assertEquals("Quan 1", saved.showroomName());
         assertTrue(saved.canCancel());
@@ -456,6 +458,7 @@ class TestRideServiceTest {
         TestRideResponse cancelled = service.update(77L, new TestRideUpdateRequest("CANCELLED", "The bike is in service"));
         assertEquals(TestRideBooking.CANCELLED, booking.getStatus());
         assertEquals(TestRideBooking.BY_STORE, cancelled.cancelledBy());
+        assertEquals(NOW, booking.getUpdatedAt());
         assertEquals(TestRideMessages.CANCELLED, ((TestRideNoticeEvent) events.get(0)).kind());
     }
 

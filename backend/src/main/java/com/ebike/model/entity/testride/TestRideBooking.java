@@ -11,8 +11,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 
@@ -79,22 +77,15 @@ public class TestRideBooking {
     @Column(name = "reminder_sent_at")
     private LocalDateTime reminderSentAt;
 
+    /**
+     * Both stamps are set by the service from the showroom's clock ({@code app.time-zone}), like the slot, the confirmation and the reminder: a callback
+     * using the server's own zone would put them hours away from the slot whenever the server does not run in the showroom's zone.
+     */
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
-
-    @PrePersist
-    void onCreate() {
-        createdAt = LocalDateTime.now();
-        updatedAt = createdAt;
-    }
-
-    @PreUpdate
-    void onUpdate() {
-        updatedAt = LocalDateTime.now();
-    }
 
     public Long getId() { return id; }
     public User getUser() { return user; }
@@ -122,5 +113,7 @@ public class TestRideBooking {
     public LocalDateTime getReminderSentAt() { return reminderSentAt; }
     public void setReminderSentAt(LocalDateTime reminderSentAt) { this.reminderSentAt = reminderSentAt; }
     public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 }

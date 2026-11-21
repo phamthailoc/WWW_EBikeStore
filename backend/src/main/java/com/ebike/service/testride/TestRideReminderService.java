@@ -71,7 +71,7 @@ public class TestRideReminderService {
         int closed = 0;
         for (Long id : ids) {
             try {
-                Boolean done = perBooking.execute(status -> expire(id, cutoff));
+                Boolean done = perBooking.execute(status -> expire(id, now, cutoff));
                 closed += Boolean.TRUE.equals(done) ? 1 : 0;
             } catch (RuntimeException exception) {
                 log.warn("Closing test ride request {} failed, left for the next run: {}", id, exception.getMessage());
@@ -89,18 +89,20 @@ public class TestRideReminderService {
             return false;
         }
         booking.setReminderSentAt(now);
+        booking.setUpdatedAt(now);
         bookings.save(booking);
         NotificationEventBridge.publish(TestRideService.noticeOf(booking, TestRideMessages.REMINDER));
         return true;
     }
 
-    private boolean expire(Long id, LocalDateTime cutoff) {
+    private boolean expire(Long id, LocalDateTime now, LocalDateTime cutoff) {
         TestRideBooking booking = bookings.findLockedById(id).orElse(null);
         if (booking == null || !TestRideBooking.REQUESTED.equals(booking.getStatus()) || booking.getSlotStart().isAfter(cutoff)) {
             return false;
         }
         booking.setStatus(TestRideBooking.CANCELLED);
         booking.setCancelSource(TestRideBooking.BY_EXPIRY);
+        booking.setUpdatedAt(now);
         bookings.save(booking);
         NotificationEventBridge.publish(TestRideService.noticeOf(booking, TestRideMessages.EXPIRED));
         return true;

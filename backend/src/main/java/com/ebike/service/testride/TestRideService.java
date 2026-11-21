@@ -227,6 +227,8 @@ public class TestRideService {
         booking.setSlotStart(slot);
         booking.setContactPhone(phone);
         booking.setCustomerNote(note.isEmpty() ? null : note);
+        booking.setCreatedAt(now);
+        booking.setUpdatedAt(now);
         try {
             return toResponse(bookings.saveAndFlush(booking), now, false);
         } catch (DataIntegrityViolationException exception) {
@@ -256,6 +258,7 @@ public class TestRideService {
         }
         booking.setStatus(TestRideBooking.CANCELLED);
         booking.setCancelSource(TestRideBooking.BY_CUSTOMER);
+        booking.setUpdatedAt(now);
         return toResponse(bookings.save(booking), now, false);
     }
 
@@ -356,6 +359,9 @@ public class TestRideService {
         }
         boolean statusChanged = next != null && !previous.equals(next);
         boolean changed = statusChanged || !Objects.equals(previousNote, booking.getStaffNote());
+        if (changed) {
+            booking.setUpdatedAt(now);
+        }
         TestRideBooking saved = bookings.save(booking);
         if (changed) {
             auditLog.record("xử lý lịch lái thử", "#" + saved.getId() + (statusChanged ? ": " + previous + " → " + saved.getStatus() : ": cập nhật ghi chú (" + saved.getStatus() + ")"));
