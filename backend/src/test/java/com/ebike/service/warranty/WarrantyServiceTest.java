@@ -224,8 +224,20 @@ class WarrantyServiceTest {
     }
 
     @Test
-    void savingOnlyANoteSendsNoEvent() {
+    void savingOnlyANoteTellsTheCustomerAboutTheNote() {
         claimIn(WarrantyClaim.RECEIVED, user(1L, "me"));
+
+        service.updateClaim(1L, new WarrantyClaimUpdateRequest(null, "Waiting for a part"));
+
+        assertEquals(1, events.size());
+        assertEquals(WarrantyMessages.NOTE_UPDATED, ((WarrantyClaimStatusChangedEvent) events.get(0)).status());
+    }
+
+    @Test
+    void savingTheSameNoteAgainTellsNobody() {
+        claimIn(WarrantyClaim.RECEIVED, user(1L, "me"));
+        service.updateClaim(1L, new WarrantyClaimUpdateRequest(null, "Waiting for a part"));
+        events.clear();
 
         service.updateClaim(1L, new WarrantyClaimUpdateRequest(null, "Waiting for a part"));
 

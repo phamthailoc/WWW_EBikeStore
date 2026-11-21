@@ -244,15 +244,20 @@ public class WarrantyService {
         if (WarrantyClaim.REJECTED.equals(claim.getStatus()) && !WarrantyClaim.REJECTED.equals(previous) && (claim.getStaffNote() == null || claim.getStaffNote().isBlank())) {
             throw bad("Vui lòng ghi lý do khi từ chối yêu cầu.", "Please give a reason when rejecting a request.");
         }
-        boolean changed = !previous.equals(claim.getStatus()) || !Objects.equals(previousNote, claim.getStaffNote());
+        boolean statusChanged = !previous.equals(claim.getStatus());
+        boolean changed = statusChanged || !Objects.equals(previousNote, claim.getStaffNote());
         WarrantyClaim saved = claims.save(claim);
         if (changed) {
-            auditLog.record("xử lý yêu cầu bảo hành", "#" + saved.getId() + ": " + previous + " → " + saved.getStatus());
+            auditLog.record("xử lý yêu cầu bảo hành", "#" + saved.getId() + (statusChanged
+                ? ": " + previous + " → " + saved.getStatus()
+                : ": cập nhật ghi chú (" + saved.getStatus() + ")"));
         }
-        if (!previous.equals(saved.getStatus())) {
+        if (changed) {
+            // the note is what the customer reads in the warranty book, so a new note is told too (as the pseudo status NOTE when the step did not move)
             OrderItemUnit unit = saved.getUnit();
             NotificationEventBridge.publish(new WarrantyClaimStatusChangedEvent(
-                saved.getUser().getId(), unit.getOrderItem().getProductName(), unit.getFrameNumber(), saved.getStatus()));
+                saved.getUser().getId(), unit.getOrderItem().getProductName(), unit.getFrameNumber(),
+                statusChanged ? saved.getStatus() : WarrantyMessages.NOTE_UPDATED));
         }
         return toClaimResponse(saved);
     }

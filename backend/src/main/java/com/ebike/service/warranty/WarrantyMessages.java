@@ -9,6 +9,9 @@ import java.util.Locale;
  */
 public final class WarrantyMessages {
 
+    /** Stands in for a status in a notice about a claim whose step did not move but whose note from the store changed. */
+    public static final String NOTE_UPDATED = "NOTE";
+
     private WarrantyMessages() {
     }
 
@@ -31,6 +34,9 @@ public final class WarrantyMessages {
 
     static String claimStatus(String language, String status) {
         boolean english = isEnglish(language);
+        if (NOTE_UPDATED.equals(status)) {
+            return english ? "has a new note from the store, see your warranty book" : "có ghi chú mới từ cửa hàng, xem trong sổ bảo hành";
+        }
         if ("RECEIVED".equals(status)) {
             return english ? "was received by the store" : "đã được cửa hàng tiếp nhận";
         }

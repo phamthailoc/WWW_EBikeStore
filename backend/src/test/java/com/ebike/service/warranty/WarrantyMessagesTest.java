@@ -26,6 +26,8 @@ class WarrantyMessagesTest {
         assertEquals("Yêu cầu bảo hành xe Bike (số khung F1) đã được cửa hàng tiếp nhận.",
             WarrantyMessages.claimBody("vi", "Bike", "F1", "RECEIVED"));
         assertTrue(WarrantyMessages.claimBody("en", "Bike", "F1", "REJECTED").contains("not accepted"));
+        assertTrue(WarrantyMessages.claimBody("en", "Bike", "F1", WarrantyMessages.NOTE_UPDATED).contains("new note from the store"));
+        assertTrue(WarrantyMessages.claimBody("vi", "Bike", "F1", WarrantyMessages.NOTE_UPDATED).contains("ghi chú mới từ cửa hàng"));
     }
 
     @Test
