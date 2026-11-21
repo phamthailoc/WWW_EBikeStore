@@ -11,12 +11,14 @@ import com.ebike.event.notification.PickupDeadlineChangedEvent;
 import com.ebike.event.notification.PaymentStatusChangedEvent;
 import com.ebike.event.notification.MaintenanceDueEvent;
 import com.ebike.event.notification.StockAlertTriggeredEvent;
+import com.ebike.event.notification.TestRideNoticeEvent;
 import com.ebike.event.notification.WarrantyClaimStatusChangedEvent;
 import com.ebike.repository.notification.NotificationRepository;
 import com.ebike.model.entity.user.UserPreference;
 import com.ebike.repository.user.UserPreferenceRepository;
 import com.ebike.service.notification.NotificationStreamService;
 import com.ebike.service.warranty.WarrantyMessages;
+import com.ebike.service.testride.TestRideMessages;
 import com.ebike.service.stock.StockAlertMessages;
 import org.springframework.scheduling.annotation.Async;
 import java.util.Optional;
@@ -222,6 +224,20 @@ public class NotificationCreationService {
         notification.setPaymentId(paymentId);
         notificationRepository.save(notification);
         notificationStreamService.sendUnreadCount(user.getId());
+    }
+
+    // V23: a test-ride booking was confirmed, cancelled by the store, missed or closed unconfirmed, or is coming up; the link opens the customer's bookings.
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void handleTestRideNotice(TestRideNoticeEvent event) {
+        userRepository.findById(event.userId()).ifPresent(user -> {
+            Optional<UserPreference> preference = userPreferenceRepository.findByUserId(user.getId());
+            String language = languageOf(preference);
+            createNotification(user, preference, NotificationType.TEST_RIDE,
+                TestRideMessages.title(language, event.kind()),
+                TestRideMessages.body(language, event.kind(), event.productName(), event.showroomName(), event.slotStart(), event.note()),
+                null, null, "/customer/test-rides", true);
+        });
     }
 
     /** The language saved in the customer's profile ("vi" when there is none), for the words of a notice they did not ask for in a page. */
