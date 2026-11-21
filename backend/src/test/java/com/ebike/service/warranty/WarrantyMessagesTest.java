@@ -84,7 +84,10 @@ class WarrantyMessagesTest {
         assertTrue(WarrantyMessages.maintenanceBody("en", "Bike", "F1", "P1M").contains("1 month after"));
         assertEquals("Kinetic E-Bike: your Bike is due for service", WarrantyMessages.maintenanceEmailSubject("en", "Bike"));
         assertEquals("Kinetic E-Bike: xe Bike đến hạn bảo dưỡng", WarrantyMessages.maintenanceEmailSubject("vi", "Bike"));
-        assertTrue(WarrantyMessages.maintenanceEmailBody("en", "Bike", "F1", "P12M").contains("12 months after delivery"));
-        assertTrue(WarrantyMessages.maintenanceEmailBody("vi", "Bike", "F1", "P12M").contains("12 tháng kể từ ngày giao"));
+        assertTrue(WarrantyMessages.maintenanceEmailBody("en", "Bike", "F1", "P12M", null).contains("12 months after delivery"));
+        assertTrue(WarrantyMessages.maintenanceEmailBody("vi", "Bike", "F1", "P12M", null).contains("12 tháng kể từ ngày giao"));
+        assertTrue(WarrantyMessages.maintenanceEmailBody("en", "Bike", "F1", "P12M", "https://shop.test/customer/warranty").contains("https://shop.test/customer/warranty"));
+        assertEquals("https://shop.test/customer/warranty", WarrantyMessages.warrantyUrl("https://shop.test/"));
+        assertEquals(null, WarrantyMessages.warrantyUrl(" "));
     }
 }

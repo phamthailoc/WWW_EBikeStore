@@ -18,17 +18,20 @@ public class MaintenanceEmailSender {
     private final String fromAddress;
     private final String smtpHost;
     private final boolean mailEnabled;
+    private final String publicBaseUrl;
 
     public MaintenanceEmailSender(
         JavaMailSender mailSender,
-        @Value("${app.order.email-otp.from:no-reply@ebike.local}") String fromAddress,
+        @Value("${app.maintenance.from:${app.order.email-otp.from:no-reply@ebike.local}}") String fromAddress,
         @Value("${spring.mail.host:}") String smtpHost,
-        @Value("${app.order.email-otp.mail-enabled:true}") boolean mailEnabled
+        @Value("${app.maintenance.mail-enabled:true}") boolean mailEnabled,
+        @Value("${app.public-base-url:}") String publicBaseUrl
     ) {
         this.mailSender = mailSender;
         this.fromAddress = fromAddress;
         this.smtpHost = smtpHost;
         this.mailEnabled = mailEnabled;
+        this.publicBaseUrl = publicBaseUrl;
     }
 
     /** {@code language} is the customer's saved language ("vi" or "en"). */
@@ -40,7 +43,7 @@ public class MaintenanceEmailSender {
         message.setFrom(fromAddress);
         message.setTo(email);
         message.setSubject(WarrantyMessages.maintenanceEmailSubject(language, productName));
-        message.setText(WarrantyMessages.maintenanceEmailBody(language, productName, frameNumber, milestone));
+        message.setText(WarrantyMessages.maintenanceEmailBody(language, productName, frameNumber, milestone, WarrantyMessages.warrantyUrl(publicBaseUrl)));
         try {
             mailSender.send(message);
         } catch (MailException exception) {

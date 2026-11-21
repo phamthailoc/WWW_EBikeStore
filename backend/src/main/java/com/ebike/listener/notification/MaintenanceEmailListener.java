@@ -1,9 +1,11 @@
 package com.ebike.listener.notification;
 
+import com.ebike.config.AsyncConfiguration;
 import com.ebike.event.notification.MaintenanceDueEvent;
 import com.ebike.repository.auth.UserRepository;
 import com.ebike.repository.user.UserPreferenceRepository;
 import com.ebike.service.warranty.MaintenanceEmailSender;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
@@ -26,6 +28,8 @@ public class MaintenanceEmailListener {
         this.emailSender = emailSender;
     }
 
+    // Sent from the bounded mail thread pool after the commit, so a slow SMTP server never holds up the reminder job.
+    @Async(AsyncConfiguration.MAIL_EXECUTOR)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void onMaintenanceDue(MaintenanceDueEvent event) {
         userRepository.findById(event.userId()).ifPresent(user -> {

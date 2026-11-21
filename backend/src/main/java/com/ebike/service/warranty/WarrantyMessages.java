@@ -123,22 +123,35 @@ public final class WarrantyMessages {
 
     // ---- email ----
 
+    /** The absolute link to the customer's warranty book, or null when no public address of the shop is configured. */
+    public static String warrantyUrl(String baseUrl) {
+        if (baseUrl == null || baseUrl.isBlank()) {
+            return null;
+        }
+        String base = baseUrl.trim();
+        return (base.endsWith("/") ? base.substring(0, base.length() - 1) : base) + "/customer/warranty";
+    }
+
     public static String maintenanceEmailSubject(String language, String productName) {
         return isEnglish(language)
             ? "Kinetic E-Bike: your " + productName + " is due for service"
             : "Kinetic E-Bike: xe " + productName + " đến hạn bảo dưỡng";
     }
 
-    public static String maintenanceEmailBody(String language, String productName, String frameNumber, String milestone) {
+    /** {@code warrantyUrl} is the absolute link to the customer's warranty book; it is left out of the text when blank. */
+    public static String maintenanceEmailBody(String language, String productName, String frameNumber, String milestone, String warrantyUrl) {
+        String where = warrantyUrl == null || warrantyUrl.isBlank() ? null : warrantyUrl.trim();
         if (isEnglish(language)) {
             return "Your " + productName + " (frame number " + frameNumber + ") has reached its regular service, "
                 + MaintenanceMilestones.describe(milestone, language) + " after delivery.\n\n"
-                + "Please bring it to a Kinetic store for a check. You can see your warranty book on the Warranty page of your account. "
+                + "Please bring it to a Kinetic store for a check. "
+                + (where != null ? "Your warranty book: " + where : "You can see your warranty book on the Warranty page of your account.") + "\n\n"
                 + "You are receiving this email because you bought a bike at Kinetic and have notifications turned on.\n";
         }
         return "Xe " + productName + " (số khung " + frameNumber + ") đã đến mốc bảo dưỡng định kỳ, "
             + MaintenanceMilestones.describe(milestone, language) + " kể từ ngày giao.\n\n"
-            + "Vui lòng mang xe đến cửa hàng Kinetic để được kiểm tra. Xem sổ bảo hành của bạn tại trang Bảo hành trong tài khoản. "
+            + "Vui lòng mang xe đến cửa hàng Kinetic để được kiểm tra. "
+            + (where != null ? "Sổ bảo hành của bạn: " + where : "Xem sổ bảo hành của bạn tại trang Bảo hành trong tài khoản.") + "\n\n"
             + "Bạn nhận email này vì đã mua xe tại Kinetic và đang bật nhận thông báo.\n";
     }
 
