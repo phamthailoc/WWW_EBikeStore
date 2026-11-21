@@ -2,11 +2,13 @@ package com.ebike.service.testride;
 
 import com.ebike.model.entity.product.VehicleType;
 import com.ebike.model.entity.testride.TestRideBooking;
+import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -24,14 +26,25 @@ public final class TestRideRules {
     /** The hours used for a showroom whose opening hours cannot be read from the free text. */
     public static final LocalTime DEFAULT_OPEN = LocalTime.of(8, 0);
     public static final LocalTime DEFAULT_CLOSE = LocalTime.of(21, 0);
+    /** A closing time of 24:00: the slots run to the end of the day, to midnight of the next one. */
+    public static final LocalTime END_OF_DAY = LocalTime.MAX;
     /** A ride may be marked done from this long before its start (a customer who arrives a little early). */
     public static final Duration EARLY_DONE = Duration.ofMinutes(30);
 
     /**
-     * A range whose two ends are clock times: {@code 08:00} (minutes required) or {@code 8h} / {@code 8h30}. A bare number is not a time, so the days of
-     * "Thứ 2-7: 08:00 - 21:00" are not read as 02:00 - 07:00. Groups: 1 hour, 2 or 3 minutes; 4 hour, 5 or 6 minutes.
+     * One clock time: {@code 08:00} (minutes required), {@code 8h} / {@code 8h30}, either with {@code AM} / {@code PM} after it, or an hour with
+     * {@code AM} / {@code PM} alone ({@code 8 AM}). A bare number is not a time, so the days of "Thứ 2-7: 08:00 - 21:00" are not read as 02:00 - 07:00.
+     * Groups: hour, minutes after a colon, minutes after an h, AM/PM after the minutes, AM/PM after a bare hour.
      */
-    private static final Pattern HOURS = Pattern.compile("(\\d{1,2})(?::(\\d{2})|[hH](\\d{2})?)\\s*[-\\u2013\\u2014]\\s*(\\d{1,2})(?::(\\d{2})|[hH](\\d{2})?)");
+    private static final String TIME = "(\\d{1,2})(?:(?::(\\d{2})|[hH](\\d{2})?)\\s*(?:([AaPp])\\.?[Mm]\\b\\.?)?|\\s*([AaPp])\\.?[Mm]\\b\\.?)";
+    /** Two clock times joined by a dash: groups 1-5 are the opening time, 6-10 the closing time. */
+    private static final Pattern HOURS = Pattern.compile(TIME + "\\s*[-\\u2013\\u2014]\\s*" + TIME);
+    /** A weekday written as a word or abbreviation: Thứ 2 ... Thứ 7, T2 ... T7, CN, Chủ nhật, Mon ... Sun. */
+    private static final Pattern WEEKDAY = Pattern.compile(
+        "(?<![\\p{L}\\d])(?:th\\u1ee9\\s*([2-7])|t([2-7])|(cn|ch\\u1ee7\\s*nh\\u1eadt)|(mon|tue|wed|thu|fri|sat|sun)[a-z]*)(?![\\p{L}\\d])",
+        Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+    /** A clause that gives a weekday off: "CN đóng cửa", "Sunday closed", "T7 nghỉ". */
+    private static final Pattern DAY_OFF = Pattern.compile("đóng\\s*cửa|dong\\s*cua|nghỉ|nghi|closed|(?<![\\p{L}\\d])off(?![\\p{L}\\d])", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
     /** The whole text is just "8 - 21": written with no minutes and no "h", it can only be hours. */
     private static final Pattern PLAIN_HOURS = Pattern.compile("^\\s*(\\d{1,2})\\s*[-\\u2013\\u2014]\\s*(\\d{1,2})\\s*$");
     /** Free text that says the showroom is shut ({@code Đóng cửa}, {@code Tạm nghỉ}, {@code Closed}), used only when no hours are written. */
@@ -41,37 +54,91 @@ public final class TestRideRules {
     private TestRideRules() {
     }
 
-    /** The opening time and closing time of a showroom. */
-    public record Hours(LocalTime open, LocalTime close) {
+    /**
+     * The opening time and closing time of a showroom, and the weekdays it is shut. A close of {@link #END_OF_DAY} means 24:00, the end of the day.
+     */
+    public record Hours(LocalTime open, LocalTime close, Set<DayOfWeek> closedDays) {
         /** A showroom that is shut: no slot fits between the same two times. */
         public static final Hours CLOSED = new Hours(LocalTime.MIDNIGHT, LocalTime.MIDNIGHT);
+
+        public Hours {
+            closedDays = Set.copyOf(closedDays);
+        }
+
+        /** Open every day. */
+        public Hours(LocalTime open, LocalTime close) {
+            this(open, close, Set.of());
+        }
     }
 
     /**
-     * Reads "08:00 - 21:00" (also "8h - 21h", "08:30-17:00", and "Thứ 2-7: 08:00 - 21:00" as 08:00 - 21:00) from the free text of {@code showrooms.opening_hours}. Text that says the showroom is
-     * shut ("Đóng cửa", "Tạm nghỉ", "Closed") and gives no hours takes no bookings. Anything else that cannot be read as a same-day range falls
-     * back to 08:00 - 21:00, so a showroom with a note such as "by appointment" still takes bookings.
+     * Reads "08:00 - 21:00" (also "8h - 21h", "8:00 AM - 9:00 PM", "08:00 - 24:00", "08:30-17:00", and "Thứ 2-7: 08:00 - 21:00" as 08:00 - 21:00) from the
+     * free text of {@code showrooms.opening_hours}. A clause that gives a day off with no hours in it ("CN đóng cửa", "Sunday closed", "T7 nghỉ") makes
+     * that weekday take no bookings. Text that says the showroom is shut ("Đóng cửa", "Tạm nghỉ", "Closed") and gives no hours takes no bookings at all. Anything
+     * else that cannot be read as a same-day range falls back to 08:00 - 21:00, so a showroom with a note such as "by appointment" still takes bookings.
      *
-     * <p>Only the first range is read: a lunch break ("8:00 - 12:00, 13:30 - 21:00"), hours that differ by weekday and hours past midnight are
-     * not understood, and there is no way to mark a day off or a holiday. The manager must keep the text to one simple range.
+     * <p>Only the first range is read: a lunch break ("8:00 - 12:00, 13:30 - 21:00"), hours that differ by weekday, hours past midnight ("22:00 - 02:00")
+     * and holidays are not understood (the first two use the first range, the third falls back to the default hours). The manager must keep the text to one
+     * simple range and, at most, a weekday off.
      */
     public static Hours parseOpeningHours(String text) {
         if (text == null) {
             return new Hours(DEFAULT_OPEN, DEFAULT_CLOSE);
         }
+        // clauses that only give a weekday off are taken out first, so "CN đóng cửa" is not read as "the showroom is shut"
+        Set<DayOfWeek> closedDays = EnumSet.noneOf(DayOfWeek.class);
+        StringBuilder rest = new StringBuilder();
+        for (String clause : text.split("[;|\n,]")) {
+            if (!HOURS.matcher(clause).find() && DAY_OFF.matcher(clause).find() && addWeekdays(clause, closedDays)) {
+                continue;
+            }
+            rest.append(clause).append(' ');
+        }
+        Hours base = parseRange(closedDays.isEmpty() ? text : rest.toString());
+        return closedDays.isEmpty() ? base : new Hours(base.open(), base.close(), closedDays);
+    }
+
+    /** Adds the weekdays named in the clause to {@code days}; false when it names none. */
+    private static boolean addWeekdays(String clause, Set<DayOfWeek> days) {
+        Matcher matcher = WEEKDAY.matcher(clause);
+        boolean found = false;
+        while (matcher.find()) {
+            found = true;
+            if (matcher.group(1) != null) {
+                days.add(DayOfWeek.of(Integer.parseInt(matcher.group(1)) - 1)); // Thứ 2 is Monday
+            } else if (matcher.group(2) != null) {
+                days.add(DayOfWeek.of(Integer.parseInt(matcher.group(2)) - 1));
+            } else if (matcher.group(3) != null) {
+                days.add(DayOfWeek.SUNDAY);
+            } else {
+                days.add(switch (matcher.group(4).toLowerCase(java.util.Locale.ROOT)) {
+                    case "mon" -> DayOfWeek.MONDAY;
+                    case "tue" -> DayOfWeek.TUESDAY;
+                    case "wed" -> DayOfWeek.WEDNESDAY;
+                    case "thu" -> DayOfWeek.THURSDAY;
+                    case "fri" -> DayOfWeek.FRIDAY;
+                    case "sat" -> DayOfWeek.SATURDAY;
+                    default -> DayOfWeek.SUNDAY;
+                });
+            }
+        }
+        return found;
+    }
+
+    private static Hours parseRange(String text) {
         Matcher matcher = HOURS.matcher(text);
         LocalTime open;
         LocalTime close;
         if (matcher.find()) {
-            open = time(matcher.group(1), matcher.group(2) != null ? matcher.group(2) : matcher.group(3));
-            close = time(matcher.group(4), matcher.group(5) != null ? matcher.group(5) : matcher.group(6));
+            open = time(matcher.group(1), matcher.group(2) != null ? matcher.group(2) : matcher.group(3), matcher.group(4) != null ? matcher.group(4) : matcher.group(5));
+            close = time(matcher.group(6), matcher.group(7) != null ? matcher.group(7) : matcher.group(8), matcher.group(9) != null ? matcher.group(9) : matcher.group(10));
         } else {
             Matcher plain = PLAIN_HOURS.matcher(text);
             if (!plain.matches()) {
                 return SHUT.matcher(text).find() ? Hours.CLOSED : new Hours(DEFAULT_OPEN, DEFAULT_CLOSE);
             }
-            open = time(plain.group(1), null);
-            close = time(plain.group(2), null);
+            open = time(plain.group(1), null, null);
+            close = time(plain.group(2), null, null);
         }
         if (open == null || close == null || !close.isAfter(open)) {
             return new Hours(DEFAULT_OPEN, DEFAULT_CLOSE);
@@ -79,17 +146,30 @@ public final class TestRideRules {
         return new Hours(open, close);
     }
 
-    private static LocalTime time(String hour, String minute) {
+    /** {@code meridiem} is "a" or "p" (any case) or null. 24:00 is {@link #END_OF_DAY}; an hour or minute that does not exist is null. */
+    private static LocalTime time(String hour, String minute, String meridiem) {
         int h = Integer.parseInt(hour);
         int m = minute == null ? 0 : Integer.parseInt(minute);
+        if (meridiem != null) {
+            if (h < 1 || h > 12) {
+                return null;
+            }
+            h = h % 12 + ("p".equalsIgnoreCase(meridiem) ? 12 : 0);
+        }
+        if (h == 24 && m == 0) {
+            return END_OF_DAY;
+        }
         return h > 23 || m > 59 ? null : LocalTime.of(h, m);
     }
 
     /** The start times of the slots of one day: from the opening time in steps of one hour while the whole slot ends by the closing time. */
     public static List<LocalDateTime> slotsOn(LocalDate date, Hours hours) {
         List<LocalDateTime> slots = new ArrayList<>();
+        if (hours.closedDays().contains(date.getDayOfWeek())) {
+            return slots;
+        }
         LocalDateTime start = date.atTime(hours.open());
-        LocalDateTime close = date.atTime(hours.close());
+        LocalDateTime close = END_OF_DAY.equals(hours.close()) ? date.plusDays(1).atStartOfDay() : date.atTime(hours.close());
         while (!start.plus(SLOT).isAfter(close)) {
             slots.add(start);
             start = start.plus(SLOT);
