@@ -480,6 +480,7 @@ CREATE TABLE `test_ride_bookings` (
     staff_note VARCHAR(1000) NULL,
     confirmed_at DATETIME NULL,
     reminder_sent_at DATETIME NULL,
+    cancelled_by_customer_at DATETIME NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     active_user_slot VARCHAR(40) AS (IF(status IN ('REQUESTED', 'CONFIRMED'), CONCAT(user_id, '@', slot_start), NULL)) VIRTUAL,

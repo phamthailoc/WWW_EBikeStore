@@ -61,6 +61,10 @@ public class TestRideBooking {
     @Column(name = "confirmed_at")
     private LocalDateTime confirmedAt;
 
+    /** Set when the customer withdrew a booking the staff had already confirmed: the staff may have prepared a bike, so the backlog shows it until the slot. */
+    @Column(name = "cancelled_by_customer_at")
+    private LocalDateTime cancelledByCustomerAt;
+
     /** Set when the "tomorrow" reminder was sent (or was not needed because the booking was confirmed inside the last 24 hours). */
     @Column(name = "reminder_sent_at")
     private LocalDateTime reminderSentAt;
@@ -101,6 +105,8 @@ public class TestRideBooking {
     public void setStaffNote(String staffNote) { this.staffNote = staffNote; }
     public LocalDateTime getConfirmedAt() { return confirmedAt; }
     public void setConfirmedAt(LocalDateTime confirmedAt) { this.confirmedAt = confirmedAt; }
+    public LocalDateTime getCancelledByCustomerAt() { return cancelledByCustomerAt; }
+    public void setCancelledByCustomerAt(LocalDateTime cancelledByCustomerAt) { this.cancelledByCustomerAt = cancelledByCustomerAt; }
     public LocalDateTime getReminderSentAt() { return reminderSentAt; }
     public void setReminderSentAt(LocalDateTime reminderSentAt) { this.reminderSentAt = reminderSentAt; }
     public LocalDateTime getCreatedAt() { return createdAt; }

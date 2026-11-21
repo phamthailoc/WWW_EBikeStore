@@ -55,6 +55,10 @@ public interface TestRideBookingRepository extends JpaRepository<TestRideBooking
         @Param("to") LocalDateTime to,
         @Param("statuses") Collection<String> statuses);
 
+    /** Confirmed rides the customer withdrew whose start is after {@code now} and at or before {@code until}: the staff may have a bike ready for them. */
+    @Query("select count(b) from TestRideBooking b where b.status = 'CANCELLED' and b.cancelledByCustomerAt is not null and b.slotStart > :now and b.slotStart <= :until")
+    long countCancelledByCustomerBetween(@Param("now") LocalDateTime now, @Param("until") LocalDateTime until);
+
     long countByStatus(String status);
 
     long countByStatusAndSlotStartLessThanEqual(String status, LocalDateTime slotStart);

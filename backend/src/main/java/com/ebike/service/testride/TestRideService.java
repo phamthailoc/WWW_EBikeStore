@@ -62,6 +62,8 @@ public class TestRideService {
     public static final int SCHEDULE_LIMIT = 200;
     /** What a customer's own list shows at most, newest slot first. */
     public static final int MINE_LIMIT = 100;
+    /** A confirmed ride the customer withdrew shows in the staff backlog when its slot is this near. */
+    static final int CANCELLED_NOTICE_HOURS = 24;
     static final int MAX_NOTE = 500;
     static final int MAX_STAFF_NOTE = 1000;
     private static final LocalDateTime FAR_PAST = LocalDateTime.of(2000, 1, 1, 0, 0);
@@ -249,6 +251,9 @@ public class TestRideService {
         if (!TestRideRules.canCustomerCancel(booking.getStatus(), booking.getSlotStart(), now)) {
             throw conflict("Lịch này không thể hủy nữa.", "This test ride can no longer be cancelled.");
         }
+        if (TestRideBooking.CONFIRMED.equals(booking.getStatus())) {
+            booking.setCancelledByCustomerAt(now); // the staff had agreed to it: the backlog tells them
+        }
         booking.setStatus(TestRideBooking.CANCELLED);
         return toResponse(bookings.save(booking), now, false);
     }
@@ -280,12 +285,17 @@ public class TestRideService {
             .stream().map(booking -> toResponse(booking, now, true)).toList();
     }
 
-    /** How many requests wait for a confirmation and how many confirmed rides are past their time and still not closed (the list shows at most {@link #SCHEDULE_LIMIT}). */
+    /**
+     * How many requests wait for a confirmation, how many confirmed rides are past their time and still not closed, and how many confirmed rides the
+     * customer withdrew for a slot within the next {@link #CANCELLED_NOTICE_HOURS} hours (the list shows at most {@link #SCHEDULE_LIMIT}).
+     */
     @Transactional(readOnly = true)
     public TestRideBacklogResponse backlog() {
+        LocalDateTime now = LocalDateTime.now(clock);
         return new TestRideBacklogResponse(
             bookings.countByStatus(TestRideBooking.REQUESTED),
-            bookings.countByStatusAndSlotStartLessThanEqual(TestRideBooking.CONFIRMED, LocalDateTime.now(clock)));
+            bookings.countByStatusAndSlotStartLessThanEqual(TestRideBooking.CONFIRMED, now),
+            bookings.countCancelledByCustomerBetween(now, now.plusHours(CANCELLED_NOTICE_HOURS)));
     }
 
     /** The staff move a booking to its next step, or change only the note the customer reads. */

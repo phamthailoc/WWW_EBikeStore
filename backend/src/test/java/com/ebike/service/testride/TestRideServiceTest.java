@@ -249,6 +249,13 @@ class TestRideServiceTest {
         var backlog = service.backlog();
         assertEquals(4L, backlog.pending());
         assertEquals(2L, backlog.overdue());
+        assertEquals(0L, backlog.customerCancelled());
+    }
+
+    @Test
+    void theBacklogCountsConfirmedRidesTheCustomerWithdrewInTheNextDay() {
+        when(bookings.countCancelledByCustomerBetween(NOW, NOW.plusHours(24))).thenReturn(3L);
+        assertEquals(3L, service.backlog().customerCancelled());
     }
 
     @Test
@@ -361,6 +368,14 @@ class TestRideServiceTest {
         assertEquals("CANCELLED", response.status());
         assertFalse(response.canCancel());
         assertTrue(events.isEmpty(), "the customer needs no message about their own cancellation");
+        assertEquals(NOW, booking.getCancelledByCustomerAt(), "a ride the staff had confirmed is marked for the backlog");
+    }
+
+    @Test
+    void withdrawingARequestNobodyConfirmedLeavesNoMarkForTheStaff() {
+        TestRideBooking booking = bookingIn("REQUESTED", SLOT);
+        service.cancelOwn("an", 77L);
+        assertNull(booking.getCancelledByCustomerAt());
     }
 
     @Test

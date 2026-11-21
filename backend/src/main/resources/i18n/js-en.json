@@ -663,5 +663,6 @@
  "Mọi cửa hàng": "All showrooms",
  "{n} yêu cầu đang chờ xác nhận.": "{n} requests are waiting for confirmation.",
  "{n} lịch đã quá giờ nhưng chưa đóng (đã lái thử hoặc khách không đến).": "{n} rides are past their time and not closed yet (mark them done or no-show).",
+ "{n} lịch đã xác nhận bị khách hủy, giờ hẹn trong 24 giờ tới (chọn trạng thái \"Đã hủy\" để xem).": "{n} confirmed rides were cancelled by the customer and start within 24 hours (choose the status \"Cancelled\" to see them).",
  "Giữ lịch": "Keep booking"
 }

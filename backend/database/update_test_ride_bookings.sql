@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS `test_ride_bookings` (
     staff_note VARCHAR(1000) NULL,
     confirmed_at DATETIME NULL,
     reminder_sent_at DATETIME NULL,
+    cancelled_by_customer_at DATETIME NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     active_user_slot VARCHAR(40) AS (IF(status IN ('REQUESTED', 'CONFIRMED'), CONCAT(user_id, '@', slot_start), NULL)) VIRTUAL,
@@ -25,6 +26,9 @@ CREATE TABLE IF NOT EXISTS `test_ride_bookings` (
     CONSTRAINT chk_test_ride_status CHECK (status IN ('REQUESTED', 'CONFIRMED', 'DONE', 'CANCELLED', 'NO_SHOW')),
     CONSTRAINT uk_test_ride_active_user_slot UNIQUE (active_user_slot)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- a table created by an earlier run of this file gets the column too
+ALTER TABLE `test_ride_bookings` ADD COLUMN IF NOT EXISTS cancelled_by_customer_at DATETIME NULL AFTER reminder_sent_at;
 
 CREATE INDEX IF NOT EXISTS `idx_test_ride_showroom_slot` ON `test_ride_bookings` (showroom_id, slot_start, status);
 CREATE INDEX IF NOT EXISTS `idx_test_ride_user_slot` ON `test_ride_bookings` (user_id, slot_start);
