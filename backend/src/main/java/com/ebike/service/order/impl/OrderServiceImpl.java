@@ -290,11 +290,16 @@ public class OrderServiceImpl implements OrderService {
 
         OrderStatus previousStatus = order.getStatus();
         if (nextStatus == OrderStatus.CONFIRMED && order.getPayment() != null && order.getPayment().getPaymentMethod() == PaymentMethod.INSTALLMENT) {
-            // V24: the staff confirm an instalment order only after the application is approved; paying the down payment confirms it by itself
+            // V24: the staff confirm an instalment order only once the application is approved and the down payment is in (paying it confirms the order by
+            // itself, and confirming earlier would take the order out of PENDING and with it the customer's way to pay)
             boolean approved = installments.findByOrderId(order.getId()).map(a -> InstallmentApplication.APPROVED.equals(a.getStatus())).orElse(false);
             if (!approved) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, com.ebike.common.i18n.RequestLanguage.text(
                     "Hồ sơ trả góp chưa được duyệt nên chưa xác nhận được đơn hàng.", "The instalment application is not approved yet, so the order cannot be confirmed."));
+            }
+            if (order.getPayment().getPaymentStatus() != PaymentStatus.PAID) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, com.ebike.common.i18n.RequestLanguage.text(
+                    "Khoản trả trước chưa được thanh toán nên chưa xác nhận được đơn hàng.", "The down payment is not paid yet, so the order cannot be confirmed."));
             }
         }
         if (!nextStatuses(order).contains(nextStatus)) {

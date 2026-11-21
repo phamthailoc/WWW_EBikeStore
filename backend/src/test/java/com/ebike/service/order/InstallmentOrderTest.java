@@ -215,8 +215,17 @@ class InstallmentOrderTest {
     }
 
     @Test
-    void theStaffCanConfirmAnInstalmentOrderOnceItsApplicationIsApproved() {
+    void theStaffCannotConfirmAnApprovedInstalmentOrderBeforeTheDownPaymentIsIn() {
         Order order = pendingInstalmentOrder(InstallmentApplication.APPROVED);
+        Authentication staff = auth("quanly", "ROLE_MANAGER");
+        assertEquals(HttpStatus.BAD_REQUEST, refused(() -> service.updateOrderStatus(10L, new OrderStatusUpdateRequest("CONFIRMED"), staff)).getStatusCode());
+        assertEquals(OrderStatus.PENDING, order.getStatus());
+    }
+
+    @Test
+    void theStaffCanConfirmAnInstalmentOrderOnceItsApplicationIsApprovedAndTheDownPaymentIsPaid() {
+        Order order = pendingInstalmentOrder(InstallmentApplication.APPROVED);
+        order.getPayment().setPaymentStatus(PaymentStatus.PAID);
         when(orders.save(any(Order.class))).thenAnswer(invocation -> invocation.getArgument(0));
         service.updateOrderStatus(10L, new OrderStatusUpdateRequest("CONFIRMED"), auth("quanly", "ROLE_MANAGER"));
         assertEquals(OrderStatus.CONFIRMED, order.getStatus());
