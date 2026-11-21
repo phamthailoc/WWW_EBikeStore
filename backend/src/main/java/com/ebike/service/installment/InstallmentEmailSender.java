@@ -1,7 +1,7 @@
 package com.ebike.service.installment;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -38,7 +38,7 @@ public class InstallmentEmailSender {
 
     /** {@code language} is the customer's saved language ("vi" or "en"); {@code kind} is a constant of InstallmentMessages. */
     public void send(String email, String kind, Long orderId, String orderNumber, BigDecimal downPayment, BigDecimal monthlyPayment,
-                     int termMonths, LocalDateTime payBefore, String note, String language) {
+                     int termMonths, OffsetDateTime payBefore, String note, String language) {
         if (!mailEnabled || smtpHost == null || smtpHost.isBlank() || email == null || email.isBlank()) {
             return;
         }

@@ -1,7 +1,7 @@
 package com.ebike.event.notification;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 /**
  * V24: the staff decided an instalment application and the customer should be told: {@code kind} is one of the constants of
@@ -15,7 +15,7 @@ public record InstallmentNoticeEvent(
     BigDecimal downPayment,
     BigDecimal monthlyPayment,
     int termMonths,
-    LocalDateTime payBefore,
+    OffsetDateTime payBefore,
     String note
 ) {
 }

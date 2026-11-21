@@ -6,7 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import org.junit.jupiter.api.Test;
 
 /** V24: the notification and email words are in the language of the customer's profile, and say what to do next. */
@@ -14,7 +15,7 @@ class InstallmentMessagesTest {
 
     private static final BigDecimal DOWN = new BigDecimal("9000000");
     private static final BigDecimal MONTHLY = new BigDecimal("1925000");
-    private static final LocalDateTime DEADLINE = LocalDateTime.of(2026, 11, 25, 9, 30);
+    private static final OffsetDateTime DEADLINE = OffsetDateTime.of(2026, 11, 25, 9, 30, 0, 0, ZoneOffset.ofHours(7));
 
     @Test
     void anythingButEnglishIsVietnamese() {
@@ -45,14 +46,14 @@ class InstallmentMessagesTest {
         String vi = InstallmentMessages.body("vi", InstallmentMessages.APPROVED, "ORD-10", DOWN, MONTHLY, 12, DEADLINE, "Mang theo CCCD");
         assertTrue(vi.contains("ORD-10"));
         assertTrue(vi.contains("9.000.000 ₫"));
-        assertTrue(vi.contains("09:30 25/11/2026"));
+        assertTrue(vi.contains("09:30 25/11/2026 (GMT+7)"), "the offset is part of the deadline");
         assertTrue(vi.contains("1.925.000 ₫"));
         assertTrue(vi.contains("12 tháng"));
         assertTrue(vi.contains("Mang theo CCCD"));
         assertTrue(vi.contains("mô phỏng"));
         String en = InstallmentMessages.body("en", InstallmentMessages.APPROVED, "ORD-10", DOWN, MONTHLY, 12, DEADLINE, null);
         assertTrue(en.contains("9,000,000 VND"));
-        assertTrue(en.contains("25/11/2026 at 09:30"));
+        assertTrue(en.contains("25/11/2026 at 09:30 (GMT+7)"));
         assertTrue(en.contains("1,925,000 VND a month for 12 months"));
         assertTrue(en.contains("simulation"));
         assertFalse(en.contains("Note from the store"));

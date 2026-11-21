@@ -23,6 +23,8 @@ import com.ebike.service.admin.AuditLogService;
 import com.ebike.service.order.OrderService;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
@@ -58,6 +60,8 @@ public class InstallmentService {
     private final AuditLogService auditLog;
     // how long an approved application waits for its down payment before the order is cancelled (the expiry job reads the same setting)
     private final Duration downPaymentHold;
+    // the shop's zone (app.time-zone): the times of an application are sent and worded with their offset in it, whatever zone the server runs in
+    private final ZoneId zone;
 
     public InstallmentService(
         InstallmentApplicationRepository applications,
@@ -65,7 +69,8 @@ public class InstallmentService {
         OrderService orders,
         OrderRepository orderRepository,
         AuditLogService auditLog,
-        @Value("${app.order.installment-down-payment-hold:PT72H}") Duration downPaymentHold
+        @Value("${app.order.installment-down-payment-hold:PT72H}") Duration downPaymentHold,
+        @Value("${app.time-zone:Asia/Ho_Chi_Minh}") String timeZone
     ) {
         this.applications = applications;
         this.users = users;
@@ -73,6 +78,12 @@ public class InstallmentService {
         this.orderRepository = orderRepository;
         this.auditLog = auditLog;
         this.downPaymentHold = downPaymentHold;
+        this.zone = ZoneId.of(timeZone);
+    }
+
+    /** A time the server stamped with its own clock (a local date-time), as a moment with the shop's offset; null stays null. */
+    private OffsetDateTime inShopZone(LocalDateTime time) {
+        return time == null ? null : time.atZone(ZoneId.systemDefault()).withZoneSameInstant(zone).toOffsetDateTime();
     }
 
     /**
@@ -170,7 +181,7 @@ public class InstallmentService {
             application.getUser().getId(), order.getId(), order.getOrderNumber(),
             approve ? InstallmentMessages.APPROVED : InstallmentMessages.REJECTED,
             application.getDownPaymentAmount(), application.getMonthlyPayment(), application.getTermMonths(),
-            approve ? now.plus(downPaymentHold) : null, note));
+            approve ? inShopZone(now.plus(downPaymentHold)) : null, note));
         return toResponse(application, true);
     }
 
@@ -198,9 +209,9 @@ public class InstallmentService {
             a.getId(), order.getId(), order.getOrderNumber(), order.getStatus().name(), name, vehicles,
             a.getIdNumberMasked(), a.getMonthlyIncome(), a.getOrderTotal(), a.getDownPaymentPercent(), a.getDownPaymentAmount(),
             a.getFinancedAmount(), a.getTermMonths(), a.getAnnualRatePercent(), a.getMonthlyPayment(), a.getTotalPayable(),
-            a.getStatus(), a.getReviewNote(), reviewerName, a.getReviewedAt(), a.getCreatedAt(),
+            a.getStatus(), a.getReviewNote(), reviewerName, inShopZone(a.getReviewedAt()), inShopZone(a.getCreatedAt()),
             payment == null ? null : payment.getPaymentStatus().name(),
-            downPaymentOpen && a.getReviewedAt() != null ? a.getReviewedAt().plus(downPaymentHold) : null,
+            downPaymentOpen && a.getReviewedAt() != null ? inShopZone(a.getReviewedAt().plus(downPaymentHold)) : null,
             downPaymentOpen,
             InstallmentApplication.PENDING.equals(a.getStatus()) && orderOpen);
     }

@@ -66,7 +66,7 @@ class InstallmentServiceTest {
         users = mock(UserRepository.class);
         orders = mock(OrderService.class);
         orderRepository = mock(OrderRepository.class);
-        service = new InstallmentService(applications, users, orders, orderRepository, mock(AuditLogService.class), Duration.ofHours(72));
+        service = new InstallmentService(applications, users, orders, orderRepository, mock(AuditLogService.class), Duration.ofHours(72), "Asia/Ho_Chi_Minh");
 
         customer = user(7L, "khach", "An", "Nguyen");
         staffUser = user(2L, "quanly", "Binh", "Tran");
@@ -177,7 +177,9 @@ class InstallmentServiceTest {
         InstallmentApplicationResponse response = service.forOrder(10L, auth("khach", PermissionConstants.Customer.ORDER_VIEW_OWN));
         assertTrue(response.canPay());
         assertFalse(response.canDecide());
-        assertEquals(reviewed.plusHours(72), response.payBefore());
+        // the moment is sent with the shop's offset, so a browser or a server in another zone reads the same instant
+        assertEquals(reviewed.plusHours(72).atZone(java.time.ZoneId.systemDefault()).toInstant(), response.payBefore().toInstant());
+        assertEquals(java.time.ZoneOffset.ofHours(7), response.payBefore().getOffset());
         assertEquals("PENDING", response.paymentStatus());
     }
 

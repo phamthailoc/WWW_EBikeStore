@@ -2,7 +2,7 @@ package com.ebike.service.installment;
 
 import java.math.BigDecimal;
 import java.text.NumberFormat;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 
@@ -18,8 +18,9 @@ public final class InstallmentMessages {
     /** The staff rejected it (and the order was cancelled with it). */
     public static final String REJECTED = "REJECTED";
 
-    private static final DateTimeFormatter VI = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy", Locale.ROOT);
-    private static final DateTimeFormatter EN = DateTimeFormatter.ofPattern("dd/MM/yyyy 'at' HH:mm", Locale.ENGLISH);
+    // the time is shown with its offset ("GMT+7"): the server may run in another zone than the shop, and a deadline must not be read 7 hours off
+    private static final DateTimeFormatter VI = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy (O)", Locale.ENGLISH);
+    private static final DateTimeFormatter EN = DateTimeFormatter.ofPattern("dd/MM/yyyy 'at' HH:mm (O)", Locale.ENGLISH);
 
     private InstallmentMessages() {
     }
@@ -40,7 +41,8 @@ public final class InstallmentMessages {
         return english ? digits + " VND" : digits + " ₫";
     }
 
-    public static String when(String language, LocalDateTime time) {
+    /** A moment with its offset, in the shop's zone: "09:30 25/11/2026 (GMT+7)" or "25/11/2026 at 09:30 (GMT+7)". */
+    public static String when(String language, OffsetDateTime time) {
         return time.format(isEnglish(language) ? EN : VI);
     }
 
@@ -55,7 +57,7 @@ public final class InstallmentMessages {
 
     /** {@code payBefore} and {@code note} are left out of the text when null or blank. */
     public static String body(String language, String kind, String orderNumber, BigDecimal downPayment, BigDecimal monthlyPayment,
-                              int termMonths, LocalDateTime payBefore, String note) {
+                              int termMonths, OffsetDateTime payBefore, String note) {
         boolean english = isEnglish(language);
         String reason = note == null || note.isBlank() ? "" : (english ? " Reason: " : " Lý do: ") + note.trim();
         if (APPROVED.equals(kind)) {
@@ -119,7 +121,7 @@ public final class InstallmentMessages {
 
     /** {@code orderUrl} is left out of the text when blank. */
     public static String emailBody(String language, String kind, String orderNumber, BigDecimal downPayment, BigDecimal monthlyPayment,
-                                   int termMonths, LocalDateTime payBefore, String note, String orderUrl) {
+                                   int termMonths, OffsetDateTime payBefore, String note, String orderUrl) {
         boolean english = isEnglish(language);
         StringBuilder text = new StringBuilder();
         text.append(english ? "Hello,\n\n" : "Xin chào,\n\n");

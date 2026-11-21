@@ -1,7 +1,7 @@
 package com.ebike.dto.installment;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 /**
  * V24: an instalment application. {@code idNumberMasked} and {@code monthlyIncome} are null once the account is erased; {@code reviewedBy} is only filled
@@ -27,10 +27,10 @@ public record InstallmentApplicationResponse(
     String status,
     String reviewNote,
     String reviewedBy,
-    LocalDateTime reviewedAt,
-    LocalDateTime createdAt,
+    OffsetDateTime reviewedAt,
+    OffsetDateTime createdAt,
     String paymentStatus,
-    LocalDateTime payBefore,
+    OffsetDateTime payBefore,
     boolean canPay,
     boolean canDecide
 ) {
