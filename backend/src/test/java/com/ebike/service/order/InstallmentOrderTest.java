@@ -202,7 +202,6 @@ class InstallmentOrderTest {
         application.setOrder(order);
         application.setStatus(applicationStatus);
         when(installments.findByOrderId(10L)).thenReturn(Optional.of(application));
-        when(installments.findByOrderIdIn(any())).thenReturn(List.of(application));
         when(orders.findLockedById(10L)).thenReturn(Optional.of(order));
         return order;
     }
@@ -247,10 +246,28 @@ class InstallmentOrderTest {
 
     private static final LocalDateTime NOW = LocalDateTime.of(2026, 11, 20, 12, 0);
 
+    /** The expiry job reads plain candidates first and then locks the orders it will cancel: this stubs both for the given orders. */
+    private void candidates(Order... found) {
+        List<OrderRepository.ExpiryCandidate> rows = new java.util.ArrayList<>();
+        for (Order order : found) {
+            Payment payment = order.getPayment();
+            LocalDateTime createdAt = order.getCreatedAt();
+            Long id = order.getId();
+            org.mockito.Mockito.lenient().when(orders.findLockedById(id)).thenReturn(java.util.Optional.of(order));
+            rows.add(new OrderRepository.ExpiryCandidate() {
+                public Long getId() { return id; }
+                public LocalDateTime getCreatedAt() { return createdAt; }
+                public PaymentMethod getPaymentMethod() { return payment == null ? null : payment.getPaymentMethod(); }
+                public PaymentStatus getPaymentStatus() { return payment == null ? null : payment.getPaymentStatus(); }
+            });
+        }
+        when(orders.findExpiryCandidates(eq(OrderStatus.PENDING), any())).thenReturn(rows);
+    }
+
     @Test
     void anApplicationNobodyReviewedWithinSeventyTwoHoursReleasesItsOrder() {
         Order order = pendingInstalmentOrder(InstallmentApplication.PENDING);
-        when(orders.findLockedByStatusAndCreatedAtBefore(eq(OrderStatus.PENDING), any())).thenReturn(List.of(order));
+        candidates(order);
         assertEquals(1, service.expireUnpaidOrders(NOW));
         assertEquals(OrderStatus.CANCELLED, order.getStatus());
         assertTrue(order.getCancellationReason().contains("chưa duyệt hồ sơ trả góp"));
@@ -262,7 +279,7 @@ class InstallmentOrderTest {
     void aRecentApplicationKeepsItsOrder() {
         Order order = pendingInstalmentOrder(InstallmentApplication.PENDING);
         ReflectionTestUtils.setField(order, "createdAt", NOW.minusHours(10));
-        when(orders.findLockedByStatusAndCreatedAtBefore(eq(OrderStatus.PENDING), any())).thenReturn(List.of(order));
+        candidates(order);
         assertEquals(0, service.expireUnpaidOrders(NOW));
         assertEquals(OrderStatus.PENDING, order.getStatus());
     }
@@ -273,7 +290,7 @@ class InstallmentOrderTest {
         // the order is 19 days old but was approved yesterday: the down payment still has time
         InstallmentApplication application = installments.findByOrderId(10L).orElseThrow();
         application.setReviewedAt(NOW.minusHours(24));
-        when(orders.findLockedByStatusAndCreatedAtBefore(eq(OrderStatus.PENDING), any())).thenReturn(List.of(order));
+        candidates(order);
         assertEquals(0, service.expireUnpaidOrders(NOW));
         assertEquals(OrderStatus.PENDING, order.getStatus());
         assertNull(order.getCancellationReason());
@@ -283,7 +300,7 @@ class InstallmentOrderTest {
     void anApprovedApplicationWhoseDownPaymentIsNotPaidInTimeReleasesItsOrder() {
         Order order = pendingInstalmentOrder(InstallmentApplication.APPROVED);
         installments.findByOrderId(10L).orElseThrow().setReviewedAt(NOW.minusHours(73));
-        when(orders.findLockedByStatusAndCreatedAtBefore(eq(OrderStatus.PENDING), any())).thenReturn(List.of(order));
+        candidates(order);
         assertEquals(1, service.expireUnpaidOrders(NOW));
         assertEquals(OrderStatus.CANCELLED, order.getStatus());
         assertNotNull(order.getCancellationReason());
@@ -294,7 +311,7 @@ class InstallmentOrderTest {
     void anInstalmentOrderWhoseDownPaymentIsPaidIsNeverExpired() {
         Order order = pendingInstalmentOrder(InstallmentApplication.APPROVED);
         order.getPayment().setPaymentStatus(PaymentStatus.PAID);
-        when(orders.findLockedByStatusAndCreatedAtBefore(eq(OrderStatus.PENDING), any())).thenReturn(List.of(order));
+        candidates(order);
         assertEquals(0, service.expireUnpaidOrders(NOW));
         assertEquals(OrderStatus.PENDING, order.getStatus());
     }

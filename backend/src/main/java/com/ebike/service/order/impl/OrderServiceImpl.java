@@ -355,8 +355,9 @@ public class OrderServiceImpl implements OrderService {
         return updated;
     }
 
+    // READ_COMMITTED: the candidates are read first without a lock; with the default snapshot, what is read after waiting for an order's lock could be older than the lock
     @Override
-    @Transactional
+    @Transactional(isolation = org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
     @CacheEvict(cacheNames = {
         com.ebike.config.CacheNames.PRODUCT_LIST_CACHE,
         com.ebike.config.CacheNames.PRODUCT_DETAIL_CACHE
@@ -365,34 +366,37 @@ public class OrderServiceImpl implements OrderService {
         LocalDateTime vnpayCutoff = now.minus(vnpayExpiry);
         LocalDateTime payLaterCutoff = now.minus(payLaterExpiry);
         LocalDateTime latestCutoff = vnpayCutoff.isAfter(payLaterCutoff) ? vnpayCutoff : payLaterCutoff;
-        LocalDateTime downPaymentCutoff = now.minus(installmentDownPaymentHold);
-        if (downPaymentCutoff.isAfter(latestCutoff)) {
-            latestCutoff = downPaymentCutoff;
-        }
-        LocalDateTime reviewCutoff = now.minus(installmentReviewHold);
-        if (reviewCutoff.isAfter(latestCutoff)) {
-            latestCutoff = reviewCutoff;
+        // an instalment order waits for the staff (from its creation) and then for the down payment (from the approval, which is later): it cannot be due
+        // before the shorter of the two holds has passed since it was created
+        LocalDateTime instalmentCutoff = now.minus(installmentDownPaymentHold.compareTo(installmentReviewHold) < 0 ? installmentDownPaymentHold : installmentReviewHold);
+        if (instalmentCutoff.isAfter(latestCutoff)) {
+            latestCutoff = instalmentCutoff;
         }
 
-        List<Order> expired = new ArrayList<>();
-        List<Order> candidates = orderRepository.findLockedByStatusAndCreatedAtBefore(OrderStatus.PENDING, latestCutoff);
-        // the applications of the instalment orders among them, in one query
-        Map<Long, InstallmentApplication> applicationOf = new HashMap<>();
-        List<Long> instalmentOrderIds = candidates.stream()
-            .filter(candidate -> candidate.getPayment() != null && candidate.getPayment().getPaymentMethod() == PaymentMethod.INSTALLMENT)
-            .map(Order::getId)
+        // Read without a lock and decide from plain values which orders may be due; only those are locked (in id order), and each is checked again once its
+        // row is held, so a customer cancelling or the staff confirming an order that is not due never waits for this job.
+        List<Long> possiblyDue = orderRepository.findExpiryCandidates(OrderStatus.PENDING, latestCutoff).stream()
+            .filter(candidate -> candidate.getPaymentStatus() != PaymentStatus.PAID)
+            .filter(candidate -> candidate.getPaymentMethod() == PaymentMethod.INSTALLMENT
+                ? candidate.getCreatedAt().isBefore(instalmentCutoff)
+                : candidate.getCreatedAt().isBefore(isOnline(candidate.getPaymentMethod()) ? vnpayCutoff : payLaterCutoff))
+            .map(OrderRepository.ExpiryCandidate::getId)
+            .sorted()
             .toList();
-        if (!instalmentOrderIds.isEmpty()) {
-            installments.findByOrderIdIn(instalmentOrderIds).forEach(found -> applicationOf.put(found.getOrder().getId(), found));
-        }
-        for (Order order : candidates) {
+
+        List<Order> expired = new ArrayList<>();
+        for (Long id : possiblyDue) {
+            Order order = orderRepository.findLockedById(id).orElse(null);
+            if (order == null || order.getStatus() != OrderStatus.PENDING) {
+                continue;
+            }
             Payment payment = order.getPayment();
             if (payment != null && payment.getPaymentStatus() == PaymentStatus.PAID) {
                 continue;
             }
             if (payment != null && payment.getPaymentMethod() == PaymentMethod.INSTALLMENT) {
                 // V24: an instalment order waits for the staff first, then for the down payment; each wait has its own clock
-                InstallmentApplication application = applicationOf.get(order.getId());
+                InstallmentApplication application = installments.findByOrderId(order.getId()).orElse(null);
                 boolean approved = application != null && InstallmentApplication.APPROVED.equals(application.getStatus()) && application.getReviewedAt() != null;
                 LocalDateTime since = approved ? application.getReviewedAt() : order.getCreatedAt();
                 if (!since.isBefore(now.minus(approved ? installmentDownPaymentHold : installmentReviewHold))) {
@@ -400,12 +404,13 @@ public class OrderServiceImpl implements OrderService {
                 }
                 cancelOrder(order, approved
                     ? "Tự động hủy: quá hạn thanh toán khoản trả trước của hồ sơ trả góp."
-                    : "Tự động hủy: cửa hàng chưa duyệt hồ sơ trả góp trong thời hạn giữ hàng.", null, "Expired before down payment");
+                    : "Tự động hủy: cửa hàng chưa duyệt hồ sơ trả góp trong thời hạn giữ hàng.", null,
+                    "Expired before down payment");
                 expired.add(order);
                 continue;
             }
             // VNPay orders have no payment row until the first payment URL is created.
-            boolean online = payment == null || payment.getPaymentMethod() == PaymentMethod.VNPAY;
+            boolean online = payment == null || isOnline(payment.getPaymentMethod());
             if (!order.getCreatedAt().isBefore(online ? vnpayCutoff : payLaterCutoff)) {
                 continue;
             }
@@ -417,6 +422,11 @@ public class OrderServiceImpl implements OrderService {
         }
         orderRepository.saveAll(expired);
         return expired.size();
+    }
+
+    /** An order with no payment row yet, or paid by VNPay, is waiting for an online payment. */
+    private static boolean isOnline(PaymentMethod method) {
+        return method == null || method == PaymentMethod.VNPAY;
     }
 
     @Override

@@ -67,8 +67,26 @@ class UnpaidOrderExpiryTest {
         return order;
     }
 
+    /** The expiry job reads plain candidates first and then locks the orders it will cancel: this stubs both for the given orders. */
     private void stale(Order... found) {
-        when(orders.findLockedByStatusAndCreatedAtBefore(eq(OrderStatus.PENDING), any())).thenReturn(List.of(found));
+        long nextId = 100;
+        List<OrderRepository.ExpiryCandidate> rows = new java.util.ArrayList<>();
+        for (Order order : found) {
+            if (order.getId() == null) {
+                order.setId(nextId++);
+            }
+            Payment payment = order.getPayment();
+            LocalDateTime createdAt = order.getCreatedAt();
+            Long id = order.getId();
+            org.mockito.Mockito.lenient().when(orders.findLockedById(id)).thenReturn(java.util.Optional.of(order));
+            rows.add(new OrderRepository.ExpiryCandidate() {
+                public Long getId() { return id; }
+                public LocalDateTime getCreatedAt() { return createdAt; }
+                public PaymentMethod getPaymentMethod() { return payment == null ? null : payment.getPaymentMethod(); }
+                public PaymentStatus getPaymentStatus() { return payment == null ? null : payment.getPaymentStatus(); }
+            });
+        }
+        when(orders.findExpiryCandidates(eq(OrderStatus.PENDING), any())).thenReturn(rows);
     }
 
     @Test void vnpayOrderLeftUnpaidForOver30MinutesIsCancelledAndStockReturned() {

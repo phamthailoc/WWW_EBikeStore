@@ -2,6 +2,8 @@ package com.ebike.repository.order;
 
 import com.ebike.model.entity.order.Order;
 import com.ebike.model.entity.order.OrderStatus;
+import com.ebike.model.entity.order.PaymentMethod;
+import com.ebike.model.entity.order.PaymentStatus;
 import jakarta.persistence.LockModeType;
 import java.time.LocalDateTime;
 import java.util.Collection;
@@ -29,15 +31,27 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     List<Order> findByUserIsNullAndCustomerEmail(String customerEmail);
 
-    /**
-     * The orders that may have run out of time, each row locked. Cancelling, rejecting an instalment application and expiring all take the order row first
-     * (then the application row), so two of them can never both cancel the order or wait for each other in a circle.
-     */
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("select o from Order o where o.status = :status and o.createdAt < :before")
-    List<Order> findLockedByStatusAndCreatedAtBefore(@Param("status") OrderStatus status, @Param("before") LocalDateTime before);
+    /** What the expiry job reads about an order before it decides whether to lock it: no entity, no lock, so orders that are not due are never held. */
+    interface ExpiryCandidate {
+        Long getId();
 
-    /** Row lock for whoever changes the state of an order; it must be the first read of the order in the transaction, or the row is already in memory in its old state. */
+        LocalDateTime getCreatedAt();
+
+        PaymentMethod getPaymentMethod();
+
+        PaymentStatus getPaymentStatus();
+    }
+
+    /** The orders in the status created before the time, oldest id first, as plain values (no lock): the job locks only those it will cancel, see findLockedById. */
+    @Query("select o.id as id, o.createdAt as createdAt, p.paymentMethod as paymentMethod, p.paymentStatus as paymentStatus "
+        + "from Order o left join o.payment p where o.status = :status and o.createdAt < :before order by o.id")
+    List<ExpiryCandidate> findExpiryCandidates(@Param("status") OrderStatus status, @Param("before") LocalDateTime before);
+
+    /**
+     * Row lock for whoever changes the state of an order. Cancelling, rejecting an instalment application, expiring and taking a payment all lock the order
+     * row first (then the application or payment row), so two of them can never both cancel the order or wait for each other in a circle. It must be the
+     * first read of the order in the transaction, or the row is already in memory in its old state.
+     */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select o from Order o where o.id = :id")
     Optional<Order> findLockedById(@Param("id") Long id);
