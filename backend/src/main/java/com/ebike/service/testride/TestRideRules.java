@@ -28,6 +28,8 @@ public final class TestRideRules {
     public static final Duration EARLY_DONE = Duration.ofMinutes(30);
 
     private static final Pattern HOURS = Pattern.compile("(\\d{1,2})\\s*(?:[:hH]\\s*(\\d{2})?)?\\s*[-\\u2013\\u2014]\\s*(\\d{1,2})\\s*(?:[:hH]\\s*(\\d{2})?)?");
+    /** Free text that says the showroom is shut ({@code Đóng cửa}, {@code Tạm nghỉ}, {@code Closed}), used only when no hours are written. */
+    private static final Pattern SHUT = Pattern.compile("đóng\s*cửa|dong\s*cua|tạm\s*(?:nghỉ|ngưng|ngừng)|tam\s*(?:nghi|ngung)|ngừng\s*hoạt\s*động|closed", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
     private static final Pattern PHONE = Pattern.compile("^0\\d{9,10}$");
 
     private TestRideRules() {
@@ -35,11 +37,17 @@ public final class TestRideRules {
 
     /** The opening time and closing time of a showroom. */
     public record Hours(LocalTime open, LocalTime close) {
+        /** A showroom that is shut: no slot fits between the same two times. */
+        public static final Hours CLOSED = new Hours(LocalTime.MIDNIGHT, LocalTime.MIDNIGHT);
     }
 
     /**
-     * Reads "08:00 - 21:00" (also "8h - 21h", "08:30-17:00") from the free text of {@code showrooms.opening_hours}. Anything that cannot be
-     * read as a same-day range falls back to 08:00 - 21:00, so a showroom with a note such as "by appointment" still takes bookings.
+     * Reads "08:00 - 21:00" (also "8h - 21h", "08:30-17:00") from the free text of {@code showrooms.opening_hours}. Text that says the showroom is
+     * shut ("Đóng cửa", "Tạm nghỉ", "Closed") and gives no hours takes no bookings. Anything else that cannot be read as a same-day range falls
+     * back to 08:00 - 21:00, so a showroom with a note such as "by appointment" still takes bookings.
+     *
+     * <p>Only the first range is read: a lunch break ("8:00 - 12:00, 13:30 - 21:00"), hours that differ by weekday and hours past midnight are
+     * not understood, and there is no way to mark a day off or a holiday. The manager must keep the text to one simple range.
      */
     public static Hours parseOpeningHours(String text) {
         if (text == null) {
@@ -47,7 +55,7 @@ public final class TestRideRules {
         }
         Matcher matcher = HOURS.matcher(text);
         if (!matcher.find()) {
-            return new Hours(DEFAULT_OPEN, DEFAULT_CLOSE);
+            return SHUT.matcher(text).find() ? Hours.CLOSED : new Hours(DEFAULT_OPEN, DEFAULT_CLOSE);
         }
         LocalTime open = time(matcher.group(1), matcher.group(2));
         LocalTime close = time(matcher.group(3), matcher.group(4));

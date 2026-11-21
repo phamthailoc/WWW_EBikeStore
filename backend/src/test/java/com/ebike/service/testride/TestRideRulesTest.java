@@ -43,6 +43,17 @@ class TestRideRulesTest {
     }
 
     @Test
+    void aShowroomThatSaysItIsShutTakesNoBookings() {
+        for (String text : List.of("Đóng cửa", "Tạm nghỉ", "Dong cua", "Closed", "Tạm ngưng hoạt động")) {
+            assertEquals(TestRideRules.Hours.CLOSED, TestRideRules.parseOpeningHours(text), text);
+        }
+        LocalDate day = LocalDate.of(2026, 11, 22);
+        assertTrue(TestRideRules.slotsOn(day, TestRideRules.Hours.CLOSED).isEmpty());
+        // written hours win over a word of the same text
+        assertEquals(new TestRideRules.Hours(LocalTime.of(8, 0), LocalTime.of(20, 0)), TestRideRules.parseOpeningHours("08:00 - 20:00 (closed on holidays)"));
+    }
+
+    @Test
     void slotsRunHourlyAndTheLastOneEndsByClosingTime() {
         LocalDate day = LocalDate.of(2026, 11, 22);
         List<LocalDateTime> slots = TestRideRules.slotsOn(day, new TestRideRules.Hours(LocalTime.of(8, 0), LocalTime.of(21, 0)));
