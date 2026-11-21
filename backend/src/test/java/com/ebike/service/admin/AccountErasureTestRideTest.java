@@ -34,7 +34,7 @@ class AccountErasureTestRideTest {
         UserRepository users = mock(UserRepository.class);
         AccountErasure erasure = new AccountErasure(
             mock(UserAddressRepository.class), mock(UserFavoriteRepository.class), mock(UserPreferenceRepository.class),
-            mock(NotificationRepository.class), mock(StockAlertRepository.class), mock(WarrantyClaimRepository.class), testRides,
+            mock(NotificationRepository.class), mock(StockAlertRepository.class), mock(WarrantyClaimRepository.class), testRides, mock(com.ebike.repository.installment.InstallmentApplicationRepository.class),
             users, mock(ProductReviewService.class), mock(PasswordEncoder.class), "Asia/Ho_Chi_Minh");
         User user = new User();
         user.setId(42L);
@@ -56,7 +56,7 @@ class AccountErasureTestRideTest {
         ZoneId zone = ZoneId.of("Pacific/Kiritimati");
         AccountErasure erasure = new AccountErasure(
             mock(UserAddressRepository.class), mock(UserFavoriteRepository.class), mock(UserPreferenceRepository.class),
-            mock(NotificationRepository.class), mock(StockAlertRepository.class), mock(WarrantyClaimRepository.class), testRides,
+            mock(NotificationRepository.class), mock(StockAlertRepository.class), mock(WarrantyClaimRepository.class), testRides, mock(com.ebike.repository.installment.InstallmentApplicationRepository.class),
             mock(UserRepository.class), mock(ProductReviewService.class), mock(PasswordEncoder.class), zone.getId());
         User user = new User();
         user.setId(7L);

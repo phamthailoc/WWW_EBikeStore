@@ -5,6 +5,8 @@ import com.ebike.dto.order.request.VnPayCreatePaymentRequest;
 import com.ebike.dto.order.response.VnPayCreatePaymentResponse;
 import com.ebike.dto.order.response.VnPayReturnResponse;
 import com.ebike.model.entity.order.Order;
+import com.ebike.model.entity.installment.InstallmentApplication;
+import com.ebike.repository.installment.InstallmentApplicationRepository;
 import com.ebike.model.entity.order.OrderStatus;
 import com.ebike.model.entity.order.Payment;
 import com.ebike.model.entity.order.PaymentMethod;
@@ -38,17 +40,20 @@ public class VnPayServiceImpl implements VnPayService {
     private final VnPayProperties properties;
     private final OrderRepository orderRepository;
     private final PaymentRepository paymentRepository;
+    private final InstallmentApplicationRepository installmentApplications;
     private final ObjectMapper objectMapper;
 
     public VnPayServiceImpl(
         VnPayProperties properties,
         OrderRepository orderRepository,
         PaymentRepository paymentRepository,
+        InstallmentApplicationRepository installmentApplications,
         ObjectMapper objectMapper
     ) {
         this.properties = properties;
         this.orderRepository = orderRepository;
         this.paymentRepository = paymentRepository;
+        this.installmentApplications = installmentApplications;
         this.objectMapper = objectMapper;
     }
 
@@ -76,6 +81,11 @@ public class VnPayServiceImpl implements VnPayService {
         }
         if (order.getStatus() == OrderStatus.CANCELLED) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot pay a cancelled order");
+        }
+        // V24: an instalment order is paid only after the staff approved the application, and then only for the down payment
+        if (installmentApplications.findByOrderId(order.getId()).map(a -> !InstallmentApplication.APPROVED.equals(a.getStatus())).orElse(false)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, com.ebike.common.i18n.RequestLanguage.text(
+                "Hồ sơ trả góp chưa được duyệt nên chưa thanh toán được khoản trả trước.", "The instalment application is not approved yet, so the down payment cannot be paid."));
         }
 
         Payment payment = paymentRepository.findByOrderId(request.orderId())
@@ -175,15 +185,20 @@ public class VnPayServiceImpl implements VnPayService {
         if (payment.getPaymentStatus() == PaymentStatus.PAID) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Order is already paid");
         }
-        if (payment.getPaymentStatus() == PaymentStatus.PENDING && payment.getPaymentMethod() == PaymentMethod.VNPAY) {
-            payment.setAmount(order.getTotalAmount());
+        // V24: the payment row of an instalment order is its down payment: it keeps its amount and its method, only the gateway attempt is new
+        boolean installment = payment.getPaymentMethod() == PaymentMethod.INSTALLMENT;
+        BigDecimal amountDue = installment ? payment.getAmount() : order.getTotalAmount();
+        if (payment.getPaymentStatus() == PaymentStatus.PENDING && (payment.getPaymentMethod() == PaymentMethod.VNPAY || installment)) {
+            payment.setAmount(amountDue);
             payment.setCurrency("VND");
             payment.setTransactionReference(generateTxnRef(order));
             return payment;
         }
-        payment.setPaymentMethod(PaymentMethod.VNPAY);
+        if (!installment) {
+            payment.setPaymentMethod(PaymentMethod.VNPAY);
+        }
         payment.setPaymentStatus(PaymentStatus.PENDING);
-        payment.setAmount(order.getTotalAmount());
+        payment.setAmount(amountDue);
         payment.setCurrency("VND");
         payment.setTransactionReference(generateTxnRef(order));
         payment.setProviderTxnId(null);
@@ -223,7 +238,7 @@ public class VnPayServiceImpl implements VnPayService {
             return true;
         }
         return payment.getPaymentStatus() == PaymentStatus.CANCELLED
-            && payment.getPaymentMethod() == PaymentMethod.VNPAY
+            && (payment.getPaymentMethod() == PaymentMethod.VNPAY || payment.getPaymentMethod() == PaymentMethod.INSTALLMENT)
             && payment.getOrder().getStatus() == OrderStatus.CANCELLED;
     }
 

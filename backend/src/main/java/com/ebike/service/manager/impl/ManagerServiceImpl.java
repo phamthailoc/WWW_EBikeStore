@@ -21,6 +21,8 @@ import com.ebike.model.entity.order.OrderItem;
 import com.ebike.model.entity.order.OrderStatus;
 import com.ebike.model.entity.order.Payment;
 import com.ebike.model.entity.order.PaymentMethod;
+import com.ebike.model.entity.installment.InstallmentApplication;
+import com.ebike.repository.installment.InstallmentApplicationRepository;
 import com.ebike.model.entity.order.PaymentStatus;
 import com.ebike.model.entity.order.Shipment;
 import com.ebike.model.entity.order.ShipmentStatus;
@@ -65,6 +67,7 @@ public class ManagerServiceImpl implements ManagerService {
     private final ProductService productService;
     private final AuditLogService auditLog;
     private final StockAlertService stockAlerts;
+    private final InstallmentApplicationRepository installments;
 
     public ManagerServiceImpl(
         OrderRepository orderRepository,
@@ -73,7 +76,8 @@ public class ManagerServiceImpl implements ManagerService {
         ProductRepository productRepository,
         ProductService productService,
         AuditLogService auditLog,
-        StockAlertService stockAlerts
+        StockAlertService stockAlerts,
+        InstallmentApplicationRepository installments
     ) {
         this.orderRepository = orderRepository;
         this.paymentRepository = paymentRepository;
@@ -82,6 +86,7 @@ public class ManagerServiceImpl implements ManagerService {
         this.productService = productService;
         this.auditLog = auditLog;
         this.stockAlerts = stockAlerts;
+        this.installments = installments;
     }
 
     @Override
@@ -141,8 +146,14 @@ public class ManagerServiceImpl implements ManagerService {
         Payment payment = paymentRepository.findById(paymentId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Payment not found"));
 
-        if (payment.getPaymentMethod() != PaymentMethod.PAY_LATER) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Only PAY_LATER payments can be confirmed manually");
+        // V24: the down payment of an instalment order can also be taken at the store, once the application is approved
+        boolean installment = payment.getPaymentMethod() == PaymentMethod.INSTALLMENT;
+        if (payment.getPaymentMethod() != PaymentMethod.PAY_LATER && !installment) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Only PAY_LATER or INSTALLMENT payments can be confirmed manually");
+        }
+        if (installment && !installments.findByOrderId(payment.getOrder().getId()).map(a -> InstallmentApplication.APPROVED.equals(a.getStatus())).orElse(false)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, com.ebike.common.i18n.RequestLanguage.text(
+                "Hồ sơ trả góp chưa được duyệt nên chưa thu được khoản trả trước.", "The instalment application is not approved yet, so the down payment cannot be taken."));
         }
         if (payment.getPaymentStatus() == PaymentStatus.PAID) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Payment is already marked as paid");

@@ -11,6 +11,9 @@ import com.ebike.dto.order.request.OrderStatusUpdateRequest;
 import com.ebike.dto.order.response.OrderItemResponse;
 import com.ebike.dto.order.response.OrderItemUnitResponse;
 import com.ebike.service.admin.AuditLogService;
+import com.ebike.model.entity.installment.InstallmentApplication;
+import com.ebike.repository.installment.InstallmentApplicationRepository;
+import com.ebike.service.installment.InstallmentPlanner;
 import com.ebike.service.order.OrderUnits;
 import com.ebike.service.stock.StockAlertRules;
 import com.ebike.service.stock.StockAlertService;
@@ -74,6 +77,10 @@ public class OrderServiceImpl implements OrderService {
     @Value("${app.order.pay-later-expiry:PT72H}")
     private java.time.Duration payLaterExpiry = java.time.Duration.ofHours(72);
 
+    // How long an approved instalment application waits for its down payment (InstallmentService reads the same setting).
+    @Value("${app.order.installment-down-payment-hold:PT72H}")
+    private java.time.Duration installmentDownPaymentHold = java.time.Duration.ofHours(72);
+
     @Value("${app.order.pickup-hold:P7D}")
     private java.time.Duration pickupHold = java.time.Duration.ofDays(7);
 
@@ -98,6 +105,8 @@ public class OrderServiceImpl implements OrderService {
 
     private final AuditLogService auditLog;
     private final StockAlertService stockAlerts;
+    private final InstallmentPlanner installmentPlanner;
+    private final InstallmentApplicationRepository installments;
 
     public OrderServiceImpl(
         OrderRepository orderRepository,
@@ -108,7 +117,9 @@ public class OrderServiceImpl implements OrderService {
         OrderEmailVerificationService orderEmailVerificationService,
         PricingService pricingService,
         AuditLogService auditLog,
-        StockAlertService stockAlerts
+        StockAlertService stockAlerts,
+        InstallmentPlanner installmentPlanner,
+        InstallmentApplicationRepository installments
     ) {
         this.orderRepository = orderRepository;
         this.userRepository = userRepository;
@@ -119,6 +130,8 @@ public class OrderServiceImpl implements OrderService {
         this.pricingService = pricingService;
         this.auditLog = auditLog;
         this.stockAlerts = stockAlerts;
+        this.installmentPlanner = installmentPlanner;
+        this.installments = installments;
     }
 
     @Override
@@ -222,10 +235,20 @@ public class OrderServiceImpl implements OrderService {
         }
         order.setDiscountAmount(promoDiscountAmount);
         order.setTotalAmount(calculateTotalAmount(subtotal, order.getShippingFee(), order.getDiscountAmount(), order.getRegistrationFee()));
+        // V24: an instalment order is checked now (the plan, the ID number, the income) so that a bad application never holds stock
+        InstallmentPlanner.Prepared installment = null;
+        if (parseCheckoutPaymentMethod(request.paymentMethod()) == PaymentMethod.INSTALLMENT) {
+            assertCustomerRole(authentication);
+            installment = installmentPlanner.prepare(user, order.getTotalAmount(), request.installment());
+        }
         order.setShipment(buildShipment(order, showroom, request));
-        attachInitialPayment(order, request.paymentMethod());
+        attachInitialPayment(order, request.paymentMethod(), installment);
 
-        return toResponse(orderRepository.save(order));
+        Order saved = orderRepository.save(order);
+        if (installment != null) {
+            installmentPlanner.record(saved, user, installment);
+        }
+        return toResponse(saved);
     }
 
     // The steps a staff member may take from each status. A cancelled or delivered order is final.
@@ -265,6 +288,14 @@ public class OrderServiceImpl implements OrderService {
         }
 
         OrderStatus previousStatus = order.getStatus();
+        if (nextStatus == OrderStatus.CONFIRMED && order.getPayment() != null && order.getPayment().getPaymentMethod() == PaymentMethod.INSTALLMENT) {
+            // V24: the staff confirm an instalment order only after the application is approved; paying the down payment confirms it by itself
+            boolean approved = installments.findByOrderId(order.getId()).map(a -> InstallmentApplication.APPROVED.equals(a.getStatus())).orElse(false);
+            if (!approved) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, com.ebike.common.i18n.RequestLanguage.text(
+                    "Hồ sơ trả góp chưa được duyệt nên chưa xác nhận được đơn hàng.", "The instalment application is not approved yet, so the order cannot be confirmed."));
+            }
+        }
         if (!nextStatuses(order).contains(nextStatus)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                 "Cannot change an order from " + order.getStatus() + " to " + nextStatus);
@@ -323,11 +354,29 @@ public class OrderServiceImpl implements OrderService {
         LocalDateTime vnpayCutoff = now.minus(vnpayExpiry);
         LocalDateTime payLaterCutoff = now.minus(payLaterExpiry);
         LocalDateTime latestCutoff = vnpayCutoff.isAfter(payLaterCutoff) ? vnpayCutoff : payLaterCutoff;
+        LocalDateTime downPaymentCutoff = now.minus(installmentDownPaymentHold);
+        if (downPaymentCutoff.isAfter(latestCutoff)) {
+            latestCutoff = downPaymentCutoff;
+        }
 
         List<Order> expired = new ArrayList<>();
         for (Order order : orderRepository.findByStatusAndCreatedAtBefore(OrderStatus.PENDING, latestCutoff)) {
             Payment payment = order.getPayment();
             if (payment != null && payment.getPaymentStatus() == PaymentStatus.PAID) {
+                continue;
+            }
+            if (payment != null && payment.getPaymentMethod() == PaymentMethod.INSTALLMENT) {
+                // V24: an instalment order waits for the staff first, then for the down payment; each wait has its own clock
+                InstallmentApplication application = installments.findByOrderId(order.getId()).orElse(null);
+                boolean approved = application != null && InstallmentApplication.APPROVED.equals(application.getStatus()) && application.getReviewedAt() != null;
+                LocalDateTime since = approved ? application.getReviewedAt() : order.getCreatedAt();
+                if (!since.isBefore(now.minus(approved ? installmentDownPaymentHold : payLaterExpiry))) {
+                    continue;
+                }
+                cancelOrder(order, approved
+                    ? "Tự động hủy: quá hạn thanh toán khoản trả trước của hồ sơ trả góp."
+                    : "Tự động hủy: cửa hàng chưa duyệt hồ sơ trả góp trong thời hạn giữ hàng.", null, "Expired before down payment");
+                expired.add(order);
                 continue;
             }
             // VNPay orders have no payment row until the first payment URL is created.
@@ -416,6 +465,10 @@ public class OrderServiceImpl implements OrderService {
         // the vehicles go back on sale, so their frame numbers must be free to record on another order
         order.getItems().forEach(item -> item.getUnits().clear());
         cancelPendingPayment(order.getPayment(), paymentNote);
+        // V24: an instalment application that is still open closes with its order (a rejected one keeps its verdict)
+        if (order.getId() != null) {
+            installments.cancelOpenOfOrder(order.getId(), LocalDateTime.now());
+        }
         restoreStock(order);
         if (order.getPromotion() != null) {
             promotionRepository.releaseUsage(order.getPromotion().getId());
@@ -839,7 +892,7 @@ public class OrderServiceImpl implements OrderService {
         return discount.min(base);
     }
 
-    private void attachInitialPayment(Order order, String rawPaymentMethod) {
+    private void attachInitialPayment(Order order, String rawPaymentMethod, InstallmentPlanner.Prepared installment) {
         PaymentMethod paymentMethod = parseCheckoutPaymentMethod(rawPaymentMethod);
         if (paymentMethod == PaymentMethod.VNPAY) {
             return;
@@ -847,11 +900,22 @@ public class OrderServiceImpl implements OrderService {
 
         Payment payment = new Payment();
         payment.setOrder(order);
-        payment.setPaymentMethod(PaymentMethod.PAY_LATER);
+        payment.setPaymentMethod(installment != null ? PaymentMethod.INSTALLMENT : PaymentMethod.PAY_LATER);
         payment.setPaymentStatus(PaymentStatus.PENDING);
-        payment.setAmount(order.getTotalAmount());
+        // an instalment order is paid in two parts: this row is the down payment, the rest is the application's plan
+        payment.setAmount(installment != null ? installment.plan().downPayment() : order.getTotalAmount());
         payment.setCurrency("VND");
         order.setPayment(payment);
+    }
+
+    /** V24: an instalment application is a customer's; Manager and Admin accounts can place orders too, but not apply for credit. */
+    private void assertCustomerRole(Authentication authentication) {
+        boolean customer = authentication != null && authentication.getAuthorities().stream()
+            .anyMatch(authority -> "ROLE_CUSTOMER".equals(authority.getAuthority()));
+        if (authentication != null && !customer) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, com.ebike.common.i18n.RequestLanguage.text(
+                "Chỉ tài khoản khách hàng mới mua trả góp được.", "Only customer accounts can pay by instalments."));
+        }
     }
 
     private PaymentMethod parseCheckoutPaymentMethod(String rawPaymentMethod) {
@@ -860,13 +924,13 @@ public class OrderServiceImpl implements OrderService {
         }
         try {
             PaymentMethod paymentMethod = PaymentMethod.valueOf(rawPaymentMethod.trim().toUpperCase(Locale.ROOT));
-            if (paymentMethod == PaymentMethod.PAY_LATER || paymentMethod == PaymentMethod.VNPAY) {
+            if (paymentMethod == PaymentMethod.PAY_LATER || paymentMethod == PaymentMethod.VNPAY || paymentMethod == PaymentMethod.INSTALLMENT) {
                 return paymentMethod;
             }
         } catch (IllegalArgumentException ignored) {
             // Fall through to the checkout-specific validation message below.
         }
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Payment method must be PAY_LATER or VNPAY");
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Payment method must be PAY_LATER, VNPAY or INSTALLMENT");
     }
 
     private boolean isBlank(String value) {

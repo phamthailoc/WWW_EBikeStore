@@ -34,6 +34,9 @@ public interface InstallmentApplicationRepository extends JpaRepository<Installm
     List<InstallmentApplication> findByStatusOrderByCreatedAtAsc(String status, Pageable pageable);
 
     @EntityGraph(attributePaths = {"user", "order"})
+    List<InstallmentApplication> findByStatusOrderByCreatedAtDesc(String status, Pageable pageable);
+
+    @EntityGraph(attributePaths = {"user", "order"})
     List<InstallmentApplication> findAllByOrderByCreatedAtDesc(Pageable pageable);
 
     /** The customer's own applications, newest first. */

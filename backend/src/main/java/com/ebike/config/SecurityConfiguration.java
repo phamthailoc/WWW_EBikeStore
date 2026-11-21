@@ -51,6 +51,8 @@ public class SecurityConfiguration {
                 .requestMatchers("/manager/**").hasAuthority(PermissionConstants.OrderManagement.ORDER_VIEW_ALL)
                 .requestMatchers("/admin/**").hasAnyRole(ADMIN_CONSOLE_ROLES)
                 .requestMatchers(HttpMethod.POST, "/api/v1/orders/quote").permitAll()
+                // V24: the calculator is open to visitors; the answer is only arithmetic on public rates.
+                .requestMatchers(HttpMethod.GET, "/api/v1/installments/config", "/api/v1/installments/quote").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/faq").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/v1/support-requests").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/v1/orders/email-verification/send", "/api/v1/orders/email-verification/verify").permitAll()
@@ -84,6 +86,11 @@ public class SecurityConfiguration {
                 .requestMatchers(HttpMethod.POST, "/api/v1/orders/guest-orders/link").hasAuthority(PermissionConstants.Customer.ORDER_VIEW_OWN)
                 .requestMatchers(HttpMethod.POST, "/api/v1/orders/*/cancellation-request").hasAuthority(PermissionConstants.Customer.ORDER_CANCEL_OWN)
                 .requestMatchers(HttpMethod.PATCH, "/api/v1/orders/*/status").hasAuthority(PermissionConstants.OrderManagement.ORDER_UPDATE_STATUS)
+                // V24: an application is read by its own customer or by the staff (the service checks which); only the staff decide.
+                .requestMatchers(HttpMethod.GET, "/api/v1/installments/orders/*").hasAnyAuthority(
+                    PermissionConstants.Customer.ORDER_VIEW_OWN,
+                    PermissionConstants.OrderManagement.ORDER_VIEW_ALL
+                )
                 .requestMatchers(HttpMethod.GET, "/api/v1/favorites").hasAuthority(PermissionConstants.Customer.FAVORITE_VIEW)
                 .requestMatchers(HttpMethod.POST, "/api/v1/favorites").hasAuthority(PermissionConstants.Customer.FAVORITE_UPDATE)
                 .requestMatchers(HttpMethod.DELETE, "/api/v1/favorites/*").hasAuthority(PermissionConstants.Customer.FAVORITE_UPDATE)
@@ -140,6 +147,8 @@ public class SecurityConfiguration {
                 .requestMatchers(HttpMethod.PATCH, "/api/v1/manager/warranty-claims/*").hasAuthority(PermissionConstants.OrderManagement.ORDER_UPDATE_STATUS)
                 // V23: confirming, closing or cancelling a test ride messages the customer, so it needs the write permission, not only the view one.
                 .requestMatchers(HttpMethod.PATCH, "/api/v1/manager/test-rides/*").hasAuthority(PermissionConstants.OrderManagement.ORDER_UPDATE_STATUS)
+                // V24: approving or rejecting an instalment application changes the order and messages the customer, so it needs the write permission.
+                .requestMatchers(HttpMethod.PATCH, "/api/v1/manager/installments/*").hasAuthority(PermissionConstants.OrderManagement.ORDER_UPDATE_STATUS)
                 .requestMatchers("/api/v1/manager/**").hasAuthority(PermissionConstants.OrderManagement.ORDER_VIEW_ALL)
                 .requestMatchers("/api/v1/admin/**").hasAuthority(PermissionConstants.AccessControl.PERMISSION_MANAGE)
                 .anyRequest().denyAll()

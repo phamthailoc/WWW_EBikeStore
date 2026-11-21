@@ -118,6 +118,10 @@ public class AdminServiceImpl implements AdminService {
         if (request.amount() == null || request.amount().compareTo(BigDecimal.ZERO) < 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Amount must not be negative");
         }
+        if (rule.getCode().startsWith(com.ebike.service.admin.PricingService.INSTALLMENT_RATE_PREFIX) && request.amount().compareTo(new BigDecimal("60")) > 0) {
+            // V24: a yearly rate above 60% is a typo (an amount in dong), and customers would be shown it
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Installment rate must not exceed 60 percent per year");
+        }
 
         rule.setAmount(request.amount());
         rule.setStatus(normalizeOrDefault(request.status(), "ACTIVE", PRICING_STATUSES));
