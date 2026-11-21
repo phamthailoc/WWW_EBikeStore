@@ -302,6 +302,12 @@ class TestRideServiceTest {
     }
 
     @Test
+    void anotherDataErrorIsNotAnsweredAsADoubleBooking() {
+        when(bookings.saveAndFlush(any(TestRideBooking.class))).thenThrow(new DataIntegrityViolationException("Data too long for column 'contact_phone'"));
+        org.junit.jupiter.api.Assertions.assertThrows(DataIntegrityViolationException.class, () -> service.book("an", request("2026-11-22T09:00")));
+    }
+
+    @Test
     void closedBookingsDoNotHoldAPlace() {
         service.book("an", request("2026-11-22T09:00"));
         ArgumentCaptor<Collection<String>> statuses = ArgumentCaptor.forClass(Collection.class);

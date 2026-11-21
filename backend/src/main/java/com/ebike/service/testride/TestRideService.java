@@ -29,6 +29,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -44,13 +46,16 @@ import org.springframework.web.server.ResponseStatusException;
  * number of rides per showroom. The staff confirm the request, close it afterwards (done, no-show) or cancel it.
  *
  * <p>The number of places is kept without a table of slots: booking locks the showroom row first and counts the open bookings of the slot
- * under that lock, so two customers cannot both take the last place; it then locks the customer's row so one customer's parallel requests are counted one by one. A customer cannot hold two open bookings at the same time (the
- * database refuses it too) nor more than {@code app.test-ride.max-open-per-customer} future ones.
+ * under that lock, so two customers cannot both take the last place; it then locks the customer's row so one customer's parallel requests are counted one by one. A customer cannot hold two open bookings whose hours overlap (the
+ * database also refuses two with the same start) nor more than {@code app.test-ride.max-open-per-customer} future ones.
  */
 @Service
 public class TestRideService {
 
     public static final String DEFAULT_CAPACITY = "2";
+    /** The unique key of the database that refuses one customer two open bookings of the same start. */
+    static final String ACTIVE_USER_SLOT_KEY = "uk_test_ride_active_user_slot";
+    private static final Logger log = LoggerFactory.getLogger(TestRideService.class);
     /** The status filter that lists every status, open or closed. */
     public static final String ALL = "ALL";
     /** A staff list shows at most this many bookings (a day of every showroom is far below it). */
@@ -223,8 +228,13 @@ public class TestRideService {
         try {
             return toResponse(bookings.saveAndFlush(booking), now, false);
         } catch (DataIntegrityViolationException exception) {
-            // uk_test_ride_active_user_slot: the same customer, the same time, committed by a second request that slipped past the check above
-            throw conflict("Bạn đã có một lịch lái thử vào giờ này.", "You already have a test ride at this time.");
+            if (isActiveUserSlotViolation(exception)) {
+                // the same customer, the same time, committed by a second request that slipped past the check above
+                throw conflict("Bạn đã có một lịch lái thử vào giờ này.", "You already have a test ride at this time.");
+            }
+            // a broken foreign key, a CHECK, a value too long: a real data error, not something the customer did; the log keeps it
+            log.error("Saving a test ride booking failed on a constraint other than {}", ACTIVE_USER_SLOT_KEY, exception);
+            throw exception;
         }
     }
 
@@ -399,6 +409,16 @@ public class TestRideService {
             return "The ride has not started yet, so it cannot be marked done.";
         }
         return "The slot has not begun yet, so the customer cannot be marked absent.";
+    }
+
+    private static boolean isActiveUserSlotViolation(DataIntegrityViolationException exception) {
+        for (Throwable cause = exception; cause != null; cause = cause.getCause() == cause ? null : cause.getCause()) {
+            String message = cause.getMessage();
+            if (message != null && message.contains(ACTIVE_USER_SLOT_KEY)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private LocalDate parseDate(String date) {
