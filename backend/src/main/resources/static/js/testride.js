@@ -45,15 +45,15 @@ window.KineticTestRide = (() => {
     return response.status === 204 ? null : response.json();
   }
 
-  /** A small dialog with an optional text box (staff note, reason) and a submit button. Resolves with the text ('' when there is no box), or null when cancelled. */
-  function ask({title, intro, label, initial, required, max, submit}) {
+  /** A small dialog with an optional text box (staff note, reason) and a submit button; {@code cancelLabel} names the button that only closes it ("Hủy" would read like cancelling the booking). Resolves with the text ('' when there is no box), or null when cancelled. */
+  function ask({title, intro, label, initial, required, max, submit, cancelLabel}) {
     return new Promise(resolve => {
       const dialog = document.createElement('dialog');
       dialog.className = 'stock-dialog warranty-dialog';
       dialog.innerHTML = `<form novalidate><h2>${esc(title)}</h2>${intro ? `<p class="muted">${esc(intro)}</p>` : ''}
         ${label ? `<label>${esc(label)}<textarea name="text" rows="4" maxlength="${max || 1000}"></textarea></label>` : ''}
         <p class="support-message error" role="alert" hidden></p>
-        <p class="dialog-actions"><button type="submit" class="button compact" data-submit>${esc(submit)}</button><button type="button" class="button compact ghost" data-cancel>${t('Hủy')}</button></p></form>`;
+        <p class="dialog-actions"><button type="submit" class="button compact" data-submit>${esc(submit)}</button><button type="button" class="button compact ghost" data-cancel>${esc(cancelLabel || t('Hủy'))}</button></p></form>`;
       document.body.appendChild(dialog);
       const form = dialog.querySelector('form'), error = dialog.querySelector('.support-message');
       if (form.elements.text) form.elements.text.value = initial || '';
@@ -212,7 +212,7 @@ window.KineticTestRide = (() => {
     table.addEventListener('click', async event => {
       const button = event.target.closest('[data-action="ride-cancel"]');
       if (!button) return;
-      const sure = await ask({title: t('Hủy lịch lái thử'), intro: button.dataset.summary || '', submit: t('Hủy lịch')});
+      const sure = await ask({title: t('Hủy lịch lái thử'), intro: button.dataset.summary || '', submit: t('Hủy lịch'), cancelLabel: t('Giữ lịch')});
       if (sure === null) return;
       button.disabled = true;
       try {
