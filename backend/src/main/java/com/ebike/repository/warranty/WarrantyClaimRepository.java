@@ -44,6 +44,8 @@ public interface WarrantyClaimRepository extends JpaRepository<WarrantyClaim, Lo
 
     List<WarrantyClaim> findByUnitIdIn(Collection<Long> unitIds);
 
+    boolean existsByUnitIdIn(Collection<Long> unitIds);
+
     /** Account erasure: the store keeps its repair history, the customer's own words go. */
     @Modifying
     @Query("update WarrantyClaim c set c.description = :text where c.user.id = :userId")

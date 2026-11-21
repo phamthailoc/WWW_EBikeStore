@@ -174,7 +174,7 @@ class OrderUnitServiceTest {
 
     @Test void aVehicleWithWarrantyRequestsCannotLoseItsNumbers() {
         existing(7L, "RLHABC12345", "M1234567");
-        when(warrantyClaims.findByUnitIdIn(any())).thenReturn(List.of(new com.ebike.model.entity.warranty.WarrantyClaim()));
+        when(warrantyClaims.existsByUnitIdIn(any())).thenReturn(true);
         var ex = assertThrows(ResponseStatusException.class, () -> service.replaceUnits(10L, new OrderUnitsRequest(List.of())));
         assertEquals(409, ex.getStatusCode().value());
         assertEquals(1, bikes.getUnits().size());
@@ -182,7 +182,7 @@ class OrderUnitServiceTest {
 
     @Test void aVehicleWithReminderCannotLoseItsNumbers() {
         existing(7L, "RLHABC12345", "M1234567");
-        when(reminders.findByUnitIdIn(any())).thenReturn(List.of(new com.ebike.model.entity.warranty.MaintenanceReminder()));
+        when(reminders.existsByUnitIdIn(any())).thenReturn(true);
         var ex = assertThrows(ResponseStatusException.class, () -> service.replaceUnits(10L, new OrderUnitsRequest(List.of())));
         assertEquals(409, ex.getStatusCode().value());
         assertEquals(1, bikes.getUnits().size());
@@ -191,7 +191,7 @@ class OrderUnitServiceTest {
 
     @Test void changingTheFrameOfAVehicleWithWarrantyHistoryIsRefused() {
         existing(7L, "RLHABC12345", "M1234567");
-        when(warrantyClaims.findByUnitIdIn(any())).thenReturn(List.of(new com.ebike.model.entity.warranty.WarrantyClaim()));
+        when(warrantyClaims.existsByUnitIdIn(any())).thenReturn(true);
         var ex = assertThrows(ResponseStatusException.class, () -> service.replaceUnits(10L,
             new OrderUnitsRequest(List.of(new Entry(1L, "RLHABC99999", "M1234567")))));
         assertEquals(409, ex.getStatusCode().value());
@@ -202,7 +202,7 @@ class OrderUnitServiceTest {
         OrderItem otherBikes = line(3L, VehicleType.E_MOTORBIKE, 1);
         order.getItems().add(otherBikes);
         existing(7L, "RLHABC12345", "M1234567");
-        when(reminders.findByUnitIdIn(any())).thenReturn(List.of(new com.ebike.model.entity.warranty.MaintenanceReminder()));
+        when(reminders.existsByUnitIdIn(any())).thenReturn(true);
         var ex = assertThrows(ResponseStatusException.class, () -> service.replaceUnits(10L,
             new OrderUnitsRequest(List.of(new Entry(3L, "RLHABC12345", "M1234567")))));
         assertEquals(409, ex.getStatusCode().value());

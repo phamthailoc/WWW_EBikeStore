@@ -156,8 +156,8 @@ public class OrderUnitService {
         }
         // The frame number of a vehicle that has a warranty request or a service reminder is its identity: no edit, no delete.
         List<Long> touchedIds = spare.stream().map(OrderItemUnit::getId).filter(Objects::nonNull).toList();
-        if (!touchedIds.isEmpty() && (!warrantyClaims.findByUnitIdIn(touchedIds).isEmpty()
-            || !maintenanceReminders.findByUnitIdIn(touchedIds).isEmpty())) {
+        if (!touchedIds.isEmpty() && (warrantyClaims.existsByUnitIdIn(touchedIds)
+            || maintenanceReminders.existsByUnitIdIn(touchedIds))) {
             throw new ResponseStatusException(HttpStatus.CONFLICT,
                 WarrantyMessages.text("Xe này đã có yêu cầu bảo hành hoặc mốc nhắc bảo dưỡng, không thể đổi hoặc xóa số khung của xe.",
                     "This vehicle already has a warranty request or a service reminder, so its frame number cannot be changed or deleted."));
