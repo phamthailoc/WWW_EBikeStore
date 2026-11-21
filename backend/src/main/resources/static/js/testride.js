@@ -7,7 +7,7 @@ window.KineticTestRide = (() => {
   const isoDay = date => `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
   const timeText = iso => new Date(iso).toLocaleTimeString(localeTag(), {hour: '2-digit', minute: '2-digit'});
   const dayLabel = date => date.toLocaleDateString(localeTag(), {weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric'});
-  const DAYS_AHEAD = 14;
+  const DEFAULT_DAYS_AHEAD = 14; // only when the page does not say (the server's app.test-ride.days-ahead wins)
   const stepText = {CONFIRMED: t('Xác nhận'), DONE: t('Đã lái thử'), NO_SHOW: t('Khách không đến'), CANCELLED: t('Hủy lịch')};
   const tell = (message, error) => {
     const box = document.querySelector('#notice');
@@ -76,7 +76,9 @@ window.KineticTestRide = (() => {
     dialog.className = 'stock-dialog warranty-dialog testride-dialog';
     const days = [];
     const today = new Date();
-    for (let i = 0; i <= DAYS_AHEAD; i += 1) days.push(new Date(today.getFullYear(), today.getMonth(), today.getDate() + i));
+    // the last bookable day is today plus daysAhead, like the server's window
+    const daysAhead = product.daysAhead > 0 ? product.daysAhead : DEFAULT_DAYS_AHEAD;
+    for (let i = 0; i <= daysAhead; i += 1) days.push(new Date(today.getFullYear(), today.getMonth(), today.getDate() + i));
     dialog.innerHTML = `<form novalidate><h2>${t('Đặt lịch lái thử')}</h2><p class="muted">${esc(product.name)}</p>
       <label>${t('Cửa hàng')}<select name="showroom" disabled><option value="">${t('Đang tải…')}</option></select></label>
       <label>${t('Ngày')}<select name="date">${days.map(day => `<option value="${isoDay(day)}">${esc(dayLabel(day))}</option>`).join('')}</select></label>
@@ -186,7 +188,7 @@ window.KineticTestRide = (() => {
     const wanted = new URLSearchParams(location.search).get('testRide');
     if (wanted) { try { history.replaceState(null, '', location.pathname); } catch (ignored) { /* keep the address */ } }
     if (!button) return;
-    const product = {id: Number(root.dataset.id), name: root.dataset.name};
+    const product = {id: Number(root.dataset.id), name: root.dataset.name, daysAhead: Number(root.dataset.testRideDays)};
     const isCustomer = root.dataset.customer === 'true';
     const open = () => {
       // a visitor signs in first and comes back to this page with the dialog open

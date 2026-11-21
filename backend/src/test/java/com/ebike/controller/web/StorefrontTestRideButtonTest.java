@@ -21,7 +21,7 @@ import org.springframework.ui.ConcurrentModel;
 /** V23: who is offered "Book a test ride" on the bike page: visitors (sent to sign in) and customers, for a bike that can be ridden. */
 class StorefrontTestRideButtonTest {
     ProductService products = mock(ProductService.class);
-    StorefrontController controller = new StorefrontController(products);
+    StorefrontController controller = new StorefrontController(products, 14);
 
     @AfterEach void clear() {
         SecurityContextHolder.clearContext();
@@ -61,6 +61,12 @@ class StorefrontTestRideButtonTest {
     @Test void batteriesAndAccessoriesCannotBeRidden() {
         assertEquals(false, detailAs(signedIn("CUSTOMER"), "BATTERY").getAttribute("canTestRide"));
         assertEquals(false, detailAs(null, "ACCESSORY").getAttribute("canTestRide"));
+    }
+
+    @Test void theDialogLearnsHowManyDaysAreOpen() {
+        assertEquals(14, detailAs(signedIn("CUSTOMER"), "E_BIKE").getAttribute("testRideDays"));
+        controller = new StorefrontController(products, 21);
+        assertEquals(21, detailAs(signedIn("CUSTOMER"), "E_BIKE").getAttribute("testRideDays"));
     }
 
     @Test void aBikeWithNoSpecificationStillOffersTheButton() {

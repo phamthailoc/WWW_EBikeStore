@@ -1,6 +1,7 @@
 package com.ebike.controller.web;
 
 import com.ebike.service.product.ProductService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -13,7 +14,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class StorefrontController {
     private final ProductService products;
 
-    public StorefrontController(ProductService products) { this.products = products; }
+    /** V23: how many days ahead a test ride may be booked (the same setting the booking service enforces). */
+    private final int testRideDays;
+
+    public StorefrontController(ProductService products, @Value("${app.test-ride.days-ahead:14}") int testRideDays) {
+        this.products = products;
+        this.testRideDays = Math.max(1, testRideDays);
+    }
 
     @GetMapping({"/", "/shop"})
     public String home(@RequestParam(required = false) String q, Model model) {
@@ -92,6 +99,7 @@ public class StorefrontController {
         String vehicleType = product == null || product.specification() == null ? null : product.specification().vehicleType();
         boolean rideable = !"BATTERY".equals(vehicleType) && !"ACCESSORY".equals(vehicleType);
         model.addAttribute("canTestRide", (visitor || customer) && rideable);
+        model.addAttribute("testRideDays", testRideDays);
         return "store/detail";
     }
 
