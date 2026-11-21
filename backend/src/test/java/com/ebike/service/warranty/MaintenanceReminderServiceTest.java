@@ -47,7 +47,7 @@ class MaintenanceReminderServiceTest {
         reminders = mock(MaintenanceReminderRepository.class);
         service = new MaintenanceReminderService(units, reminders, mock(PlatformTransactionManager.class), "P1M,P6M,P12M", 2);
         // by default the first page holds the given vehicles and the next page is empty
-        when(units.findDeliveredUnitIdsAfter(anyLong(), any(Pageable.class))).thenReturn(List.of());
+        when(units.findDeliveredUnitIdsAfter(anyLong(), any(LocalDateTime.class), any(Pageable.class))).thenReturn(List.of());
         ApplicationEventPublisher publisher = events::add;
         new NotificationEventBridge().setApplicationEventPublisher(publisher);
     }
@@ -83,8 +83,16 @@ class MaintenanceReminderServiceTest {
     /** One page that holds all the given vehicles (fewer than the batch size, so the run ends after it). */
     private void serve(OrderItemUnit... delivered) {
         List<Long> ids = java.util.Arrays.stream(delivered).map(OrderItemUnit::getId).toList();
-        when(units.findDeliveredUnitIdsAfter(eq(0L), any(Pageable.class))).thenReturn(ids);
+        when(units.findDeliveredUnitIdsAfter(eq(0L), any(LocalDateTime.class), any(Pageable.class))).thenReturn(ids);
         when(units.findForWarrantyByIdIn(ids)).thenReturn(List.of(delivered));
+    }
+
+    @Test
+    void onlyVehiclesInsideTheLastMilestoneAreRead() {
+        service.sendDueReminders(NOW);
+
+        // P1M,P6M,P12M: a bike handed over more than 12 months ago has nothing left to remind
+        verify(units).findDeliveredUnitIdsAfter(eq(0L), eq(NOW.minusMonths(12)), any(Pageable.class));
     }
 
     @Test
@@ -145,8 +153,8 @@ class MaintenanceReminderServiceTest {
         OrderItemUnit a = deliveredAt(NOW.minusMonths(2), 1L);
         OrderItemUnit b = deliveredAt(NOW.minusMonths(2), 2L);
         OrderItemUnit c = deliveredAt(NOW.minusMonths(2), 3L);
-        when(units.findDeliveredUnitIdsAfter(eq(0L), any(Pageable.class))).thenReturn(List.of(1L, 2L));
-        when(units.findDeliveredUnitIdsAfter(eq(2L), any(Pageable.class))).thenReturn(List.of(3L));
+        when(units.findDeliveredUnitIdsAfter(eq(0L), any(LocalDateTime.class), any(Pageable.class))).thenReturn(List.of(1L, 2L));
+        when(units.findDeliveredUnitIdsAfter(eq(2L), any(LocalDateTime.class), any(Pageable.class))).thenReturn(List.of(3L));
         when(units.findForWarrantyByIdIn(List.of(1L, 2L))).thenReturn(List.of(a, b));
         when(units.findForWarrantyByIdIn(List.of(3L))).thenReturn(List.of(c));
         when(reminders.findByUnitIdIn(any())).thenReturn(List.of());
@@ -170,8 +178,8 @@ class MaintenanceReminderServiceTest {
 
     @Test
     void aBatchThatCannotBeReadIsSkippedAndTheRunGoesOn() {
-        when(units.findDeliveredUnitIdsAfter(eq(0L), any(Pageable.class))).thenReturn(List.of(1L, 2L));
-        when(units.findDeliveredUnitIdsAfter(eq(2L), any(Pageable.class))).thenReturn(List.of(3L));
+        when(units.findDeliveredUnitIdsAfter(eq(0L), any(LocalDateTime.class), any(Pageable.class))).thenReturn(List.of(1L, 2L));
+        when(units.findDeliveredUnitIdsAfter(eq(2L), any(LocalDateTime.class), any(Pageable.class))).thenReturn(List.of(3L));
         when(units.findForWarrantyByIdIn(List.of(1L, 2L))).thenThrow(new IllegalStateException("db down"));
         when(units.findForWarrantyByIdIn(List.of(3L))).thenReturn(List.of(deliveredAt(NOW.minusMonths(2), 3L)));
         when(reminders.findByUnitIdIn(any())).thenReturn(List.of());

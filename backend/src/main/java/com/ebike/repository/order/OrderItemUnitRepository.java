@@ -1,6 +1,7 @@
 package com.ebike.repository.order;
 
 import com.ebike.model.entity.order.OrderItemUnit;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -39,10 +40,15 @@ public interface OrderItemUnitRepository extends JpaRepository<OrderItemUnit, Lo
     @Query(WARRANTY_FETCH + "where u.frameNumber = :frame")
     Optional<OrderItemUnit> findForWarrantyByFrameNumber(@Param("frame") String frame);
 
-    /** One page of the ids of delivered vehicles that belong to an account, after {@code afterId}; the reminder job walks all of them page by page. */
-    @Query("select u.id from OrderItemUnit u join u.orderItem i join i.order o where o.status = com.ebike.model.entity.order.OrderStatus.DELIVERED "
-        + "and o.user is not null and u.id > :afterId order by u.id")
-    List<Long> findDeliveredUnitIdsAfter(@Param("afterId") Long afterId, Pageable pageable);
+    /**
+     * One page of the ids of delivered vehicles of a live account, after {@code afterId}, whose hand-over is not older than {@code since}
+     * (a vehicle past its last milestone has nothing left to remind, so it is not read again every day); the reminder job walks them page by page.
+     * An erased account is skipped: it gets no notification or email anyway.
+     */
+    @Query("select u.id from OrderItemUnit u join u.orderItem i join i.order o left join o.shipment s join o.user usr "
+        + "where o.status = com.ebike.model.entity.order.OrderStatus.DELIVERED and usr.accountStatus <> 'DELETED' and u.id > :afterId "
+        + "and coalesce(s.deliveredAt, o.deliveredAt, o.updatedAt) >= :since order by u.id")
+    List<Long> findDeliveredUnitIdsAfter(@Param("afterId") Long afterId, @Param("since") LocalDateTime since, Pageable pageable);
 
     @Query(WARRANTY_FETCH + "where u.id in :ids order by u.id")
     List<OrderItemUnit> findForWarrantyByIdIn(@Param("ids") Collection<Long> ids);

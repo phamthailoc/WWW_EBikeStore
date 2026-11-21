@@ -67,8 +67,10 @@ public class MaintenanceReminderService {
     public int sendDueReminders(LocalDateTime now) {
         int announced = 0;
         long afterId = 0;
+        // a vehicle handed over before the last milestone fell due has nothing left to remind: leave it out of the read
+        LocalDateTime since = now.minus(intervals.get(intervals.size() - 1));
         while (true) {
-            List<Long> ids = units.findDeliveredUnitIdsAfter(afterId, PageRequest.of(0, batchSize));
+            List<Long> ids = units.findDeliveredUnitIdsAfter(afterId, since, PageRequest.of(0, batchSize));
             if (ids.isEmpty()) {
                 return announced;
             }
