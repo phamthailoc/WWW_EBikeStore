@@ -405,7 +405,7 @@ public class OrderServiceImpl implements OrderService {
                 cancelOrder(order, approved
                     ? "Tự động hủy: quá hạn thanh toán khoản trả trước của hồ sơ trả góp."
                     : "Tự động hủy: cửa hàng chưa duyệt hồ sơ trả góp trong thời hạn giữ hàng.", null,
-                    "Expired before down payment");
+                    approved ? "Expired before down payment" : "Expired before review");
                 expired.add(order);
                 continue;
             }

@@ -271,6 +271,8 @@ class InstallmentOrderTest {
         assertEquals(1, service.expireUnpaidOrders(NOW));
         assertEquals(OrderStatus.CANCELLED, order.getStatus());
         assertTrue(order.getCancellationReason().contains("chưa duyệt hồ sơ trả góp"));
+        // the payment record names the real cause: nobody reviewed the application, the down payment was never due
+        assertEquals("Expired before review", order.getPayment().getProviderResponse());
         verify(installments).cancelOpenOfOrder(eq(10L), any(LocalDateTime.class));
         assertEquals(9, product.getStockQuantity()); // the bike goes back on sale
     }
