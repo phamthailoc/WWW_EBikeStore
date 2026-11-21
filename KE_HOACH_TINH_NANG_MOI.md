@@ -52,6 +52,8 @@ Ký hiệu: P1 nên làm trước; P2 làm tiếp nếu còn thời gian; P3 là
 
 **Cần chốt:** mốc bảo dưỡng (1 tháng / 6 tháng?); xe hết hạn bảo hành có được gửi yêu cầu (sửa có tính phí) không.
 
+**Chờ xác nhận (tác giả code đã tự chọn, chưa có ý kiến chủ sản phẩm):** (1) bỏ ảnh đính kèm trong biểu mẫu yêu cầu bảo hành (bucket S3 đang công khai, nên chưa làm); (2) mốc bảo dưỡng `P1M,P6M,P12M,P18M,P24M,P30M,P36M`; (3) xe hết hạn vẫn được gửi yêu cầu, đánh dấu sửa có tính phí; (4) thời hạn bảo hành được ghim vào từng xe lúc ghi số khung, đổi `warranty_months` của sản phẩm sau đó không làm đổi xe đã bán; (5) ghi chú nhân viên (`staff_note`) được giữ lại khi khách xóa tài khoản. Các mục này chưa tính là xong cho đến khi được xác nhận.
+
 ### V21. Chạy test tự động trên GitHub Actions (CI) — khoảng 1 ngày
 
 **Vì sao:** hiện 200+ test chỉ chạy tay trên một máy, phải nhớ đặt mật khẩu DB, tắt rate limit, khởi động app. Một PR có thể làm hỏng chỗ khác mà không ai biết.
