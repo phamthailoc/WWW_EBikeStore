@@ -50,7 +50,11 @@ public class InstallmentController {
 
     @GetMapping("/api/v1/installments/orders/{orderId}")
     public ResponseEntity<InstallmentApplicationResponse> ofOrder(@PathVariable Long orderId, Authentication authentication) {
-        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(service.forOrder(orderId, authentication));
+        InstallmentApplicationResponse application = service.forOrder(orderId, authentication);
+        // 204 for an order that is not paid by instalments (or is not the caller's): every order page asks, so this is not an error
+        return application == null
+            ? ResponseEntity.noContent().cacheControl(CacheControl.noStore()).build()
+            : ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(application);
     }
 
     @GetMapping("/api/v1/manager/installments")

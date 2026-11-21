@@ -270,11 +270,12 @@ window.KineticInstallment = (() => {
       try {
         a = await request(`/api/v1/installments/orders/${orderId}`);
       } catch (error) {
-        // 404: the order is not paid by instalments (or is not this customer's): no panel
         panel.hidden = true;
-        if (error.status && error.status !== 404 && error.status !== 403) tell(error.message, true);
+        if (error.status && error.status !== 403) tell(error.message, true);
         return;
       }
+      // 204: the order is not paid by instalments (or is not this customer's): no panel
+      if (!a) { panel.hidden = true; return; }
       if (!attached) { document.querySelector('.work-main').appendChild(panel); attached = true; }
       panel.hidden = false;
       let state;

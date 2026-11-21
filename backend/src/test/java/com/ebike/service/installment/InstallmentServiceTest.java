@@ -150,15 +150,14 @@ class InstallmentServiceTest {
     }
 
     @Test
-    void anotherCustomerGetsNotFoundNotForbidden() {
-        ResponseStatusException error = refused(() -> service.forOrder(10L, auth("khac", PermissionConstants.Customer.ORDER_VIEW_OWN)));
-        assertEquals(HttpStatus.NOT_FOUND, error.getStatusCode());
+    void anotherCustomerGetsNothingNotForbidden() {
+        assertNull(service.forOrder(10L, auth("khac", PermissionConstants.Customer.ORDER_VIEW_OWN)));
     }
 
     @Test
-    void anOrderWithoutAnApplicationIsNotFound() {
+    void anOrderWithoutAnApplicationGetsNothing() {
         when(applications.findByOrderId(99L)).thenReturn(Optional.empty());
-        assertEquals(HttpStatus.NOT_FOUND, refused(() -> service.forOrder(99L, staff())).getStatusCode());
+        assertNull(service.forOrder(99L, staff()));
     }
 
     @Test

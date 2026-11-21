@@ -75,15 +75,21 @@ public class InstallmentService {
         this.downPaymentHold = downPaymentHold;
     }
 
-    /** The application of one order, for its customer or for the staff; 404 when the order has none or is somebody else's (so it cannot be probed). */
+    /**
+     * The application of one order, for its customer or for the staff; null (the controller answers 204) when the order has none or is somebody else's, so
+     * every order page can ask without an error and an order number cannot be probed.
+     */
     @Transactional(readOnly = true)
     public InstallmentApplicationResponse forOrder(Long orderId, Authentication authentication) {
-        InstallmentApplication application = applications.findByOrderId(orderId).orElseThrow(InstallmentService::notFound);
+        InstallmentApplication application = applications.findByOrderId(orderId).orElse(null);
+        if (application == null) {
+            return null;
+        }
         boolean staff = isBackOffice(authentication);
         if (!staff) {
             User current = currentUser(authentication);
             if (current == null || !current.getId().equals(application.getUser().getId())) {
-                throw notFound();
+                return null;
             }
         }
         return toResponse(application, staff);

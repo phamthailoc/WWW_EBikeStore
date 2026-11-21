@@ -3,6 +3,7 @@ package com.ebike.selenium;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
@@ -395,7 +396,7 @@ class InstallmentSeleniumTest extends StorefrontSeleniumTest {
         try {
             call(other, "POST", "/api/v1/auth/register", Map.of("username", name, "email", name + "@example.com", "password", PASSWORD, "firstName", "Other", "lastName", "Customer"));
             call(other, "POST", "/api/v1/auth/login", Map.of("usernameOrEmail", name, "password", PASSWORD));
-            assertRefused(404, other, "GET", "/api/v1/installments/orders/" + orderId, null);
+            assertNull(call(other, "GET", "/api/v1/installments/orders/" + orderId, null), "another customer gets no application, and no error either");
             assertRefused(403, other, "GET", "/api/v1/manager/installments", null);
             assertRefused(403, other, "PATCH", "/api/v1/manager/installments/" + applicationOf(api, orderId).path("id").asLong(), Map.of("decision", "APPROVE"));
             assertRefused(403, api, "GET", "/api/v1/manager/installments/backlog", null);
