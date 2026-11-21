@@ -244,8 +244,9 @@ class TestRideServiceTest {
 
     @Test
     void theBacklogCountsWaitingRequestsAndConfirmedRidesPastTheirTime() {
-        when(bookings.countByStatus("REQUESTED")).thenReturn(4L);
-        when(bookings.countByStatusAndSlotStartLessThanEqual("CONFIRMED", NOW)).thenReturn(2L);
+        when(bookings.countRequestedAvailable()).thenReturn(4L);
+        // a ride is overdue once its whole hour is over, not when it has just begun
+        when(bookings.countByStatusAndSlotStartLessThanEqual("CONFIRMED", NOW.minusHours(1))).thenReturn(2L);
         var backlog = service.backlog();
         assertEquals(4L, backlog.pending());
         assertEquals(2L, backlog.overdue());
@@ -254,7 +255,7 @@ class TestRideServiceTest {
 
     @Test
     void theBacklogCountsOpenBookingsOfAShowroomOrBikeThatIsSwitchedOff() {
-        when(bookings.countOpenUnavailable(anyCollection())).thenReturn(5L);
+        when(bookings.countOpenUnavailable(anyCollection(), eq(NOW.minusHours(1)))).thenReturn(5L);
         assertEquals(5L, service.backlog().unavailable());
     }
 

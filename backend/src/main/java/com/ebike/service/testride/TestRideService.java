@@ -287,17 +287,20 @@ public class TestRideService {
     }
 
     /**
-     * How many requests wait for a confirmation, how many confirmed rides are past their time and still not closed, and how many confirmed rides the
-     * customer withdrew for a slot within the next {@link #CANCELLED_NOTICE_HOURS} hours, and how many open ones belong to a showroom or bike that was switched off (the list shows at most {@link #SCHEDULE_LIMIT}).
+     * What the staff must still handle, in four counts that never count one booking twice: requests waiting for a confirmation (only those the staff
+     * can confirm, that is of an available showroom and bike), confirmed rides whose whole hour is over and still not closed, confirmed rides the
+     * customer withdrew for a slot within the next {@link #CANCELLED_NOTICE_HOURS} hours, and open bookings of a showroom or bike that was switched off
+     * and whose hour is not over (they must be cancelled with a reason). The lists show at most {@link #SCHEDULE_LIMIT} rows, the counts cover all.
      */
     @Transactional(readOnly = true)
     public TestRideBacklogResponse backlog() {
         LocalDateTime now = LocalDateTime.now(clock);
+        LocalDateTime hourOver = now.minus(TestRideRules.SLOT);
         return new TestRideBacklogResponse(
-            bookings.countByStatus(TestRideBooking.REQUESTED),
-            bookings.countByStatusAndSlotStartLessThanEqual(TestRideBooking.CONFIRMED, now),
+            bookings.countRequestedAvailable(),
+            bookings.countByStatusAndSlotStartLessThanEqual(TestRideBooking.CONFIRMED, hourOver),
             bookings.countCancelledByCustomerBetween(now, now.plusHours(CANCELLED_NOTICE_HOURS)),
-            bookings.countOpenUnavailable(TestRideRules.OPEN));
+            bookings.countOpenUnavailable(TestRideRules.OPEN, hourOver));
     }
 
     /** The staff move a booking to its next step, or change only the note the customer reads. */

@@ -59,9 +59,17 @@ public interface TestRideBookingRepository extends JpaRepository<TestRideBooking
     @Query("select count(b) from TestRideBooking b where b.status = 'CANCELLED' and b.cancelledByCustomerAt is not null and b.slotStart > :now and b.slotStart <= :until")
     long countCancelledByCustomerBetween(@Param("now") LocalDateTime now, @Param("until") LocalDateTime until);
 
-    /** Open bookings whose showroom was switched off or whose bike is no longer sold: nobody can be served, the staff must cancel them. */
-    @Query("select count(b) from TestRideBooking b where b.status in :statuses and (b.showroom.active = false or b.product.active = false)")
-    long countOpenUnavailable(@Param("statuses") Collection<String> statuses);
+    /**
+     * Open bookings whose showroom was switched off or whose bike is no longer sold and whose hour is not over yet ({@code slotStart} after
+     * {@code cutoff}, the caller passes now minus one slot): nobody can be served, the staff must cancel them. Once the hour is over the booking can only
+     * be closed as done or no-show (or, for a request, by the timer), so it no longer belongs here.
+     */
+    @Query("select count(b) from TestRideBooking b where b.status in :statuses and b.slotStart > :cutoff and (b.showroom.active = false or b.product.active = false)")
+    long countOpenUnavailable(@Param("statuses") Collection<String> statuses, @Param("cutoff") LocalDateTime cutoff);
+
+    /** Requests nobody confirmed whose showroom and bike are both available: the ones the staff can confirm (the others are counted by {@link #countOpenUnavailable}). */
+    @Query("select count(b) from TestRideBooking b where b.status = 'REQUESTED' and b.showroom.active = true and b.product.active = true")
+    long countRequestedAvailable();
 
     long countByStatus(String status);
 
