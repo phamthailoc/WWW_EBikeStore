@@ -45,6 +45,8 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 class WarrantySeleniumTest extends StorefrontSeleniumTest {
 
     private static final By DIALOG_TEXT = By.cssSelector("dialog.warranty-dialog textarea[name=text]");
+    /** The page size of the staff queue (WARRANTY_PAGE_SIZE in workspace.js). */
+    private static final int QUEUE_PAGE_SIZE = 25;
 
     private WebElement rowWith(String text) {
         return wait.until(d -> d.findElements(By.cssSelector("#data-table tbody tr")).stream()
@@ -72,14 +74,16 @@ class WarrantySeleniumTest extends StorefrontSeleniumTest {
     void warrantyBookLookupClaimAndStaffUpdate() throws Exception {
         HttpClient manager = managerApi(); // skips without a manager account: needed to deliver the order and handle the claim
         Map<Long, Integer> stockBefore = stockOf(productSlug);
+        String[] frameHolder = new String[1];
         try {
-            walkThroughTheWarrantyBook(manager);
+            walkThroughTheWarrantyBook(manager, frameHolder);
         } finally {
+            closeOpenClaimsOf(manager, frameHolder[0]);
             restoreStock(manager, productSlug, stockBefore);
         }
     }
 
-    private void walkThroughTheWarrantyBook(HttpClient manager) throws Exception {
+    private void walkThroughTheWarrantyBook(HttpClient manager, String[] frameHolder) throws Exception {
         // 1. deliver a home-delivery order with frame numbers (the plan: warranty starts at the delivery)
         String orderNumber = placePayLaterOrder();
         long orderId = findOrder(orderNumber).path("id").asLong();
@@ -90,6 +94,7 @@ class WarrantySeleniumTest extends StorefrontSeleniumTest {
         JsonNode order = call(manager, "GET", "/api/v1/orders/" + orderId, null);
         String frame = order.path("items").get(0).path("units").get(0).path("frameNumber").asText();
         assertFalse(frame.isBlank(), "the delivered order has a frame number");
+        frameHolder[0] = frame; // so a run that stops half way still closes its request and does not clog the staff queue
         JsonNode product = call(api, "GET", "/api/v1/products/" + productSlug, null);
         JsonNode monthsNode = product.path("specification").path("warrantyMonths");
         // The end date comes from the server (delivery time plus the pinned months): the pages must show exactly that. The date worked out here
@@ -196,8 +201,7 @@ class WarrantySeleniumTest extends StorefrontSeleniumTest {
         // 5. the manager receives it with a note
         int before = notificationsOfType("WARRANTY_CLAIM");
         logIn(System.getProperty("selenium.managerUser"), System.getProperty("selenium.managerPassword"));
-        driver.get(baseUrl + "/manager/warranty");
-        WebElement queued = rowWith(frame);
+        WebElement queued = queueRowOf(manager, frame);
         assertTrue(queued.getText().contains("Selenium: pin sạc không đầy"), queued.getText());
         click(queued.findElement(By.cssSelector("[data-action='warranty-status'][data-status='RECEIVED']")));
         submitDialog("Selenium: mời anh mang xe tới cửa hàng");
@@ -257,13 +261,18 @@ class WarrantySeleniumTest extends StorefrontSeleniumTest {
 
     @Test
     void theLookupPageAnswersInEnglishWhenTheLanguageIsEnglish() {
-        driver.get(baseUrl + "/lang/en?back=/warranty");
-        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("warrantyLookupForm")));
-        fill("frame", "ZZZ-NO-SUCH-0003");
-        click(By.cssSelector("#warrantyLookupForm button[type=submit]"));
-        WebElement error = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("#warrantyLookupResult .notice.error")));
-        assertTrue(error.getText().contains("No vehicle with this frame number was found."), error.getText());
-        assertTrue(driver.findElement(By.id("warrantyLookupForm")).getText().contains("Look up"), "the form is in English too");
+        // choosing English is saved on the signed-in account, so Vietnamese is chosen again at the end: other tests expect Vietnamese
+        try {
+            driver.get(baseUrl + "/lang/en?back=/warranty");
+            wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("warrantyLookupForm")));
+            fill("frame", "ZZZ-NO-SUCH-0003");
+            click(By.cssSelector("#warrantyLookupForm button[type=submit]"));
+            WebElement error = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("#warrantyLookupResult .notice.error")));
+            assertTrue(error.getText().contains("No vehicle with this frame number was found."), error.getText());
+            assertTrue(driver.findElement(By.id("warrantyLookupForm")).getText().contains("Look up"), "the form is in English too");
+        } finally {
+            driver.get(baseUrl + "/lang/vi?back=/warranty");
+        }
     }
 
     @Test
@@ -285,7 +294,8 @@ class WarrantySeleniumTest extends StorefrontSeleniumTest {
             String frame = unit.path("frameNumber").asText();
             call(client, "POST", "/api/v1/warranty/claims", Map.of("unitId", unit.path("id").asLong(), "description", "Selenium: nội dung riêng của khách"));
             long claimId = claimIdOf(manager, frame);
-            call(manager, "PATCH", "/api/v1/manager/warranty-claims/" + claimId, Map.of("status", "RECEIVED", "staffNote", "Selenium: ghi chú của cửa hàng"));
+            // closed before the account goes, so no request of an erased account stays in the staff queue for good (the note stays on it)
+            call(manager, "PATCH", "/api/v1/manager/warranty-claims/" + claimId, Map.of("status", "DONE", "staffNote", "Selenium: ghi chú của cửa hàng"));
 
             call(client, "DELETE", "/api/v1/auth/account", Map.of("password", PASSWORD, "confirmEmail", email));
 
@@ -373,15 +383,6 @@ class WarrantySeleniumTest extends StorefrontSeleniumTest {
         return count;
     }
 
-    private static boolean mentions(JsonNode list, String text) {
-        for (JsonNode row : listOf(list)) {
-            if (row.toString().contains(text)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     private static long unitIdOf(String frame) throws Exception {
         for (JsonNode unit : listOf(call(api, "GET", "/api/v1/warranty/units", null))) {
             if (frame.equals(unit.path("frameNumber").asText())) {
@@ -391,7 +392,7 @@ class WarrantySeleniumTest extends StorefrontSeleniumTest {
         throw new AssertionError("frame " + frame + " not in the warranty book");
     }
 
-    /** Every request of the staff queue with the given status ("ALL" for every status), newest first: pages are followed until a short one. */
+    /** Every request of the staff queue with the given status ("ALL" for every status; none for the open ones), in the order the server gives: pages are followed until a short one. */
     private static List<JsonNode> claimsOf(HttpClient manager, String status) throws Exception {
         List<JsonNode> found = new ArrayList<>();
         for (int page = 0; page < 200; page++) {
@@ -402,6 +403,45 @@ class WarrantySeleniumTest extends StorefrontSeleniumTest {
             }
         }
         return found;
+    }
+
+    /**
+     * The row of a request in the staff queue. The queue shows 25 open requests a page, oldest first, so the page is worked out from the
+     * request's place among the open ones and reached with the pager buttons: the test does not break when older open requests pile up.
+     */
+    private WebElement queueRowOf(HttpClient manager, String frame) throws Exception {
+        List<JsonNode> open = claimsOf(manager, ""); // the default queue: open requests, oldest first
+        int index = -1;
+        for (int i = 0; i < open.size(); i++) {
+            if (frame.equals(open.get(i).path("frameNumber").asText())) {
+                index = i;
+            }
+        }
+        assertTrue(index >= 0, "the request for " + frame + " is in the open queue");
+        driver.get(baseUrl + "/manager/warranty");
+        for (int page = 1; page <= index / QUEUE_PAGE_SIZE; page++) {
+            String number = String.valueOf(page + 1);
+            click(By.cssSelector("#warrantyPager [data-page-step='1']"));
+            wait.until(d -> d.findElements(By.cssSelector("#warrantyPager span")).stream().anyMatch(s -> s.getText().endsWith(" " + number)));
+        }
+        return rowWith(frame);
+    }
+
+    /** Closes whatever request of the bike is still open, so a run that failed half way does not leave one in the staff queue for good. */
+    private static void closeOpenClaimsOf(HttpClient manager, String frame) {
+        if (frame == null) {
+            return;
+        }
+        try {
+            for (JsonNode claim : claimsOf(manager, "")) {
+                if (frame.equals(claim.path("frameNumber").asText())) {
+                    call(manager, "PATCH", "/api/v1/manager/warranty-claims/" + claim.path("id").asLong(),
+                        Map.of("status", "REJECTED", "staffNote", "Selenium: dọn dẹp sau khi chạy kiểm thử"));
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Could not close the warranty requests of " + frame + ": " + e.getMessage());
+        }
     }
 
     private static long claimIdOf(HttpClient manager, String frame) throws Exception {
