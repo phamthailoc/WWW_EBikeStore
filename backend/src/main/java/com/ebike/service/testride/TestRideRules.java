@@ -27,7 +27,13 @@ public final class TestRideRules {
     /** A ride may be marked done from this long before its start (a customer who arrives a little early). */
     public static final Duration EARLY_DONE = Duration.ofMinutes(30);
 
-    private static final Pattern HOURS = Pattern.compile("(\\d{1,2})\\s*(?:[:hH]\\s*(\\d{2})?)?\\s*[-\\u2013\\u2014]\\s*(\\d{1,2})\\s*(?:[:hH]\\s*(\\d{2})?)?");
+    /**
+     * A range whose two ends are clock times: {@code 08:00} (minutes required) or {@code 8h} / {@code 8h30}. A bare number is not a time, so the days of
+     * "Thứ 2-7: 08:00 - 21:00" are not read as 02:00 - 07:00. Groups: 1 hour, 2 or 3 minutes; 4 hour, 5 or 6 minutes.
+     */
+    private static final Pattern HOURS = Pattern.compile("(\\d{1,2})(?::(\\d{2})|[hH](\\d{2})?)\\s*[-\\u2013\\u2014]\\s*(\\d{1,2})(?::(\\d{2})|[hH](\\d{2})?)");
+    /** The whole text is just "8 - 21": written with no minutes and no "h", it can only be hours. */
+    private static final Pattern PLAIN_HOURS = Pattern.compile("^\\s*(\\d{1,2})\\s*[-\\u2013\\u2014]\\s*(\\d{1,2})\\s*$");
     /** Free text that says the showroom is shut ({@code Đóng cửa}, {@code Tạm nghỉ}, {@code Closed}), used only when no hours are written. */
     private static final Pattern SHUT = Pattern.compile("đóng\\s*cửa|dong\\s*cua|tạm\\s*(?:nghỉ|ngưng|ngừng)|tam\\s*(?:nghi|ngung)|ngừng\\s*hoạt\\s*động|closed", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
     private static final Pattern PHONE = Pattern.compile("^0\\d{9,10}$");
@@ -42,7 +48,7 @@ public final class TestRideRules {
     }
 
     /**
-     * Reads "08:00 - 21:00" (also "8h - 21h", "08:30-17:00") from the free text of {@code showrooms.opening_hours}. Text that says the showroom is
+     * Reads "08:00 - 21:00" (also "8h - 21h", "08:30-17:00", and "Thứ 2-7: 08:00 - 21:00" as 08:00 - 21:00) from the free text of {@code showrooms.opening_hours}. Text that says the showroom is
      * shut ("Đóng cửa", "Tạm nghỉ", "Closed") and gives no hours takes no bookings. Anything else that cannot be read as a same-day range falls
      * back to 08:00 - 21:00, so a showroom with a note such as "by appointment" still takes bookings.
      *
@@ -54,11 +60,19 @@ public final class TestRideRules {
             return new Hours(DEFAULT_OPEN, DEFAULT_CLOSE);
         }
         Matcher matcher = HOURS.matcher(text);
-        if (!matcher.find()) {
-            return SHUT.matcher(text).find() ? Hours.CLOSED : new Hours(DEFAULT_OPEN, DEFAULT_CLOSE);
+        LocalTime open;
+        LocalTime close;
+        if (matcher.find()) {
+            open = time(matcher.group(1), matcher.group(2) != null ? matcher.group(2) : matcher.group(3));
+            close = time(matcher.group(4), matcher.group(5) != null ? matcher.group(5) : matcher.group(6));
+        } else {
+            Matcher plain = PLAIN_HOURS.matcher(text);
+            if (!plain.matches()) {
+                return SHUT.matcher(text).find() ? Hours.CLOSED : new Hours(DEFAULT_OPEN, DEFAULT_CLOSE);
+            }
+            open = time(plain.group(1), null);
+            close = time(plain.group(2), null);
         }
-        LocalTime open = time(matcher.group(1), matcher.group(2));
-        LocalTime close = time(matcher.group(3), matcher.group(4));
         if (open == null || close == null || !close.isAfter(open)) {
             return new Hours(DEFAULT_OPEN, DEFAULT_CLOSE);
         }

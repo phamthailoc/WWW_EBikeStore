@@ -31,6 +31,16 @@ class TestRideRulesTest {
     }
 
     @Test
+    void theDaysOfTheWeekAreNotTakenForTheHours() {
+        TestRideRules.Hours expected = new TestRideRules.Hours(LocalTime.of(8, 0), LocalTime.of(21, 0));
+        assertEquals(expected, TestRideRules.parseOpeningHours("Thứ 2-7: 08:00 - 21:00"));
+        assertEquals(expected, TestRideRules.parseOpeningHours("T2-T7: 8h - 21h"));
+        assertEquals(new TestRideRules.Hours(LocalTime.of(9, 0), LocalTime.of(17, 0)), TestRideRules.parseOpeningHours("9-17"));
+        // days only, no clock time: nothing to read, so the default hours
+        assertEquals(expected, TestRideRules.parseOpeningHours("Thứ 2-7"));
+    }
+
+    @Test
     void textThatIsNotARangeFallsBackToTheDefaultHours() {
         TestRideRules.Hours fallback = new TestRideRules.Hours(TestRideRules.DEFAULT_OPEN, TestRideRules.DEFAULT_CLOSE);
         assertEquals(fallback, TestRideRules.parseOpeningHours(null));
