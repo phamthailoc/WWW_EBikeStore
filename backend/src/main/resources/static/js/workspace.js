@@ -122,8 +122,12 @@
   };
   // A long fault description or note would make the queue row very tall: show the first lines and keep the whole text in the tooltip.
   const CLAMPED_KEYS = {'/manager/warranty':['description','staffNote'],'/manager/test-rides':['customerNote','staffNote'],'/customer/test-rides':['staffNote']};
+  // the payment row of an instalment order is its down payment: "paid" there must not read as the whole order being paid
+  const downPaymentPaid = (method,status) => method === 'INSTALLMENT' && status === 'PAID' ? t('Đã trả trước') : null;
   const cellHtml = (row,k) => {
-    const text = isRidePage && k === 'status' && row.status === 'CANCELLED' && rideCancelText(row) ? rideCancelText(row) : human(row[k],k);
+    const text = k === 'paymentStatus' && downPaymentPaid(row.paymentMethod,row.paymentStatus)
+      ? downPaymentPaid(row.paymentMethod,row.paymentStatus)
+      : isRidePage && k === 'status' && row.status === 'CANCELLED' && rideCancelText(row) ? rideCancelText(row) : human(row[k],k);
     if ((CLAMPED_KEYS[page] || []).includes(k) && typeof row[k] === 'string' && row[k].length > 120) {
       return `<span class="clamped-text" title="${escape(text)}">${escape(text)}</span>`;
     }
@@ -219,7 +223,7 @@
     if(Number(order.shippingFee)>0)lines.push(line(t('Phí giao hàng'),money(order.shippingFee)));
     if(Number(order.discountAmount)>0)lines.push(line(t('Giảm giá'),'−'+money(order.discountAmount)));
     lines.push(line('<strong>' + t('Tổng cộng') + '</strong>',money(order.totalAmount)));
-    const payment=`${valueText.paymentMethod[order.paymentMethod]||order.paymentMethod||'—'} · ${order.paymentStatus||t('Chưa có giao dịch')}`;
+    const payment=`${valueText.paymentMethod[order.paymentMethod]||order.paymentMethod||'—'} · ${downPaymentPaid(order.paymentMethod,order.paymentStatus)||order.paymentStatus||t('Chưa có giao dịch')}`;
     detailPanel('orderPricing',`<h2>${t('Giá và thanh toán')}</h2><div class="table-scroll"><table><tbody>${lines.join('')}</tbody></table></div><p><strong>${t('Thanh toán:')}</strong> ${escape(payment)}</p>${order.notes?`<p><strong>${t('Ghi chú:')}</strong> ${escape(order.notes)}</p>`:''}`);
   };
   // Order timeline (Task 3). Only three moments are stored: the order date, when it was handed to delivery
