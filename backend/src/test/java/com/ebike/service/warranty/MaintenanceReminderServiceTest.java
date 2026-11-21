@@ -46,7 +46,7 @@ class MaintenanceReminderServiceTest {
     void setUp() {
         units = mock(OrderItemUnitRepository.class);
         reminders = mock(MaintenanceReminderRepository.class);
-        service = new MaintenanceReminderService(units, reminders, mock(PlatformTransactionManager.class), "P1M,P6M,P12M", 2);
+        service = new MaintenanceReminderService(units, reminders, mock(PlatformTransactionManager.class), "P1M,P6M,P12M", 2, 1000);
         // by default the first page holds the given vehicles and the next page is empty
         when(units.findDeliveredUnitIdsAfter(anyLong(), any(LocalDateTime.class), any(Pageable.class))).thenReturn(List.of());
         ApplicationEventPublisher publisher = events::add;
@@ -124,6 +124,21 @@ class MaintenanceReminderServiceTest {
         assertEquals(false, rows.get(0).isNotified());
         assertEquals("P6M", rows.get(1).getMilestone());
         assertEquals(true, rows.get(1).isNotified());
+    }
+
+    @Test
+    void aRunAnnouncesNoMoreThanTheLimitAndLeavesTheRestUntouched() {
+        MaintenanceReminderService limited = new MaintenanceReminderService(units, reminders, mock(PlatformTransactionManager.class), "P1M,P6M,P12M", 5, 2);
+        OrderItemUnit first = deliveredAt(NOW.minusMonths(2), 1L);
+        OrderItemUnit second = deliveredAt(NOW.minusMonths(2), 2L);
+        OrderItemUnit third = deliveredAt(NOW.minusMonths(2), 3L);
+        serve(first, second, third);
+        when(reminders.findByUnitIdIn(any())).thenReturn(List.of());
+
+        assertEquals(2, limited.sendDueReminders(NOW));
+
+        assertEquals(2, events.size());
+        verify(reminders, org.mockito.Mockito.times(2)).saveAll(any());
     }
 
     @Test

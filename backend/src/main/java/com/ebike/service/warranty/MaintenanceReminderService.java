@@ -33,13 +33,16 @@ import org.springframework.transaction.support.TransactionTemplate;
  *
  * <p>The run reads the vehicles in batches (by id, so memory stays flat however many bikes were sold) and handles each vehicle
  * in its own transaction: a vehicle that fails is logged and left for the next run, the others are not affected, and its
- * notification and email are sent only after its own rows were saved.
+ * notification and email are sent only after its own rows were saved. A run announces at most {@code app.maintenance.max-per-run}
+ * vehicles (the mail queue holds 500 and drops the rest): the others wait for the next daily run.
  */
 @Service
 public class MaintenanceReminderService {
 
     private static final Logger log = LoggerFactory.getLogger(MaintenanceReminderService.class);
     static final int DEFAULT_BATCH_SIZE = 100;
+    /** Below the mail queue (500), which also carries the back-in-stock emails: an email that does not fit the queue is dropped and never resent. */
+    static final int DEFAULT_MAX_PER_RUN = 200;
     /** How long after the last milestone a vehicle is still read, so that milestone is not missed (see {@link #sendDueReminders}). */
     static final int CATCH_UP_DAYS = 30;
 
@@ -48,6 +51,7 @@ public class MaintenanceReminderService {
     private final List<Period> intervals;
     private final TransactionTemplate perVehicle;
     private final int batchSize;
+    private final int maxPerRun;
 
     @Autowired
     public MaintenanceReminderService(
@@ -55,7 +59,8 @@ public class MaintenanceReminderService {
         MaintenanceReminderRepository reminders,
         PlatformTransactionManager transactionManager,
         @Value("${app.maintenance.intervals:" + WarrantyRules.DEFAULT_INTERVALS + "}") String intervals,
-        @Value("${app.maintenance.batch-size:" + DEFAULT_BATCH_SIZE + "}") int batchSize
+        @Value("${app.maintenance.batch-size:" + DEFAULT_BATCH_SIZE + "}") int batchSize,
+        @Value("${app.maintenance.max-per-run:" + DEFAULT_MAX_PER_RUN + "}") int maxPerRun
     ) {
         this.units = units;
         this.reminders = reminders;
@@ -63,9 +68,14 @@ public class MaintenanceReminderService {
         this.perVehicle = new TransactionTemplate(transactionManager);
         this.perVehicle.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
         this.batchSize = Math.max(1, batchSize);
+        this.maxPerRun = Math.max(1, maxPerRun);
     }
 
-    /** Returns how many reminders were announced. Not transactional itself: each vehicle commits on its own. */
+    /**
+     * Returns how many reminders were announced, at most {@code app.maintenance.max-per-run}. When there are more (the first run after the
+     * feature was switched on, or the job was off for days) the rest is left untouched and taken by the next daily runs, so the mail
+     * queue is never flooded and no email is dropped. Not transactional itself: each vehicle commits on its own.
+     */
     public int sendDueReminders(LocalDateTime now) {
         int announced = 0;
         long afterId = 0;
@@ -79,14 +89,18 @@ public class MaintenanceReminderService {
                 return announced;
             }
             afterId = ids.get(ids.size() - 1);
-            announced += handleBatch(ids, now);
+            announced += handleBatch(ids, now, maxPerRun - announced);
+            if (announced >= maxPerRun) {
+                log.info("Maintenance reminders: {} announced, the limit of a run; the rest follows on the next run", announced);
+                return announced;
+            }
             if (ids.size() < batchSize) {
                 return announced;
             }
         }
     }
 
-    private int handleBatch(List<Long> ids, LocalDateTime now) {
+    private int handleBatch(List<Long> ids, LocalDateTime now, int room) {
         List<OrderItemUnit> batch;
         Map<Long, Set<String>> handled;
         try {
@@ -101,6 +115,9 @@ public class MaintenanceReminderService {
         }
         int announced = 0;
         for (OrderItemUnit unit : batch) {
+            if (announced >= room) {
+                break;
+            }
             try {
                 Integer count = perVehicle.execute(status -> remind(unit, handled.getOrDefault(unit.getId(), Set.of()), now));
                 announced += count == null ? 0 : count;
