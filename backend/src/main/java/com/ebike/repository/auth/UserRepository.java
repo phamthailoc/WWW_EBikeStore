@@ -30,6 +30,11 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("select u from User u where u.username = :username")
     Optional<User> findLockedByUsername(@Param("username") String username);
 
+    /** V23: the same row lock by id, taken by an account erasure before it touches the account's bookings (the order booking uses: the account first). */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select u from User u where u.id = :id")
+    Optional<User> findLockedById(@Param("id") Long id);
+
     @EntityGraph(attributePaths = {
         "roles",
         "roles.permissions",

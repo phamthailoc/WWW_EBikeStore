@@ -8,6 +8,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 import com.ebike.model.entity.auth.User;
+import com.ebike.repository.auth.UserRepository;
 import com.ebike.repository.notification.NotificationRepository;
 import com.ebike.repository.product.StockAlertRepository;
 import com.ebike.repository.testride.TestRideBookingRepository;
@@ -26,16 +27,19 @@ class AccountErasureTestRideTest {
     @Test
     void erasingAnAccountCancelsItsOpenTestRidesAndClearsItsPersonalData() {
         TestRideBookingRepository testRides = mock(TestRideBookingRepository.class);
+        UserRepository users = mock(UserRepository.class);
         AccountErasure erasure = new AccountErasure(
             mock(UserAddressRepository.class), mock(UserFavoriteRepository.class), mock(UserPreferenceRepository.class),
             mock(NotificationRepository.class), mock(StockAlertRepository.class), mock(WarrantyClaimRepository.class), testRides,
-            mock(ProductReviewService.class), mock(PasswordEncoder.class));
+            users, mock(ProductReviewService.class), mock(PasswordEncoder.class));
         User user = new User();
         user.setId(42L);
 
         erasure.erase(user);
 
-        var order = inOrder(testRides);
+        var order = inOrder(users, testRides);
+        // the account row is locked before any booking is updated, the order booking() uses
+        order.verify(users).findLockedById(42L);
         order.verify(testRides).clearPersonalDataOf(eq(42L), any(LocalDateTime.class));
         order.verify(testRides).cancelOpenOf(eq(42L), any(LocalDateTime.class));
         assertEquals(AccountErasure.DELETED, user.getAccountStatus());

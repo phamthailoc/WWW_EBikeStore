@@ -63,7 +63,7 @@ class AdminAccountGuardTest {
 
     @BeforeEach void setup() {
         service = new AdminServiceImpl(pricingRules, promotions, audits, users, roles, encoder, orders,
-            new AccountErasure(addresses, favorites, preferences, notifications, stockAlerts, mock(WarrantyClaimRepository.class), mock(TestRideBookingRepository.class), reviews, encoder),
+            new AccountErasure(addresses, favorites, preferences, notifications, stockAlerts, mock(WarrantyClaimRepository.class), mock(TestRideBookingRepository.class), users, reviews, encoder),
             auditLog);
         me = account(1L, "admin.user", "ADMIN");
         otherAdmin = account(2L, "second.admin", "ADMIN");

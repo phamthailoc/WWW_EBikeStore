@@ -1,6 +1,7 @@
 package com.ebike.service.admin;
 
 import com.ebike.model.entity.auth.User;
+import com.ebike.repository.auth.UserRepository;
 import com.ebike.repository.notification.NotificationRepository;
 import com.ebike.repository.product.StockAlertRepository;
 import com.ebike.repository.testride.TestRideBookingRepository;
@@ -38,6 +39,7 @@ public class AccountErasure {
     private final StockAlertRepository stockAlerts;
     private final WarrantyClaimRepository warrantyClaims;
     private final TestRideBookingRepository testRides;
+    private final UserRepository users;
     private final ProductReviewService reviews;
     private final PasswordEncoder passwordEncoder;
 
@@ -49,6 +51,7 @@ public class AccountErasure {
         StockAlertRepository stockAlerts,
         WarrantyClaimRepository warrantyClaims,
         TestRideBookingRepository testRides,
+        UserRepository users,
         ProductReviewService reviews,
         PasswordEncoder passwordEncoder
     ) {
@@ -59,6 +62,7 @@ public class AccountErasure {
         this.stockAlerts = stockAlerts;
         this.warrantyClaims = warrantyClaims;
         this.testRides = testRides;
+        this.users = users;
         this.reviews = reviews;
         this.passwordEncoder = passwordEncoder;
     }
@@ -66,6 +70,9 @@ public class AccountErasure {
     /** Runs inside the caller's transaction; the caller saves the user. */
     public void erase(User user) {
         Long id = user.getId();
+        // V23: lock the account row first. A booking in progress holds the showroom row and then this row, so taking this one before the bookings are
+        // updated keeps both in the same order (no deadlock); the booking then finds the account gone and is refused.
+        users.findLockedById(id);
         addresses.deleteAll(addresses.findByUserId(id));
         favorites.deleteAll(favorites.findByUserId(id));
         preferences.findByUserId(id).ifPresent(preferences::delete);
