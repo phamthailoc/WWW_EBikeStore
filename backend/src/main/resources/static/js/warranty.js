@@ -174,7 +174,7 @@ window.KineticWarranty = (() => {
         const line = (name, value) => `<p><span>${name}</span><strong>${value}</strong></p>`;
         result.innerHTML = `<article class="commerce-card warranty-card" data-coverage="${esc(data.coverage)}"><h3 data-field="productName">${esc(data.productName)}${data.colorName ? ' · ' + esc(data.colorName) : ''}</h3>
           ${line(t('Số khung'), `<span data-field="frameNumber">${esc(data.frameNumber)}</span>`)}
-          ${line(t('Thời hạn bảo hành'), data.warrantyMonths ? t('{n} tháng', {n: data.warrantyMonths}) : '—')}
+          ${line(t('Thời hạn bảo hành'), data.warrantyMonths ? (data.warrantyMonths === 1 ? t('1 tháng') : t('{n} tháng', {n: data.warrantyMonths})) : '—')}
           ${line(t('Bắt đầu từ'), `<span data-field="warrantyStartsAt">${esc(day(data.warrantyStartsAt))}</span>`)}
           ${line(t('Bảo hành đến'), `<span data-field="warrantyEndsAt" data-iso="${esc(data.warrantyEndsAt || '')}">${esc(day(data.warrantyEndsAt))}</span>`)}
           ${line(t('Tình trạng'), `<span data-field="coverage">${esc(coverageText[data.coverage] || data.coverage)}</span>`)}</article>`;
