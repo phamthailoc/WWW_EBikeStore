@@ -41,7 +41,7 @@ class StaleCookieSeleniumTest extends StorefrontSeleniumTest {
         plantStaleCookie();
         driver.get(baseUrl + "/login");
         wait.until(ExpectedConditions.presenceOfElementLocated(By.id("loginForm")));
-        assertFalse(driver.getPageSource().contains("Invalid JWT token"));
+        assertFalse(driver.getPageSource().contains("Invalid JWT token") || driver.getPageSource().contains("Phiên đăng nhập không hợp lệ"));
         assertNull(driver.manage().getCookieNamed(COOKIE), "the server told the browser to drop the cookie");
 
         // and the customer can sign in again right away
@@ -56,7 +56,7 @@ class StaleCookieSeleniumTest extends StorefrontSeleniumTest {
         for (String path : java.util.List.of("/", "/products", "/product/" + productSlug)) {
             driver.get(baseUrl + path);
             wait.until(d -> Boolean.TRUE.equals(js("return document.readyState==='complete'")));
-            assertFalse(driver.getPageSource().contains("Invalid JWT token"), path + " opened");
+            assertFalse(driver.getPageSource().contains("Invalid JWT token") || driver.getPageSource().contains("Phiên đăng nhập không hợp lệ"), path + " opened");
             assertTrue(driver.findElements(By.cssSelector("header")).size() > 0, path + " rendered the page");
         }
     }
