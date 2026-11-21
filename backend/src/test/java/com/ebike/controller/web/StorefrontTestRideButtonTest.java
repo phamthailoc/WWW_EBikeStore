@@ -69,7 +69,7 @@ class StorefrontTestRideButtonTest {
         assertEquals(21, detailAs(signedIn("CUSTOMER"), "E_BIKE").getAttribute("testRideDays"));
     }
 
-    @Test void aBikeWithNoSpecificationStillOffersTheButton() {
-        assertEquals(true, detailAs(signedIn("CUSTOMER"), null).getAttribute("canTestRide"));
+    @Test void aProductWithNoSpecificationIsNotOfferedForARide() {
+        assertEquals(false, detailAs(signedIn("CUSTOMER"), null).getAttribute("canTestRide"));
     }
 }

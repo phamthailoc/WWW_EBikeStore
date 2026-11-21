@@ -89,6 +89,7 @@ class TestRideRulesTest {
         assertTrue(TestRideRules.isRideable(VehicleType.E_MOTORBIKE));
         assertFalse(TestRideRules.isRideable(VehicleType.BATTERY));
         assertFalse(TestRideRules.isRideable(VehicleType.ACCESSORY));
+        assertFalse(TestRideRules.isRideable(null), "no vehicle type: not offered");
     }
 
     @Test

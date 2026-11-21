@@ -221,6 +221,8 @@ class TestRideServiceTest {
         assertEquals(HttpStatus.BAD_REQUEST, statusOf(() -> service.book("an", request("2026-11-22T09:00"))));
         bike.getSpecification().setVehicleType(VehicleType.ACCESSORY);
         assertEquals(HttpStatus.BAD_REQUEST, statusOf(() -> service.book("an", request("2026-11-22T09:00"))));
+        bike.setSpecification(null);
+        assertEquals(HttpStatus.BAD_REQUEST, statusOf(() -> service.book("an", request("2026-11-22T09:00"))));
     }
 
     @Test

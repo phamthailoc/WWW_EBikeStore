@@ -90,9 +90,9 @@ public final class TestRideRules {
         return !slot.toLocalDate().isAfter(now.toLocalDate().plusDays(daysAhead));
     }
 
-    /** A bike can be ridden; batteries and accessories cannot. */
+    /** A bike can be ridden; batteries and accessories cannot, and a product with no known vehicle type is not offered either. */
     public static boolean isRideable(VehicleType type) {
-        return type != VehicleType.BATTERY && type != VehicleType.ACCESSORY;
+        return type != null && type != VehicleType.BATTERY && type != VehicleType.ACCESSORY;
     }
 
     /** Vietnamese mobile or landline number: starts with 0 and has 10 or 11 digits. */

@@ -181,7 +181,7 @@ public class TestRideService {
         Product product = products.findById(request.productId())
             .filter(found -> Boolean.TRUE.equals(found.getActive()))
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, RequestLanguage.text("Không tìm thấy xe này.", "This bike was not found.")));
-        if (product.getSpecification() != null && !TestRideRules.isRideable(product.getSpecification().getVehicleType())) {
+        if (product.getSpecification() == null || !TestRideRules.isRideable(product.getSpecification().getVehicleType())) {
             throw bad("Sản phẩm này không phải xe để lái thử.", "This product is not a bike that can be test-ridden.");
         }
         LocalDateTime now = LocalDateTime.now(clock);

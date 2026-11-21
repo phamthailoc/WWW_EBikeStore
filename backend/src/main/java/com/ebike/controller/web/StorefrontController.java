@@ -95,9 +95,9 @@ public class StorefrontController {
         model.addAttribute("canNotifyStock", visitor || customer);
         // only a signed-in customer has a waiting list to ask for; guests and staff would just get 401/403
         model.addAttribute("stockAlertCustomer", customer);
-        // V23: "Book a test ride" is for visitors (sent to sign in) and customers, and only for a bike that can be ridden (not a battery or an accessory).
+        // V23: "Book a test ride" is for visitors (sent to sign in) and customers, and only for a bike that can be ridden (not a battery, an accessory or a product without a vehicle type).
         String vehicleType = product == null || product.specification() == null ? null : product.specification().vehicleType();
-        boolean rideable = !"BATTERY".equals(vehicleType) && !"ACCESSORY".equals(vehicleType);
+        boolean rideable = vehicleType != null && !"BATTERY".equals(vehicleType) && !"ACCESSORY".equals(vehicleType);
         model.addAttribute("canTestRide", (visitor || customer) && rideable);
         model.addAttribute("testRideDays", testRideDays);
         return "store/detail";
