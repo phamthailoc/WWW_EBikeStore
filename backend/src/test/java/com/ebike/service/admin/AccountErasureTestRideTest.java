@@ -37,7 +37,7 @@ class AccountErasureTestRideTest {
 
         var order = inOrder(testRides);
         order.verify(testRides).cancelOpenOf(eq(42L), any(LocalDateTime.class));
-        order.verify(testRides).clearPersonalDataOf(42L);
+        order.verify(testRides).clearPersonalDataOf(eq(42L), any(LocalDateTime.class));
         assertEquals(AccountErasure.DELETED, user.getAccountStatus());
     }
 }

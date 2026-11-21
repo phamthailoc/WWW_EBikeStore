@@ -19,7 +19,7 @@ import org.springframework.stereotype.Component;
  *
  * <p>The row stays with status {@code DELETED}: nobody can sign in, and orders, shipments and payments keep pointing at it
  * because sales records must be kept for accounting. Everything that identifies the person on the account is removed:
- * name, saved addresses, favourites, preferences, notifications, back-in-stock requests, the phone number and words of their test-ride bookings (the bookings stay, and the open ones are cancelled so the places are free again), the text of their warranty requests (the requests and the shop's repair notes stay, like orders) and the
+ * name, saved addresses, favourites, preferences, notifications, back-in-stock requests, the phone number, words and shop's note of their test-ride bookings (the bookings stay, and the open ones are cancelled so the places are free again), the text of their warranty requests (the requests and the shop's repair notes stay, like orders) and the
  * reviews they wrote (product ratings are recomputed). Email and username become
  * {@code deleted_<id>...} so the person can register again with the same ones. The shop's own note on a warranty request (staff_note) is
  * kept as part of the repair record, so staff must not write a customer's phone number or address in it. The name, phone and address printed on
@@ -74,7 +74,7 @@ public class AccountErasure {
         warrantyClaims.clearDescriptionsOf(id, ERASED_DESCRIPTION);
         // V23: free the places the account held, then drop the phone number and the words of every booking (the rows stay as the shop's record)
         testRides.cancelOpenOf(id, LocalDateTime.now());
-        testRides.clearPersonalDataOf(id);
+        testRides.clearPersonalDataOf(id, LocalDateTime.now());
         reviews.removeReviewsOf(id);
 
         user.setUsername("deleted_" + id);
