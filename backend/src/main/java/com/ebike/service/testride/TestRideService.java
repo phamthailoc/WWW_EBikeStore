@@ -343,7 +343,7 @@ public class TestRideService {
                 throw bad("Không thể chuyển lịch từ bước hiện tại sang bước này.", "The test ride cannot move from its current step to this one.");
             }
             if (!TestRideRules.timingAllows(next, booking.getSlotStart(), now)) {
-                throw bad(timingRefusalVi(next), timingRefusalEn(next));
+                throw bad(timingRefusalVi(next, previous), timingRefusalEn(next, previous));
             }
             if (TestRideBooking.CONFIRMED.equals(next) && !isAvailable(booking)) {
                 throw bad("Cửa hàng này đã ngừng nhận lịch hoặc xe này đã ngừng bán, không thể xác nhận. Hãy hủy lịch và ghi lý do.",
@@ -435,9 +435,12 @@ public class TestRideService {
         return vietnamese ? leadMinutes + " phút" : leadMinutes + " minutes";
     }
 
-    private static String timingRefusalVi(String next) {
+    /** {@code previous} is the booking's step now: an unconfirmed request has no "absent" outcome, so it is told only about "done" (or that the timer closes it). */
+    private static String timingRefusalVi(String next, String previous) {
         if (TestRideBooking.CANCELLED.equals(next)) {
-            return "Khung giờ này đã kết thúc, không thể hủy. Hãy đánh dấu đã lái thử hoặc khách không đến.";
+            return TestRideBooking.REQUESTED.equals(previous)
+                ? "Khung giờ này đã kết thúc, không thể hủy. Hãy đánh dấu đã lái thử nếu khách có đến, hoặc để hệ thống tự đóng yêu cầu."
+                : "Khung giờ này đã kết thúc, không thể hủy. Hãy đánh dấu đã lái thử hoặc khách không đến.";
         }
         if (TestRideBooking.CONFIRMED.equals(next)) {
             return "Giờ hẹn đã bắt đầu, không thể xác nhận nữa. Hãy đánh dấu kết quả hoặc hủy lịch.";
@@ -448,9 +451,11 @@ public class TestRideService {
         return "Chưa đến giờ hẹn, chưa thể đánh dấu khách không đến.";
     }
 
-    private static String timingRefusalEn(String next) {
+    private static String timingRefusalEn(String next, String previous) {
         if (TestRideBooking.CANCELLED.equals(next)) {
-            return "This slot is over, so it can no longer be cancelled. Mark it done or mark the customer absent.";
+            return TestRideBooking.REQUESTED.equals(previous)
+                ? "This slot is over, so it can no longer be cancelled. Mark it done if the customer came, or let the system close the request."
+                : "This slot is over, so it can no longer be cancelled. Mark it done or mark the customer absent.";
         }
         if (TestRideBooking.CONFIRMED.equals(next)) {
             return "The slot has already begun, so it can no longer be confirmed. Mark its outcome or cancel it.";

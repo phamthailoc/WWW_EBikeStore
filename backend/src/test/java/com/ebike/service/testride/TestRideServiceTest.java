@@ -482,6 +482,15 @@ class TestRideServiceTest {
     }
 
     @Test
+    void theRefusalToCancelAnOldRequestDoesNotAdviseAnAbsenceItCannotRecord() {
+        bookingIn("REQUESTED", NOW.minusHours(2));
+        org.springframework.web.server.ResponseStatusException refusal = org.junit.jupiter.api.Assertions.assertThrows(
+            org.springframework.web.server.ResponseStatusException.class, () -> service.update(77L, new TestRideUpdateRequest("CANCELLED", "Too late")));
+        assertTrue(refusal.getReason().contains("đã lái thử"));
+        assertFalse(refusal.getReason().contains("không đến"), "an unconfirmed request cannot be marked a no-show");
+    }
+
+    @Test
     void aRideAtASwitchedOffShowroomOrOfAWithdrawnBikeCannotBeConfirmed() {
         TestRideBooking booking = bookingIn("REQUESTED", NOW.plusDays(3));
         showroom.setActive(false);
