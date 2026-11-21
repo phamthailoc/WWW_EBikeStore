@@ -86,7 +86,7 @@ class InstallmentSeleniumTest extends StorefrontSeleniumTest {
         assertTrue(failure.contains("-> " + code), "expected " + code + " but got: " + failure);
     }
 
-    /** The first product with bikes in stock, its price for one bike and its first colour that is in stock (or null). */
+    /** The first product with bikes in stock, its price for one bike and the colour the checkout takes (the one with the most bikes left, see openCheckoutWithOneBike). */
     private record Bike(long productId, long variantId, java.math.BigDecimal price) {
     }
 
@@ -96,11 +96,13 @@ class InstallmentSeleniumTest extends StorefrontSeleniumTest {
             ? product.path("price").decimalValue() : product.path("discountPrice").decimalValue();
         long variant = 0;
         java.math.BigDecimal price = base;
+        int mostLeft = 0;
         for (JsonNode colour : product.path("variants")) {
-            if (colour.path("stockQuantity").asInt() > 0) {
+            // the first colour with the most bikes left: the one the checkout page picks, so the price checked below is the price of the order
+            if (colour.path("stockQuantity").asInt() > mostLeft) {
+                mostLeft = colour.path("stockQuantity").asInt();
                 variant = colour.path("id").asLong();
                 price = base.add(colour.path("additionalPrice").isNull() ? java.math.BigDecimal.ZERO : colour.path("additionalPrice").decimalValue());
-                break;
             }
         }
         // the cases below assume a bike inside the range the store finances and dear enough for the low-income case (a 3,000,000 income cannot carry 20% down over 6 months under about 13,000,000)
@@ -221,6 +223,13 @@ class InstallmentSeleniumTest extends StorefrontSeleniumTest {
         String amount = String.valueOf(((Number) js("return Math.round(window.kineticProductAmount())")).longValue());
         String firstMonthly = box.findElement(By.cssSelector("[data-field=monthly]")).getText();
 
+        // an admin may have switched the 6-month rate off in the pricing table: there is no 6-month button then, and the test has nothing to click
+        boolean sixMonths = false;
+        for (JsonNode term : call(api, "GET", "/api/v1/installments/config", null).path("terms")) {
+            sixMonths |= term.path("termMonths").asInt() == 6;
+        }
+        assumeTrue(sixMonths, "the 6-month term is not offered now (INSTALLMENT_RATE_6 is INACTIVE or not yet in effect)");
+
         // 20% down, 6 months: the figure changes, and the server's quote for the same choice gives the same monthly payment
         js("const s=document.querySelector('#installmentBox [name=down]');s.value='20';s.dispatchEvent(new Event('input',{bubbles:true}))");
         click(By.cssSelector("#installmentBox input[name=term][value='6']"));
@@ -290,8 +299,11 @@ class InstallmentSeleniumTest extends StorefrontSeleniumTest {
             // the down payment is taken at the store: the payment row holds the down payment, and the order moves on by itself
             JsonNode payment = null;
             for (JsonNode row : listOf(call(manager, "GET", "/api/v1/manager/payments?search=" + orderNumber, null))) {
-                payment = row;
+                if (orderNumber.equals(row.path("orderNumber").asText())) {
+                    payment = row;
+                }
             }
+            assertTrue(payment != null, "the payment row of " + orderNumber);
             assertEquals(0, payment.path("amount").decimalValue().compareTo(approved.path("downPayment").decimalValue()), "the payment is the down payment, not the whole order");
             // the manager presses the button on the payments page (an unapproved application showed none: the API refused above)
             logIn(System.getProperty("selenium.managerUser"), System.getProperty("selenium.managerPassword"));
@@ -389,11 +401,16 @@ class InstallmentSeleniumTest extends StorefrontSeleniumTest {
         Bike bike = bike();
         JsonNode order = call(api, "POST", "/api/v1/orders", orderBody(bike, showroomId(), "INSTALLMENT", plan(ID_NUMBER, INCOME, 30, 12)));
         long orderId = order.path("id").asLong();
-        call(api, "POST", "/api/v1/orders/" + orderId + "/cancellation-request", Map.of("reason", "Đổi ý"));
-        assertEquals("CANCELLED", applicationOf(api, orderId).path("status").asText());
-        assertFalse(applicationOf(api, orderId).path("canDecide").asBoolean(), "nobody can decide an application whose order is gone");
-        HttpClient manager = managerApi();
-        assertRefused(409, manager, "PATCH", "/api/v1/manager/installments/" + applicationOf(api, orderId).path("id").asLong(), Map.of("decision", "APPROVE"));
+        try {
+            call(api, "POST", "/api/v1/orders/" + orderId + "/cancellation-request", Map.of("reason", "Đổi ý"));
+            assertEquals("CANCELLED", applicationOf(api, orderId).path("status").asText());
+            assertFalse(applicationOf(api, orderId).path("canDecide").asBoolean(), "nobody can decide an application whose order is gone");
+            HttpClient manager = managerApi();
+            assertRefused(409, manager, "PATCH", "/api/v1/manager/installments/" + applicationOf(api, orderId).path("id").asLong(), Map.of("decision", "APPROVE"));
+        } finally {
+            // a failed assertion above must not leave an open order holding stock (a no-op when the order is already cancelled)
+            cancelQuietly(orderId);
+        }
     }
 
     // ---- the rules and who may do what ----
