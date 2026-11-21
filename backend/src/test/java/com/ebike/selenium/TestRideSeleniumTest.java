@@ -19,6 +19,7 @@ import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.openqa.selenium.By;
+import org.openqa.selenium.Dimension;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
@@ -30,8 +31,13 @@ import org.openqa.selenium.support.ui.Select;
  * the place is free again; the manager cancels another booking with a reason and that customer is notified; the pages speak English.
  * The reminder and the closing of unconfirmed requests run on a timer a browser cannot reach; they are covered by unit tests.
  *
- * Every booking made here is cancelled at the end, so the slot is free for the next run. The manager account comes from the
+ * Every booking made here is cancelled at the end, so the slot is free for the next run, and the extra customers it registers are
+ * erased (their accounts stay as DELETED rows, like any erased account). The manager account comes from the
  * selenium.managerUser and selenium.managerPassword properties; without it the test is skipped.
+ *
+ * <p>One run sends about 13 POST /api/v1/test-rides from one address, more than the rule test-ride-book allows (10 per 10 minutes): start the
+ * app with APP_RATE_LIMIT_ENABLED=false. A 429 skips the test with that hint instead of failing it. The bike is the first one whose vehicle
+ * type can be ridden, not simply the first one in stock.
  */
 @Tag("selenium")
 @Execution(ExecutionMode.SAME_THREAD)
@@ -66,13 +72,45 @@ class TestRideSeleniumTest extends StorefrontSeleniumTest {
         }
     }
 
-    private HttpClient newCustomer(String tag) throws Exception {
+    /** An extra customer of this run: the signed-in client and the address needed to erase the account again. */
+    private record Customer(HttpClient client, String email) {
+    }
+
+    private Customer newCustomer(String tag) throws Exception {
         HttpClient client = newClient();
         String name = "ride" + tag + System.currentTimeMillis();
         call(client, "POST", "/api/v1/auth/register", Map.of(
             "username", name, "email", name + "@example.com", "password", PASSWORD, "firstName", "Ride", "lastName", tag));
         call(client, "POST", "/api/v1/auth/login", Map.of("usernameOrEmail", name, "password", PASSWORD));
-        return client;
+        return new Customer(client, name + "@example.com");
+    }
+
+    /** Cancels what the extra customer still holds and erases the account, so a run leaves no live test accounts behind. */
+    private static void cleanUp(Customer customer) {
+        cancelAllOpen(customer.client());
+        try {
+            call(customer.client(), "DELETE", "/api/v1/auth/account", Map.of("password", PASSWORD, "confirmEmail", customer.email()));
+        } catch (Exception ignored) {
+            // cleanup only: an account that cannot be erased stays as a harmless test customer
+        }
+    }
+
+    private static String rideSlugCache;
+
+    /** The first product whose vehicle type can be ridden (a battery or an accessory has no "Book a test ride" button); skips the test when there is none. */
+    private String rideSlug() throws Exception {
+        if (rideSlugCache == null) {
+            for (JsonNode product : listOf(call(api, "GET", "/api/v1/products", null))) {
+                String slug = product.path("slug").asText();
+                String type = call(api, "GET", "/api/v1/products/" + slug, null).path("specification").path("vehicleType").asText("");
+                if (!type.isEmpty() && !type.equals("BATTERY") && !type.equals("ACCESSORY")) {
+                    rideSlugCache = slug;
+                    break;
+                }
+            }
+        }
+        assumeTrue(rideSlugCache != null, "no bike that can be test-ridden");
+        return rideSlugCache;
     }
 
     private static void cancelAllOpen(HttpClient client) {
@@ -99,7 +137,9 @@ class TestRideSeleniumTest extends StorefrontSeleniumTest {
             // call() formats failures as "METHOD path -> CODE: body"
             String message = e.getMessage();
             int arrow = message.indexOf("-> ");
-            return Integer.parseInt(message.substring(arrow + 3, arrow + 6));
+            int code = Integer.parseInt(message.substring(arrow + 3, arrow + 6));
+            assumeTrue(code != 429, "rate limit reached: start the app with APP_RATE_LIMIT_ENABLED=false (" + message + ")");
+            return code;
         }
     }
 
@@ -116,8 +156,8 @@ class TestRideSeleniumTest extends StorefrontSeleniumTest {
         click(By.cssSelector("dialog.warranty-dialog button[data-submit]"));
     }
 
-    private void openBookingDialog() {
-        driver.get(baseUrl + "/product/" + productSlug);
+    private void openBookingDialog() throws Exception {
+        driver.get(baseUrl + "/product/" + rideSlug());
         click(By.id("bookTestRide"));
         wait.until(ExpectedConditions.visibilityOfElementLocated(DIALOG));
         // the showroom list arrives with a second request
@@ -129,17 +169,17 @@ class TestRideSeleniumTest extends StorefrontSeleniumTest {
         String managerUser = System.getProperty("selenium.managerUser", "");
         String managerPassword = System.getProperty("selenium.managerPassword", "");
         HttpClient manager = managerApi(); // skips without a manager account: the schedule is the manager's
-        List<HttpClient> throwaways = new ArrayList<>();
+        List<Customer> throwaways = new ArrayList<>();
         try {
             walkThroughTheBooking(manager, managerUser, managerPassword, throwaways);
         } finally {
             cancelAllOpen(api);
-            throwaways.forEach(TestRideSeleniumTest::cancelAllOpen);
+            throwaways.forEach(TestRideSeleniumTest::cleanUp);
         }
     }
 
-    private void walkThroughTheBooking(HttpClient manager, String managerUser, String managerPassword, List<HttpClient> throwaways) throws Exception {
-        long productId = call(api, "GET", "/api/v1/products/" + productSlug, null).path("id").asLong();
+    private void walkThroughTheBooking(HttpClient manager, String managerUser, String managerPassword, List<Customer> throwaways) throws Exception {
+        long productId = call(api, "GET", "/api/v1/products/" + rideSlug(), null).path("id").asLong();
         JsonNode showrooms = call(api, "GET", "/api/v1/showrooms", null);
         assumeTrue(showrooms.size() > 0, "no showroom to book at");
         long showroomId = showrooms.get(0).path("id").asLong();
@@ -165,13 +205,13 @@ class TestRideSeleniumTest extends StorefrontSeleniumTest {
 
         // 2. the other customers fill the slot but one place
         List<String> fillerPhones = new ArrayList<>();
-        HttpClient filler = null;
+        Customer filler = null;
         for (int i = 0; i < capacity - 1; i++) {
             filler = newCustomer("Filler" + i);
             throwaways.add(filler);
             String fillerPhone = phone(i + 1);
             fillerPhones.add(fillerPhone);
-            call(filler, "POST", "/api/v1/test-rides", Map.of(
+            call(filler.client(), "POST", "/api/v1/test-rides", Map.of(
                 "productId", productId, "showroomId", showroomId, "slotStart", start, "contactPhone", fillerPhone, "note", "filler"));
         }
         JsonNode before = slotsOn(api, showroomId, day);
@@ -190,7 +230,7 @@ class TestRideSeleniumTest extends StorefrontSeleniumTest {
         new Select(driver.findElement(By.cssSelector("dialog.testride-dialog select[name=date]"))).selectByValue(day.toString());
         By slotButton = By.cssSelector(".testride-slot[data-start='" + start + "']");
         WebElement button = wait.until(ExpectedConditions.presenceOfElementLocated(slotButton));
-        assertTrue(button.getText().contains("1"), "the slot shows one place left: " + button.getText());
+        assertTrue(button.findElement(By.tagName("small")).getText().matches("Còn 1 chỗ|1 left"), "the slot shows one place left: " + button.getText());
         // nothing can be sent before a slot is chosen
         assertEquals("true", driver.findElement(By.cssSelector("dialog.testride-dialog [data-submit]")).getAttribute("disabled"));
         click(slotButton);
@@ -206,8 +246,9 @@ class TestRideSeleniumTest extends StorefrontSeleniumTest {
         assertTrue(done.getText().contains(showroomName), done.getText());
 
         // 4. the slot is full now: a further customer is refused, the slot list says so, and the dialog shows it disabled
-        HttpClient late = newCustomer("Late");
-        throwaways.add(late);
+        Customer lateCustomer = newCustomer("Late");
+        throwaways.add(lateCustomer);
+        HttpClient late = lateCustomer.client();
         assertEquals(409, status(late, "POST", "/api/v1/test-rides", Map.of(
             "productId", productId, "showroomId", showroomId, "slotStart", start, "contactPhone", phone(60))), "the slot is full");
         for (JsonNode slot : slotsOn(api, showroomId, day)) {
@@ -289,9 +330,27 @@ class TestRideSeleniumTest extends StorefrontSeleniumTest {
             }
         }
 
+        // 9b. the dialog is open on the last place and someone else takes it: the refusal is explained and stays on screen while the list reloads
+        openBookingDialog();
+        new Select(driver.findElement(By.cssSelector("dialog.testride-dialog select[name=showroom]"))).selectByValue(String.valueOf(showroomId));
+        new Select(driver.findElement(By.cssSelector("dialog.testride-dialog select[name=date]"))).selectByValue(day.toString());
+        WebElement lastPlace = wait.until(ExpectedConditions.presenceOfElementLocated(slotButton));
+        assertTrue(lastPlace.findElement(By.tagName("small")).getText().matches("Còn 1 chỗ|1 left"), lastPlace.getText());
+        click(lastPlace);
+        driver.findElement(By.cssSelector("dialog.testride-dialog input[name=phone]")).sendKeys(phone(70));
+        call(late, "POST", "/api/v1/test-rides", Map.of(
+            "productId", productId, "showroomId", showroomId, "slotStart", start, "contactPhone", phone(71)));
+        click(By.cssSelector("dialog.testride-dialog [data-submit]"));
+        By dialogError = By.cssSelector("dialog.testride-dialog .support-message.error");
+        wait.until(ExpectedConditions.visibilityOfElementLocated(dialogError));
+        wait.until(d -> "true".equals(d.findElement(slotButton).getAttribute("disabled"))); // the list was reloaded and shows the slot full
+        assertTrue(driver.findElement(dialogError).isDisplayed() && !driver.findElement(dialogError).getText().isBlank(),
+            "the reason for the refusal is still on screen after the slots reload");
+        assertEquals("true", driver.findElement(By.cssSelector("dialog.testride-dialog [data-submit]")).getAttribute("disabled"), "nothing is chosen any more");
+
         // 10. the manager cancels another customer's booking: a reason is needed, and that customer is told
         if (filler != null) {
-            HttpClient fillerClient = filler;
+            HttpClient fillerClient = filler.client();
             int fillerBefore = notificationsOfType(fillerClient, "TEST_RIDE");
             logIn(managerUser, managerPassword);
             driver.get(baseUrl + "/manager/test-rides");
@@ -322,7 +381,7 @@ class TestRideSeleniumTest extends StorefrontSeleniumTest {
 
         // 11. the pages speak English when the device says so
         logIn(username, PASSWORD);
-        driver.get(baseUrl + "/lang/en?back=" + "/product/" + productSlug);
+        driver.get(baseUrl + "/lang/en?back=" + "/product/" + rideSlug());
         try {
             assertEquals("Book a test ride", wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("bookTestRide"))).getText().trim());
             driver.get(baseUrl + "/customer/test-rides");
@@ -346,9 +405,30 @@ class TestRideSeleniumTest extends StorefrontSeleniumTest {
     }
 
     @Test
+    void theBookingDialogFitsAPhoneScreen() throws Exception {
+        Dimension before = driver.manage().window().getSize();
+        driver.manage().window().setSize(new Dimension(375, 812));
+        try {
+            openBookingDialog();
+            List<?> box = (List<?>) js("const d=document.querySelector('dialog.testride-dialog').getBoundingClientRect();"
+                + "return [d.left,d.right,window.innerWidth,document.documentElement.scrollWidth]");
+            double left = ((Number) box.get(0)).doubleValue(), right = ((Number) box.get(1)).doubleValue();
+            double width = ((Number) box.get(2)).doubleValue(), page = ((Number) box.get(3)).doubleValue();
+            assertTrue(left >= 0 && right <= width, "the dialog stays inside a 375 px screen: " + box);
+            assertTrue(page <= width + 1, "the page does not scroll sideways: " + box);
+            WebElement submit = driver.findElement(By.cssSelector("dialog.testride-dialog [data-submit]"));
+            js("arguments[0].scrollIntoView({block:'center',behavior:'instant'})", submit);
+            assertTrue(submit.isDisplayed(), "the send button can be reached");
+        } finally {
+            driver.manage().window().setSize(before);
+        }
+    }
+
+    @Test
     void aVisitorIsSentToSignInAndComesBackToTheDialog() throws Exception {
+        String slug = rideSlug();
         driver.manage().deleteAllCookies();
-        driver.get(baseUrl + "/product/" + productSlug);
+        driver.get(baseUrl + "/product/" + slug);
         click(By.id("bookTestRide"));
         wait.until(ExpectedConditions.urlContains("/login"));
         assertTrue(driver.getCurrentUrl().contains("testRide=1") || driver.getCurrentUrl().contains("testRide%3D1"), driver.getCurrentUrl());
@@ -365,8 +445,9 @@ class TestRideSeleniumTest extends StorefrontSeleniumTest {
         String managerUser = System.getProperty("selenium.managerUser", "");
         String managerPassword = System.getProperty("selenium.managerPassword", "");
         managerApi(); // skips without a manager account
+        String slug = rideSlug();
         logIn(managerUser, managerPassword);
-        driver.get(baseUrl + "/product/" + productSlug);
+        driver.get(baseUrl + "/product/" + slug);
         wait.until(ExpectedConditions.presenceOfElementLocated(By.id("addToCart")));
         assertTrue(driver.findElements(By.id("bookTestRide")).isEmpty(), "staff are not offered the button");
         driver.get(baseUrl + "/customer/test-rides");
