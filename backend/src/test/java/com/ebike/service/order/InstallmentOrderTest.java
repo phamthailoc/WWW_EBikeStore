@@ -202,6 +202,7 @@ class InstallmentOrderTest {
         application.setOrder(order);
         application.setStatus(applicationStatus);
         when(installments.findByOrderId(10L)).thenReturn(Optional.of(application));
+        when(installments.findByOrderIdIn(any())).thenReturn(List.of(application));
         when(orders.findLockedById(10L)).thenReturn(Optional.of(order));
         return order;
     }

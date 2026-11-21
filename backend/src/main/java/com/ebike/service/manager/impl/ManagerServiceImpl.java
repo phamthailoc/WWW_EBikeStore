@@ -122,6 +122,7 @@ public class ManagerServiceImpl implements ManagerService {
             totalOrders,
             pendingOrders,
             unpaidPayLaterOrders,
+            installments.countAwaitingDownPayment(),
             todayRevenue,
             weekRevenue,
             monthRevenue,
@@ -143,7 +144,7 @@ public class ManagerServiceImpl implements ManagerService {
             .filter(payment -> payment.getPaymentMethod() == PaymentMethod.INSTALLMENT)
             .map(payment -> payment.getOrder().getId())
             .toList();
-        java.util.Map<Long, String> installmentStatuses = new java.util.HashMap<>();
+        Map<Long, String> installmentStatuses = new HashMap<>();
         if (!instalmentOrderIds.isEmpty()) {
             installments.findByOrderIdIn(instalmentOrderIds).forEach(a -> installmentStatuses.put(a.getOrder().getId(), a.getStatus()));
         }

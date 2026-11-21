@@ -8,6 +8,8 @@ public record ManagerDashboardResponse(
     long totalOrders,
     long pendingOrders,
     long unpaidPayLaterOrders,
+    /** V24: approved instalment applications whose down payment is not collected yet. */
+    long unpaidInstallmentDownPayments,
     BigDecimal todayRevenue,
     BigDecimal weekRevenue,
     BigDecimal monthRevenue,

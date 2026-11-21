@@ -375,14 +375,24 @@ public class OrderServiceImpl implements OrderService {
         }
 
         List<Order> expired = new ArrayList<>();
-        for (Order order : orderRepository.findLockedByStatusAndCreatedAtBefore(OrderStatus.PENDING, latestCutoff)) {
+        List<Order> candidates = orderRepository.findLockedByStatusAndCreatedAtBefore(OrderStatus.PENDING, latestCutoff);
+        // the applications of the instalment orders among them, in one query
+        Map<Long, InstallmentApplication> applicationOf = new HashMap<>();
+        List<Long> instalmentOrderIds = candidates.stream()
+            .filter(candidate -> candidate.getPayment() != null && candidate.getPayment().getPaymentMethod() == PaymentMethod.INSTALLMENT)
+            .map(Order::getId)
+            .toList();
+        if (!instalmentOrderIds.isEmpty()) {
+            installments.findByOrderIdIn(instalmentOrderIds).forEach(found -> applicationOf.put(found.getOrder().getId(), found));
+        }
+        for (Order order : candidates) {
             Payment payment = order.getPayment();
             if (payment != null && payment.getPaymentStatus() == PaymentStatus.PAID) {
                 continue;
             }
             if (payment != null && payment.getPaymentMethod() == PaymentMethod.INSTALLMENT) {
                 // V24: an instalment order waits for the staff first, then for the down payment; each wait has its own clock
-                InstallmentApplication application = installments.findByOrderId(order.getId()).orElse(null);
+                InstallmentApplication application = applicationOf.get(order.getId());
                 boolean approved = application != null && InstallmentApplication.APPROVED.equals(application.getStatus()) && application.getReviewedAt() != null;
                 LocalDateTime since = approved ? application.getReviewedAt() : order.getCreatedAt();
                 if (!since.isBefore(now.minus(approved ? installmentDownPaymentHold : installmentReviewHold))) {

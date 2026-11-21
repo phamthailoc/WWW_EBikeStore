@@ -37,6 +37,10 @@ public interface InstallmentApplicationRepository extends JpaRepository<Installm
 
     long countByStatus(String status);
 
+    /** Approved applications whose down payment has not come in: the order stays PENDING until it does (paying confirms it). */
+    @Query("select count(a) from InstallmentApplication a where a.status = 'APPROVED' and a.order.status = com.ebike.model.entity.order.OrderStatus.PENDING")
+    long countAwaitingDownPayment();
+
     /**
      * The staff queue: oldest first, so the application that has waited longest is on top. The graph brings what a row shows in the same query; the
      * vehicles of the orders (a collection, which a paged query cannot join) load in batches, see hibernate.default_batch_fetch_size.
