@@ -94,11 +94,12 @@ window.KineticTestRide = (() => {
     const fail = message => { error.textContent = message; error.hidden = false; };
     const clearFail = () => { error.hidden = true; };
 
-    async function loadSlots() {
+    /** Reloads the slots of the chosen showroom and day. {@code keepError} leaves the message on screen (a refusal that explains why the list is reloaded). */
+    async function loadSlots(keepError) {
       const mine = ++seq;
       chosen = null;
       submitButton.disabled = true;
-      clearFail();
+      if (keepError !== true) clearFail();
       if (!form.elements.showroom.value) { slotsBox.innerHTML = ''; return; }
       slotsBox.innerHTML = `<p class="muted">${t('Đang tải khung giờ…')}</p>`;
       let slots;
@@ -130,8 +131,8 @@ window.KineticTestRide = (() => {
       submitButton.disabled = false;
       clearFail();
     });
-    form.elements.showroom.addEventListener('change', loadSlots);
-    form.elements.date.addEventListener('change', loadSlots);
+    form.elements.showroom.addEventListener('change', () => loadSlots());
+    form.elements.date.addEventListener('change', () => loadSlots());
     dialog.querySelector('[data-cancel]').addEventListener('click', () => dialog.close());
     dialog.addEventListener('close', () => dialog.remove());
 
@@ -155,7 +156,7 @@ window.KineticTestRide = (() => {
       } catch (err) {
         fail(err.message);
         // the slot may have just filled up: show the newest places
-        if (err.status === 409) loadSlots(); else submitButton.disabled = !chosen;
+        if (err.status === 409) loadSlots(true); else submitButton.disabled = !chosen;
       }
     });
 
