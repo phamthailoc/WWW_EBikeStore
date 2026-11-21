@@ -201,7 +201,9 @@ public class TestRideService {
         if (!TestRideRules.isFarEnough(slot, now, leadMinutes)) {
             throw bad("Vui lòng đặt trước ít nhất " + leadText(true) + ".", "Please book at least " + leadText(false) + " ahead.");
         }
-        if (bookings.existsByUserIdAndSlotStartAndStatusIn(user.getId(), slot, TestRideRules.OPEN)) {
+        // any open ride that overlaps the hour, not only one at the very same start: showrooms may open on the half hour, so slots of two showrooms can be shifted
+        if (bookings.existsByUserIdAndStatusInAndSlotStartGreaterThanAndSlotStartLessThan(
+            user.getId(), TestRideRules.OPEN, slot.minus(TestRideRules.SLOT), slot.plus(TestRideRules.SLOT))) {
             throw conflict("Bạn đã có một lịch lái thử vào giờ này.", "You already have a test ride at this time.");
         }
         if (bookings.countByUserIdAndStatusInAndSlotStartGreaterThanEqual(user.getId(), TestRideRules.OPEN, now) >= maxOpenPerCustomer) {

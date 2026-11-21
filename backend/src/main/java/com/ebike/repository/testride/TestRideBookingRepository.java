@@ -59,7 +59,9 @@ public interface TestRideBookingRepository extends JpaRepository<TestRideBooking
 
     long countByStatusAndSlotStartLessThanEqual(String status, LocalDateTime slotStart);
 
-    boolean existsByUserIdAndSlotStartAndStatusIn(Long userId, LocalDateTime slotStart, Collection<String> statuses);
+    /** True when the customer has an open booking starting strictly between {@code after} and {@code before}: a ride that overlaps the one-hour slot in between. */
+    boolean existsByUserIdAndStatusInAndSlotStartGreaterThanAndSlotStartLessThan(
+        Long userId, Collection<String> statuses, LocalDateTime after, LocalDateTime before);
 
     long countByUserIdAndStatusInAndSlotStartGreaterThanEqual(Long userId, Collection<String> statuses, LocalDateTime from);
 

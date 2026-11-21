@@ -270,7 +270,8 @@ class TestRideServiceTest {
 
     @Test
     void aCustomerCannotHoldTwoBookingsAtTheSameTime() {
-        when(bookings.existsByUserIdAndSlotStartAndStatusIn(eq(1L), eq(SLOT), anyCollection())).thenReturn(true);
+        when(bookings.existsByUserIdAndStatusInAndSlotStartGreaterThanAndSlotStartLessThan(
+            eq(1L), anyCollection(), eq(SLOT.minusHours(1)), eq(SLOT.plusHours(1)))).thenReturn(true);
         assertEquals(HttpStatus.CONFLICT, statusOf(() -> service.book("an", request("2026-11-22T09:00"))));
         verify(bookings, never()).saveAndFlush(any());
     }
