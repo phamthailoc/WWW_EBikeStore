@@ -16,7 +16,7 @@ import org.springframework.ui.ConcurrentModel;
 
 /** V22: who is offered the "Notify me when back in stock" button on the bike page, and who has a waiting list to load. */
 class StorefrontNotifyButtonTest {
-    StorefrontController controller = new StorefrontController(mock(ProductService.class), 14);
+    StorefrontController controller = new StorefrontController(mock(ProductService.class), 14, "Asia/Ho_Chi_Minh");
 
     @AfterEach void clear() {
         SecurityContextHolder.clearContext();

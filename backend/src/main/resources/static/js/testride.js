@@ -81,7 +81,9 @@ window.KineticTestRide = (() => {
     const dialog = document.createElement('dialog');
     dialog.className = 'stock-dialog warranty-dialog testride-dialog';
     const days = [];
-    const today = new Date();
+    // "today" is the showroom's day (the page says it), because the server checks the days in the showroom's zone, not the visitor's
+    const [year, month, dayOfMonth] = /^\d{4}-\d{2}-\d{2}$/.test(product.today || '') ? product.today.split('-').map(Number) : [null];
+    const today = year ? new Date(year, month - 1, dayOfMonth) : new Date();
     // the last bookable day is today plus daysAhead, like the server's window
     const daysAhead = product.daysAhead > 0 ? product.daysAhead : DEFAULT_DAYS_AHEAD;
     for (let i = 0; i <= daysAhead; i += 1) days.push(new Date(today.getFullYear(), today.getMonth(), today.getDate() + i));
@@ -194,7 +196,7 @@ window.KineticTestRide = (() => {
     const wanted = new URLSearchParams(location.search).get('testRide');
     if (wanted) { try { history.replaceState(null, '', location.pathname); } catch (ignored) { /* keep the address */ } }
     if (!button) return;
-    const product = {id: Number(root.dataset.id), name: root.dataset.name, daysAhead: Number(root.dataset.testRideDays)};
+    const product = {id: Number(root.dataset.id), name: root.dataset.name, daysAhead: Number(root.dataset.testRideDays), today: root.dataset.testRideToday};
     const isCustomer = root.dataset.customer === 'true';
     const open = () => {
       // a visitor signs in first and comes back to this page with the dialog open
