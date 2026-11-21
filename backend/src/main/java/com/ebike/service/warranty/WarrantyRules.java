@@ -2,6 +2,7 @@ package com.ebike.service.warranty;
 
 import com.ebike.model.entity.warranty.WarrantyClaim;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.Period;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
@@ -47,7 +48,7 @@ public final class WarrantyRules {
         return startsAt.plusMonths(warrantyMonths);
     }
 
-    /** The warranty covers the bike up to and including its last moment. */
+    /** The warranty covers the bike through the whole of its end date: the page shows only the date, so a request on that day is still covered. */
     public static String coverage(LocalDateTime startsAt, Integer warrantyMonths, LocalDateTime now) {
         if (startsAt == null) {
             return NOT_STARTED;
@@ -56,7 +57,7 @@ public final class WarrantyRules {
         if (ends == null) {
             return UNKNOWN;
         }
-        return now.isAfter(ends) ? EXPIRED : ACTIVE;
+        return now.isAfter(ends.toLocalDate().atTime(LocalTime.MAX)) ? EXPIRED : ACTIVE;
     }
 
     /**

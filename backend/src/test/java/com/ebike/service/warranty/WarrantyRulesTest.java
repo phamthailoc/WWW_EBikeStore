@@ -34,11 +34,14 @@ class WarrantyRulesTest {
     }
 
     @Test
-    void coverageIsActiveUpToAndIncludingTheLastMoment() {
+    void coverageIsActiveThroughTheWholeLastDay() {
         LocalDateTime ends = LocalDateTime.of(2028, 1, 31, 9, 0);
         assertEquals(WarrantyRules.ACTIVE, WarrantyRules.coverage(DELIVERED, 24, ends.minusSeconds(1)));
         assertEquals(WarrantyRules.ACTIVE, WarrantyRules.coverage(DELIVERED, 24, ends));
-        assertEquals(WarrantyRules.EXPIRED, WarrantyRules.coverage(DELIVERED, 24, ends.plusSeconds(1)));
+        // the page shows only the date, so "until 31 January" means the whole of that day, even after the hour of the hand-over
+        assertEquals(WarrantyRules.ACTIVE, WarrantyRules.coverage(DELIVERED, 24, ends.plusHours(5)));
+        assertEquals(WarrantyRules.ACTIVE, WarrantyRules.coverage(DELIVERED, 24, LocalDateTime.of(2028, 1, 31, 23, 59, 59)));
+        assertEquals(WarrantyRules.EXPIRED, WarrantyRules.coverage(DELIVERED, 24, LocalDateTime.of(2028, 2, 1, 0, 0)));
         assertEquals(WarrantyRules.UNKNOWN, WarrantyRules.coverage(DELIVERED, null, ends));
         assertEquals(WarrantyRules.NOT_STARTED, WarrantyRules.coverage(null, 24, ends));
     }
