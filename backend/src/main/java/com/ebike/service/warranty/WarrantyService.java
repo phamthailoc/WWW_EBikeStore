@@ -41,8 +41,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 /**
- * V20: the electronic warranty book. A vehicle's warranty is computed when it is read (delivery time plus the months on the
- * product), so no date is stored; only the customers' requests are.
+ * V20: the electronic warranty book. A vehicle's warranty end is computed when it is read, from the hand-over time kept on the
+ * order ({@code orders.delivered_at}) and the months pinned on the vehicle row when its numbers were recorded; the customers'
+ * requests are stored.
  */
 @Service
 public class WarrantyService {

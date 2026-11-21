@@ -1,5 +1,6 @@
--- V20: electronic warranty book. Adds two tables and the column orders.delivered_at (the hand-over time that the
--- warranty counts from; the warranty end is computed when read, from it and product_specifications.warranty_months).
+-- V20: electronic warranty book. Adds two tables, the column orders.delivered_at (the hand-over time that the warranty
+-- counts from) and order_item_units.warranty_months (the length pinned when a vehicle is recorded); the warranty end is
+-- computed when read, from those two. Also adds warranty_claims.open_unit_id, which lets the database allow one open request per vehicle.
 -- Safe to run more than once. Apply with: mysql -u root -p ebike_db < update_warranty_book.sql
 
 CREATE TABLE IF NOT EXISTS `warranty_claims` (

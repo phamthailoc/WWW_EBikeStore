@@ -28,7 +28,6 @@ public final class WarrantyMessages {
         return language != null && language.trim().toLowerCase(Locale.ROOT).startsWith("en") ? "en" : "vi";
     }
 
-    /** Picks the text for the language of the current request. */
     /** Picks the text for the language of a given request (for code that runs before the request is bound to the thread). */
     public static String text(HttpServletRequest request, String vietnamese, String english) {
         return "en".equals(requestLanguage(request)) ? english : vietnamese;

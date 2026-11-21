@@ -57,7 +57,7 @@ public class OrderUnitService {
     public List<OrderItemUnitResponse> replaceUnits(Long orderId, OrderUnitsRequest request) {
         // Lock the order's vehicles before anything else is read: under REPEATABLE READ the first plain SELECT fixes the snapshot,
         // and a snapshot taken before the lock would not show a warranty request that was committed while we waited (the unit would
-        // then be deleted and the request cascaded away). A request being filed at this moment waits for us instead.
+        // then be deleted out from under it). A request being filed at this moment waits for us instead.
         unitRepository.findLockedByOrderId(orderId);
         Order order = orders.findById(orderId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
