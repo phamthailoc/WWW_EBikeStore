@@ -150,6 +150,22 @@ class InstallmentPaymentTest {
     }
 
     @Test
+    void theStoreWaitsWhileACardPaymentPageMayStillBeOpen() {
+        payment.setTransactionReference("EBIKE" + com.ebike.util.order.VnPayUtil.formatDate(java.time.LocalDateTime.now(com.ebike.util.order.VnPayUtil.ZONE).minusMinutes(3)) + "ORD10ABCDEFGH");
+        ResponseStatusException error = assertThrows(ResponseStatusException.class, () -> manager.confirmPayLaterPayment(7L, new ManagerPaymentConfirmationRequest(null, null)));
+        assertEquals(HttpStatus.CONFLICT, error.getStatusCode());
+        assertEquals(PaymentStatus.PENDING, payment.getPaymentStatus());
+        assertEquals(OrderStatus.PENDING, order.getStatus());
+    }
+
+    @Test
+    void anAbandonedCardPaymentPageDoesNotBlockTheStoreForLong() {
+        payment.setTransactionReference("EBIKE" + com.ebike.util.order.VnPayUtil.formatDate(java.time.LocalDateTime.now(com.ebike.util.order.VnPayUtil.ZONE).minusMinutes(20)) + "ORD10ABCDEFGH");
+        var response = manager.confirmPayLaterPayment(7L, new ManagerPaymentConfirmationRequest(null, null));
+        assertEquals("PAID", response.paymentStatus());
+    }
+
+    @Test
     void aFailedPayLaterPaymentStillCannotBeConfirmedByHand() {
         payment.setPaymentMethod(PaymentMethod.PAY_LATER);
         payment.setPaymentStatus(PaymentStatus.FAILED);

@@ -36,7 +36,8 @@ public class VnPayServiceImpl implements VnPayService {
 
     private static final String SUCCESS_CODE = "00";
     private static final BigDecimal VNPAY_AMOUNT_MULTIPLIER = new BigDecimal("100");
-    private static final ZoneId VNPAY_ZONE = ZoneId.of("Asia/Ho_Chi_Minh");
+    private static final ZoneId VNPAY_ZONE = VnPayUtil.ZONE;
+    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(VnPayServiceImpl.class);
 
     private final VnPayProperties properties;
     private final OrderRepository orderRepository;
@@ -95,7 +96,7 @@ public class VnPayServiceImpl implements VnPayService {
             .orElseGet(() -> createPendingPayment(order));
 
         LocalDateTime now = LocalDateTime.now(VNPAY_ZONE);
-        LocalDateTime expireTime = now.plusMinutes(15);
+        LocalDateTime expireTime = now.plus(VnPayUtil.PAYMENT_WINDOW);
         Map<String, String> params = new HashMap<>();
         params.put("vnp_Version", "2.1.0");
         params.put("vnp_Command", "pay");
@@ -143,6 +144,7 @@ public class VnPayServiceImpl implements VnPayService {
             return response("01", "Order not found");
         }
         if (!awaitsGatewayResult(payment)) {
+            recordDuplicatePayment(payment, params);
             return response(SUCCESS_CODE, "Order already confirmed");
         }
         if (!amountMatches(payment, params.get("vnp_Amount"))) {
@@ -161,6 +163,8 @@ public class VnPayServiceImpl implements VnPayService {
 
         if (payment != null && awaitsGatewayResult(payment) && amountMatches(payment, params.get("vnp_Amount"))) {
             applyGatewayResult(payment, params);
+        } else if (payment != null && !awaitsGatewayResult(payment)) {
+            recordDuplicatePayment(payment, params);
         }
 
         BigDecimal amount = parseVnPayAmount(params.get("vnp_Amount"));
@@ -257,6 +261,27 @@ public class VnPayServiceImpl implements VnPayService {
         return payment.getPaymentStatus() == PaymentStatus.CANCELLED
             && (payment.getPaymentMethod() == PaymentMethod.VNPAY || payment.getPaymentMethod() == PaymentMethod.INSTALLMENT)
             && payment.getOrder().getStatus() == OrderStatus.CANCELLED;
+    }
+
+    /**
+     * A successful gateway payment arrived for a payment that is already paid by another channel (for example the staff took the down payment at the
+     * store while the customer was on the VNPay page): the customer has paid twice. Nothing else would show it, so it is written into the payment's
+     * provider response, where the staff see it and can refund it. The same payment arriving again (the IPN retry, then the return page) is not a duplicate.
+     */
+    private void recordDuplicatePayment(Payment payment, Map<String, String> params) {
+        String transactionNo = params.get("vnp_TransactionNo");
+        if (payment.getPaymentStatus() != PaymentStatus.PAID || !isGatewaySuccess(params) || !amountMatches(payment, params.get("vnp_Amount"))
+            || transactionNo == null || transactionNo.isBlank() || transactionNo.equals(payment.getProviderTxnId())) {
+            return;
+        }
+        String existing = payment.getProviderResponse() == null ? "" : payment.getProviderResponse();
+        String marker = "DUPLICATE VNPAY PAYMENT " + transactionNo;
+        if (existing.contains(marker)) {
+            return;
+        }
+        payment.setProviderResponse((existing.isEmpty() ? "" : existing + "\n") + marker + " - refund it: " + toJson(params));
+        paymentRepository.save(payment);
+        LOGGER.warn("Order {} was paid twice: VNPay transaction {} came in after the payment was already confirmed", payment.getOrder().getOrderNumber(), transactionNo);
     }
 
     private void applyGatewayResult(Payment payment, Map<String, String> params) {

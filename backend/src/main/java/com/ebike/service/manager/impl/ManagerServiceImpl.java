@@ -29,6 +29,7 @@ import com.ebike.model.entity.order.ShipmentStatus;
 import com.ebike.repository.installment.InstallmentApplicationRepository;
 import com.ebike.repository.order.OrderRepository;
 import com.ebike.repository.order.PaymentRepository;
+import com.ebike.util.order.VnPayUtil;
 import com.ebike.dto.product.response.ProductSummaryDto;
 import com.ebike.model.entity.product.Product;
 import com.ebike.model.entity.product.ProductVariant;
@@ -187,6 +188,13 @@ public class ManagerServiceImpl implements ManagerService {
         }
         if (payment.getPaymentStatus() == PaymentStatus.REFUNDED) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Refunded payments cannot be confirmed again");
+        }
+        // while a card payment page may still be open the customer could pay there too, and the store would have taken the money a second time
+        if (installment && payment.getPaymentStatus() == PaymentStatus.PENDING
+            && VnPayUtil.attemptMayBeOpen(payment.getTransactionReference(), LocalDateTime.now(VnPayUtil.ZONE))) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, RequestLanguage.text(
+                "Khách vừa mở trang thanh toán VNPay cho khoản này. Hãy đợi tối đa 15 phút để biết kết quả rồi mới thu tại cửa hàng.",
+                "The customer opened the VNPay page for this payment a moment ago. Wait up to 15 minutes for its result before taking it at the store."));
         }
         // a down payment whose card payment failed can still be taken at the store; the failed attempt is forgotten
         boolean retryAtStore = installment && payment.getPaymentStatus() == PaymentStatus.FAILED;

@@ -90,6 +90,36 @@ class VnPayLateResultTest {
         assertEquals(PaymentStatus.CANCELLED, payment.getPaymentStatus());
     }
 
+    @Test void aCardPaymentOfAnOrderTheStoreAlreadyCollectedIsRecordedForRefund() {
+        order.setStatus(OrderStatus.CONFIRMED);
+        payment.setPaymentStatus(PaymentStatus.PAID);
+        payment.setProviderResponse("Thu tiền mặt");
+
+        var reply = service.handleIpnCallback(result("00"));
+        assertEquals("00", reply.get("RspCode"));
+        assertTrue(payment.getProviderResponse().startsWith("Thu tiền mặt"), "the staff's note stays");
+        assertTrue(payment.getProviderResponse().contains("DUPLICATE VNPAY PAYMENT 123456"));
+
+        // the gateway retrying the same notice, or the return page showing the same result, adds nothing
+        String once = payment.getProviderResponse();
+        service.handleIpnCallback(result("00"));
+        service.handleReturnUrl(result("00"));
+        assertEquals(once, payment.getProviderResponse());
+    }
+
+    @Test void theSamePaymentSeenAgainIsNotADuplicate() {
+        order.setStatus(OrderStatus.PENDING);
+        payment.setPaymentStatus(PaymentStatus.PENDING);
+        service.handleIpnCallback(result("00"));
+        String recorded = payment.getProviderResponse();
+
+        service.handleReturnUrl(result("00"));
+        service.handleIpnCallback(result("00"));
+
+        assertEquals(recorded, payment.getProviderResponse());
+        assertTrue(!payment.getProviderResponse().contains("DUPLICATE"));
+    }
+
     @Test void onTimePaymentStillConfirmsTheOrder() {
         order.setStatus(OrderStatus.PENDING);
         payment.setPaymentStatus(PaymentStatus.PENDING);
