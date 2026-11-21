@@ -51,6 +51,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -153,11 +154,23 @@ public class ManagerServiceImpl implements ManagerService {
             .toList();
     }
 
+    // READ_COMMITTED: the payment's order is read as a bare id first; with the default snapshot, what is read after waiting for the order lock could be older than the lock
     @Override
-    @Transactional
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public ManagerPaymentResponse confirmPayLaterPayment(Long paymentId, ManagerPaymentConfirmationRequest request) {
+        // the order row first, then the payment (every cancellation and every gateway result takes them in this order), so a cancellation or the expiry job
+        // running at the same moment is seen here instead of being written over
+        Long orderId = paymentRepository.findOrderIdById(paymentId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Payment not found"));
+        Order lockedOrder = orderRepository.findLockedById(orderId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
         Payment payment = paymentRepository.findById(paymentId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Payment not found"));
+        if (lockedOrder.getStatus() == OrderStatus.CANCELLED) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, RequestLanguage.text(
+                "Đơn hàng đã bị hủy nên không xác nhận thu tiền được. Hãy tải lại danh sách.",
+                "The order was cancelled, so the payment cannot be confirmed. Please reload the list."));
+        }
 
         // V24: the down payment of an instalment order can also be taken at the store, once the application is approved
         boolean installment = payment.getPaymentMethod() == PaymentMethod.INSTALLMENT;
@@ -178,9 +191,6 @@ public class ManagerServiceImpl implements ManagerService {
         if (payment.getPaymentStatus() != PaymentStatus.PENDING) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chỉ xác nhận được khoản trả sau đang chờ thu.");
         }
-        if (payment.getOrder().getStatus() == OrderStatus.CANCELLED) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Đơn hàng đã hủy, không thể xác nhận thu tiền.");
-        }
 
         payment.setPaymentStatus(PaymentStatus.PAID);
         payment.setPaidAt(LocalDateTime.now());
@@ -191,7 +201,7 @@ public class ManagerServiceImpl implements ManagerService {
             payment.setProviderResponse(request.note().trim());
         }
 
-        Order order = payment.getOrder();
+        Order order = lockedOrder;
         if (order.getStatus() == OrderStatus.PENDING) {
             order.setStatus(OrderStatus.CONFIRMED);
         }

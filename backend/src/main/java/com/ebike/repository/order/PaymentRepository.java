@@ -14,6 +14,13 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
 
     Optional<Payment> findByTransactionReference(String transactionReference);
 
+    /** The order of a payment, read as a bare id, so the order row can be locked before the payment row is read (see OrderRepository.findLockedById). */
+    @Query("select p.order.id from Payment p where p.id = :id")
+    Optional<Long> findOrderIdById(@Param("id") Long id);
+
+    @Query("select p.order.id from Payment p where p.transactionReference = :reference")
+    Optional<Long> findOrderIdByTransactionReference(@Param("reference") String reference);
+
     @Query("""
         select p
         from Payment p

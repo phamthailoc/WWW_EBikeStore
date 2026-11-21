@@ -73,7 +73,8 @@ class InstallmentPaymentTest {
         application.setOrder(order);
         application.setStatus(InstallmentApplication.APPROVED);
 
-        when(orders.findById(10L)).thenReturn(Optional.of(order));
+        when(orders.findLockedById(10L)).thenReturn(Optional.of(order));
+        when(payments.findOrderIdById(7L)).thenReturn(Optional.of(10L));
         when(payments.findByOrderId(10L)).thenReturn(Optional.of(payment));
         when(payments.findById(7L)).thenReturn(Optional.of(payment));
         when(payments.save(any(Payment.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -120,7 +121,7 @@ class InstallmentPaymentTest {
         plain.setOrderNumber("ORD-11");
         plain.setStatus(OrderStatus.PENDING);
         plain.setTotalAmount(new BigDecimal("20000000"));
-        when(orders.findById(11L)).thenReturn(Optional.of(plain));
+        when(orders.findLockedById(11L)).thenReturn(Optional.of(plain));
         when(payments.findByOrderId(11L)).thenReturn(Optional.empty());
         when(installments.findByOrderId(11L)).thenReturn(Optional.empty());
         var response = vnpay.createPaymentUrl(new VnPayCreatePaymentRequest(11L, null, "vn"), "127.0.0.1", null, true);

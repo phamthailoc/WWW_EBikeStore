@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -70,7 +71,8 @@ public class VnPayServiceImpl implements VnPayService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "orderId is required");
         }
 
-        Order order = orderRepository.findById(request.orderId())
+        // the order row is locked (the first read of the transaction): a payment attempt resets the payment row, so it must not run in the middle of a cancellation
+        Order order = orderRepository.findLockedById(request.orderId())
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
         if (
             !backOfficeUser
@@ -127,15 +129,16 @@ public class VnPayServiceImpl implements VnPayService {
         );
     }
 
+    // READ_COMMITTED: the order is found through a bare id first; with the default snapshot, what is read after waiting for the order lock could be older than the lock
     @Override
-    @Transactional
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public Map<String, String> handleIpnCallback(Map<String, String> params) {
         if (!isValidSignature(params)) {
             return response("97", "Invalid signature");
         }
 
         String txnRef = params.get("vnp_TxnRef");
-        Payment payment = paymentRepository.findByTransactionReference(txnRef).orElse(null);
+        Payment payment = lockedPaymentOf(txnRef);
         if (payment == null) {
             return response("01", "Order not found");
         }
@@ -151,12 +154,10 @@ public class VnPayServiceImpl implements VnPayService {
     }
 
     @Override
-    @Transactional
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public VnPayReturnResponse handleReturnUrl(Map<String, String> params) {
         boolean valid = isValidSignature(params);
-        Payment payment = valid
-            ? paymentRepository.findByTransactionReference(params.get("vnp_TxnRef")).orElse(null)
-            : null;
+        Payment payment = valid ? lockedPaymentOf(params.get("vnp_TxnRef")) : null;
 
         if (payment != null && awaitsGatewayResult(payment) && amountMatches(payment, params.get("vnp_Amount"))) {
             applyGatewayResult(payment, params);
@@ -179,6 +180,22 @@ public class VnPayServiceImpl implements VnPayService {
             order == null ? null : order.getOrderNumber(),
             payment == null ? null : payment.getPaymentStatus().name()
         );
+    }
+
+    /**
+     * The payment of a gateway reference, read after its order row is locked (the order first, then the payment, as every cancellation takes them), so
+     * a cancellation, the expiry job or the staff's confirmation running at the same moment is seen instead of being written over. Null when there is none.
+     */
+    private Payment lockedPaymentOf(String txnRef) {
+        if (txnRef == null || txnRef.isBlank()) {
+            return null;
+        }
+        Long orderId = paymentRepository.findOrderIdByTransactionReference(txnRef).orElse(null);
+        if (orderId == null) {
+            return null;
+        }
+        orderRepository.findLockedById(orderId);
+        return paymentRepository.findByTransactionReference(txnRef).orElse(null);
     }
 
     private Payment prepareExistingPayment(Payment payment, Order order) {

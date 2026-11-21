@@ -53,6 +53,8 @@ class VnPayLateResultTest {
         payment.setTransactionReference("TXN-LATE");
         order.setPayment(payment);
         when(payments.findByTransactionReference("TXN-LATE")).thenReturn(Optional.of(payment));
+        when(payments.findOrderIdByTransactionReference("TXN-LATE")).thenReturn(Optional.of(9L));
+        when(orders.findLockedById(9L)).thenReturn(Optional.of(order));
         when(payments.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
     }
 
