@@ -104,6 +104,7 @@ class SeoSecurityTest {
     @Test void aCrawlerWithoutAnAccountReadsTheSitemap() throws Exception {
         MvcResult result = mvc.perform(get("/sitemap.xml")).andReturn();
         assertEquals(200, result.getResponse().getStatus());
+        assertTrue(result.getResponse().getHeader("Cache-Control").contains("max-age=600"), "the short cache survives the security headers");
         assertTrue(result.getResponse().getContentAsString().contains("<loc>https://shop.example.vn/product/kinetic-x</loc>"));
     }
 

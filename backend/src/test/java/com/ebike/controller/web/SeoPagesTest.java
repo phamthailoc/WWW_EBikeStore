@@ -65,7 +65,8 @@ class SeoPagesTest {
         views.setCharacterEncoding("UTF-8");
         views.setContentType("text/html;charset=UTF-8");
         return MockMvcBuilders
-            .standaloneSetup(new StorefrontController(products, 14, CLOCK), new SeoController(products, publicBaseUrl))
+            .standaloneSetup(new StorefrontController(products, 14, CLOCK), new SeoController(products, publicBaseUrl),
+                new WorkspaceController(mock(com.ebike.config.order.VnPayProperties.class), messages))
             .setControllerAdvice(new SeoModelAdvice(publicBaseUrl), new I18nModelAdvice())
             .setViewResolvers(views)
             .setLocaleResolver(new FixedLocaleResolver(Locale.forLanguageTag(language)))
@@ -152,7 +153,7 @@ class SeoPagesTest {
     void englishPagesSayEnglishLocaleAndUseTheEnglishDescriptions() throws Exception {
         String home = content(english, "/");
         assertTrue(home.contains("<meta property=\"og:locale\" content=\"en_US\">"));
-        assertTrue(home.contains("<meta property=\"og:locale:alternate\" content=\"vi_VN\">"));
+        assertFalse(home.contains("og:locale:alternate"), "language is a cookie on the same address: there is no alternate address to point at");
         assertTrue(home.contains("KINETIC sells genuine electric scooters"));
         assertTrue(content(english, "/product/kinetic-x").contains("Home"), "breadcrumb in English");
     }
@@ -218,5 +219,39 @@ class SeoPagesTest {
         assertTrue(open.getHeaders(HttpHeaders.VARY).contains("Host"), "no configured address: cache per Host");
         var fixed = vietnamese.perform(get("/robots.txt")).andReturn().getResponse();
         assertTrue(fixed.getHeaders(HttpHeaders.VARY).isEmpty(), "configured address: nothing depends on Host");
+    }
+
+    @Test
+    void privatePagesCarryNoindexAndSupportAndWarrantyCarryShareTags() throws Exception {
+        for (String path : List.of("/login", "/auth", "/signup", "/cart", "/checkout", "/checkout/success", "/payment/return", "/favorites", "/compare", "/chatbot", "/customer", "/manager", "/admin")) {
+            String html = content(vietnamese, path);
+            assertTrue(html.contains("<meta name=\"robots\" content=\"noindex"), path + " is marked noindex");
+        }
+        for (String path : List.of("/support", "/warranty")) {
+            String html = content(vietnamese, path);
+            assertFalse(html.contains("noindex"), path + " is for search engines");
+            assertTrue(html.contains("<link rel=\"canonical\" href=\"" + BASE + path + "\">"), path);
+            assertTrue(html.contains("<meta name=\"description\" content=\""), path);
+            assertTrue(html.contains("<meta property=\"og:title\""), path);
+            assertTrue(html.contains("<meta property=\"og:url\" content=\"" + BASE + path + "\">"), path);
+            assertTrue(html.contains("<meta property=\"og:image\" content=\"" + BASE + "/images/og-default.png\">"), path);
+        }
+        assertTrue(content(english, "/support").contains("KINETIC customer support"), "English description");
+    }
+
+    @Test
+    void laterCataloguePagesGetTheirOwnTitleAndDescription() throws Exception {
+        List<ProductSummaryDto> many = new java.util.ArrayList<>();
+        for (int i = 0; i < 40; i++) {
+            many.add(summary("kinetic-" + i));
+        }
+        when(products.getProducts(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any())).thenReturn(many);
+        String first = content(vietnamese, "/products");
+        assertTrue(first.contains("<meta property=\"og:title\" content=\"Bộ sưu tập xe | KINETIC\">"));
+        String second = content(vietnamese, "/products?page=2");
+        assertTrue(second.contains("<meta property=\"og:title\" content=\"Bộ sưu tập xe – trang 2 | KINETIC\">"), second);
+        assertTrue(second.contains("<title>Bộ sưu tập xe – trang 2 | KINETIC</title>"));
+        assertTrue(second.contains("<meta name=\"description\" content=\"Trang 2. Toàn bộ mẫu xe"));
+        assertTrue(content(english, "/products?page=2").contains("<title>Bike collection – page 2 | KINETIC</title>"));
     }
 }
