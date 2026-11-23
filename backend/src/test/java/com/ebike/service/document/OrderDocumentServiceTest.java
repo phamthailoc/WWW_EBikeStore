@@ -208,7 +208,7 @@ class OrderDocumentServiceTest {
     }
 
     @Test
-    void aGuestOrderIsEmailedInVietnameseToTheCheckoutAddress() {
+    void aGuestOrderWithNoRecordedLanguageIsEmailedInVietnameseToTheCheckoutAddress() {
         Order order = stored(DocumentFixtures.order(11, OrderStatus.DELIVERED, 1, true));
         order.setUser(null);
         order.setCustomerEmail("khach@example.com");
@@ -217,6 +217,18 @@ class OrderDocumentServiceTest {
 
         assertEquals("khach@example.com", documents.email());
         assertEquals("vi", documents.language());
+    }
+
+    @Test
+    void aGuestOrderIsEmailedInTheLanguageOfTheCheckoutPage() {
+        Order order = stored(DocumentFixtures.order(14, OrderStatus.DELIVERED, 1, true));
+        order.setUser(null);
+        order.setCustomerEmail("guest@example.com");
+        order.setCustomerLanguage("en");
+
+        OrderDocumentService.DeliveryDocuments documents = service.forDeliveredOrder(14L).orElseThrow();
+
+        assertEquals("en", documents.language());
     }
 
     @Test

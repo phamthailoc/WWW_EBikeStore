@@ -221,6 +221,7 @@ public class OrderServiceImpl implements OrderService {
         }
         order.setNotes(normalizeOptional(request.notes()));
         order.setCustomerEmail(normalizeEmail(request.customerEmail()));
+        order.setCustomerLanguage(com.ebike.common.i18n.RequestLanguage.current());
 
         Showroom showroom = isHomeDelivery(request) ? null : showroomRepository.findById(request.pickupShowroomId())
             .filter(candidate -> Boolean.TRUE.equals(candidate.getActive()))

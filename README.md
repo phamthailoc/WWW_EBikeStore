@@ -46,6 +46,7 @@ Mặc định ứng dụng kết nối MariaDB ở `localhost:3306`. Thông tin 
 - `update_pricing_rules.sql`: biểu phí của cửa hàng bán xe
 - `update_orders_promotion.sql`: cột `orders.promotion_id` (mỗi khách dùng một mã một lần)
 - `update_orders_pickup_deadline.sql`: cột `orders.pickup_deadline_at` (hạn giữ xe do cửa hàng đặt cho đơn "Chờ lấy")
+- `update_orders_customer_language.sql`: cột `orders.customer_language` (ngôn ngữ của trang lúc đặt hàng, để email và PDF gửi khách vãng lai đúng ngôn ngữ, V27)
 - `update_order_item_units.sql`: bảng `order_item_units` (số khung, số máy từng xe)
 - `update_stock_alerts.sql`: bảng `stock_alerts` (đăng ký báo khi có hàng lại, V22)
 - `update_warranty_book.sql` (chạy **sau** `update_order_item_units.sql`, vì có khóa ngoại tới `order_item_units`): bảng `warranty_claims`, `maintenance_reminders`, cột `orders.delivered_at`, `order_item_units.warranty_months` và cột sinh `warranty_claims.open_unit_id` (sổ bảo hành điện tử, V20)
