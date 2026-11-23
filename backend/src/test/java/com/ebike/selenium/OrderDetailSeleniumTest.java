@@ -49,7 +49,7 @@ class OrderDetailSeleniumTest extends StorefrontSeleniumTest {
         assertTrue(pricing.getText().contains("Tạm tính"), pricing.getText());
         assertTrue(pricing.getText().contains("Tổng cộng"), pricing.getText());
         assertTrue(pricing.getText().contains(money(order.path("totalAmount").asLong())), pricing.getText());
-        assertTrue(pricing.getText().contains("PAY_LATER"), "payment method: " + pricing.getText());
+        assertTrue(pricing.getText().contains("Thanh toán khi nhận xe"), "payment method: " + pricing.getText());
 
         assertTrue(driver.findElement(By.id("shipmentDetails")).getText().contains("Thông tin nhận hàng"));
         assertTrue(driver.findElements(By.id("orderManage")).isEmpty(), "customers get no staff controls");

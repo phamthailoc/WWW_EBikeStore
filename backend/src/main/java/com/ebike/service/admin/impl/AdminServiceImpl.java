@@ -1,5 +1,6 @@
 package com.ebike.service.admin.impl;
 
+import com.ebike.common.i18n.RequestLanguage;
 import com.ebike.dto.admin.request.AdminAccountCreateRequest;
 import com.ebike.dto.admin.request.AdminAccountRoleUpdateRequest;
 import com.ebike.dto.admin.request.AdminAccountStatusUpdateRequest;
@@ -21,6 +22,7 @@ import com.ebike.repository.admin.PromotionRepository;
 import com.ebike.repository.order.OrderRepository;
 import com.ebike.service.admin.AccountErasure;
 import com.ebike.service.admin.AuditLogService;
+import com.ebike.service.admin.PricingService;
 import com.ebike.service.admin.AdminService;
 import com.ebike.model.entity.auth.Permission;
 import com.ebike.model.entity.auth.Role;
@@ -117,6 +119,11 @@ public class AdminServiceImpl implements AdminService {
 
         if (request.amount() == null || request.amount().compareTo(BigDecimal.ZERO) < 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Amount must not be negative");
+        }
+        if (rule.getCode().startsWith(PricingService.INSTALLMENT_RATE_PREFIX) && request.amount().compareTo(new BigDecimal("60")) > 0) {
+            // V24: a yearly rate above 60% is a typo (an amount in dong), and customers would be shown it
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, RequestLanguage.text(
+                "Lãi suất trả góp không được vượt 60% mỗi năm.", "The instalment rate must not exceed 60 percent a year."));
         }
 
         rule.setAmount(request.amount());
@@ -290,8 +297,9 @@ public class AdminServiceImpl implements AdminService {
         return toAccountResponse(saved);
     }
 
+    // READ_COMMITTED: see OwnAccountService.deleteOwnAccount (the erasure's count of open applications must see what is committed once it holds the lock)
     @Override
-    @Transactional
+    @Transactional(isolation = org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
     public void deleteAccount(Long id, String confirmEmail) {
         User user = userRepository.findById(id)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Account not found"));

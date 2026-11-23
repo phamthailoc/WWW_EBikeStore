@@ -43,7 +43,7 @@ class OrderStatusUpdateTest {
     Product product;
 
     @BeforeEach void setup() {
-        service = new OrderServiceImpl(orders, users, products, showrooms, promotions, verification, new com.ebike.service.admin.PricingService(pricingRules), org.mockito.Mockito.mock(com.ebike.service.admin.AuditLogService.class), stockAlerts);
+        service = new OrderServiceImpl(orders, users, products, showrooms, promotions, verification, new com.ebike.service.admin.PricingService(pricingRules), org.mockito.Mockito.mock(com.ebike.service.admin.AuditLogService.class), stockAlerts, org.mockito.Mockito.mock(com.ebike.service.installment.InstallmentPlanner.class), org.mockito.Mockito.mock(com.ebike.repository.installment.InstallmentApplicationRepository.class));
         product = new Product();
         product.setId(1L);
         product.setStockQuantity(5);
@@ -54,7 +54,7 @@ class OrderStatusUpdateTest {
         order.setId(10L);
         order.setStatus(OrderStatus.PENDING);
         order.getItems().add(item);
-        org.mockito.Mockito.lenient().when(orders.findById(10L)).thenReturn(Optional.of(order));
+        org.mockito.Mockito.lenient().when(orders.findLockedById(10L)).thenReturn(Optional.of(order));
     }
 
     private void saves() { when(orders.save(any())).thenAnswer(invocation -> invocation.getArgument(0)); }

@@ -40,7 +40,7 @@ class PayLaterConfirmationTest {
     Payment payment;
 
     @BeforeEach void setup() {
-        service = new ManagerServiceImpl(orders, payments, users, products, productService, org.mockito.Mockito.mock(com.ebike.service.admin.AuditLogService.class), org.mockito.Mockito.mock(com.ebike.service.stock.StockAlertService.class));
+        service = new ManagerServiceImpl(orders, payments, users, products, productService, org.mockito.Mockito.mock(com.ebike.service.admin.AuditLogService.class), org.mockito.Mockito.mock(com.ebike.service.stock.StockAlertService.class), org.mockito.Mockito.mock(com.ebike.repository.installment.InstallmentApplicationRepository.class), java.time.Duration.ofHours(72));
         order = new Order();
         order.setId(5L);
         order.setOrderNumber("ORD-TEST");
@@ -52,6 +52,8 @@ class PayLaterConfirmationTest {
         payment.setPaymentStatus(PaymentStatus.PENDING);
         payment.setAmount(new BigDecimal("20000000"));
         when(payments.findById(7L)).thenReturn(Optional.of(payment));
+        when(payments.findOrderIdById(7L)).thenReturn(Optional.of(5L));
+        when(orders.findLockedById(5L)).thenReturn(Optional.of(order));
     }
 
     private ManagerPaymentConfirmationRequest note() { return new ManagerPaymentConfirmationRequest(null, "Thu tiền mặt tại cửa hàng"); }
@@ -73,7 +75,9 @@ class PayLaterConfirmationTest {
 
     @Test void paymentOfACancelledOrderCannotBeMarkedPaid() {
         order.setStatus(OrderStatus.CANCELLED);
-        assertThrows(ResponseStatusException.class, () -> service.confirmPayLaterPayment(7L, note()));
+        ResponseStatusException error = assertThrows(ResponseStatusException.class, () -> service.confirmPayLaterPayment(7L, note()));
+        // the order is locked first, so a cancellation that won the race is a conflict, not something to write over
+        assertEquals(org.springframework.http.HttpStatus.CONFLICT, error.getStatusCode());
         assertEquals(PaymentStatus.PENDING, payment.getPaymentStatus());
         verify(payments, never()).save(any());
     }

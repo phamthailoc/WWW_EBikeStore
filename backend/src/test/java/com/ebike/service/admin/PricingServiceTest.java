@@ -100,4 +100,23 @@ class PricingServiceTest {
         assertEquals(0, new BigDecimal("6").compareTo(service.registrationTaxRateCentral()));
         assertEquals(PricingService.DEFAULT_REGISTRATION_TAX_RATE_OTHER, service.registrationTaxRateOther());
     }
+
+    @Test void anInstalmentTermWithoutARuleIsOfferedAtTheDefaultRate() {
+        when(rules.findByCode("INSTALLMENT_RATE_12")).thenReturn(Optional.empty());
+        assertTrue(service.installmentTermOffered(12));
+    }
+
+    @Test void anInstalmentTermIsOfferedOnlyWhileItsRuleIsActiveAndInEffect() {
+        when(rules.findByCode("INSTALLMENT_RATE_6")).thenReturn(Optional.of(rule("INSTALLMENT_RATE_6", "7", "ACTIVE", NOW.minusDays(1))));
+        when(rules.findByCode("INSTALLMENT_RATE_9")).thenReturn(Optional.of(rule("INSTALLMENT_RATE_9", "7", "INACTIVE", null)));
+        when(rules.findByCode("INSTALLMENT_RATE_12")).thenReturn(Optional.of(rule("INSTALLMENT_RATE_12", "7", "SCHEDULED", NOW.plusDays(3))));
+        assertTrue(service.installmentTermOffered(6));
+        assertFalse(service.installmentTermOffered(9));
+        assertFalse(service.installmentTermOffered(12));
+    }
+
+    @Test void anActiveInstalmentRuleThatStartsLaterIsNotOfferedYet() {
+        when(rules.findByCode("INSTALLMENT_RATE_6")).thenReturn(Optional.of(rule("INSTALLMENT_RATE_6", "7", "ACTIVE", NOW.plusHours(1))));
+        assertFalse(service.installmentTermOffered(6));
+    }
 }

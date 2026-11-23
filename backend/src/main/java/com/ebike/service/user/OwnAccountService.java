@@ -40,7 +40,9 @@ public class OwnAccountService {
         this.auditLog = auditLog;
     }
 
-    @Transactional
+    // READ_COMMITTED: the erasure counts the customer's open applications after it holds the account's lock; with the default snapshot, taken by the reads above
+    // it, an application committed while it waited for that lock would not be seen
+    @Transactional(isolation = org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
     public void deleteOwnAccount(Authentication authentication, DeleteOwnAccountRequest request) {
         if (authentication == null || authentication.getName() == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Vui lòng đăng nhập.");

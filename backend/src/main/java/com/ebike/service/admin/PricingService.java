@@ -25,6 +25,8 @@ public class PricingService {
     public static final String REGISTRATION_TAX_RATE_CENTRAL = "REGISTRATION_TAX_RATE_CENTRAL";
     /** Registration tax (lệ phí trước bạ), in percent, elsewhere. Shown for reference only. */
     public static final String REGISTRATION_TAX_RATE_OTHER = "REGISTRATION_TAX_RATE_OTHER";
+    /** V24: yearly flat interest rate (percent) of a simulated instalment plan, one rule per term: INSTALLMENT_RATE_6, _9, _12. */
+    public static final String INSTALLMENT_RATE_PREFIX = "INSTALLMENT_RATE_";
 
     // Used when a rule is missing or not yet in effect, so checkout keeps working on an older database.
     public static final BigDecimal DEFAULT_REGISTRATION_SERVICE = new BigDecimal("500000");
@@ -32,6 +34,15 @@ public class PricingService {
     public static final BigDecimal DEFAULT_HOME_DELIVERY_OTHER_PROVINCE = new BigDecimal("800000");
     public static final BigDecimal DEFAULT_REGISTRATION_TAX_RATE_CENTRAL = new BigDecimal("5");
     public static final BigDecimal DEFAULT_REGISTRATION_TAX_RATE_OTHER = new BigDecimal("2");
+
+    /** V24: the default yearly rate (percent) of a term when its rule is missing or not yet in effect. */
+    public static BigDecimal defaultInstallmentRate(int termMonths) {
+        return switch (termMonths) {
+            case 6 -> new BigDecimal("8");
+            case 9 -> new BigDecimal("9");
+            default -> new BigDecimal("10");
+        };
+    }
 
     private final PricingRuleRepository pricingRuleRepository;
     private final Clock clock;
@@ -73,6 +84,22 @@ public class PricingService {
 
     public BigDecimal registrationTaxRateOther() {
         return amount(REGISTRATION_TAX_RATE_OTHER, DEFAULT_REGISTRATION_TAX_RATE_OTHER);
+    }
+
+    /** V24: the yearly flat rate (percent) of an instalment term. */
+    public BigDecimal installmentRate(int termMonths) {
+        return amount(INSTALLMENT_RATE_PREFIX + termMonths, defaultInstallmentRate(termMonths));
+    }
+
+    /**
+     * V24: a term is offered with the rate the admin set, or with the default rate when it has no rule at all. A rule that is INACTIVE, SCHEDULED or not in
+     * effect yet switches the term off: offering it would show the customer the default rate, not the figure the admin typed.
+     */
+    public boolean installmentTermOffered(int termMonths) {
+        LocalDateTime now = LocalDateTime.now(clock);
+        return pricingRuleRepository.findByCode(INSTALLMENT_RATE_PREFIX + termMonths)
+            .map(rule -> "ACTIVE".equals(rule.getStatus()) && (rule.getEffectiveFrom() == null || !rule.getEffectiveFrom().isAfter(now)))
+            .orElse(true);
     }
 
     public BigDecimal homeDeliveryPerBike(boolean provinceHasShowroom) {

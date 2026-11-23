@@ -42,7 +42,7 @@ class VnPayLateResultTest {
         properties.setHashSecret(SECRET);
         properties.setPayUrl("https://sandbox.vnpayment.vn/paymentv2/vpcpay.html");
         properties.setReturnUrl("http://localhost:8080/payment/return");
-        service = new VnPayServiceImpl(properties, orders, payments, new ObjectMapper());
+        service = new VnPayServiceImpl(properties, orders, payments, org.mockito.Mockito.mock(com.ebike.repository.installment.InstallmentApplicationRepository.class), new ObjectMapper(), java.time.Duration.ofHours(72));
         order = new Order();
         order.setId(9L);
         order.setOrderNumber("ORD-LATE");
@@ -53,6 +53,8 @@ class VnPayLateResultTest {
         payment.setTransactionReference("TXN-LATE");
         order.setPayment(payment);
         when(payments.findByTransactionReference("TXN-LATE")).thenReturn(Optional.of(payment));
+        when(payments.findOrderIdByTransactionReference("TXN-LATE")).thenReturn(Optional.of(9L));
+        when(orders.findLockedById(9L)).thenReturn(Optional.of(order));
         when(payments.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
     }
 
@@ -86,6 +88,36 @@ class VnPayLateResultTest {
 
         assertEquals(OrderStatus.CANCELLED, order.getStatus());
         assertEquals(PaymentStatus.CANCELLED, payment.getPaymentStatus());
+    }
+
+    @Test void aCardPaymentOfAnOrderTheStoreAlreadyCollectedIsRecordedForRefund() {
+        order.setStatus(OrderStatus.CONFIRMED);
+        payment.setPaymentStatus(PaymentStatus.PAID);
+        payment.setProviderResponse("Thu tiền mặt");
+
+        var reply = service.handleIpnCallback(result("00"));
+        assertEquals("00", reply.get("RspCode"));
+        assertTrue(payment.getProviderResponse().startsWith("Thu tiền mặt"), "the staff's note stays");
+        assertTrue(payment.getProviderResponse().contains("DUPLICATE VNPAY PAYMENT 123456"));
+
+        // the gateway retrying the same notice, or the return page showing the same result, adds nothing
+        String once = payment.getProviderResponse();
+        service.handleIpnCallback(result("00"));
+        service.handleReturnUrl(result("00"));
+        assertEquals(once, payment.getProviderResponse());
+    }
+
+    @Test void theSamePaymentSeenAgainIsNotADuplicate() {
+        order.setStatus(OrderStatus.PENDING);
+        payment.setPaymentStatus(PaymentStatus.PENDING);
+        service.handleIpnCallback(result("00"));
+        String recorded = payment.getProviderResponse();
+
+        service.handleReturnUrl(result("00"));
+        service.handleIpnCallback(result("00"));
+
+        assertEquals(recorded, payment.getProviderResponse());
+        assertTrue(!payment.getProviderResponse().contains("DUPLICATE"));
     }
 
     @Test void onTimePaymentStillConfirmsTheOrder() {

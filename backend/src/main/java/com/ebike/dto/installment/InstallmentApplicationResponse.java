@@ -1,0 +1,39 @@
+package com.ebike.dto.installment;
+
+import java.math.BigDecimal;
+import java.time.OffsetDateTime;
+
+/**
+ * V24: an instalment application. {@code idNumberMasked} and {@code monthlyIncome} are null once the account is erased; {@code reviewedBy} is only filled
+ * for the staff's view. {@code payBefore} is when an approved application's down payment is due; {@code canPay} is true while the customer can pay it.
+ */
+public record InstallmentApplicationResponse(
+    Long id,
+    Long orderId,
+    String orderNumber,
+    String orderStatus,
+    String customerName,
+    String vehicles,
+    String idNumberMasked,
+    BigDecimal monthlyIncome,
+    BigDecimal orderTotal,
+    int downPaymentPercent,
+    BigDecimal downPayment,
+    BigDecimal financed,
+    int termMonths,
+    BigDecimal annualRatePercent,
+    BigDecimal monthlyPayment,
+    BigDecimal totalPayable,
+    String status,
+    String reviewNote,
+    String reviewedBy,
+    OffsetDateTime reviewedAt,
+    OffsetDateTime createdAt,
+    String paymentStatus,
+    OffsetDateTime payBefore,
+    /** The moment the order is cancelled if the staff have not decided by then; only while the application is waiting. */
+    OffsetDateTime reviewBefore,
+    boolean canPay,
+    boolean canDecide
+) {
+}

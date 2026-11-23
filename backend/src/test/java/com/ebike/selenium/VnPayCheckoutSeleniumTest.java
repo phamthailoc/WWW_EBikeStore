@@ -55,7 +55,7 @@ class VnPayCheckoutSeleniumTest extends StorefrontSeleniumTest {
 
         List<String> methods = new Select(driver.findElement(By.name("paymentMethod"))).getOptions()
             .stream().map(option -> option.getAttribute("value")).toList();
-        assertEquals(List.of("PAY_LATER", "VNPAY"), methods);
+        assertEquals(List.of("PAY_LATER", "VNPAY", "INSTALLMENT"), methods);
     }
 
     @Test

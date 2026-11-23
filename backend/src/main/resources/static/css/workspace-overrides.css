@@ -140,3 +140,27 @@ h1,h2,h3,.brand,.eyebrow,.metric b,.metric small{font-family:'Space Grotesk','Se
 @media(max-width:700px){.testride-dialog{padding:18px}.testride-slots{grid-template-columns:repeat(3,1fr)}}
 /* V23: count of test-ride requests waiting, on the staff menu */
 .menu-badge{margin-left:auto;min-width:20px;padding:2px 7px;border-radius:10px;background:var(--c-003b93);color:#fff;font:700 11px/16px 'DM Sans',sans-serif;text-align:center}
+/* V24: simulated instalments: the calculator on the bike page, the application at checkout and the panel on an order */
+.installment-box{margin:18px 0;padding:16px;border:1px solid var(--c-e2e6df);border-radius:12px}
+.installment-box h2{margin:0 0 10px;font-size:18px}
+.installment-box .muted{color:var(--c-6b7771);font-size:13px;margin:8px 0 0}
+.installment-slider{display:grid;gap:6px;font-size:14px}
+.installment-slider input[type=range]{width:100%}
+.installment-terms{border:0;margin:12px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:8px 16px}
+.installment-terms legend{font-size:14px;padding:0;margin-bottom:6px}
+.installment-terms label{display:inline-flex;align-items:center;gap:6px;font-size:14px}
+.installment-terms small{color:var(--c-6b7771)}
+.installment-figures{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 16px;margin:14px 0 0}
+.installment-figures div{min-width:0}
+.installment-figures dt{color:var(--c-6b7771);font-size:12px}
+.installment-figures dd{margin:2px 0 0;font-weight:700;overflow-wrap:anywhere}
+.installment-figures .installment-main{grid-column:1/-1}
+.installment-figures .installment-main dd{font-size:22px}
+.installment-problem{color:var(--c-c53a31);font-size:13px;margin:8px 0 0}
+.installment-problem:empty{display:none}
+.installment-form label{display:block;margin:12px 0 0;font-size:14px}
+.installment-form input:not([type=range]):not([type=radio]){width:100%;box-sizing:border-box;margin-top:6px}
+.installment-status{display:inline-block;margin-left:8px;padding:2px 10px;border-radius:10px;border:1px solid var(--c-e2e6df);font:600 12px/18px 'DM Sans',sans-serif;vertical-align:middle}
+.installment-status[data-status=APPROVED]{border-color:var(--c-149f50);color:var(--c-176437)}
+.installment-status[data-status=REJECTED]{border-color:var(--c-a33123);color:var(--c-a33123)}
+@media(max-width:700px){.installment-figures{grid-template-columns:1fr}.installment-figures .installment-main dd{font-size:20px}}

@@ -55,6 +55,10 @@ public class Order {
     @Transient
     private OrderStatus previousStatusForNotification;
 
+    /** Set by the code that already tells the customer about the status change in its own notice (not saved): the generic order notice is then skipped. */
+    @Transient
+    private boolean suppressStatusNotice;
+
     @Column(nullable = false, precision = 12, scale = 2)
     private BigDecimal subtotal = BigDecimal.ZERO;
 
@@ -113,6 +117,8 @@ public class Order {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
+    // the items of a list of orders (the instalment queue) load in batches of 50 orders instead of one query per row; only this collection is batched
+    @org.hibernate.annotations.BatchSize(size = 50)
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<OrderItem> items = new LinkedHashSet<>();
 
@@ -184,6 +190,14 @@ public class Order {
 
     public OrderStatus getPreviousStatusForNotification() {
         return previousStatusForNotification;
+    }
+
+    public boolean isSuppressStatusNotice() {
+        return suppressStatusNotice;
+    }
+
+    public void setSuppressStatusNotice(boolean suppressStatusNotice) {
+        this.suppressStatusNotice = suppressStatusNotice;
     }
 
     public BigDecimal getSubtotal() {

@@ -28,7 +28,8 @@ public class PaymentNotificationJpaListener {
             order.getId(),
             payment.getId(),
             order.getOrderNumber(),
-            payment.getPaymentStatus().name()
+            payment.getPaymentStatus().name(),
+            payment.getPaymentMethod() == null ? null : payment.getPaymentMethod().name()
         ));
     }
 }

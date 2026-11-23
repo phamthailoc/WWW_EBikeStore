@@ -68,6 +68,26 @@ class ServerRateLimitFilterTest {
         return response.getContentAsString();
     }
     @Test
+    void thePublicInstalmentConfigHasAFloodGuardPerAddress() throws Exception {
+        ServerRateLimitFilter filter = new ServerRateLimitFilter(true);
+        int status = 200;
+        int allowed = 0;
+        while (status == 200 && allowed < 200) {
+            MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/v1/installments/config");
+            request.setServletPath("/api/v1/installments/config");
+            request.setRemoteAddr("203.0.113.30");
+            MockHttpServletResponse response = new MockHttpServletResponse();
+            filter.doFilter(request, response, new MockFilterChain());
+            status = response.getStatus();
+            if (status == 200) {
+                allowed++;
+            }
+        }
+        assertEquals(429, status);
+        assertEquals(60, allowed);
+    }
+
+    @Test
     void switchedOffItNeverBlocks() throws Exception {
         ServerRateLimitFilter filter = new ServerRateLimitFilter(false);
         for (int i = 0; i < 10; i++) {

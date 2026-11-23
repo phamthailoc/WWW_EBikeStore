@@ -42,7 +42,7 @@ class UnpaidOrderExpiryTest {
     final LocalDateTime now = LocalDateTime.of(2026, 11, 6, 12, 0);
 
     @BeforeEach void setup() {
-        service = new OrderServiceImpl(orders, users, products, showrooms, promotions, verification, new com.ebike.service.admin.PricingService(pricingRules), org.mockito.Mockito.mock(com.ebike.service.admin.AuditLogService.class), org.mockito.Mockito.mock(com.ebike.service.stock.StockAlertService.class));
+        service = new OrderServiceImpl(orders, users, products, showrooms, promotions, verification, new com.ebike.service.admin.PricingService(pricingRules), org.mockito.Mockito.mock(com.ebike.service.admin.AuditLogService.class), org.mockito.Mockito.mock(com.ebike.service.stock.StockAlertService.class), org.mockito.Mockito.mock(com.ebike.service.installment.InstallmentPlanner.class), org.mockito.Mockito.mock(com.ebike.repository.installment.InstallmentApplicationRepository.class));
         product = new Product();
         product.setId(1L);
         product.setStockQuantity(5);
@@ -67,8 +67,26 @@ class UnpaidOrderExpiryTest {
         return order;
     }
 
+    /** The expiry job reads plain candidates first and then locks the orders it will cancel: this stubs both for the given orders. */
     private void stale(Order... found) {
-        when(orders.findByStatusAndCreatedAtBefore(eq(OrderStatus.PENDING), any())).thenReturn(List.of(found));
+        long nextId = 100;
+        List<OrderRepository.ExpiryCandidate> rows = new java.util.ArrayList<>();
+        for (Order order : found) {
+            if (order.getId() == null) {
+                order.setId(nextId++);
+            }
+            Payment payment = order.getPayment();
+            LocalDateTime createdAt = order.getCreatedAt();
+            Long id = order.getId();
+            org.mockito.Mockito.lenient().when(orders.findLockedById(id)).thenReturn(java.util.Optional.of(order));
+            rows.add(new OrderRepository.ExpiryCandidate() {
+                public Long getId() { return id; }
+                public LocalDateTime getCreatedAt() { return createdAt; }
+                public PaymentMethod getPaymentMethod() { return payment == null ? null : payment.getPaymentMethod(); }
+                public PaymentStatus getPaymentStatus() { return payment == null ? null : payment.getPaymentStatus(); }
+            });
+        }
+        when(orders.findExpiryCandidates(eq(OrderStatus.PENDING), any())).thenReturn(rows);
     }
 
     @Test void vnpayOrderLeftUnpaidForOver30MinutesIsCancelledAndStockReturned() {

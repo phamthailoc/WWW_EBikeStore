@@ -36,7 +36,11 @@ public class ServerRateLimitFilter extends OncePerRequestFilter {
         new RateLimitRule("warranty-lookup", HttpMethod.GET.name(), "/api/v1/warranty/lookup", 20, Duration.ofMinutes(1)),
         // V23: only a flood guard per address, wide enough for a showroom's shared computer or an office behind one address, because a refused
         // choice of a full slot counts here too. What stops one customer from filling a day of slots is the per-account limit in TestRideService.book.
-        new RateLimitRule("test-ride-book", HttpMethod.POST.name(), "/api/v1/test-rides", 60, Duration.ofMinutes(10))
+        new RateLimitRule("test-ride-book", HttpMethod.POST.name(), "/api/v1/test-rides", 60, Duration.ofMinutes(10)),
+        // V24: the calculator asks again as the slider moves (the page waits a moment between questions); a flood guard per address, wide enough for a shared computer
+        new RateLimitRule("installment-quote", HttpMethod.GET.name(), "/api/v1/installments/quote", 90, Duration.ofMinutes(1)),
+        // V24: the terms on offer are read from the pricing table (about six queries each time) and are public; each page of the calculator reads them once
+        new RateLimitRule("installment-config", HttpMethod.GET.name(), "/api/v1/installments/config", 60, Duration.ofMinutes(1))
     );
 
     private final boolean enabled;

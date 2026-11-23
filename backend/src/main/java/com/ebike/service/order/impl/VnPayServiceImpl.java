@@ -5,6 +5,9 @@ import com.ebike.dto.order.request.VnPayCreatePaymentRequest;
 import com.ebike.dto.order.response.VnPayCreatePaymentResponse;
 import com.ebike.dto.order.response.VnPayReturnResponse;
 import com.ebike.model.entity.order.Order;
+import com.ebike.model.entity.installment.InstallmentApplication;
+import com.ebike.repository.installment.InstallmentApplicationRepository;
+import com.ebike.service.installment.InstallmentRules;
 import com.ebike.model.entity.order.OrderStatus;
 import com.ebike.model.entity.order.Payment;
 import com.ebike.model.entity.order.PaymentMethod;
@@ -17,14 +20,17 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -33,23 +39,33 @@ public class VnPayServiceImpl implements VnPayService {
 
     private static final String SUCCESS_CODE = "00";
     private static final BigDecimal VNPAY_AMOUNT_MULTIPLIER = new BigDecimal("100");
-    private static final ZoneId VNPAY_ZONE = ZoneId.of("Asia/Ho_Chi_Minh");
+    private static final ZoneId VNPAY_ZONE = VnPayUtil.ZONE;
+    /** A down payment page is not opened with less of the hold left than this: the customer could not finish paying before the order is cancelled. */
+    private static final Duration MIN_HOLD_LEFT_TO_PAY = Duration.ofMinutes(2);
+    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(VnPayServiceImpl.class);
 
     private final VnPayProperties properties;
     private final OrderRepository orderRepository;
     private final PaymentRepository paymentRepository;
+    private final InstallmentApplicationRepository installmentApplications;
     private final ObjectMapper objectMapper;
+    // how long an approved instalment application waits for its down payment (the expiry job and the order page read the same setting)
+    private final Duration downPaymentHold;
 
     public VnPayServiceImpl(
         VnPayProperties properties,
         OrderRepository orderRepository,
         PaymentRepository paymentRepository,
-        ObjectMapper objectMapper
+        InstallmentApplicationRepository installmentApplications,
+        ObjectMapper objectMapper,
+        @Value("${app.order.installment-down-payment-hold:PT72H}") Duration downPaymentHold
     ) {
         this.properties = properties;
         this.orderRepository = orderRepository;
         this.paymentRepository = paymentRepository;
+        this.installmentApplications = installmentApplications;
         this.objectMapper = objectMapper;
+        this.downPaymentHold = downPaymentHold;
     }
 
     @Override
@@ -65,7 +81,8 @@ public class VnPayServiceImpl implements VnPayService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "orderId is required");
         }
 
-        Order order = orderRepository.findById(request.orderId())
+        // the order row is locked (the first read of the transaction): a payment attempt resets the payment row, so it must not run in the middle of a cancellation
+        Order order = orderRepository.findLockedById(request.orderId())
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
         if (
             !backOfficeUser
@@ -75,15 +92,34 @@ public class VnPayServiceImpl implements VnPayService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can only pay your own orders");
         }
         if (order.getStatus() == OrderStatus.CANCELLED) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot pay a cancelled order");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, com.ebike.common.i18n.RequestLanguage.text(
+                "Đơn hàng đã bị hủy nên không thanh toán được.", "Cannot pay a cancelled order."));
+        }
+        Payment existingPayment = paymentRepository.findByOrderId(request.orderId()).orElse(null);
+        // V24: an instalment order (its payment row is an INSTALLMENT one, or it has an application) is paid only after the staff approved the application,
+        // only for the down payment, and only until the down payment is due. An instalment payment whose application row is missing is refused too.
+        InstallmentApplication application = installmentApplications.findByOrderId(order.getId()).orElse(null);
+        Duration holdLeft = null;
+        boolean installmentOrder = application != null || (existingPayment != null && existingPayment.getPaymentMethod() == PaymentMethod.INSTALLMENT);
+        if (installmentOrder) {
+            if (application == null || !InstallmentApplication.APPROVED.equals(application.getStatus())) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, com.ebike.common.i18n.RequestLanguage.text(
+                    "Hồ sơ trả góp chưa được duyệt nên chưa thanh toán được khoản trả trước.", "The instalment application is not approved yet, so the down payment cannot be paid."));
+            }
+            // a page opened with only moments of the hold left could still be paid after the expiry job cancelled the order, so it is refused, and a page
+            // that outlasts the hold is closed at the end of it
+            holdLeft = application.getReviewedAt() == null ? null : Duration.between(LocalDateTime.now(), application.getReviewedAt().plus(downPaymentHold));
+            if (InstallmentRules.downPaymentOverdue(application.getReviewedAt(), downPaymentHold, LocalDateTime.now())
+                || (holdLeft != null && holdLeft.compareTo(MIN_HOLD_LEFT_TO_PAY) < 0)) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, com.ebike.common.i18n.RequestLanguage.text(
+                    "Đã quá hạn thanh toán khoản trả trước nên đơn hàng sắp bị hủy tự động.", "The down payment is overdue, so the order is about to be cancelled automatically."));
+            }
         }
 
-        Payment payment = paymentRepository.findByOrderId(request.orderId())
-            .map(existing -> prepareExistingPayment(existing, order))
-            .orElseGet(() -> createPendingPayment(order));
+        Payment payment = existingPayment != null ? prepareExistingPayment(existingPayment, order) : createPendingPayment(order);
 
         LocalDateTime now = LocalDateTime.now(VNPAY_ZONE);
-        LocalDateTime expireTime = now.plusMinutes(15);
+        LocalDateTime expireTime = now.plus(holdLeft != null && holdLeft.compareTo(VnPayUtil.PAYMENT_WINDOW) < 0 ? holdLeft : VnPayUtil.PAYMENT_WINDOW);
         Map<String, String> params = new HashMap<>();
         params.put("vnp_Version", "2.1.0");
         params.put("vnp_Command", "pay");
@@ -91,7 +127,8 @@ public class VnPayServiceImpl implements VnPayService {
         params.put("vnp_Amount", toVnPayAmount(payment.getAmount()));
         params.put("vnp_CurrCode", "VND");
         params.put("vnp_TxnRef", payment.getTransactionReference());
-        params.put("vnp_OrderInfo", "Thanh toan don hang " + order.getOrderNumber() + " - Kinetic E-Bike");
+        // the gateway shows this to the customer: an instalment order is paying its down payment only
+        params.put("vnp_OrderInfo", (installmentOrder ? "Tra truoc tra gop don " : "Thanh toan don hang ") + order.getOrderNumber() + " - Kinetic E-Bike");
         params.put("vnp_OrderType", "other");
         params.put("vnp_Locale", normalizeLocale(request.language()));
         params.put("vnp_ReturnUrl", properties.getReturnUrl());
@@ -117,19 +154,21 @@ public class VnPayServiceImpl implements VnPayService {
         );
     }
 
+    // READ_COMMITTED: the order is found through a bare id first; with the default snapshot, what is read after waiting for the order lock could be older than the lock
     @Override
-    @Transactional
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public Map<String, String> handleIpnCallback(Map<String, String> params) {
         if (!isValidSignature(params)) {
             return response("97", "Invalid signature");
         }
 
         String txnRef = params.get("vnp_TxnRef");
-        Payment payment = paymentRepository.findByTransactionReference(txnRef).orElse(null);
+        Payment payment = lockedPaymentOf(txnRef);
         if (payment == null) {
             return response("01", "Order not found");
         }
         if (!awaitsGatewayResult(payment)) {
+            recordDuplicatePayment(payment, params);
             return response(SUCCESS_CODE, "Order already confirmed");
         }
         if (!amountMatches(payment, params.get("vnp_Amount"))) {
@@ -141,15 +180,15 @@ public class VnPayServiceImpl implements VnPayService {
     }
 
     @Override
-    @Transactional
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public VnPayReturnResponse handleReturnUrl(Map<String, String> params) {
         boolean valid = isValidSignature(params);
-        Payment payment = valid
-            ? paymentRepository.findByTransactionReference(params.get("vnp_TxnRef")).orElse(null)
-            : null;
+        Payment payment = valid ? lockedPaymentOf(params.get("vnp_TxnRef")) : null;
 
         if (payment != null && awaitsGatewayResult(payment) && amountMatches(payment, params.get("vnp_Amount"))) {
             applyGatewayResult(payment, params);
+        } else if (payment != null && !awaitsGatewayResult(payment)) {
+            recordDuplicatePayment(payment, params);
         }
 
         BigDecimal amount = parseVnPayAmount(params.get("vnp_Amount"));
@@ -171,19 +210,42 @@ public class VnPayServiceImpl implements VnPayService {
         );
     }
 
+    /**
+     * The payment of a gateway reference, read after its order row is locked (the order first, then the payment, as every cancellation takes them), so
+     * a cancellation, the expiry job or the staff's confirmation running at the same moment is seen instead of being written over. Null when there is none.
+     */
+    private Payment lockedPaymentOf(String txnRef) {
+        if (txnRef == null || txnRef.isBlank()) {
+            return null;
+        }
+        Long orderId = paymentRepository.findOrderIdByTransactionReference(txnRef).orElse(null);
+        if (orderId == null) {
+            return null;
+        }
+        orderRepository.findLockedById(orderId);
+        return paymentRepository.findByTransactionReference(txnRef).orElse(null);
+    }
+
     private Payment prepareExistingPayment(Payment payment, Order order) {
         if (payment.getPaymentStatus() == PaymentStatus.PAID) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Order is already paid");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, com.ebike.common.i18n.RequestLanguage.text(
+                payment.getPaymentMethod() == PaymentMethod.INSTALLMENT ? "Khoản trả trước của đơn này đã được thanh toán." : "Đơn hàng đã được thanh toán.",
+                payment.getPaymentMethod() == PaymentMethod.INSTALLMENT ? "The down payment of this order is already paid." : "Order is already paid."));
         }
-        if (payment.getPaymentStatus() == PaymentStatus.PENDING && payment.getPaymentMethod() == PaymentMethod.VNPAY) {
-            payment.setAmount(order.getTotalAmount());
+        // V24: the payment row of an instalment order is its down payment: it keeps its amount and its method, only the gateway attempt is new
+        boolean installment = payment.getPaymentMethod() == PaymentMethod.INSTALLMENT;
+        BigDecimal amountDue = installment ? payment.getAmount() : order.getTotalAmount();
+        if (payment.getPaymentStatus() == PaymentStatus.PENDING && (payment.getPaymentMethod() == PaymentMethod.VNPAY || installment)) {
+            payment.setAmount(amountDue);
             payment.setCurrency("VND");
             payment.setTransactionReference(generateTxnRef(order));
             return payment;
         }
-        payment.setPaymentMethod(PaymentMethod.VNPAY);
+        if (!installment) {
+            payment.setPaymentMethod(PaymentMethod.VNPAY);
+        }
         payment.setPaymentStatus(PaymentStatus.PENDING);
-        payment.setAmount(order.getTotalAmount());
+        payment.setAmount(amountDue);
         payment.setCurrency("VND");
         payment.setTransactionReference(generateTxnRef(order));
         payment.setProviderTxnId(null);
@@ -223,8 +285,29 @@ public class VnPayServiceImpl implements VnPayService {
             return true;
         }
         return payment.getPaymentStatus() == PaymentStatus.CANCELLED
-            && payment.getPaymentMethod() == PaymentMethod.VNPAY
+            && (payment.getPaymentMethod() == PaymentMethod.VNPAY || payment.getPaymentMethod() == PaymentMethod.INSTALLMENT)
             && payment.getOrder().getStatus() == OrderStatus.CANCELLED;
+    }
+
+    /**
+     * A successful gateway payment arrived for a payment that is already paid by another channel (for example the staff took the down payment at the
+     * store while the customer was on the VNPay page): the customer has paid twice. Nothing else would show it, so it is written into the payment's
+     * provider response, where the staff see it and can refund it. The same payment arriving again (the IPN retry, then the return page) is not a duplicate.
+     */
+    private void recordDuplicatePayment(Payment payment, Map<String, String> params) {
+        String transactionNo = params.get("vnp_TransactionNo");
+        if (payment.getPaymentStatus() != PaymentStatus.PAID || !isGatewaySuccess(params) || !amountMatches(payment, params.get("vnp_Amount"))
+            || transactionNo == null || transactionNo.isBlank() || transactionNo.equals(payment.getProviderTxnId())) {
+            return;
+        }
+        String existing = payment.getProviderResponse() == null ? "" : payment.getProviderResponse();
+        String marker = "DUPLICATE VNPAY PAYMENT " + transactionNo;
+        if (existing.contains(marker)) {
+            return;
+        }
+        payment.setProviderResponse((existing.isEmpty() ? "" : existing + "\n") + marker + " - refund it: " + toJson(params));
+        paymentRepository.save(payment);
+        LOGGER.warn("Order {} was paid twice: VNPay transaction {} came in after the payment was already confirmed", payment.getOrder().getOrderNumber(), transactionNo);
     }
 
     private void applyGatewayResult(Payment payment, Map<String, String> params) {

@@ -1,5 +1,6 @@
 package com.ebike.service.manager.impl;
 
+import com.ebike.common.i18n.RequestLanguage;
 import com.ebike.model.entity.auth.Role;
 import com.ebike.model.entity.auth.User;
 import com.ebike.repository.auth.UserRepository;
@@ -16,6 +17,7 @@ import com.ebike.dto.manager.response.ManagerTopProductResponse;
 import com.ebike.service.admin.AuditLogService;
 import com.ebike.service.manager.ManagerService;
 import com.ebike.dto.order.response.OrderResponse;
+import com.ebike.model.entity.installment.InstallmentApplication;
 import com.ebike.model.entity.order.Order;
 import com.ebike.model.entity.order.OrderItem;
 import com.ebike.model.entity.order.OrderStatus;
@@ -24,8 +26,11 @@ import com.ebike.model.entity.order.PaymentMethod;
 import com.ebike.model.entity.order.PaymentStatus;
 import com.ebike.model.entity.order.Shipment;
 import com.ebike.model.entity.order.ShipmentStatus;
+import com.ebike.repository.installment.InstallmentApplicationRepository;
 import com.ebike.repository.order.OrderRepository;
 import com.ebike.repository.order.PaymentRepository;
+import com.ebike.service.installment.InstallmentRules;
+import com.ebike.util.order.VnPayUtil;
 import com.ebike.dto.product.response.ProductSummaryDto;
 import com.ebike.model.entity.product.Product;
 import com.ebike.model.entity.product.ProductVariant;
@@ -34,6 +39,7 @@ import com.ebike.service.product.ProductService;
 import com.ebike.service.stock.StockAlertRules;
 import com.ebike.service.stock.StockAlertService;
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
@@ -46,8 +52,10 @@ import java.util.Locale;
 import java.util.Map;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Caching;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -65,6 +73,9 @@ public class ManagerServiceImpl implements ManagerService {
     private final ProductService productService;
     private final AuditLogService auditLog;
     private final StockAlertService stockAlerts;
+    private final InstallmentApplicationRepository installments;
+    // how long an approved instalment application waits for its down payment (the expiry job reads the same setting)
+    private final Duration downPaymentHold;
 
     public ManagerServiceImpl(
         OrderRepository orderRepository,
@@ -73,7 +84,9 @@ public class ManagerServiceImpl implements ManagerService {
         ProductRepository productRepository,
         ProductService productService,
         AuditLogService auditLog,
-        StockAlertService stockAlerts
+        StockAlertService stockAlerts,
+        InstallmentApplicationRepository installments,
+        @Value("${app.order.installment-down-payment-hold:PT72H}") Duration downPaymentHold
     ) {
         this.orderRepository = orderRepository;
         this.paymentRepository = paymentRepository;
@@ -82,6 +95,8 @@ public class ManagerServiceImpl implements ManagerService {
         this.productService = productService;
         this.auditLog = auditLog;
         this.stockAlerts = stockAlerts;
+        this.installments = installments;
+        this.downPaymentHold = downPaymentHold;
     }
 
     @Override
@@ -116,6 +131,7 @@ public class ManagerServiceImpl implements ManagerService {
             totalOrders,
             pendingOrders,
             unpaidPayLaterOrders,
+            installments.countAwaitingDownPayment(),
             todayRevenue,
             weekRevenue,
             monthRevenue,
@@ -126,35 +142,96 @@ public class ManagerServiceImpl implements ManagerService {
     @Override
     @Transactional(readOnly = true)
     public List<ManagerPaymentResponse> getPayments(String paymentStatus, String paymentMethod, String search) {
-        return paymentRepository.findAll().stream()
+        List<Payment> shown = paymentRepository.findAll().stream()
             .filter(payment -> matchesPaymentStatus(payment, paymentStatus))
             .filter(payment -> matchesPaymentMethod(payment, paymentMethod))
             .filter(payment -> matchesPaymentSearch(payment, search))
             .sorted(Comparator.comparing((Payment payment) -> payment.getOrder().getCreatedAt()).reversed())
-            .map(this::toPaymentResponse)
+            .toList();
+        // one query for the applications of the instalment payments shown, not one per row
+        List<Long> instalmentOrderIds = shown.stream()
+            .filter(payment -> payment.getPaymentMethod() == PaymentMethod.INSTALLMENT)
+            .map(payment -> payment.getOrder().getId())
+            .toList();
+        Map<Long, InstallmentApplication> installmentApplications = new HashMap<>();
+        if (!instalmentOrderIds.isEmpty()) {
+            installments.findByOrderIdIn(instalmentOrderIds).forEach(a -> installmentApplications.put(a.getOrder().getId(), a));
+        }
+        return shown.stream()
+            .map(payment -> toPaymentResponse(payment, installmentApplications.get(payment.getOrder().getId())))
             .toList();
     }
 
+    // READ_COMMITTED: the payment's order is read as a bare id first; with the default snapshot, what is read after waiting for the order lock could be older than the lock
     @Override
-    @Transactional
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public ManagerPaymentResponse confirmPayLaterPayment(Long paymentId, ManagerPaymentConfirmationRequest request) {
+        // the order row first, then the payment (every cancellation and every gateway result takes them in this order), so a cancellation or the expiry job
+        // running at the same moment is seen here instead of being written over
+        Long orderId = paymentRepository.findOrderIdById(paymentId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, RequestLanguage.text("Không tìm thấy khoản thanh toán.", "Payment not found")));
+        Order lockedOrder = orderRepository.findLockedById(orderId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, RequestLanguage.text("Không tìm thấy đơn hàng.", "Order not found")));
         Payment payment = paymentRepository.findById(paymentId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Payment not found"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, RequestLanguage.text("Không tìm thấy khoản thanh toán.", "Payment not found")));
+        if (lockedOrder.getStatus() == OrderStatus.CANCELLED) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, RequestLanguage.text(
+                "Đơn hàng đã bị hủy nên không xác nhận thu tiền được. Hãy tải lại danh sách.",
+                "The order was cancelled, so the payment cannot be confirmed. Please reload the list."));
+        }
 
-        if (payment.getPaymentMethod() != PaymentMethod.PAY_LATER) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Only PAY_LATER payments can be confirmed manually");
+        // V24: the down payment of an instalment order can also be taken at the store, once the application is approved
+        boolean installment = payment.getPaymentMethod() == PaymentMethod.INSTALLMENT;
+        if (payment.getPaymentMethod() != PaymentMethod.PAY_LATER && !installment) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, RequestLanguage.text(
+                "Chỉ xác nhận thủ công được khoản trả sau hoặc khoản trả trước của đơn trả góp.", "Only pay-later or instalment down payments can be confirmed manually."));
+        }
+        if (installment) {
+            InstallmentApplication application = installments.findByOrderId(lockedOrder.getId()).orElse(null);
+            if (application == null || !InstallmentApplication.APPROVED.equals(application.getStatus())) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, RequestLanguage.text(
+                    "Hồ sơ trả góp chưa được duyệt nên chưa thu được khoản trả trước.", "The instalment application is not approved yet, so the down payment cannot be taken."));
+            }
+            // past the deadline the order is about to be cancelled by the expiry job: taking the money now would leave it to be refunded
+            if (InstallmentRules.downPaymentOverdue(application.getReviewedAt(), downPaymentHold, LocalDateTime.now())) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT, RequestLanguage.text(
+                    "Đã quá hạn thanh toán khoản trả trước nên đơn hàng sắp bị hủy tự động. Không thu thêm.",
+                    "The down payment is overdue, so the order is about to be cancelled automatically. Do not take it now."));
+            }
         }
         if (payment.getPaymentStatus() == PaymentStatus.PAID) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Payment is already marked as paid");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, RequestLanguage.text(
+                "Khoản thanh toán này đã được ghi nhận là đã thu.", "This payment is already marked as paid."));
         }
         if (payment.getPaymentStatus() == PaymentStatus.REFUNDED) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Refunded payments cannot be confirmed again");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, RequestLanguage.text(
+                "Khoản thanh toán đã hoàn tiền nên không xác nhận lại được.", "A refunded payment cannot be confirmed again."));
         }
-        if (payment.getPaymentStatus() != PaymentStatus.PENDING) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chỉ xác nhận được khoản trả sau đang chờ thu.");
+        // while a card payment page may still be open the customer could pay there too, and the store would have taken the money a second time
+        if (installment && payment.getPaymentStatus() == PaymentStatus.PENDING
+            && VnPayUtil.attemptMayBeOpen(payment.getTransactionReference(), LocalDateTime.now(VnPayUtil.ZONE))) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, RequestLanguage.text(
+                "Khách vừa mở trang thanh toán VNPay cho khoản này. Hãy đợi tối đa 15 phút để biết kết quả rồi mới thu tại cửa hàng.",
+                "The customer opened the VNPay page for this payment a moment ago. Wait up to 15 minutes for its result before taking it at the store."));
         }
-        if (payment.getOrder().getStatus() == OrderStatus.CANCELLED) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Đơn hàng đã hủy, không thể xác nhận thu tiền.");
+        // a down payment whose card payment failed can still be taken at the store; the failed attempt is forgotten
+        boolean retryAtStore = installment && payment.getPaymentStatus() == PaymentStatus.FAILED;
+        if (payment.getPaymentStatus() != PaymentStatus.PENDING && !retryAtStore) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, installment
+                ? RequestLanguage.text(
+                    "Chỉ thu được khoản trả trước đang chờ thanh toán hoặc có lần thanh toán thẻ bị lỗi.",
+                    "Only a down payment that is waiting, or whose card payment failed, can be taken.")
+                : RequestLanguage.text(
+                    "Chỉ xác nhận được khoản trả sau đang chờ thu.",
+                    "Only a pay-later payment that is waiting to be collected can be confirmed."));
+        }
+        if (retryAtStore) {
+            payment.setProviderTxnId(null);
+            payment.setProviderResponse(null);
+            payment.setVnpayResponseCode(null);
+            payment.setVnpayBankCode(null);
+            payment.setVnpayCardType(null);
+            payment.setVnpaySecureHash(null);
         }
 
         payment.setPaymentStatus(PaymentStatus.PAID);
@@ -166,7 +243,7 @@ public class ManagerServiceImpl implements ManagerService {
             payment.setProviderResponse(request.note().trim());
         }
 
-        Order order = payment.getOrder();
+        Order order = lockedOrder;
         if (order.getStatus() == OrderStatus.PENDING) {
             order.setStatus(OrderStatus.CONFIRMED);
         }
@@ -546,6 +623,12 @@ public class ManagerServiceImpl implements ManagerService {
     }
 
     private ManagerPaymentResponse toPaymentResponse(Payment payment) {
+        InstallmentApplication application = payment.getPaymentMethod() != PaymentMethod.INSTALLMENT ? null
+            : installments.findByOrderId(payment.getOrder().getId()).orElse(null);
+        return toPaymentResponse(payment, application);
+    }
+
+    private ManagerPaymentResponse toPaymentResponse(Payment payment, InstallmentApplication application) {
         Order order = payment.getOrder();
         Shipment shipment = order.getShipment();
 
@@ -564,7 +647,10 @@ public class ManagerServiceImpl implements ManagerService {
             payment.getProviderResponse(),
             payment.getPaidAt(),
             order.getCreatedAt(),
-            order.getStatus().name()
+            order.getStatus().name(),
+            application == null ? null : application.getStatus(),
+            application != null && InstallmentApplication.APPROVED.equals(application.getStatus())
+                && InstallmentRules.downPaymentOverdue(application.getReviewedAt(), downPaymentHold, LocalDateTime.now())
         );
     }
 
