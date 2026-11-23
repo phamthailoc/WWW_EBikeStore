@@ -124,6 +124,33 @@ class OrderCheckoutTest {
         assertEquals(0, homeFee("  ",1).compareTo(BigDecimal.ZERO));
     }
 
+    private com.ebike.model.entity.order.Order placeGuestOrder() {
+        stock(); showroomIn("TP. Ho Chi Minh");
+        var saved=org.mockito.ArgumentCaptor.forClass(com.ebike.model.entity.order.Order.class);
+        when(orders.save(saved.capture())).thenAnswer(invocation -> invocation.getArgument(0));
+        var req=new OrderCreateRequest(null,"Khách Hàng","0901234567","checkout@example.com",null,
+            null,"123 Nguyễn Trãi, Phường Bến Thành","PAY_LATER",null,BigDecimal.ZERO,null,false,null,
+            List.of(new OrderCreateItemRequest(1L,1)),"HOME_DELIVERY","Hà Nội");
+        service.createOrder(req,null);
+        return saved.getValue();
+    }
+
+    @Test void theOrderRecordsTheLanguageOfTheCheckoutPageForTheHandOverEmail() {
+        org.springframework.web.context.request.RequestContextHolder.setRequestAttributes(
+            new org.springframework.web.context.request.ServletRequestAttributes(new org.springframework.mock.web.MockHttpServletRequest()));
+        org.springframework.context.i18n.LocaleContextHolder.setLocale(java.util.Locale.ENGLISH);
+        try {
+            assertEquals("en", placeGuestOrder().getCustomerLanguage());
+        } finally {
+            org.springframework.context.i18n.LocaleContextHolder.resetLocaleContext();
+            org.springframework.web.context.request.RequestContextHolder.resetRequestAttributes();
+        }
+    }
+
+    @Test void theOrderRecordsVietnameseWhenThePageIsVietnameseOrThereIsNoRequest() {
+        assertEquals("vi", placeGuestOrder().getCustomerLanguage());
+    }
+
     @Test void orderTotalIncludesTheDeliveryFeeAndIgnoresTheClientsOwn() {
         stock(); save();showroomIn("TP. Ho Chi Minh");
         var req=new OrderCreateRequest(null,"Khách Hàng","0901234567","checkout@example.com",null,
