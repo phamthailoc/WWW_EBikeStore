@@ -1,0 +1,112 @@
+// V33: "how much does an electric bike save" calculator on the bike page. The rider types the kilometres a day and the days a month; the server compares the
+// cost of charging this bike with the petrol of a motorbike of the same class, using the prices the admin set. Open to everyone, visitors included.
+(() => {
+  'use strict';
+  const page = document.querySelector('#productPage');
+  const box = document.querySelector('#savingsBox');
+  if (!page || !box || !page.dataset.slug) return;
+  const body = box.querySelector('[data-body]');
+  const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
+  const localeTag = () => document.documentElement.lang === 'en' ? 'en-GB' : 'vi-VN';
+  const money = value => window.KineticCart ? window.KineticCart.money(value) : new Intl.NumberFormat('vi-VN').format(Number(value) || 0) + ' ₫';
+  // prices and consumption come from DECIMAL columns ("1.80"): shown as 1.8 (1,8 in Vietnamese), never with trailing zeros
+  const plain = value => new Intl.NumberFormat(localeTag(), {maximumFractionDigits: 2}).format(Number(value) || 0);
+  const DEFAULT_KM = 20, DEFAULT_DAYS = 26;
+  let limits = {maxKmPerDay: 300, maxDaysPerMonth: 31};
+  let sequence = 0, timer = null;
+
+  async function request(km, days) {
+    const response = await fetch(`/api/v1/products/${encodeURIComponent(page.dataset.slug)}/savings?kmPerDay=${km}&daysPerMonth=${days}`, {
+      credentials: 'same-origin', headers: {Accept: 'application/json'}
+    });
+    if (!response.ok) {
+      let message = '';
+      try { message = (await response.json()).message || ''; } catch (ignored) { /* not JSON */ }
+      const error = Error(response.status === 429 ? t('Bạn thao tác quá nhanh. Vui lòng thử lại sau ít phút.') : message || t('Không thực hiện được. Vui lòng thử lại sau.'));
+      error.status = response.status;
+      throw error;
+    }
+    return response.json();
+  }
+
+  const field = name => body.querySelector(`[name="${name}"]`);
+  const wholeNumber = (input, max) => {
+    const text = String(input.value).trim();
+    if (!/^\d{1,4}$/.test(text)) return null;
+    const value = Number(text);
+    return value >= 1 && value <= max ? value : null;
+  };
+  const paintProblem = text => { const slot = body.querySelector('[data-result]'); if (slot) slot.innerHTML = `<p class="installment-problem" role="alert">${esc(text)}</p>`; };
+
+  function paintResult(r) {
+    const slot = body.querySelector('[data-result]');
+    if (!slot) return;
+    const head = r.saves
+      ? `<div class="installment-main"><dt>${t('Mỗi tháng bạn tiết kiệm khoảng')}</dt><dd data-field="monthly-saving">${esc(money(r.monthlySaving))}</dd></div>
+         <div><dt>${t('Mỗi năm tiết kiệm khoảng')}</dt><dd data-field="yearly-saving">${esc(money(r.yearlySaving))}</dd></div>`
+      : `<div class="installment-main"><dt>${t('Kết quả')}</dt><dd data-field="no-saving">${t('Với giá hiện tại, xe này không rẻ hơn xe xăng cùng phân khúc.')}</dd></div>`;
+    slot.innerHTML = `<dl class="installment-figures savings-figures">${head}
+        <div><dt>${t('Tiền sạc mỗi tháng')}</dt><dd data-field="electric">${esc(money(r.monthlyElectricityCost))}</dd></div>
+        <div><dt>${t('Tiền xăng mỗi tháng')}</dt><dd data-field="petrol">${esc(money(r.monthlyPetrolCost))}</dd></div>
+        <div><dt>${t('Sạc 100 km')}</dt><dd>${esc(money(r.electricityCostPer100Km))}</dd></div>
+        <div><dt>${t('Xăng 100 km')}</dt><dd>${esc(money(r.petrolCostPer100Km))}</dd></div></dl>
+      <p class="muted" data-assumptions>${esc(t('Ước tính theo {km} km mỗi tháng. Pin khoảng {kwh} kWh, hao {use} kWh cho 100 km (đã tính quãng đường thực tế bằng {range}% công bố và hiệu suất sạc {eff}%). Giá điện {electric} mỗi kWh; xe máy xăng cùng phân khúc tiêu hao {liters} lít/100 km, giá xăng {petrol} mỗi lít. Chỉ mang tính tham khảo, không cộng vào đơn hàng.', {
+        km: plain(r.monthlyKm), kwh: plain(r.batteryKwh), use: plain(r.kwhPer100Km), range: r.realRangePercent, eff: r.chargerEfficiencyPercent,
+        electric: money(r.electricityPricePerKwh), liters: plain(r.petrolLitersPer100Km), petrol: money(r.petrolPricePerLiter)
+      }))}</p>`;
+  }
+
+  async function refresh() {
+    const mine = ++sequence;
+    const km = wholeNumber(field('kmPerDay'), limits.maxKmPerDay), days = wholeNumber(field('daysPerMonth'), limits.maxDaysPerMonth);
+    if (km === null) { paintProblem(t('Nhập số km mỗi ngày là số nguyên từ 1 đến {max}.', {max: limits.maxKmPerDay})); return; }
+    if (days === null) { paintProblem(t('Nhập số ngày đi mỗi tháng là số nguyên từ 1 đến {max}.', {max: limits.maxDaysPerMonth})); return; }
+    try {
+      const answer = await request(km, days);
+      if (mine !== sequence) return; // an older answer arriving late
+      if (!answer.calculable) { showUnavailable(answer); return; }
+      paintResult(answer);
+    } catch (error) {
+      if (mine !== sequence) return;
+      paintProblem(error.message);
+    }
+  }
+  const later = () => { clearTimeout(timer); timer = setTimeout(refresh, 300); };
+
+  function showUnavailable(answer) {
+    // a battery pack or an accessory has nothing to compare: stay hidden; a bike without its figures says so
+    if (!answer.applicable) { box.hidden = true; return; }
+    body.innerHTML = `<p class="muted" data-unavailable>${esc(answer.message || t('Chưa tính được cho xe này.'))}</p>`;
+    box.hidden = false;
+  }
+
+  function showForm(first) {
+    limits = {maxKmPerDay: first.maxKmPerDay, maxDaysPerMonth: first.maxDaysPerMonth};
+    body.innerHTML = `<p class="muted">${t('Nhập quãng đường bạn đi để so tiền sạc với tiền xăng của xe máy cùng phân khúc.')}</p>
+      <div class="savings-inputs">
+        <label>${t('Số km mỗi ngày')}<input name="kmPerDay" type="number" inputmode="numeric" min="1" max="${limits.maxKmPerDay}" step="1" value="${DEFAULT_KM}" autocomplete="off"></label>
+        <label>${t('Số ngày đi mỗi tháng')}<input name="daysPerMonth" type="number" inputmode="numeric" min="1" max="${limits.maxDaysPerMonth}" step="1" value="${DEFAULT_DAYS}" autocomplete="off"></label>
+      </div>
+      <div data-result aria-live="polite"></div>`;
+    body.querySelectorAll('input').forEach(input => input.addEventListener('input', later));
+    paintResult(first);
+    box.hidden = false;
+  }
+
+  function showFailure(error) {
+    if (error.status === 404) { box.hidden = true; return; } // the bike was hidden or removed while the page was open
+    body.innerHTML = `<p class="installment-problem" role="alert">${esc(error.message)}</p><p><button type="button" class="button compact ghost" data-retry>${t('Thử lại')}</button></p>`;
+    body.querySelector('[data-retry]').addEventListener('click', start);
+    box.hidden = false;
+  }
+
+  async function start() {
+    try {
+      const first = await request(DEFAULT_KM, DEFAULT_DAYS);
+      if (!first.calculable) { showUnavailable(first); return; }
+      showForm(first);
+    } catch (error) { showFailure(error); }
+  }
+
+  start();
+})();
