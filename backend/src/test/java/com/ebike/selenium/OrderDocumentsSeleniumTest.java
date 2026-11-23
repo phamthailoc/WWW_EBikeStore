@@ -336,7 +336,7 @@ class OrderDocumentsSeleniumTest extends StorefrontSeleniumTest {
             openOrder(orderId);
             assertTrue((Boolean) js("return document.documentElement.scrollWidth <= window.innerWidth + 1"), "no sideways scroll on a phone: " + js(
                 "return 'inner=' + window.innerWidth + ' scroll=' + document.documentElement.scrollWidth + ' wide=' + [...document.querySelectorAll('body *')]"
-                + ".filter(e => e.getBoundingClientRect().right > window.innerWidth + 1).slice(0, 8)"
+                + ".filter(e => e.getBoundingClientRect().right > window.innerWidth + 1 && !e.closest('[style*=overflow], nav, .tabs, .nav-scroll') && !(function(x){for(x=x.parentElement;x;x=x.parentElement){var o=getComputedStyle(x).overflowX;if(o==='auto'||o==='scroll'||o==='hidden')return true;}return false;})(e)).slice(0, 8)"
                 + ".map(e => e.tagName + '#' + e.id + '.' + e.className + ':' + Math.round(e.getBoundingClientRect().right)).join(' | ')"));
             assertTrue(driver.findElement(PANEL).isDisplayed());
         } finally {
@@ -398,7 +398,7 @@ class OrderDocumentsSeleniumTest extends StorefrontSeleniumTest {
             wait.until(ExpectedConditions.visibilityOfElementLocated(PANEL));
             assertTrue((Boolean) js("return document.documentElement.scrollWidth <= window.innerWidth + 1"), "no sideways scroll on a phone: " + js(
                 "return 'inner=' + window.innerWidth + ' scroll=' + document.documentElement.scrollWidth + ' wide=' + [...document.querySelectorAll('body *')]"
-                + ".filter(e => e.getBoundingClientRect().right > window.innerWidth + 1).slice(0, 8)"
+                + ".filter(e => e.getBoundingClientRect().right > window.innerWidth + 1 && !e.closest('[style*=overflow], nav, .tabs, .nav-scroll') && !(function(x){for(x=x.parentElement;x;x=x.parentElement){var o=getComputedStyle(x).overflowX;if(o==='auto'||o==='scroll'||o==='hidden')return true;}return false;})(e)).slice(0, 8)"
                 + ".map(e => e.tagName + '#' + e.id + '.' + e.className + ':' + Math.round(e.getBoundingClientRect().right)).join(' | ')"));
             assertTrue((Boolean) js("return [...document.querySelectorAll('#orderDocuments select, #orderDocuments button')].length === 4 "
                 + "&& [...document.querySelectorAll('#orderDocuments select, #orderDocuments button')].every(e => { const r = e.getBoundingClientRect(); return r.width > 0 && r.left >= 0 && r.right <= window.innerWidth + 1; })"),
