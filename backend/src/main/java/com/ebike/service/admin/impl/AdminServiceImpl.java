@@ -132,7 +132,7 @@ public class AdminServiceImpl implements AdminService {
             if (request.amount().signum() <= 0 || request.amount().compareTo(ceiling) > 0) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, RequestLanguage.text(
                     "Giá trị phải lớn hơn 0 và không vượt " + ceiling.toPlainString() + " (" + rule.getUnit() + ").",
-                    "The value must be above 0 and not exceed " + ceiling.toPlainString() + " (" + rule.getUnit() + ")."));
+                    "The value must be above 0 and not exceed " + ceiling.toPlainString() + " (" + englishUnit(rule.getUnit()) + ")."));
             }
         }
 
@@ -546,6 +546,11 @@ public class AdminServiceImpl implements AdminService {
     }
 
     /** V33: the largest value an admin may type for a rule of the savings calculator (a typo guard, well above any real figure). */
+    /** The units are stored in Vietnamese ("VND/lít", "lít/100 km"); an English message names them in English. */
+    private static String englishUnit(String unit) {
+        return unit == null ? "" : unit.replace("lít/100 km", "litres/100 km").replace("lít", "litre");
+    }
+
     private static BigDecimal savingsCeiling(String code) {
         if (PricingService.SAVINGS_ELECTRICITY_PRICE.equals(code)) {
             return new BigDecimal("20000");
