@@ -164,16 +164,20 @@ public class StockReceiptService {
         List<ProductVariant> allColours = bikes.values().stream().flatMap(product -> product.getVariants().stream()).toList();
         ledger.lock(bikes.values(), allColours);
 
+        // every line is checked against the figures just read under the lock before the first one is applied
+        for (Resolved line : resolved) {
+            Integer current = line.variant() != null ? line.variant().getStockQuantity() : line.product().getStockQuantity();
+            if (!StockRules.fitsOnShelf(current, line.quantity())) {
+                throw bad("Dòng " + line.number() + ": tồn kho sau khi nhập sẽ vượt " + StockRules.MAX_STOCK + " xe.",
+                    "Line " + line.number() + ": the stock after receiving would exceed " + StockRules.MAX_STOCK + " bikes.");
+            }
+        }
         List<StockLedger.Entry> entries = new ArrayList<>();
         List<ProductVariant> backInStock = new ArrayList<>();
         for (Resolved line : resolved) {
             Product product = line.product();
             ProductVariant variant = line.variant();
             Integer before = variant != null ? variant.getStockQuantity() : product.getStockQuantity();
-            if (!StockRules.fitsOnShelf(before, line.quantity())) {
-                throw bad("Dòng " + line.number() + ": tồn kho sau khi nhập sẽ vượt " + StockRules.MAX_STOCK + " xe.",
-                    "Line " + line.number() + ": the stock after receiving would exceed " + StockRules.MAX_STOCK + " bikes.");
-            }
             int after = orZero(before) + line.quantity();
             if (variant != null) {
                 variant.setStockQuantity(after);
