@@ -134,8 +134,9 @@ class DocumentModelsTest {
 
         Map<String, Object> payment = map(DocumentModels.receipt(order, null, DocumentFixtures.store(), "vi", NOW).get("payment"));
 
-        assertEquals("Chưa có giao dịch", payment.get("method"));
-        assertNull(payment.get("status"));
+        // checkout makes no payment row for VNPay until the first link is made: the order says VNPay, with no transaction yet
+        assertEquals("VNPay", payment.get("method"));
+        assertEquals("Chưa có giao dịch", payment.get("status"));
     }
 
     @Test

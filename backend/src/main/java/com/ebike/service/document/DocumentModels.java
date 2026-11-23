@@ -122,7 +122,9 @@ public final class DocumentModels {
         block.put("reference", null);
         block.put("installment", null);
         if (payment == null) {
-            block.put("method", DocumentText.text(lang, "receipt.noPayment"));
+            // checkout creates no payment row for VNPay until the first payment link is made, so an order without one is a VNPay order still waiting to be paid
+            block.put("method", DocumentText.text(lang, "method.VNPAY"));
+            block.put("status", DocumentText.text(lang, "receipt.noPayment"));
             return block;
         }
         PaymentMethod method = payment.getPaymentMethod();
