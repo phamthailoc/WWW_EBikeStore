@@ -21,7 +21,7 @@ public interface WarrantyClaimRepository extends JpaRepository<WarrantyClaim, Lo
 
     @EntityGraph(attributePaths = {"unit", "unit.orderItem", "unit.orderItem.order", "unit.orderItem.order.shipment", "unit.orderItem.order.payment",
         "unit.orderItem.product", "unit.orderItem.product.specification", "unit.orderItem.productVariant", "user", "user.preference"})
-    List<WarrantyClaim> findByUserUsernameOrderByCreatedAtDesc(String username);
+    List<WarrantyClaim> findByUserUsernameOrderByCreatedAtDescIdDesc(String username);
 
     @EntityGraph(attributePaths = {"unit", "unit.orderItem", "unit.orderItem.order", "unit.orderItem.order.shipment", "unit.orderItem.order.payment",
         "unit.orderItem.product", "unit.orderItem.product.specification", "unit.orderItem.productVariant", "user", "user.preference"})

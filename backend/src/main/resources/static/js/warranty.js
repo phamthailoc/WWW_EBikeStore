@@ -88,7 +88,7 @@ window.KineticWarranty = (() => {
       panel.innerHTML = `<h2>${t('Yêu cầu bảo hành đã gửi')}</h2><p class="muted">${t('Bạn chưa gửi yêu cầu bảo hành nào.')}</p>`;
       return;
     }
-    const head = [t('Xe'), t('Số khung'), t('Mô tả lỗi'), t('Trạng thái'), t('Ghi chú của cửa hàng'), t('Ngày gửi')].map(name => `<th>${name}</th>`).join('');
+    const head = [t('Xe'), t('Số khung'), t('Mô tả sự cố'), t('Trạng thái'), t('Ghi chú của cửa hàng'), t('Ngày gửi')].map(name => `<th>${name}</th>`).join('');
     const body = rows.map(row => `<tr data-claim="${row.id}"><td>${esc(row.productName)}${row.colorName ? ' · ' + esc(row.colorName) : ''}</td><td>${esc(row.frameNumber)}</td><td>${esc(row.description)}</td><td data-field="claimStatus" data-status="${esc(row.status)}">${esc(statusText[row.status] || row.status)}${row.outOfWarranty ? ` <small>(${t('ngoài bảo hành, có tính phí')})</small>` : ''}</td><td data-field="staffNote">${esc(row.staffNote || '—')}</td><td>${esc(day(row.createdAt))}</td></tr>`).join('');
     panel.innerHTML = `<h2>${t('Yêu cầu bảo hành đã gửi')}</h2><div class="table-scroll"><table><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>`;
   }

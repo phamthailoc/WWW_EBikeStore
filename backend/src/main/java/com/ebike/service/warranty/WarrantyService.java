@@ -139,7 +139,7 @@ public class WarrantyService {
     @Transactional(readOnly = true)
     public List<WarrantyClaimResponse> claimsOf(String username) {
         requireUsername(username);
-        return claims.findByUserUsernameOrderByCreatedAtDesc(username).stream().map(this::toClaimResponse).toList();
+        return claims.findByUserUsernameOrderByCreatedAtDescIdDesc(username).stream().map(this::toClaimResponse).toList();
     }
 
     /** A customer asks for warranty service on one of their delivered vehicles. After the warranty ended the request is still taken, marked as a paid repair. */
