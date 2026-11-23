@@ -20,7 +20,7 @@ public final class SavingsRules {
     /** Far beyond what one rider covers in a day, so a typo in the box (such as 5000) is refused instead of shown as a huge saving. */
     public static final int MAX_KM_PER_DAY = 300;
     public static final int MIN_DAYS_PER_MONTH = 1;
-    public static final int MAX_DAYS_PER_MONTH = 31;
+    public static final int MAX_DAYS_PER_MONTH = 30;
     /** The range printed in the specification is measured in the best case; on the road it is lower. */
     public static final int REAL_RANGE_PERCENT = 80;
     /** Share of the energy drawn from the socket that reaches the battery. */

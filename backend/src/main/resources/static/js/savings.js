@@ -12,7 +12,7 @@
   // prices and consumption come from DECIMAL columns ("1.80"): shown as 1.8 (1,8 in Vietnamese), never with trailing zeros
   const plain = value => new Intl.NumberFormat(localeTag(), {maximumFractionDigits: 2}).format(Number(value) || 0);
   const DEFAULT_KM = 20, DEFAULT_DAYS = 26;
-  let limits = {maxKmPerDay: 300, maxDaysPerMonth: 31};
+  let limits = {maxKmPerDay: 300, maxDaysPerMonth: 30};
   let sequence = 0, timer = null;
 
   async function request(km, days) {

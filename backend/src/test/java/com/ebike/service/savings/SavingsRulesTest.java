@@ -83,8 +83,8 @@ class SavingsRulesTest {
         assertTrue(SavingsRules.isValidKmPerDay(SavingsRules.MAX_KM_PER_DAY));
         assertFalse(SavingsRules.isValidKmPerDay(0));
         assertFalse(SavingsRules.isValidKmPerDay(SavingsRules.MAX_KM_PER_DAY + 1));
-        assertTrue(SavingsRules.isValidDaysPerMonth(31));
-        assertFalse(SavingsRules.isValidDaysPerMonth(32));
+        assertTrue(SavingsRules.isValidDaysPerMonth(30));
+        assertFalse(SavingsRules.isValidDaysPerMonth(31));
         assertFalse(SavingsRules.isValidDaysPerMonth(0));
     }
 }
