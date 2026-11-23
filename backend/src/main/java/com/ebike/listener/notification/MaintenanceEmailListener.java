@@ -33,7 +33,7 @@ public class MaintenanceEmailListener {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void onMaintenanceDue(MaintenanceDueEvent event) {
         userRepository.findById(event.userId()).ifPresent(user -> {
-            if ("DELETED".equals(user.getAccountStatus())) {
+            if (!"ACTIVE".equals(user.getAccountStatus()) || Boolean.FALSE.equals(user.getActive())) { // erased or locked: no reminder
                 return;
             }
             var preference = userPreferenceRepository.findByUserId(user.getId());
