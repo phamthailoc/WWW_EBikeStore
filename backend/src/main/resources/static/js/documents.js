@@ -40,6 +40,14 @@ window.KineticDocuments = (() => {
     setTimeout(() => URL.revokeObjectURL(href), 60000);
   }
 
+  // a button may name a language picker (data-doc-lang-from): the staff choose the language of the customer, not their own
+  function withLanguage(button) {
+    const picker = button.dataset.docLangFrom ? document.querySelector(button.dataset.docLangFrom) : null;
+    const url = button.dataset.docUrl;
+    if (!picker || !picker.value) return url;
+    return url + (url.includes('?') ? '&' : '?') + 'lang=' + encodeURIComponent(picker.value);
+  }
+
   document.addEventListener('click', async event => {
     const button = event.target.closest('[data-doc-url]');
     if (!button) return;
@@ -50,7 +58,7 @@ window.KineticDocuments = (() => {
     button.disabled = true;
     button.textContent = t('Đang tạo PDF…');
     try {
-      await download(button.dataset.docUrl, button.dataset.docName);
+      await download(withLanguage(button), button.dataset.docName);
       tell(t('Đã tải tệp PDF.'));
     } catch (error) {
       tell(error.message, true);

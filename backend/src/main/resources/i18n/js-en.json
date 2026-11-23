@@ -768,5 +768,7 @@
  "Phiếu bảo hành có sau khi xe được bàn giao.": "The warranty card is available once the bike has been handed over.",
  "Không tải được tệp PDF. Vui lòng thử lại.": "The PDF could not be downloaded. Please try again.",
  "Đang tạo PDF…": "Creating PDF…",
- "Đã tải tệp PDF.": "PDF downloaded."
+ "Đã tải tệp PDF.": "PDF downloaded.",
+ "Ngôn ngữ của phiếu": "Document language",
+ "Theo ngôn ngữ trang": "Same as this page"
 }
