@@ -76,7 +76,7 @@ class SavingsCalculatorSeleniumTest extends StorefrontSeleniumTest {
      */
     private void type(By locator, String value) {
         WebElement input = driver.findElement(locator);
-        input.click();
+        click(input); // scrolls the box to the middle first: a sticky bar can cover it at the bottom of the page
         input.sendKeys(Keys.chord(Keys.CONTROL, "a"));
         input.sendKeys(value.isEmpty() ? Keys.BACK_SPACE.toString() : value);
     }
