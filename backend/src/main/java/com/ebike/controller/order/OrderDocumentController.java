@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * V27: downloads of the sales receipt and the warranty card of one order. The language is the one of the page asking (the device's choice, else
+ * the account's), unless {@code lang=vi|en} says otherwise. That choice is only the language of the document: the texts of an error stay in the language of the page asking. The files carry personal data, so they are never cached.
  * the account's), unless {@code lang=vi|en} says otherwise. The files carry personal data, so they are never cached.
  */
 @RestController
@@ -32,7 +32,7 @@ public class OrderDocumentController {
 
     @GetMapping("/receipt")
     public ResponseEntity<byte[]> receipt(@PathVariable Long id, @RequestParam(required = false) String lang, Authentication authentication) {
-        return pdf(documents.receipt(id, authentication, language(lang)));
+        return pdf(documents.receipt(id, authentication, language(lang), RequestLanguage.current()));
     }
 
     @GetMapping("/warranty-card")
@@ -42,7 +42,7 @@ public class OrderDocumentController {
         @RequestParam(required = false) String lang,
         Authentication authentication
     ) {
-        return pdf(documents.warrantyCard(id, unitId, authentication, language(lang)));
+        return pdf(documents.warrantyCard(id, unitId, authentication, language(lang), RequestLanguage.current()));
     }
 
     private static String language(String requested) {

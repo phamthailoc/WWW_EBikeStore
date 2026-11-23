@@ -46,7 +46,7 @@ class OrderDocumentServiceTest {
         preferences = mock(UserPreferenceRepository.class);
         when(installments.findByOrderId(org.mockito.ArgumentMatchers.any())).thenReturn(Optional.empty());
         when(preferences.findByUserId(org.mockito.ArgumentMatchers.any())).thenReturn(Optional.empty());
-        service = new OrderDocumentService(orders, installments, users, preferences, DocumentFixtures.store(), new PdfRenderer(),
+        service = new OrderDocumentService(orders, installments, users, preferences, DocumentFixtures.store(), new PdfRenderer(), mock(org.springframework.transaction.PlatformTransactionManager.class),
             WarrantyRules.DEFAULT_INTERVALS);
         User owner = DocumentFixtures.user(7, "an");
         when(users.findByUsername("an")).thenReturn(Optional.of(owner));
@@ -107,6 +107,13 @@ class OrderDocumentServiceTest {
         assertStatus(HttpStatus.NOT_FOUND, () -> service.receipt(1L, null, "vi"));
         assertStatus(HttpStatus.NOT_FOUND, () -> service.receipt(1L, customer("ghost"), "vi"));
         assertStatus(HttpStatus.NOT_FOUND, () -> service.receipt(null, customer("an"), "vi"));
+    }
+
+    @Test
+    void anErrorIsWordedInTheLanguageOfThePageNotOfTheDocument() {
+        ResponseStatusException error = assertThrows(ResponseStatusException.class, () -> service.receipt(99L, customer("an"), "en", "vi"));
+
+        assertEquals(DocumentText.text("vi", "error.notFound"), error.getReason());
     }
 
     @Test

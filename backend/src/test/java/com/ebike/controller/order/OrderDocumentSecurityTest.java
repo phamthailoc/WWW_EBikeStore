@@ -134,8 +134,8 @@ class OrderDocumentSecurityTest {
 
     @BeforeEach void setup() {
         reset(users, preferences, documents);
-        when(documents.receipt(any(), any(), any())).thenReturn(new PdfFile("receipt-ORD-1.pdf", "%PDF-1.7 test".getBytes()));
-        when(documents.warrantyCard(any(), any(), any(), any())).thenReturn(new PdfFile("warranty-card-ORD-1.pdf", "%PDF-1.7 test".getBytes()));
+        when(documents.receipt(any(), any(), any(), any())).thenReturn(new PdfFile("receipt-ORD-1.pdf", "%PDF-1.7 test".getBytes()));
+        when(documents.warrantyCard(any(), any(), any(), any(), any())).thenReturn(new PdfFile("warranty-card-ORD-1.pdf", "%PDF-1.7 test".getBytes()));
         mvc = MockMvcBuilders.webAppContextSetup(context)
             .addFilters(context.getBean("springSecurityFilterChain", Filter.class))
             .build();
@@ -183,11 +183,11 @@ class OrderDocumentSecurityTest {
     @Test void theLangParameterOverridesTheLanguageAndTheUnitIdIsPassedOn() throws Exception {
         statusOf(as(get("/api/v1/orders/5/warranty-card").param("unitId", "9").param("lang", "en"), CUSTOMER_ROLE, OWN));
 
-        verify(documents).warrantyCard(eq(5L), eq(9L), any(), eq("en"));
+        verify(documents).warrantyCard(eq(5L), eq(9L), any(), eq("en"), any());
     }
 
     @Test void aServiceRefusalReachesTheClientWithItsOwnStatus() throws Exception {
-        when(documents.receipt(any(), any(), any())).thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found."));
+        when(documents.receipt(any(), any(), any(), any())).thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found."));
 
         assertEquals(404, statusOf(as(get("/api/v1/orders/5/receipt"), CUSTOMER_ROLE, OWN)));
     }
