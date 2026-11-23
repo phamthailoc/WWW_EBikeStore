@@ -10,6 +10,7 @@ import com.ebike.repository.auth.UserRepository;
 import com.ebike.repository.installment.InstallmentApplicationRepository;
 import com.ebike.repository.order.OrderRepository;
 import com.ebike.repository.user.UserPreferenceRepository;
+import com.ebike.service.admin.AccountErasure;
 import com.ebike.service.warranty.WarrantyRules;
 import java.time.Clock;
 import java.time.LocalDateTime;
@@ -118,7 +119,7 @@ public class OrderDocumentService {
             return Optional.empty();
         }
         User user = order.getUser();
-        if (user != null && "DELETED".equals(user.getAccountStatus())) {
+        if (user != null && AccountErasure.DELETED.equals(user.getAccountStatus())) {
             return Optional.empty();
         }
         String email = DocumentModels.contactEmail(order);
