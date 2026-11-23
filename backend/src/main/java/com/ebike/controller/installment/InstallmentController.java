@@ -57,6 +57,11 @@ public class InstallmentController {
             : ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(application);
     }
 
+    @GetMapping("/api/v1/installments/mine")
+    public ResponseEntity<List<InstallmentApplicationResponse>> mine(Authentication authentication) {
+        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(service.mine(authentication));
+    }
+
     @GetMapping("/api/v1/manager/installments")
     public ResponseEntity<List<InstallmentApplicationResponse>> queue(@RequestParam(required = false) String status) {
         return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(service.queue(status));

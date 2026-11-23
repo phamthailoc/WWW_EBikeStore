@@ -111,6 +111,16 @@ public class InstallmentService {
         return toResponse(application, staff);
     }
 
+    /** The customer's own applications that still wait for the staff or for the down payment, so the list of orders can say which ones need attention. */
+    @Transactional(readOnly = true)
+    public List<InstallmentApplicationResponse> mine(Authentication authentication) {
+        User current = isBackOffice(authentication) ? null : currentUser(authentication);
+        if (current == null) {
+            return List.of();
+        }
+        return applications.findOpenOf(current.getId()).stream().map(row -> toResponse(row, false)).toList();
+    }
+
     /** The queue: {@code status} is PENDING (the default), ALL, or one of the other statuses. Oldest waiting first; a closed list shows the newest first. */
     @Transactional(readOnly = true)
     public List<InstallmentApplicationResponse> queue(String status) {

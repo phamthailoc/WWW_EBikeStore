@@ -91,6 +91,7 @@ public class SecurityConfiguration {
                     PermissionConstants.Customer.ORDER_VIEW_OWN,
                     PermissionConstants.OrderManagement.ORDER_VIEW_ALL
                 )
+                .requestMatchers(HttpMethod.GET, "/api/v1/installments/mine").hasAuthority(PermissionConstants.Customer.ORDER_VIEW_OWN)
                 .requestMatchers(HttpMethod.GET, "/api/v1/favorites").hasAuthority(PermissionConstants.Customer.FAVORITE_VIEW)
                 .requestMatchers(HttpMethod.POST, "/api/v1/favorites").hasAuthority(PermissionConstants.Customer.FAVORITE_UPDATE)
                 .requestMatchers(HttpMethod.DELETE, "/api/v1/favorites/*").hasAuthority(PermissionConstants.Customer.FAVORITE_UPDATE)

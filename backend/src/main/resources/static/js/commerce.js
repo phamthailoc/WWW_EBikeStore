@@ -207,7 +207,7 @@
     const awaitingVnPay=order.checkoutPaymentMethod==='VNPAY'&&order.paymentStatus!=='PAID';
     const instalment=order.paymentMethod==='INSTALLMENT';
     const intro=instalment
-      ?`<p>${t('Hồ sơ trả góp (mô phỏng) đã được gửi và đang chờ cửa hàng duyệt. Khi có kết quả, bạn sẽ nhận thông báo và email; nếu được duyệt, hãy trả khoản trả trước trong trang đơn hàng.')}</p><p><a class="commerce-button" href="/customer/orders/${encodeURIComponent(order.id)}">${t('Xem hồ sơ trả góp')}</a></p>`
+      ?`<p>${t('Hồ sơ trả góp (mô phỏng) đã được gửi và đang chờ cửa hàng duyệt. Khi có kết quả, bạn sẽ nhận thông báo và email; nếu được duyệt, hãy trả khoản trả trước trong trang đơn hàng.') + ' ' + t('Nếu cửa hàng chưa duyệt trong thời hạn giữ hàng, đơn hàng sẽ tự động bị hủy; xem hạn cụ thể ở trang hồ sơ.')}</p><p><a class="commerce-button" href="/customer/orders/${encodeURIComponent(order.id)}">${t('Xem hồ sơ trả góp')}</a></p>`
       :awaitingVnPay
       ?`<p>${t('Đơn hàng đã được tạo nhưng chưa thanh toán. Bấm nút bên dưới để thanh toán qua VNPay.')}</p>${order.vnpayError?`<p class="commerce-error" id="vnpayError">${t('Chưa mở được trang VNPay:')} ${e(order.vnpayError)}</p>`:'<p class="commerce-error" id="vnpayError" hidden></p>'}<p><button type="button" class="commerce-button" id="payVnPay">${t('Thanh toán qua VNPay')}</button></p>`
       :'<p>' + t('Cảm ơn bạn đã chọn KINETIC. Đơn hàng đang chờ xác nhận.') + '</p>';

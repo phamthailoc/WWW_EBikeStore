@@ -44,6 +44,12 @@ public interface InstallmentApplicationRepository extends JpaRepository<Installm
         + "and a.order.status <> com.ebike.model.entity.order.OrderStatus.CANCELLED")
     BigDecimal sumMonthlyPaymentOf(@Param("userId") Long userId);
 
+    /** The customer's applications still waiting for the staff or for their down payment (their orders are still PENDING), newest first. */
+    @EntityGraph(attributePaths = {"user", "order", "order.payment", "order.shipment"})
+    @Query("select a from InstallmentApplication a where a.user.id = :userId and a.status in ('PENDING', 'APPROVED') "
+        + "and a.order.status = com.ebike.model.entity.order.OrderStatus.PENDING order by a.createdAt desc")
+    List<InstallmentApplication> findOpenOf(@Param("userId") Long userId);
+
     long countByStatus(String status);
 
     /** Approved applications whose down payment has not come in: the order stays PENDING until it does (paying confirms it). */

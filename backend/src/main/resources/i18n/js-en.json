@@ -754,5 +754,9 @@
  "Đã quá hạn thanh toán khoản trả trước, đơn hàng sắp bị hủy tự động.": "The down payment is overdue and the order is about to be cancelled automatically.",
  "Hạn duyệt": "Review deadline",
  "Đã quá thời hạn duyệt, đơn hàng sắp bị hủy tự động.": "The review time has run out and the order is about to be cancelled automatically.",
- "Nếu cửa hàng chưa duyệt trước {when}, đơn hàng sẽ bị hủy tự động.": "If the store has not decided by {when}, the order is cancelled automatically."
+ "Nếu cửa hàng chưa duyệt trước {when}, đơn hàng sẽ bị hủy tự động.": "If the store has not decided by {when}, the order is cancelled automatically.",
+ "Trả góp: cần trả khoản trả trước": "Instalments: down payment due",
+ "Trả góp: quá hạn trả trước, đơn sắp bị hủy": "Instalments: down payment overdue, the order is about to be cancelled",
+ "Trả góp: chờ cửa hàng duyệt": "Instalments: waiting for the store to review",
+ "Nếu cửa hàng chưa duyệt trong thời hạn giữ hàng, đơn hàng sẽ tự động bị hủy; xem hạn cụ thể ở trang hồ sơ.": "If the store has not reviewed it within the holding period, the order is cancelled automatically; the exact deadline is on the application page."
 }
