@@ -302,7 +302,8 @@ public class WarrantyService {
             date(WarrantyRules.endsAt(startsAt(unit), warrantyMonths(unit))),
             claim.getStaffNote(),
             claim.getCreatedAt(),
-            claim.getUpdatedAt());
+            claim.getUpdatedAt(),
+            unit.getOrderItem().getOrder().getId());
     }
 
     static LocalDateTime startsAt(OrderItemUnit unit) {

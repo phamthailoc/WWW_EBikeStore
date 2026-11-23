@@ -89,6 +89,7 @@ class WarrantyServiceTest {
         Order order = new Order();
         order.setStatus(OrderStatus.DELIVERED);
         order.setUser(owner);
+        order.setId(55L);
         OrderItem item = new OrderItem();
         item.setOrder(order);
         item.setProductName("Test bike");
@@ -199,6 +200,8 @@ class WarrantyServiceTest {
         order.verify(users).findByUsername("me");
         order.verify(claims).existsByUnitIdAndStatusIn(any(), any());
         assertEquals(WarrantyClaim.NEW, created.status());
+        // staff download the warranty card of the vehicle from the claim row
+        assertEquals(55L, created.orderId());
     }
 
     @Test
