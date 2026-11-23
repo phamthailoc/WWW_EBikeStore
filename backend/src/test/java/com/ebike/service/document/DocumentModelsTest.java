@@ -138,6 +138,18 @@ class DocumentModelsTest {
     }
 
     @Test
+    void anErasedAccountIsNamedInTheLanguageOfTheDocument() {
+        Order order = DocumentFixtures.order(8, OrderStatus.DELIVERED, 1, true);
+        order.getShipment().setRecipientName(null);
+        order.getUser().setAccountStatus(com.ebike.service.admin.AccountErasure.DELETED);
+        order.getUser().setFirstName("Tài khoản");
+        order.getUser().setLastName("đã xóa");
+
+        assertEquals("Deleted account", DocumentModels.customerName(order, "en"));
+        assertEquals("Tài khoản đã xóa", DocumentModels.customerName(order, "vi"));
+    }
+
+    @Test
     void theCustomerNameFallsBackToTheAccountThenToADash() {
         Order order = DocumentFixtures.order(8, OrderStatus.DELIVERED, 1, true);
         order.getShipment().setRecipientName("  ");

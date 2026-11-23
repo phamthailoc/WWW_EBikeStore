@@ -160,6 +160,7 @@ public final class DocumentText {
             "You can also download these again from the order page after signing in: {0}");
         add("mail.reason", "Bạn nhận email này vì đã đặt hàng tại {0}.", "You are receiving this email because you placed an order at {0}.");
         add("mail.guestName", "quý khách", "customer");
+        add("name.deleted", "Tài khoản đã xóa", "Deleted account");
     }
 
     private DocumentText() {

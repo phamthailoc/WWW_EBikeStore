@@ -134,7 +134,7 @@ public class OrderDocumentService {
         if (!units.isEmpty()) {
             files.add(buildCard(order, units, language, null));
         }
-        String name = DocumentModels.customerName(order);
+        String name = DocumentModels.customerName(order, language);
         return Optional.of(new DeliveryDocuments(email, "—".equals(name) ? DocumentText.text(language, "mail.guestName") : name, order.getOrderNumber(), language, files, user == null));
     }
 

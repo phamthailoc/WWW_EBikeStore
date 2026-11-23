@@ -11,6 +11,7 @@ import com.ebike.model.entity.order.PaymentMethod;
 import com.ebike.model.entity.order.PaymentStatus;
 import com.ebike.model.entity.order.Shipment;
 import com.ebike.model.entity.order.Showroom;
+import com.ebike.service.admin.AccountErasure;
 import com.ebike.service.warranty.MaintenanceMilestones;
 import com.ebike.service.warranty.WarrantyRules;
 import com.ebike.service.warranty.WarrantyService;
@@ -57,7 +58,7 @@ public final class DocumentModels {
         model.put("issuedAt", DocumentFormat.dateTime(issuedAt, lang));
 
         Map<String, Object> customer = new LinkedHashMap<>();
-        customer.put("name", customerName(order));
+        customer.put("name", customerName(order, lang));
         customer.put("phone", dash(shipment == null ? null : shipment.getPhoneNumber()));
         customer.put("email", dash(contactEmail(order)));
         model.put("customer", customer);
@@ -163,7 +164,7 @@ public final class DocumentModels {
             Map<String, Object> card = new LinkedHashMap<>();
             card.put("number", "BH-" + unit.getFrameNumber());
             card.put("orderNumber", order.getOrderNumber());
-            card.put("ownerName", customerName(order));
+            card.put("ownerName", customerName(order, lang));
             card.put("ownerPhone", dash(shipment == null ? null : shipment.getPhoneNumber()));
             card.put("model", dash(unit.getOrderItem().getProductName()));
             card.put("colour", dash(WarrantyService.colourOf(unit.getOrderItem())));
@@ -247,12 +248,19 @@ public final class DocumentModels {
 
     /** The name on the document: who receives the bike, else the account holder, else a dash. The name printed on an order is part of the sales record and stays after an account is erased. */
     static String customerName(Order order) {
+        return customerName(order, "vi");
+    }
+
+    static String customerName(Order order, String lang) {
         Shipment shipment = order.getShipment();
         String recipient = shipment == null ? null : blankToNull(shipment.getRecipientName());
         if (recipient != null) {
             return recipient;
         }
         User user = order.getUser();
+        if (user != null && AccountErasure.DELETED.equals(user.getAccountStatus())) {
+            return DocumentText.text(lang, "name.deleted");
+        }
         if (user != null) {
             String name = ((user.getFirstName() == null ? "" : user.getFirstName()) + " " + (user.getLastName() == null ? "" : user.getLastName())).trim();
             if (!name.isEmpty()) {
