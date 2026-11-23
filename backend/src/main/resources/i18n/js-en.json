@@ -751,5 +751,8 @@
  "Bật kỳ hạn": "Turn term on",
  "Ngừng kỳ hạn": "Turn term off",
  "Thử lại": "Try again",
- "Đã quá hạn thanh toán khoản trả trước, đơn hàng sắp bị hủy tự động.": "The down payment is overdue and the order is about to be cancelled automatically."
+ "Đã quá hạn thanh toán khoản trả trước, đơn hàng sắp bị hủy tự động.": "The down payment is overdue and the order is about to be cancelled automatically.",
+ "Hạn duyệt": "Review deadline",
+ "Đã quá thời hạn duyệt, đơn hàng sắp bị hủy tự động.": "The review time has run out and the order is about to be cancelled automatically.",
+ "Nếu cửa hàng chưa duyệt trước {when}, đơn hàng sẽ bị hủy tự động.": "If the store has not decided by {when}, the order is cancelled automatically."
 }

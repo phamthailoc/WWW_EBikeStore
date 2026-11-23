@@ -31,6 +31,8 @@ public record InstallmentApplicationResponse(
     OffsetDateTime createdAt,
     String paymentStatus,
     OffsetDateTime payBefore,
+    /** The moment the order is cancelled if the staff have not decided by then; only while the application is waiting. */
+    OffsetDateTime reviewBefore,
     boolean canPay,
     boolean canDecide
 ) {

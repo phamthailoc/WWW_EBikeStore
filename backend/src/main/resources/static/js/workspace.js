@@ -6,7 +6,7 @@
   const warrantyNames = {productName:t('Xe'),description:t('Mô tả lỗi')};
   const rideNames = {productName:t('Xe'),showroomName:t('Cửa hàng'),showroomAddress:t('Địa chỉ'),slotStart:t('Khung giờ'),contactPhone:t('Điện thoại'),customerNote:t('Ghi chú của khách')};
   // V24: the instalment queue's column names
-  const installNames = {vehicles:t('Xe'),orderTotal:t('Giá trị đơn'),downPayment:t('Trả trước'),termMonths:t('Kỳ hạn'),monthlyPayment:t('Trả mỗi tháng'),monthlyIncome:t('Thu nhập khai'),idNumberMasked:t('Số CCCD (che)')};
+  const installNames = {vehicles:t('Xe'),orderTotal:t('Giá trị đơn'),downPayment:t('Trả trước'),termMonths:t('Kỳ hạn'),monthlyPayment:t('Trả mỗi tháng'),monthlyIncome:t('Thu nhập khai'),idNumberMasked:t('Số CCCD (che)'),reviewBefore:t('Hạn duyệt')};
   const label = key => (/installments$/.test(page) && installNames[key]) || (/warranty$/.test(page) && warrantyNames[key]) || (/test-rides$/.test(page) && rideNames[key]) || names[key] || key.replace(/([A-Z])/g, ' $1').replace(/^./, c => c.toUpperCase());
   const escape = value => String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const orderStatusText={PENDING:t('Chờ xử lý'),CONFIRMED:t('Đã xác nhận'),PROCESSING:t('Đang xử lý'),READY_FOR_PICKUP:t('Chờ lấy'),SHIPPED:t('Đang giao'),DELIVERED:t('Đã giao'),CANCELLED:t('Đã hủy')};
@@ -37,7 +37,7 @@
   const isoDateKeys = ['warrantyEndsAt','nextMaintenanceAt','createdAt','updatedAt'];
   // Warranty pages show dates in the page language (the ISO value stays in data-iso); other pages keep what the API sent.
   const warrantyDate = (value,key) => {
-    if (typeof value === 'string' && isInstallPage && (key === 'createdAt' || key === 'reviewedAt')) { const when = new Date(value); return isNaN(when) ? null : window.KineticInstallment ? window.KineticInstallment.when(value) : when.toLocaleString(localeTag()); }
+    if (typeof value === 'string' && isInstallPage && (key === 'createdAt' || key === 'reviewedAt' || key === 'reviewBefore')) { const when = new Date(value); return isNaN(when) ? null : window.KineticInstallment ? window.KineticInstallment.when(value) : when.toLocaleString(localeTag()); }
     if (typeof value === 'string' && isRidePage && (key === 'slotStart' || key === 'createdAt')) { const when = new Date(value); return isNaN(when) ? null : when.toLocaleString(localeTag(), key === 'slotStart' ? {weekday:'short',day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'} : undefined); }
     if (typeof value !== 'string' || !/warranty$/.test(page) || !isoDateKeys.includes(key)) return null;
     if (key === 'createdAt' || key === 'updatedAt') { const when = new Date(value); return isNaN(when) ? null : when.toLocaleString(localeTag()); }
@@ -116,7 +116,7 @@
     '/customer/warranty':['productName','colorName','frameNumber','warrantyEndsAt','coverage','nextMaintenanceAt','claimStatus'],
     '/manager/warranty':['id','customerName','productName','frameNumber','description','status','outOfWarranty','staffNote','createdAt'],
     '/customer/test-rides':['productName','showroomName','showroomAddress','slotStart','status','staffNote'],
-    '/manager/installments':['orderNumber','customerName','vehicles','orderTotal','downPayment','termMonths','monthlyPayment','monthlyIncome','idNumberMasked','status','createdAt'],
+    '/manager/installments':['orderNumber','customerName','vehicles','orderTotal','downPayment','termMonths','monthlyPayment','monthlyIncome','idNumberMasked','status','createdAt','reviewBefore'],
     '/manager/test-rides':['id','customerName','contactPhone','productName','showroomName','slotStart','status','customerNote','staffNote'],
     '/customer/notifications':['id','title','message','type','createdAt','readAt']
   };

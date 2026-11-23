@@ -242,6 +242,7 @@ public class InstallmentService {
             a.getStatus(), a.getReviewNote(), reviewerName, inShopZone(a.getReviewedAt()), inShopZone(a.getCreatedAt()),
             payment == null ? null : payment.getPaymentStatus().name(),
             downPaymentOpen && a.getReviewedAt() != null ? inShopZone(a.getReviewedAt().plus(downPaymentHold)) : null,
+            InstallmentApplication.PENDING.equals(a.getStatus()) && orderOpen && a.getCreatedAt() != null ? inShopZone(a.getCreatedAt().plus(reviewHold)) : null,
             // past its hold the order is about to be cancelled by the expiry job: nobody is offered to pay or to decide any more
             downPaymentOpen && !InstallmentRules.downPaymentOverdue(a.getReviewedAt(), downPaymentHold, LocalDateTime.now()),
             InstallmentApplication.PENDING.equals(a.getStatus()) && orderOpen && !reviewOverdue(a, LocalDateTime.now()));
