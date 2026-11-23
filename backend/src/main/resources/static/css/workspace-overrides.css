@@ -202,5 +202,5 @@ h1,h2,h3,.brand,.eyebrow,.metric b,.metric small{font-family:'Space Grotesk','Se
 .savings-inputs label{display:grid;gap:6px;font-size:14px;min-width:0}
 .savings-inputs input{width:100%;box-sizing:border-box}
 .savings-figures .installment-main dd{color:var(--c-1d5b3a)}
-.savings-figures [data-field=no-saving]{font-size:15px;color:var(--c-c53a31)}
+.savings-figures .installment-main dd[data-field=no-saving]{font-size:15px;color:var(--c-c53a31)}
 @media(max-width:380px){.savings-inputs{grid-template-columns:1fr}}
