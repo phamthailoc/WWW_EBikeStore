@@ -747,5 +747,7 @@
  "Đơn trả góp: chờ duyệt hồ sơ và khoản trả trước": "Instalment order: waiting for the application and the down payment",
  "Đã trả trước": "Down payment paid",
  "Lãi suất trả góp (%/năm, từ 0 đến 60)": "Instalment interest rate (% per year, 0 to 60)",
- "Đang kiểm tra tài khoản. Vui lòng đợi một chút rồi đặt hàng lại.": "Checking your account. Please wait a moment and place the order again."
+ "Đang kiểm tra tài khoản. Vui lòng đợi một chút rồi đặt hàng lại.": "Checking your account. Please wait a moment and place the order again.",
+ "Bật kỳ hạn": "Turn term on",
+ "Ngừng kỳ hạn": "Turn term off"
 }
