@@ -856,5 +856,16 @@
  "Chưa tính được cho xe này.": "The estimate is not available for this bike.",
  "Nhập quãng đường bạn đi để so tiền sạc với tiền xăng của xe máy cùng phân khúc.": "Enter how far you ride to compare the cost of charging with the petrol of a motorbike of the same class.",
  "Số km mỗi ngày": "Kilometres per day",
- "Số ngày đi mỗi tháng": "Days of riding per month"
+ "Số ngày đi mỗi tháng": "Days of riding per month",
+ "Giá một kWh điện (VND, lớn hơn 0 và không quá 20.000)": "Price of one kWh of electricity (VND, above 0 and at most 20,000)",
+ "Giá một lít xăng (VND, lớn hơn 0 và không quá 200.000)": "Price of one litre of petrol (VND, above 0 and at most 200,000)",
+ "Lít xăng cho 100 km (lớn hơn 0 và không quá 10, có thể nhập 1,8)": "Litres of petrol per 100 km (above 0 and at most 10; 1.8 or 1,8 both work)",
+ "Giá trị không hợp lệ.": "That is not a valid value.",
+ "lít/100 km": "litres/100 km",
+ "VND/lít": "VND/litre",
+ "Giá điện dùng để tính tiền sạc (bậc trung bình)": "Electricity price used for the charging cost (average tier)",
+ "Giá xăng dùng để so sánh tiền xăng": "Petrol price used for the petrol comparison",
+ "Mức tiêu hao xăng so với Xe tay ga điện": "Petrol use compared with an electric scooter",
+ "Mức tiêu hao xăng so với Xe đạp điện": "Petrol use compared with an electric bicycle",
+ "Mức tiêu hao xăng so với Xe máy điện": "Petrol use compared with an electric motorbike"
 }
