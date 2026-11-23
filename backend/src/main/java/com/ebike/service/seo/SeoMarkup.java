@@ -26,6 +26,8 @@ public class SeoMarkup {
     /** A sitemap file may hold at most 50,000 addresses (sitemaps.org). */
     static final int SITEMAP_LIMIT = 50_000;
     static final int DESCRIPTION_LIMIT = 160;
+    /** Who sells: the shop itself (the same name as the page title suffix). */
+    static final String SELLER = "KINETIC";
     private static final ObjectMapper JSON = new ObjectMapper();
 
     /** Pages that need an account or hold someone's data, or only make sense mid-purchase: crawlers are asked to stay out. */
@@ -203,6 +205,7 @@ public class SeoMarkup {
             offer.put("url", productUrl(product.slug()));
             offer.put("priceCurrency", "VND");
             offer.put("itemCondition", "https://schema.org/NewCondition");
+            offer.put("seller", Map.of("@type", "Organization", "name", SELLER, "url", canonical("/")));
             offer.put("availability", inStock(product) ? "https://schema.org/InStock" : "https://schema.org/OutOfStock");
             node.put("offers", offer);
         }

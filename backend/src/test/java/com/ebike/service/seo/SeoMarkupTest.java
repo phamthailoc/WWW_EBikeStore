@@ -100,6 +100,7 @@ class SeoMarkupTest {
         assertEquals("https://cdn.example.com/b.jpg", node.path("image").get(1).asText());
         JsonNode offer = node.path("offers");
         assertEquals("VND", offer.path("priceCurrency").asText());
+        assertEquals("KINETIC", offer.path("seller").path("name").asText());
         assertEquals("23990000", offer.path("price").asText());
         assertEquals("https://schema.org/InStock", offer.path("availability").asText());
         assertEquals("https://shop.example.vn/product/kinetic-x", offer.path("url").asText());
