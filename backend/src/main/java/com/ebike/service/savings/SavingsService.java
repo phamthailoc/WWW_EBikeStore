@@ -37,6 +37,17 @@ public class SavingsService {
             .filter(found -> Boolean.TRUE.equals(found.getActive()))
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                 RequestLanguage.text("Không tìm thấy sản phẩm.", "Product not found.")));
+        return forProduct(product, kmPerDay, daysPerMonth);
+    }
+
+    /** True for a bike, scooter or motorbike (the types that have a petrol equivalent), false for a battery pack, an accessory or a product with no specification. */
+    public static boolean isRidden(Product product) {
+        ProductSpecification specification = product == null ? null : product.getSpecification();
+        return specification != null && specification.getVehicleType() != null && RIDDEN.contains(specification.getVehicleType().name());
+    }
+
+    /** The same for a product that is already loaded (the chatbot has it); the caller has checked that it is visible. */
+    public SavingsResponse forProduct(Product product, Integer kmPerDay, Integer daysPerMonth) {
         int km = kmPerDay == null ? SavingsRules.DEFAULT_KM_PER_DAY : kmPerDay;
         int days = daysPerMonth == null ? SavingsRules.DEFAULT_DAYS_PER_MONTH : daysPerMonth;
         if (!SavingsRules.isValidKmPerDay(km)) {

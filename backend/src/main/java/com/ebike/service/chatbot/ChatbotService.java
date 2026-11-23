@@ -4,12 +4,14 @@ import com.ebike.dto.chatbot.request.ChatbotAskRequest;
 import com.ebike.dto.chatbot.response.ChatbotDebugResponse;
 import com.ebike.dto.chatbot.response.ChatbotRecommendationDto;
 import com.ebike.dto.chatbot.response.ChatbotResponse;
+import com.ebike.dto.savings.SavingsResponse;
 import com.ebike.model.entity.order.Showroom;
 import com.ebike.repository.order.ShowroomRepository;
 import com.ebike.model.entity.product.Product;
 import com.ebike.model.entity.product.ProductSpecification;
 import com.ebike.repository.product.ProductRepository;
 import com.ebike.service.admin.PricingService;
+import com.ebike.service.savings.SavingsService;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -44,6 +46,7 @@ public class ChatbotService {
     private final GeminiChatClient geminiChatClient;
     private final PdfKnowledgeBaseService pdfKnowledgeBaseService;
     private final PricingService pricingService;
+    private final SavingsService savingsService;
     // FAQ entries by language ("vi" and "en"); see faq-data/faq.csv and faq_en.csv
     private final Map<String, List<FaqEntry>> faqByLanguage = new java.util.HashMap<>();
     /** The chat id comes from the browser, so cap how many conversations are remembered and how long an id may be. */
@@ -63,6 +66,7 @@ public class ChatbotService {
         this.geminiChatClient = geminiChatClient;
         this.pdfKnowledgeBaseService = pdfKnowledgeBaseService;
         this.pricingService = pricingService;
+        this.savingsService = new SavingsService(productRepository, pricingService);
         loadFaqEntries();
     }
 
@@ -125,7 +129,8 @@ public class ChatbotService {
         Product mentionedProduct = findMentionedProduct(normalizedMessage);
         String showroomContext = buildShowroomContext(normalizedMessage);
         String orderPaymentContext = buildOrderPaymentContext(normalizedMessage);
-        String savingsContext = buildSavingsContext(normalizedMessage);
+        // A question the FAQ has word for word is answered by the FAQ
+        String savingsContext = faqMatch != null && faqMatch.isAskedExactly(normalizedMessage) ? "" : buildSavingsContext(normalizedMessage, mentionedProduct);
         PdfKnowledgeBaseService.PdfKnowledgeContext pdfKnowledgeContext = pdfKnowledgeBaseService.findRelevantContext(userMessage);
         ChatbotResponse ruleBasedResponse = buildRuleBasedResponse(
             faqMatch,
@@ -169,9 +174,10 @@ public class ChatbotService {
     ) {
         if (!savingsContext.isBlank()) {
             // V33: a question about the cost of riding is answered with the prices in force and the way to the calculator on the bike's page
-            List<ChatbotRecommendationDto> cards = mentionedProduct != null
-                ? List.of(toRecommendation(mentionedProduct, tr("mở trang xe này và dùng mục \"Xe điện tiết kiệm bao nhiêu?\"", "open this bike's page and use \"How much does an electric bike save?\"")))
-                : recommendations;
+            // (a battery pack or an accessory has no such tool, so it gets a few bikes instead)
+            List<ChatbotRecommendationDto> cards = SavingsService.isRidden(mentionedProduct)
+                ? List.of(toRecommendation(mentionedProduct, savingsCardReason()))
+                : suggestedBikesForSavings();
             return new ChatbotResponse(savingsContext, "running_cost", cards);
         }
 
@@ -572,30 +578,96 @@ public class ChatbotService {
             ).trim();
     }
 
-    /** V33: the answer to a question about what riding costs or saves, built from the admin's pricing table; empty for any other question. */
-    private String buildSavingsContext(String message) {
+    /**
+     * V33: the answer to a question about what riding costs or saves, built from the admin's pricing table; empty for any other question. When the
+     * question names a bike that is ridden, the answer starts with that bike's own figures for the default 20 km a day.
+     */
+    private String buildSavingsContext(String message, Product mentionedProduct) {
         if (!isRunningCostQuestion(message)) {
             return "";
         }
-        return tr(
-            "Mỗi xe điện có công cụ \"Xe điện tiết kiệm bao nhiêu?\" ở trang chi tiết (phía dưới thông số): bạn nhập số km đi mỗi ngày và số ngày đi mỗi tháng, cửa hàng so tiền sạc theo dung lượng pin của đúng xe đó với tiền xăng của xe máy cùng phân khúc. Giá đang áp dụng: điện %s mỗi kWh, xăng %s mỗi lít; xe máy xăng cùng phân khúc tiêu hao khoảng %s lít/100 km (xe ga), %s (xe đạp điện) và %s (xe máy điện). Đây chỉ là ước tính tham khảo. Bạn hãy mở trang xe cần xem để tính.",
-            "Every electric bike has a \"How much does an electric bike save?\" tool on its page (below the specifications): enter the kilometres you ride a day and the days a month, and the store compares the cost of charging that bike's own battery with the petrol of a motorbike of the same class. Prices in use: electricity %s per kWh, petrol %s per litre; a petrol motorbike of the same class uses about %s litres per 100 km (scooter), %s (e-bike) and %s (electric motorbike). It is only an estimate. Open the page of the bike you want to look at.")
+        String general = tr(
+            "Mỗi xe điện có công cụ \"Xe điện tiết kiệm bao nhiêu?\" ở trang chi tiết (phía dưới thông số): bạn nhập số km đi mỗi ngày và số ngày đi mỗi tháng, cửa hàng so tiền sạc theo dung lượng pin của đúng xe đó với tiền xăng của xe máy cùng phân khúc. Giá đang áp dụng: điện %s mỗi kWh, xăng %s mỗi lít; xe máy xăng cùng phân khúc tiêu hao khoảng %s lít/100 km (so với xe tay ga điện), %s (xe đạp điện) và %s (xe máy điện). Đây chỉ là ước tính tham khảo. Bạn hãy mở trang xe cần xem để tính.",
+            "Every electric bike has a \"How much does an electric bike save?\" tool on its page (below the specifications): enter the kilometres you ride a day and the days a month, and the store compares the cost of charging that bike's own battery with the petrol of a motorbike of the same class. Prices in use: electricity %s per kWh, petrol %s per litre; a petrol motorbike of the same class uses about %s litres per 100 km (against an electric scooter), %s (electric bicycle) and %s (electric motorbike). It is only an estimate. Open the page of the bike you want to look at.")
             .formatted(
                 formatCurrency(pricingService.savingsElectricityPricePerKwh()),
                 formatCurrency(pricingService.savingsPetrolPricePerLiter()),
                 pricingService.savingsPetrolLitersPer100Km("E_SCOOTER").stripTrailingZeros().toPlainString(),
                 pricingService.savingsPetrolLitersPer100Km("E_BIKE").stripTrailingZeros().toPlainString(),
                 pricingService.savingsPetrolLitersPer100Km("E_MOTORBIKE").stripTrailingZeros().toPlainString());
+        String figures = SavingsService.isRidden(mentionedProduct) ? savingsFiguresFor(mentionedProduct) : "";
+        return figures.isBlank() ? general : figures + "\n" + general;
     }
 
+    /** The figures of one bike for the default distance, in a sentence; the same estimate the bike's page shows. */
+    private String savingsFiguresFor(Product product) {
+        SavingsResponse answer = savingsService.forProduct(product, null, null);
+        if (!answer.calculable()) {
+            return tr(product.getName() + " chưa có đủ thông số pin và quãng đường hợp lý nên chưa tính được.",
+                product.getName() + " does not list a usable battery and range yet, so it cannot be estimated.");
+        }
+        if (!answer.saves()) {
+            return tr(
+                "Với %s, đi %d km mỗi ngày và %d ngày mỗi tháng: tiền sạc khoảng %s, tiền xăng xe máy cùng phân khúc khoảng %s, với giá hiện tại xe này chưa rẻ hơn xe xăng.",
+                "For %s, riding %d km a day for %d days a month: charging costs about %s and petrol for a motorbike of the same class about %s, so at today's prices this bike is not cheaper than petrol.")
+                .formatted(product.getName(), answer.kmPerDay(), answer.daysPerMonth(),
+                    formatCurrency(answer.monthlyElectricityCost()), formatCurrency(answer.monthlyPetrolCost()));
+        }
+        return tr(
+            "Với %s, đi %d km mỗi ngày và %d ngày mỗi tháng: tiền sạc khoảng %s, tiền xăng xe máy cùng phân khúc khoảng %s, tiết kiệm khoảng %s mỗi tháng (%s mỗi năm).",
+            "For %s, riding %d km a day for %d days a month: charging costs about %s and petrol for a motorbike of the same class about %s, saving about %s a month (%s a year).")
+            .formatted(product.getName(), answer.kmPerDay(), answer.daysPerMonth(),
+                formatCurrency(answer.monthlyElectricityCost()), formatCurrency(answer.monthlyPetrolCost()),
+                formatCurrency(answer.monthlySaving()), formatCurrency(answer.yearlySaving()));
+    }
+
+    private String savingsCardReason() {
+        return tr("mở trang xe này và dùng mục \"Xe điện tiết kiệm bao nhiêu?\"", "open this bike's page and use \"How much does an electric bike save?\"");
+    }
+
+    /** A few ridden bikes (featured first, then the cheapest) so that the answer has a link to a page with the tool. */
+    private List<ChatbotRecommendationDto> suggestedBikesForSavings() {
+        return productRepository.findAll().stream()
+            .filter(product -> Boolean.TRUE.equals(product.getActive()) && SavingsService.isRidden(product))
+            .sorted(Comparator
+                .comparing((Product product) -> product.getFeatured() != null && product.getFeatured()).reversed()
+                .thenComparing(Product::getPrice, Comparator.nullsLast(Comparator.naturalOrder())))
+            .limit(3)
+            .map(product -> toRecommendation(product, savingsCardReason()))
+            .toList();
+    }
+
+    /**
+     * Costs of riding are asked in many ways, so the words that are only about cost always count; "saving" counts only next to petrol, charging, a
+     * month or the like, and never in a question about a promotion ("how much does the promo code save me").
+     */
     private boolean isRunningCostQuestion(String message) {
+        if (containsAny(
+            message,
+            "tiền sạc", "tien sac", "tiền xăng", "tien xang", "tiền điện", "tien dien", "giá điện", "gia dien", "giá xăng", "gia xang",
+            "chi phí sạc", "chi phi sac", "chi phí đi lại", "chi phi di lai", "chi phí vận hành", "chi phi van hanh",
+            "chi phí sử dụng", "chi phi su dung", "chi phí nuôi xe", "chi phi nuoi xe", "nuôi xe", "nuoi xe",
+            "chi phí mỗi tháng", "chi phi moi thang", "chi phí hàng tháng", "chi phi hang thang", "chi phí hằng tháng",
+            "so với xe xăng", "so voi xe xang", "mỗi tháng tốn", "moi thang ton",
+            "running cost", "cost to charge", "charging cost", "cost of charging", "petrol cost", "fuel cost", "electricity cost",
+            "cost of electricity", "cost of petrol", "cost of fuel", "cost per km", "monthly cost", "compared to petrol", "compared with petrol",
+            "versus petrol", "vs petrol"
+        )) {
+            return true;
+        }
+        if (containsAny(message, "khuyến mãi", "khuyen mai", "mã giảm", "ma giam", "ưu đãi", "uu dai", "voucher", "coupon", "promo", "discount")) {
+            return false;
+        }
+        if (!containsAny(message, "tiết kiệm", "tiet kiem", "save", "saving")) {
+            return false;
+        }
         return containsAny(
             message,
-            "tiết kiệm", "tiet kiem", "tiền sạc", "tien sac", "tiền xăng", "tien xang", "tiền điện", "tien dien",
-            "chi phí đi lại", "chi phi di lai", "chi phí vận hành", "chi phi van hanh", "chi phí sử dụng", "chi phi su dung",
-            "so với xe xăng", "so voi xe xang", "mỗi tháng tốn", "moi thang ton",
-            "save money", "how much would i save", "how much does it save", "running cost", "cost to charge", "charging cost",
-            "cost of charging", "petrol cost", "cost per km", "compared to petrol", "compared with petrol", "vs petrol"
+            "xăng", "xang", "sạc", "sac pin", "mỗi tháng", "moi thang", "hàng tháng", "hang thang", "hằng tháng", "mỗi năm", "moi nam",
+            "hàng năm", "hằng năm", "mỗi ngày", "moi ngay", "hàng ngày", "hằng ngày", "một tháng", "1 tháng", "km",
+            "petrol", "fuel", "gasoline", "charging", "electricity", "a month", "per month", "each month", "monthly", "a year", "per year",
+            "yearly", "a day", "per day", "every day", "daily",
+            "how much can i save", "how much would i save", "how much do i save", "how much will i save", "how much does it save"
         );
     }
 
