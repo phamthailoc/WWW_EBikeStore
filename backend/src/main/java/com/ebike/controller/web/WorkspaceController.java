@@ -65,6 +65,7 @@ public class WorkspaceController {
             case "manager/support" -> { title = m("staff.7", "Yêu cầu hỗ trợ"); api = "/api/v1/manager/support-requests"; description = m("staff.8", "Câu hỏi và khiếu nại khách gửi từ trang Hỗ trợ."); }
             case "manager/warranty" -> { title = m("staff.warranty", "Yêu cầu bảo hành"); api = "/api/v1/manager/warranty-claims"; description = m("staff.warrantyDesc", "Xử lý yêu cầu bảo hành khách gửi từ sổ bảo hành."); }
             case "manager/test-rides" -> { title = m("staff.testRides", "Lịch lái thử"); api = "/api/v1/manager/test-rides"; description = m("staff.testRidesDesc", "Xác nhận và theo dõi lịch lái thử khách đặt."); }
+            case "manager/stock-receipts" -> { title = m("staff.stockReceipts", "Phiếu nhập kho"); api = ""; description = m("staff.stockReceiptsDesc", "Ghi nhận hàng nhập về từ nhà cung cấp; mỗi phiếu cộng tồn kho và ghi vào lịch sử."); mode = "stockreceipt"; }
             case "manager/installments" -> { title = m("staff.installments", "Hồ sơ trả góp"); api = "/api/v1/manager/installments"; description = m("staff.installmentsDesc", "Duyệt hoặc từ chối hồ sơ trả góp mô phỏng khách gửi khi đặt hàng."); mode = "installment"; }
             case "manager/customers" -> { title = m("staff.9", "Khách hàng"); api = "/api/v1/manager/customers"; description = m("staff.10", "Danh sách khách hàng và lịch sử mua."); }
             case "manager/inventory", "manager/products", "admin/inventory", "admin/products" -> { title = m("staff.11", "Kho sản phẩm"); api = "/api/v1/products"; description = m("staff.12", "Theo dõi tồn kho và tình trạng xe."); mode = "inventory"; }
@@ -81,11 +82,25 @@ public class WorkspaceController {
                 else { title = m("page.notFound", "Không tìm thấy trang"); api = ""; description = m("page.notFoundDesc", "Đường dẫn không tồn tại."); }
             }
         }
-        List<Link> links = switch (role) {
+        boolean canManageStock = authentication != null
+            && authentication.getAuthorities().stream().anyMatch(a -> PermissionConstants.ProductManagement.PRODUCT_MANAGE_STOCK.equals(a.getAuthority()));
+        List<Link> baseLinks = switch (role) {
             case "admin" -> List.of(new Link(m("staff.29", "Tổng quan"), "/admin"), new Link(m("staff.30", "Sản phẩm"), "/admin/products"), new Link(m("staff.31", "Kho hàng"), "/admin/inventory"), new Link(m("staff.32", "Giá & khuyến mãi"), "/admin/pricing"), new Link(m("staff.33", "Tài khoản"), "/admin/accounts"), new Link(m("staff.34", "Vai trò"), "/admin/roles"), new Link(m("staff.35", "Nhật ký"), "/admin/audit-logs"), new Link(m("staff.25", "Người dùng"), "/admin/users"), new Link(m("staff.warrantyMenu", "Bảo hành"), "/manager/warranty"), new Link(m("staff.testRideMenu", "Lái thử"), "/manager/test-rides"), new Link(m("staff.installmentMenu", "Trả góp"), "/manager/installments"));
             case "manager" -> List.of(new Link(m("staff.29", "Tổng quan"), "/manager"), new Link(m("staff.36", "Đơn hàng"), "/manager/orders"), new Link(m("staff.5", "Thanh toán"), "/manager/payments"), new Link(m("staff.9", "Khách hàng"), "/manager/customers"), new Link(m("staff.37", "Hỗ trợ"), "/manager/support"), new Link(m("staff.warrantyMenu", "Bảo hành"), "/manager/warranty"), new Link(m("staff.testRideMenu", "Lái thử"), "/manager/test-rides"), new Link(m("staff.installmentMenu", "Trả góp"), "/manager/installments"), new Link(m("staff.31", "Kho hàng"), "/manager/inventory"), new Link(m("staff.30", "Sản phẩm"), "/manager/products"), new Link(m("staff.38", "Báo cáo"), "/manager/reports"));
             default -> List.of(new Link(m("menu.overview", "Tổng quan"), "/customer"), new Link(m("menu.orders", "Đơn hàng"), "/customer/orders"), new Link(m("menu.payments", "Thanh toán"), "/customer/payments"), new Link(m("menu.notifications", "Thông báo"), "/customer/notifications"), new Link(m("menu.warranty", "Bảo hành"), "/customer/warranty"), new Link(m("menu.testRide", "Lái thử"), "/customer/test-rides"), new Link(m("menu.profile", "Hồ sơ"), "/customer/profile"), new Link(m("menu.favourites", "Yêu thích"), "/favorites"));
         };
+        // V26: the receipts menu entry only for staff who may add stock (it sits after the stock page); the page itself says so if someone opens it without the permission
+        List<Link> links = new java.util.ArrayList<>(baseLinks);
+        if (canManageStock && !role.equals("customer")) {
+            int stockAt = -1;
+            for (int i = 0; i < links.size(); i++) {
+                if (links.get(i).href().endsWith("/inventory")) {
+                    stockAt = i;
+                }
+            }
+            links.add(stockAt + 1, new Link(m("staff.stockReceiptsMenu", "Nhập kho"), "/manager/stock-receipts"));
+        }
+        model.addAttribute("canManageStock", canManageStock);
         model.addAttribute("workspaceRole", role);
         model.addAttribute("title", title);
         model.addAttribute("description", description);
