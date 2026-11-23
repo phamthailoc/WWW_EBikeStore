@@ -129,7 +129,9 @@ class SavingsCalculatorSeleniumTest extends StorefrontSeleniumTest {
 
     @Test
     void theApiRefusesWhatIsWrongAndIsNeverCached() throws Exception {
-        assertThrows(IllegalStateException.class, () -> call(api, "GET", "/api/v1/products/no-such-bike-v33/savings", null), "404 for an unknown bike");
+        IllegalStateException unknown = assertThrows(IllegalStateException.class,
+            () -> call(api, "GET", "/api/v1/products/no-such-bike-v33/savings", null), "an unknown bike is refused");
+        assertTrue(unknown.getMessage().contains("-> 404"), "404 for an unknown bike: " + unknown.getMessage());
         for (String query : new String[] {"kmPerDay=0", "kmPerDay=301", "daysPerMonth=0", "daysPerMonth=32", "kmPerDay=abc"}) {
             IllegalStateException refused = assertThrows(IllegalStateException.class,
                 () -> call(api, "GET", "/api/v1/products/" + slug + "/savings?" + query, null), query);
