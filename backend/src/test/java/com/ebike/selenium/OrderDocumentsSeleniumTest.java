@@ -53,6 +53,12 @@ class OrderDocumentsSeleniumTest extends StorefrontSeleniumTest {
 
     private static final By PANEL = By.id("orderDocuments");
 
+    @org.junit.jupiter.api.BeforeAll
+    static void eraseTheCustomerWhenDone() {
+        // the test customer and its delivered orders are erased with the account at the end of the class (the orders stay as anonymous sales records)
+        eraseCustomerWhenDone = true;
+    }
+
     // ---- helpers ----
 
     private static HttpResponse<byte[]> download(HttpClient client, String path) throws Exception {
@@ -105,7 +111,11 @@ class OrderDocumentsSeleniumTest extends StorefrontSeleniumTest {
         return stock;
     }
 
-    /** Puts back the stock a test's orders used up, so the next test finds the bike as it was. */
+    /**
+     * Puts back the stock a test's orders used up, so the next test finds the bike as it was. This is a known drift: a DELIVERED order sold its bike for good,
+     * so after this the stock figure is higher than the orders explain, and no cancellation records why. It is accepted for test data in a local database;
+     * the stock history of V26 will have to ignore (or the test must stop restoring) such rows.
+     */
     private static void restoreStock(HttpClient manager, String slug, Map<Long, Integer> before) {
         try {
             long productId = call(api, "GET", "/api/v1/products/" + slug, null).path("id").asLong();
@@ -329,7 +339,7 @@ class OrderDocumentsSeleniumTest extends StorefrontSeleniumTest {
             assertEquals(404, download(stranger, "/api/v1/orders/" + orderId + "/receipt").statusCode());
             assertEquals(404, download(stranger, "/api/v1/orders/" + orderId + "/warranty-card").statusCode());
         } finally {
-            // the stranger is a throw-away account: erase it, like the test customer is erased at the end of a class
+            // the stranger is a throw-away account: erase it now, the test customer is erased at the end of the class (eraseCustomerWhenDone)
             try {
                 call(stranger, "DELETE", "/api/v1/auth/account", Map.of("password", PASSWORD, "confirmEmail", other + "@example.com"));
             } catch (Exception e) {
