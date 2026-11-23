@@ -173,6 +173,81 @@ class SavingsCalculatorSeleniumTest extends StorefrontSeleniumTest {
     }
 
     @Test
+    void aManagerSeesTheBoxToo() {
+        String user = System.getProperty("selenium.managerUser", "");
+        String password = System.getProperty("selenium.managerPassword", "");
+        assumeTrue(!user.isBlank() && !password.isBlank(), "selenium.managerUser/selenium.managerPassword not set");
+        logIn(user, password);
+        openBike();
+        wait.until(ExpectedConditions.visibilityOfElementLocated(MONTHLY_SAVING));
+        assertTrue(driver.findElement(KM).isDisplayed(), "staff can try their own numbers");
+    }
+
+    /** A product the API answers {@code applicable=false} for (a battery pack or an accessory), or null when the catalogue has none. */
+    private static String slugWhere(boolean applicable, boolean calculable) throws Exception {
+        for (JsonNode product : listOf(call(api, "GET", "/api/v1/products", null))) {
+            String candidate = product.path("slug").asText();
+            JsonNode answer = call(api, "GET", "/api/v1/products/" + candidate + "/savings", null);
+            if (answer.path("applicable").asBoolean() == applicable && answer.path("calculable").asBoolean() == calculable) {
+                return candidate;
+            }
+        }
+        return null;
+    }
+
+    @Test
+    void aBikeWithoutUsableBatteryDataSaysItCannotBeEstimated() throws Exception {
+        String bike = slugWhere(true, false);
+        assumeTrue(bike != null, "every bike in the catalogue has usable battery data");
+        driver.get(baseUrl + "/product/" + bike);
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("#savingsBox [data-unavailable]")));
+        assertTrue(driver.findElements(KM).isEmpty(), "no inputs when nothing can be calculated");
+    }
+
+    @Test
+    void aBatteryPackOrAccessoryHasNoBox() throws Exception {
+        String other = slugWhere(false, false);
+        assumeTrue(other != null, "the catalogue has no battery pack or accessory");
+        driver.get(baseUrl + "/product/" + other);
+        wait.until(d -> Boolean.TRUE.equals(js("return performance.getEntriesByType('resource').some(e => e.name.includes('/savings'))")));
+        Thread.sleep(500);
+        assertFalse(driver.findElement(BOX).isDisplayed(), "nothing to compare, so the box stays hidden");
+    }
+
+    /** Makes the page's request for the savings fail the way the test says, before the page's own script runs. */
+    private void breakTheSavingsRequest(String replacement) {
+        ((org.openqa.selenium.chrome.ChromeDriver) driver).executeCdpCommand("Page.addScriptToEvaluateOnNewDocument", Map.<String, Object>of("source",
+            "const realFetch = window.fetch; window.fetch = (url, options) => String(url).includes('/savings') ? (" + replacement + ") : realFetch(url, options);"));
+    }
+
+    @Test
+    void whenTheNetworkFailsTheBoxSaysSoInVietnameseAndOffersARetry() {
+        breakTheSavingsRequest("Promise.reject(new TypeError('Failed to fetch'))");
+        driver.get(baseUrl + "/product/" + slug);
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("#savingsBox [data-retry]")));
+        String text = driver.findElement(BOX).getText();
+        assertFalse(text.contains("Failed to fetch"), "the browser's English message is not shown: " + text);
+        assertTrue(text.contains("Không thực hiện được"), text);
+    }
+
+    @Test
+    void aBusyServerShowsItsMessageWithARetry() {
+        breakTheSavingsRequest("Promise.resolve(new Response(JSON.stringify({message: 'Bạn thao tác quá nhanh.'}), {status: 429, headers: {'Content-Type': 'application/json'}}))");
+        driver.get(baseUrl + "/product/" + slug);
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("#savingsBox [data-retry]")));
+        assertTrue(driver.findElement(BOX).getText().contains("Bạn thao tác quá nhanh."), driver.findElement(BOX).getText());
+    }
+
+    @Test
+    void anAccountThatMayNotViewProductsDoesNotSeeABrokenBox() throws Exception {
+        breakTheSavingsRequest("Promise.resolve(new Response(JSON.stringify({message: 'Bạn không có quyền thực hiện thao tác này.'}), {status: 403, headers: {'Content-Type': 'application/json'}}))");
+        driver.get(baseUrl + "/product/" + slug);
+        wait.until(d -> Boolean.TRUE.equals(js("return document.querySelector('#productPage') !== null")));
+        Thread.sleep(800);
+        assertFalse(driver.findElement(BOX).isDisplayed(), "a 403 hides the box instead of showing a retry that cannot help");
+    }
+
+    @Test
     void thePriceTheAdminSetsChangesTheAnswer() throws Exception {
         String user = System.getProperty("selenium.adminUser", "");
         String password = System.getProperty("selenium.adminPassword", "");
