@@ -136,6 +136,12 @@
       <artifactId>jasperreports-fonts</artifactId>
       <version>6.20.0</version>
     </dependency>
+    <!-- V28: Excel (.xlsx) export of the revenue report and the order list. poi-ooxml 5.2.x writes the workbook; only the XSSF classes are used. -->
+    <dependency>
+      <groupId>org.apache.poi</groupId>
+      <artifactId>poi-ooxml</artifactId>
+      <version>5.2.5</version>
+    </dependency>
   </dependencies>
 
   <build>

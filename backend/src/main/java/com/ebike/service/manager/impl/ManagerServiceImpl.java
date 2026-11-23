@@ -303,6 +303,12 @@ public class ManagerServiceImpl implements ManagerService {
     @Override
     @Transactional(readOnly = true)
     public ManagerRevenueReportResponse getRevenueReport(String rawPeriod, String rawFromDate, String rawToDate) {
+        return getRevenueReportForExport(rawPeriod, rawFromDate, rawToDate).report();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public com.ebike.service.report.RevenueReportExportData getRevenueReportForExport(String rawPeriod, String rawFromDate, String rawToDate) {
         String period = normalizePeriod(rawPeriod);
         LocalDate today = LocalDate.now();
         LocalDate fromDate;
@@ -350,7 +356,7 @@ public class ManagerServiceImpl implements ManagerService {
         List<ManagerTopProductResponse> topProducts = buildTopProducts(paidOrders);
         List<ManagerTopProductResponse> slowProducts = buildSlowProducts(paidOrders);
 
-        return new ManagerRevenueReportResponse(
+        ManagerRevenueReportResponse report = new ManagerRevenueReportResponse(
             bucketPeriod.toUpperCase(Locale.ROOT),
             fromDate.toString(),
             toDate.toString(),
@@ -361,6 +367,12 @@ public class ManagerServiceImpl implements ManagerService {
             topProducts,
             slowProducts
         );
+        // V28: the cancellation rate is cancelled orders over all orders placed in the period (the report above leaves cancelled ones out)
+        long placedOrders = orders.stream()
+            .filter(order -> isOnOrAfter(order.getCreatedAt().toLocalDate(), fromDate))
+            .filter(order -> !order.getCreatedAt().toLocalDate().isAfter(toDate))
+            .count();
+        return new com.ebike.service.report.RevenueReportExportData(report, placedOrders, placedOrders - totalOrders);
     }
 
     // The customer may ask to collect the bike on another day; staff then move the hold deadline to match.
