@@ -211,4 +211,12 @@ class SeoPagesTest {
         String robots = defaulted.perform(get("/robots.txt").with(r -> { r.setScheme("https"); r.setServerName("kinetic.example"); r.setServerPort(443); return r; })).andReturn().getResponse().getContentAsString();
         assertTrue(robots.contains("Sitemap: https://kinetic.example/sitemap.xml"), robots);
     }
+
+    @Test
+    void aPageBuiltFromTheHostHeaderIsCachedPerHostOnly() throws Exception {
+        var open = build("vi", "").perform(get("/robots.txt")).andReturn().getResponse();
+        assertTrue(open.getHeaders(HttpHeaders.VARY).contains("Host"), "no configured address: cache per Host");
+        var fixed = vietnamese.perform(get("/robots.txt")).andReturn().getResponse();
+        assertTrue(fixed.getHeaders(HttpHeaders.VARY).isEmpty(), "configured address: nothing depends on Host");
+    }
 }
