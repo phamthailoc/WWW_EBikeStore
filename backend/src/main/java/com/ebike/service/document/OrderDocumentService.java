@@ -12,10 +12,8 @@ import com.ebike.repository.order.OrderRepository;
 import com.ebike.repository.user.UserPreferenceRepository;
 import com.ebike.service.admin.AccountErasure;
 import com.ebike.service.warranty.WarrantyRules;
-import java.time.Clock;
 import java.time.LocalDateTime;
 import java.time.Period;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -56,7 +54,6 @@ public class OrderDocumentService {
     private final StoreProfile store;
     private final PdfRenderer renderer;
     private final List<Period> intervals;
-    private final Clock clock;
 
     public OrderDocumentService(
         OrderRepository orders,
@@ -65,8 +62,7 @@ public class OrderDocumentService {
         UserPreferenceRepository preferences,
         StoreProfile store,
         PdfRenderer renderer,
-        @Value("${app.maintenance.intervals:" + WarrantyRules.DEFAULT_INTERVALS + "}") String intervals,
-        @Value("${app.time-zone:Asia/Ho_Chi_Minh}") String timeZone
+        @Value("${app.maintenance.intervals:" + WarrantyRules.DEFAULT_INTERVALS + "}") String intervals
     ) {
         this.orders = orders;
         this.installments = installments;
@@ -75,7 +71,6 @@ public class OrderDocumentService {
         this.store = store;
         this.renderer = renderer;
         this.intervals = WarrantyRules.parseIntervals(intervals);
-        this.clock = Clock.system(ZoneId.of(timeZone));
     }
 
     /** The sales receipt of an order that is not cancelled. Before the bike is handed over it is marked "provisional". */
@@ -138,14 +133,15 @@ public class OrderDocumentService {
         return Optional.of(new DeliveryDocuments(email, "—".equals(name) ? DocumentText.text(language, "mail.guestName") : name, order.getOrderNumber(), language, files, user == null));
     }
 
+    // the issue time is read like the times stored on the order (the JVM zone), so the dates on one page always agree with each other
     private PdfFile buildReceipt(Order order, String language) {
         var installment = installments.findByOrderId(order.getId()).orElse(null);
-        var model = DocumentModels.receipt(order, installment, store, language, LocalDateTime.now(clock));
+        var model = DocumentModels.receipt(order, installment, store, language, LocalDateTime.now());
         return new PdfFile("receipt-" + PdfFile.safeName(order.getOrderNumber()) + ".pdf", render("receipt", model, language));
     }
 
     private PdfFile buildCard(Order order, List<OrderItemUnit> units, String language, String singleFrame) {
-        var model = DocumentModels.warrantyCards(order, units, store, intervals, language, LocalDateTime.now(clock));
+        var model = DocumentModels.warrantyCards(order, units, store, intervals, language, LocalDateTime.now());
         String name = singleFrame == null ? PdfFile.safeName(order.getOrderNumber()) : PdfFile.safeName(singleFrame);
         return new PdfFile("warranty-card-" + name + ".pdf", render("warranty-card", model, language));
     }

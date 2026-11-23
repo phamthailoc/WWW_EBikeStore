@@ -47,7 +47,7 @@ class OrderDocumentServiceTest {
         when(installments.findByOrderId(org.mockito.ArgumentMatchers.any())).thenReturn(Optional.empty());
         when(preferences.findByUserId(org.mockito.ArgumentMatchers.any())).thenReturn(Optional.empty());
         service = new OrderDocumentService(orders, installments, users, preferences, DocumentFixtures.store(), new PdfRenderer(),
-            WarrantyRules.DEFAULT_INTERVALS, "Asia/Ho_Chi_Minh");
+            WarrantyRules.DEFAULT_INTERVALS);
         User owner = DocumentFixtures.user(7, "an");
         when(users.findByUsername("an")).thenReturn(Optional.of(owner));
         when(users.findByUsername("binh")).thenReturn(Optional.of(DocumentFixtures.user(8, "binh")));
