@@ -189,6 +189,7 @@ class SavingsCalculatorSeleniumTest extends StorefrontSeleniumTest {
         long id = rule.path("id").asLong();
         String originalAmount = rule.path("amount").decimalValue().toPlainString();
         String originalStatus = rule.path("status").asText();
+        String originalFrom = rule.path("effectiveFrom").isNull() ? null : rule.path("effectiveFrom").asText();
         try {
             // a value that is not above zero, or far too large, is refused by the admin console
             assertThrows(IllegalStateException.class, () -> call(admin, "PATCH", "/api/v1/admin/pricing-rules/" + id, Map.of("amount", 0, "status", "ACTIVE")));
@@ -204,7 +205,14 @@ class SavingsCalculatorSeleniumTest extends StorefrontSeleniumTest {
             JsonNode cheapPetrol = call(api, "GET", "/api/v1/products/" + slug + "/savings", null);
             assertTrue(cheapPetrol.path("monthlySaving").asLong() < dearPetrol.path("monthlySaving").asLong(), "cheaper petrol, smaller saving");
         } finally {
-            call(admin, "PATCH", "/api/v1/admin/pricing-rules/" + id, Map.of("amount", new java.math.BigDecimal(originalAmount), "status", originalStatus));
+            // the server sets the date to now when none is sent, so the rule's own date is sent back too
+            Map<String, Object> restore = new java.util.LinkedHashMap<>();
+            restore.put("amount", new java.math.BigDecimal(originalAmount));
+            restore.put("status", originalStatus);
+            if (originalFrom != null) {
+                restore.put("effectiveFrom", originalFrom);
+            }
+            call(admin, "PATCH", "/api/v1/admin/pricing-rules/" + id, restore);
         }
     }
 }
