@@ -1,0 +1,29 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<!--/*
+  V35: what search engines and link previews read. Used inside <head> as
+  <th:block th:replace="~{store/seo :: meta(title, description, url, image, type, robots)}"></th:block>
+  robots is null for a page that may be indexed, otherwise the robots directive (for example "noindex,follow").
+*/-->
+<th:block th:fragment="meta(title, description, url, image, type, robots)">
+<meta name="description" th:content="${description}">
+<meta name="robots" th:if="${robots != null}" th:content="${robots}">
+<link rel="canonical" th:href="${url}">
+<meta property="og:site_name" th:content="#{seo.siteName}" content="KINETIC">
+<meta property="og:type" th:content="${type}" content="website">
+<meta property="og:title" th:content="${title}">
+<meta property="og:description" th:content="${description}">
+<meta property="og:url" th:content="${url}">
+<meta property="og:image" th:if="${image != null and !image.isEmpty()}" th:content="${image}">
+<meta property="og:image:alt" th:if="${image != null and !image.isEmpty()}" th:content="${title}">
+<meta property="og:locale" th:content="${#locale.language == 'en' ? 'en_US' : 'vi_VN'}" content="vi_VN">
+<meta property="og:locale:alternate" th:content="${#locale.language == 'en' ? 'vi_VN' : 'en_US'}" content="en_US">
+<meta name="twitter:card" th:content="${image != null and !image.isEmpty() ? 'summary_large_image' : 'summary'}" content="summary_large_image">
+<meta name="twitter:title" th:content="${title}">
+<meta name="twitter:description" th:content="${description}">
+<meta name="twitter:image" th:if="${image != null and !image.isEmpty()}" th:content="${image}">
+</th:block>
+</head>
+<body></body>
+</html>
