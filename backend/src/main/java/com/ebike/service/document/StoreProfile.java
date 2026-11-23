@@ -30,7 +30,21 @@ public class StoreProfile {
         this.address = clean(address);
         this.phone = clean(phone);
         this.email = clean(email);
-        this.publicBaseUrl = clean(publicBaseUrl);
+        // a deployment that forgot APP_PUBLIC_BASE_URL keeps the localhost default: print no address rather than a wrong one
+        this.publicBaseUrl = isLocalAddress(publicBaseUrl) ? "" : clean(publicBaseUrl);
+    }
+
+    /** True for an address on the machine itself (the default {@code http://localhost:8080}), which means nothing to a customer reading a PDF or an email. */
+    public static boolean isLocalAddress(String url) {
+        if (url == null || url.isBlank()) {
+            return false;
+        }
+        try {
+            String host = java.net.URI.create(url.trim()).getHost();
+            return host != null && (host.equalsIgnoreCase("localhost") || host.endsWith(".localhost") || host.equals("127.0.0.1") || host.equals("[::1]") || host.equals("::1"));
+        } catch (IllegalArgumentException exception) {
+            return false;
+        }
     }
 
     private static String clean(String value) {

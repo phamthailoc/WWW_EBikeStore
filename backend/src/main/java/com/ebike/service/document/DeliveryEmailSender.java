@@ -38,7 +38,7 @@ public class DeliveryEmailSender {
         this.fromAddress = fromAddress;
         this.smtpHost = smtpHost;
         this.mailEnabled = mailEnabled;
-        this.publicBaseUrl = publicBaseUrl == null ? "" : publicBaseUrl.trim();
+        this.publicBaseUrl = publicBaseUrl == null || StoreProfile.isLocalAddress(publicBaseUrl) ? "" : publicBaseUrl.trim();
     }
 
     /** False when mail is turned off or there is no SMTP host: then nothing is worth rendering, because nothing can be sent. */
