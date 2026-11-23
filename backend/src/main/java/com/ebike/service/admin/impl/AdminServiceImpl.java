@@ -126,6 +126,16 @@ public class AdminServiceImpl implements AdminService {
                 "Lãi suất trả góp không được vượt 60% mỗi năm.", "The instalment rate must not exceed 60 percent a year."));
         }
 
+        if (rule.getCode().startsWith(PricingService.SAVINGS_PREFIX)) {
+            // V33: the savings calculator divides by nothing but shows these figures to every visitor, so a zero or a typo in the wrong unit is refused here
+            BigDecimal ceiling = savingsCeiling(rule.getCode());
+            if (request.amount().signum() <= 0 || request.amount().compareTo(ceiling) > 0) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, RequestLanguage.text(
+                    "Giá trị phải lớn hơn 0 và không vượt " + ceiling.toPlainString() + " (" + rule.getUnit() + ").",
+                    "The value must be above 0 and not exceed " + ceiling.toPlainString() + " (" + rule.getUnit() + ")."));
+            }
+        }
+
         rule.setAmount(request.amount());
         rule.setStatus(normalizeOrDefault(request.status(), "ACTIVE", PRICING_STATUSES));
         rule.setEffectiveFrom(request.effectiveFrom() == null ? LocalDateTime.now() : request.effectiveFrom());
@@ -533,5 +543,16 @@ public class AdminServiceImpl implements AdminService {
             case "CUSTOMER" -> "Customer";
             default -> role;
         };
+    }
+
+    /** V33: the largest value an admin may type for a rule of the savings calculator (a typo guard, well above any real figure). */
+    private static BigDecimal savingsCeiling(String code) {
+        if (PricingService.SAVINGS_ELECTRICITY_PRICE.equals(code)) {
+            return new BigDecimal("20000");
+        }
+        if (PricingService.SAVINGS_PETROL_PRICE.equals(code)) {
+            return new BigDecimal("200000");
+        }
+        return new BigDecimal("10");
     }
 }
