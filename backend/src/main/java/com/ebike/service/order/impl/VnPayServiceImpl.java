@@ -127,7 +127,8 @@ public class VnPayServiceImpl implements VnPayService {
         params.put("vnp_Amount", toVnPayAmount(payment.getAmount()));
         params.put("vnp_CurrCode", "VND");
         params.put("vnp_TxnRef", payment.getTransactionReference());
-        params.put("vnp_OrderInfo", "Thanh toan don hang " + order.getOrderNumber() + " - Kinetic E-Bike");
+        // the gateway shows this to the customer: an instalment order is paying its down payment only
+        params.put("vnp_OrderInfo", (installmentOrder ? "Tra truoc tra gop don " : "Thanh toan don hang ") + order.getOrderNumber() + " - Kinetic E-Bike");
         params.put("vnp_OrderType", "other");
         params.put("vnp_Locale", normalizeLocale(request.language()));
         params.put("vnp_ReturnUrl", properties.getReturnUrl());

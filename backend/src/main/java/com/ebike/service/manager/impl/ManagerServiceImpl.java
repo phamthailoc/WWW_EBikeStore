@@ -169,11 +169,11 @@ public class ManagerServiceImpl implements ManagerService {
         // the order row first, then the payment (every cancellation and every gateway result takes them in this order), so a cancellation or the expiry job
         // running at the same moment is seen here instead of being written over
         Long orderId = paymentRepository.findOrderIdById(paymentId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Payment not found"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, RequestLanguage.text("Không tìm thấy khoản thanh toán.", "Payment not found")));
         Order lockedOrder = orderRepository.findLockedById(orderId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, RequestLanguage.text("Không tìm thấy đơn hàng.", "Order not found")));
         Payment payment = paymentRepository.findById(paymentId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Payment not found"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, RequestLanguage.text("Không tìm thấy khoản thanh toán.", "Payment not found")));
         if (lockedOrder.getStatus() == OrderStatus.CANCELLED) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, RequestLanguage.text(
                 "Đơn hàng đã bị hủy nên không xác nhận thu tiền được. Hãy tải lại danh sách.",
