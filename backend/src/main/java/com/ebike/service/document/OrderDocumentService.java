@@ -160,9 +160,11 @@ public class OrderDocumentService {
         if (email == null) {
             return Optional.empty();
         }
-        // a guest has no profile: the language of the page the order was placed from (Vietnamese, the shop's base language, on an older order)
-        String placed = DocumentFormat.language(order.getCustomerLanguage());
-        String language = user == null ? placed : preferences.findByUserId(user.getId()).map(saved -> DocumentFormat.language(saved.getLanguage())).orElse(placed);
+        // the language the order was placed in wins (the profile row always has a language, "vi" by default, even when the customer never chose one);
+        // an older order that recorded none follows the profile, and a guest order without one is Vietnamese, the shop's base language
+        String language = order.getCustomerLanguage() != null && !order.getCustomerLanguage().isBlank() || user == null
+            ? DocumentFormat.language(order.getCustomerLanguage())
+            : preferences.findByUserId(user.getId()).map(saved -> DocumentFormat.language(saved.getLanguage())).orElse("vi");
         List<Draft> drafts = new ArrayList<>();
         drafts.add(receiptDraft(order, language));
         List<OrderItemUnit> units = unitsOf(order);

@@ -192,7 +192,7 @@ class OrderDocumentServiceTest {
     // ---- the hand-over email ----
 
     @Test
-    void theHandoverEmailCarriesTheReceiptAndTheCardInTheSavedLanguage() {
+    void anOrderWithoutARecordedLanguageIsEmailedInTheLanguageOfTheProfile() {
         stored(DocumentFixtures.order(10, OrderStatus.DELIVERED, 2, true));
         UserPreference preference = new UserPreference();
         preference.setLanguage("en");
@@ -205,6 +205,18 @@ class OrderDocumentServiceTest {
         assertEquals("Nguyễn Văn An", documents.recipientName());
         assertEquals(java.util.List.of("receipt-ORD-20261110-00000010.pdf", "warranty-card-ORD-20261110-00000010.pdf"),
             documents.files().stream().map(PdfFile::filename).toList());
+    }
+
+    @Test
+    void theLanguageTheOrderWasPlacedInBeatsTheProfileLanguageThatDefaultsToVietnamese() {
+        Order order = stored(DocumentFixtures.order(15, OrderStatus.DELIVERED, 1, true));
+        order.setCustomerLanguage("en");
+        // the profile row exists with its default language, and still does not win
+        UserPreference preference = new UserPreference();
+        preference.setLanguage("vi");
+        when(preferences.findByUserId(7L)).thenReturn(Optional.of(preference));
+
+        assertEquals("en", service.forDeliveredOrder(15L).orElseThrow().language());
     }
 
     @Test
