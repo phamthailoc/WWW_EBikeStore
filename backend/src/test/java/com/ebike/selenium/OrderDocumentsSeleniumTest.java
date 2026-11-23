@@ -334,7 +334,10 @@ class OrderDocumentsSeleniumTest extends StorefrontSeleniumTest {
         try {
             driver.manage().window().setSize(new org.openqa.selenium.Dimension(375, 812));
             openOrder(orderId);
-            assertTrue((Boolean) js("return document.documentElement.scrollWidth <= window.innerWidth + 1"), "no sideways scroll on a phone");
+            assertTrue((Boolean) js("return document.documentElement.scrollWidth <= window.innerWidth + 1"), "no sideways scroll on a phone: " + js(
+                "return 'inner=' + window.innerWidth + ' scroll=' + document.documentElement.scrollWidth + ' wide=' + [...document.querySelectorAll('body *')]"
+                + ".filter(e => e.getBoundingClientRect().right > window.innerWidth + 1).slice(0, 8)"
+                + ".map(e => e.tagName + '#' + e.id + '.' + e.className + ':' + Math.round(e.getBoundingClientRect().right)).join(' | ')"));
             assertTrue(driver.findElement(PANEL).isDisplayed());
         } finally {
             // a failed phone check must not leave the later steps at phone width
@@ -393,7 +396,10 @@ class OrderDocumentsSeleniumTest extends StorefrontSeleniumTest {
             driver.manage().window().setSize(new org.openqa.selenium.Dimension(375, 812));
             driver.get(baseUrl + "/manager/orders/" + orderId);
             wait.until(ExpectedConditions.visibilityOfElementLocated(PANEL));
-            assertTrue((Boolean) js("return document.documentElement.scrollWidth <= window.innerWidth + 1"), "no sideways scroll on a phone");
+            assertTrue((Boolean) js("return document.documentElement.scrollWidth <= window.innerWidth + 1"), "no sideways scroll on a phone: " + js(
+                "return 'inner=' + window.innerWidth + ' scroll=' + document.documentElement.scrollWidth + ' wide=' + [...document.querySelectorAll('body *')]"
+                + ".filter(e => e.getBoundingClientRect().right > window.innerWidth + 1).slice(0, 8)"
+                + ".map(e => e.tagName + '#' + e.id + '.' + e.className + ':' + Math.round(e.getBoundingClientRect().right)).join(' | ')"));
             assertTrue((Boolean) js("return [...document.querySelectorAll('#orderDocuments select, #orderDocuments button')].length === 4 "
                 + "&& [...document.querySelectorAll('#orderDocuments select, #orderDocuments button')].every(e => { const r = e.getBoundingClientRect(); return r.width > 0 && r.left >= 0 && r.right <= window.innerWidth + 1; })"),
                 "the select and three buttons are all inside the screen");
