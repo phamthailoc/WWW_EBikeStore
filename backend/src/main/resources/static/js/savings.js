@@ -22,7 +22,7 @@
     if (!response.ok) {
       let message = '';
       try { message = (await response.json()).message || ''; } catch (ignored) { /* not JSON */ }
-      const error = Error(response.status === 429 ? t('Bạn thao tác quá nhanh. Vui lòng thử lại sau ít phút.') : message || t('Không thực hiện được. Vui lòng thử lại sau.'));
+      const error = Error(message || t('Không thực hiện được. Vui lòng thử lại sau.'));
       error.status = response.status;
       throw error;
     }

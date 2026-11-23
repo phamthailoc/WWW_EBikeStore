@@ -841,5 +841,20 @@
  "Khớp": "Matches",
  "Lệch": "Off by",
  "Không có dòng nào khớp bộ lọc.": "No line matches the filter.",
- "Lý do thay đổi (có thể để trống)": "Reason for the change (can be left empty)"
+ "Lý do thay đổi (có thể để trống)": "Reason for the change (can be left empty)",
+ "Mỗi tháng bạn tiết kiệm khoảng": "You save about this much a month",
+ "Mỗi năm tiết kiệm khoảng": "You save about this much a year",
+ "Kết quả": "Result",
+ "Với giá hiện tại, xe này không rẻ hơn xe xăng cùng phân khúc.": "At today's prices this bike is not cheaper to run than a petrol motorbike of the same class.",
+ "Tiền sạc mỗi tháng": "Charging cost a month",
+ "Tiền xăng mỗi tháng": "Petrol cost a month",
+ "Sạc 100 km": "Charging, 100 km",
+ "Xăng 100 km": "Petrol, 100 km",
+ "Ước tính theo {km} km mỗi tháng. Pin khoảng {kwh} kWh, hao {use} kWh cho 100 km (đã tính quãng đường thực tế bằng {range}% công bố và hiệu suất sạc {eff}%). Giá điện {electric} mỗi kWh; xe máy xăng cùng phân khúc tiêu hao {liters} lít/100 km, giá xăng {petrol} mỗi lít. Chỉ mang tính tham khảo, không cộng vào đơn hàng.": "Estimate for {km} km a month. The battery holds about {kwh} kWh and uses {use} kWh per 100 km (real range taken as {range}% of the stated range, charging efficiency {eff}%). Electricity costs {electric} per kWh; a petrol motorbike of the same class uses {liters} litres per 100 km and petrol costs {petrol} per litre. For reference only and not added to your order.",
+ "Nhập số km mỗi ngày là số nguyên từ 1 đến {max}.": "Enter the kilometres per day as a whole number from 1 to {max}.",
+ "Nhập số ngày đi mỗi tháng là số nguyên từ 1 đến {max}.": "Enter the days of riding per month as a whole number from 1 to {max}.",
+ "Chưa tính được cho xe này.": "The estimate is not available for this bike.",
+ "Nhập quãng đường bạn đi để so tiền sạc với tiền xăng của xe máy cùng phân khúc.": "Enter how far you ride to compare the cost of charging with the petrol of a motorbike of the same class.",
+ "Số km mỗi ngày": "Kilometres per day",
+ "Số ngày đi mỗi tháng": "Days of riding per month"
 }
