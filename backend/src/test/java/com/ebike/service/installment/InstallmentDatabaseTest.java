@@ -127,14 +127,16 @@ class InstallmentDatabaseTest {
         // open: still holding the order's stock (down payment not paid yet)
         assertEquals(2, applications.countOpenOf(user));
         // what the plans cost every month: pending and approved ones on orders that are not cancelled, the paid one too
-        assertEquals(0, applications.sumMonthlyPaymentOf(user).compareTo(new BigDecimal("1800000")));
+        assertEquals(0, applications.sumMonthlyPaymentOf(user, java.time.LocalDateTime.now().minusMonths(12)).compareTo(new BigDecimal("1800000")));
         List<Long> open = tx().execute(s -> applications.findOpenOf(user).stream().map(InstallmentApplication::getId).toList());
         assertEquals(2, open.size());
         assertTrue(open.containsAll(List.of(a1, a2)));
         // a customer with nothing: a count of 0 and no sum at all
         long nobody = newUser();
         assertEquals(0, applications.countOpenOf(nobody));
-        assertNull(applications.sumMonthlyPaymentOf(nobody));
+        assertNull(applications.sumMonthlyPaymentOf(nobody, java.time.LocalDateTime.now().minusMonths(12)));
+        // plans taken out longer ago than the longest term are paid off and no longer count
+        assertNull(applications.sumMonthlyPaymentOf(user, java.time.LocalDateTime.now().plusDays(1)));
     }
 
     @Test

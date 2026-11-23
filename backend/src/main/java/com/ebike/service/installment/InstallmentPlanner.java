@@ -137,7 +137,8 @@ public class InstallmentPlanner {
                 "You already have " + limits.maxOpenPerCustomer() + " instalment applications in progress. Please wait for a decision, pay or cancel an order before applying again."));
         }
         // the 60% limit holds for all the customer's plans together, not for each one alone
-        BigDecimal other = applications.sumMonthlyPaymentOf(user.getId());
+        BigDecimal other = applications.sumMonthlyPaymentOf(user.getId(),
+            java.time.LocalDateTime.now().minusMonths(InstallmentRules.TERMS.stream().mapToInt(Integer::intValue).max().orElse(12)));
         if (other != null && !InstallmentRules.affordable(plan.monthlyPayment().add(other), income, limits)) {
             int percent = limits.maxPaymentShareOfIncome().movePointRight(2).intValue();
             throw bad("Cùng với các hồ sơ trả góp khác của bạn (" + money("vi", other) + "/tháng), khoản trả hàng tháng vượt " + percent + "% thu nhập bạn khai. Hãy tăng khoản trả trước hoặc chọn kỳ hạn dài hơn.",

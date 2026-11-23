@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -224,9 +225,9 @@ class InstallmentPlannerTest {
     @Test
     void thePaymentsOfTheCustomersOtherPlansCountAgainstTheSameIncome() {
         // an income of 3,300,000 allows 1,980,000 a month: the new 1,925,000 plan fits alone, not next to a plan of 100,000
-        when(applications.sumMonthlyPaymentOf(7L)).thenReturn(new BigDecimal("100000"));
+        when(applications.sumMonthlyPaymentOf(eq(7L), any())).thenReturn(new BigDecimal("100000"));
         assertEquals(HttpStatus.BAD_REQUEST, refused(() -> planner.prepare(customer, new BigDecimal("30000000"), application("079123456789", "3300000", 30, 12))).getStatusCode());
-        when(applications.sumMonthlyPaymentOf(7L)).thenReturn(new BigDecimal("50000"));
+        when(applications.sumMonthlyPaymentOf(eq(7L), any())).thenReturn(new BigDecimal("50000"));
         assertEquals(0, planner.prepare(customer, new BigDecimal("30000000"), application("079123456789", "3300000", 30, 12)).plan().monthlyPayment().compareTo(new BigDecimal("1925000")));
     }
 

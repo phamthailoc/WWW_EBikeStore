@@ -38,11 +38,12 @@ public interface InstallmentApplicationRepository extends JpaRepository<Installm
 
     /**
      * What the customer's other plans cost each month: the applications still waiting or approved on orders that are not cancelled, including the ones
-     * whose down payment is paid. Null when there are none.
+     * whose down payment is paid, but only plans taken out since {@code since}: a plan older than the longest term has been paid off and no longer
+     * counts against the customer's income. Null when there are none.
      */
     @Query("select sum(a.monthlyPayment) from InstallmentApplication a where a.user.id = :userId and a.status in ('PENDING', 'APPROVED') "
-        + "and a.order.status <> com.ebike.model.entity.order.OrderStatus.CANCELLED")
-    BigDecimal sumMonthlyPaymentOf(@Param("userId") Long userId);
+        + "and a.order.status <> com.ebike.model.entity.order.OrderStatus.CANCELLED and a.createdAt >= :since")
+    BigDecimal sumMonthlyPaymentOf(@Param("userId") Long userId, @Param("since") java.time.LocalDateTime since);
 
     /** The customer's applications still waiting for the staff or for their down payment (their orders are still PENDING), newest first. */
     @EntityGraph(attributePaths = {"user", "order", "order.payment", "order.shipment"})
