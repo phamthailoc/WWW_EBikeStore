@@ -15,6 +15,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import javax.xml.parsers.DocumentBuilderFactory;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
@@ -36,6 +38,18 @@ import org.w3c.dom.NodeList;
 class SeoSeleniumTest extends StorefrontSeleniumTest {
 
     private static final HttpClient VISITOR = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.NORMAL).build();
+
+    @BeforeAll
+    static void eraseTheCustomerWhenDone() {
+        eraseCustomerWhenDone = true;
+    }
+
+    /** The base class signs a customer in; crawlers are anonymous, so the head checks start from a browser with no session. */
+    @BeforeEach
+    void browseAsAVisitor() {
+        driver.manage().deleteAllCookies();
+        js("try{localStorage.clear();sessionStorage.clear()}catch(e){}");
+    }
 
     private static HttpResponse<String> visit(String path) throws Exception {
         return VISITOR.send(HttpRequest.newBuilder(URI.create(baseUrl + path)).GET().build(), HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
@@ -73,7 +87,8 @@ class SeoSeleniumTest extends StorefrontSeleniumTest {
         assertEquals(200, robots.statusCode(), "robots.txt needs no account");
         assertTrue(robots.headers().firstValue("Content-Type").orElse("").startsWith("text/plain"), robots.headers().toString());
         assertTrue(robots.body().contains("Disallow: /api/"), robots.body());
-        assertTrue(robots.body().contains("Disallow: /admin"), robots.body());
+        assertTrue(robots.body().contains("Disallow: /lang/"), robots.body());
+        assertFalse(robots.body().contains("Disallow: /admin"), "private pages stay crawlable so their noindex is seen");
         assertFalse(robots.body().contains("Disallow: /product"), "products stay open");
         assertTrue(robots.body().contains("Sitemap: "), robots.body());
         assertTrue(pathOf(robots.body().lines().filter(l -> l.startsWith("Sitemap: ")).findFirst().orElseThrow().substring(9).trim()).endsWith("/sitemap.xml"));
@@ -168,15 +183,17 @@ class SeoSeleniumTest extends StorefrontSeleniumTest {
 
     @Test
     void anEnglishVisitorGetsEnglishPreviewText() throws Exception {
-        driver.get(baseUrl + "/lang/en?back=/product/" + productSlug);
-        wait.until(d -> "en".equals(js("return document.documentElement.lang")));
-        assertEquals("en_US", meta("meta[property='og:locale']"));
-        assertEquals("vi_VN", meta("meta[property='og:locale:alternate']"));
-        assertEquals("Home", jsonLd("BreadcrumbList").path("itemListElement").get(0).path("name").asText());
-        driver.get(baseUrl + "/");
-        assertTrue(meta("meta[name='description']").startsWith("KINETIC sells"), meta("meta[name='description']"));
-        driver.get(baseUrl + "/lang/vi?back=/");
-        wait.until(d -> "vi".equals(js("return document.documentElement.lang")));
+        try {
+            driver.get(baseUrl + "/lang/en?back=/product/" + productSlug);
+            wait.until(d -> "en".equals(js("return document.documentElement.lang")));
+            assertEquals("en_US", meta("meta[property='og:locale']"));
+            assertNull(meta("meta[property='og:locale:alternate']"), "language is a cookie on one address: no alternate to point at");
+            assertEquals("Home", jsonLd("BreadcrumbList").path("itemListElement").get(0).path("name").asText());
+            driver.get(baseUrl + "/");
+            assertTrue(meta("meta[name='description']").startsWith("KINETIC sells"), meta("meta[name='description']"));
+        } finally {
+            driver.get(baseUrl + "/lang/vi?back=/");
+        }
     }
 
     @Test
@@ -210,6 +227,7 @@ class SeoSeleniumTest extends StorefrontSeleniumTest {
         driver.manage().window().setSize(new Dimension(390, 844));
         driver.get(baseUrl + "/product/" + productSlug);
         assertNotNull(canonical());
+        wait.until(d -> "complete".equals(js("return document.readyState")));
         Object overflow = js("return document.documentElement.scrollWidth - window.innerWidth");
         assertTrue(((Number) overflow).intValue() <= 1, "no sideways scrolling on a phone: " + overflow);
     }
