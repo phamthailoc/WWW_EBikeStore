@@ -94,6 +94,8 @@ public class StockLedger {
         if (entityManager.getLockMode(entity) == LockModeType.PESSIMISTIC_WRITE) {
             return;
         }
+        // refresh() re-reads the row and drops unflushed changes, so write them first
+        entityManager.flush();
         entityManager.refresh(entity, LockModeType.PESSIMISTIC_WRITE);
     }
 
