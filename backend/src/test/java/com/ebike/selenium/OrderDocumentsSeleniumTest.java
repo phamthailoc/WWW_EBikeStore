@@ -161,16 +161,20 @@ class OrderDocumentsSeleniumTest extends StorefrontSeleniumTest {
 
     /** Waits for a finished PDF that starts with {@code prefix} and was not in the folder before (so an earlier download of the same name cannot satisfy it), and returns it. */
     private Path newSaved(Path folder, String prefix, Set<String> before) {
-        return wait.until(d -> {
-            try (Stream<Path> files = Files.list(folder)) {
-                return files.filter(file -> {
-                    String name = file.getFileName().toString();
-                    return name.startsWith(prefix) && name.endsWith(".pdf") && !before.contains(name);
-                }).findFirst().orElse(null);
-            } catch (IOException e) {
-                return null;
-            }
-        });
+        try {
+            return wait.until(d -> {
+                try (Stream<Path> files = Files.list(folder)) {
+                    return files.filter(file -> {
+                        String name = file.getFileName().toString();
+                        return name.startsWith(prefix) && name.endsWith(".pdf") && !before.contains(name);
+                    }).findFirst().orElse(null);
+                } catch (IOException e) {
+                    return null;
+                }
+            });
+        } catch (org.openqa.selenium.TimeoutException e) {
+            throw new AssertionError("no new PDF starting with " + prefix + "; the folder holds " + pdfNames(folder) + " (before: " + before + "), notice: " + notice(), e);
+        }
     }
 
     private static void deleteQuietly(Path folder) {
@@ -311,6 +315,10 @@ class OrderDocumentsSeleniumTest extends StorefrontSeleniumTest {
             assertTrue(english.contains("SALES RECEIPT") && english.contains("Subtotal") && !english.contains("Tiền hàng"), english);
             assertTrue(textOf(download(api, "/api/v1/orders/" + orderId + "/warranty-card?lang=en").body()).contains("WARRANTY CARD"));
             // the customer's own button sends no lang parameter: the file follows the language of the page (the cookie), so the saved file is English too
+            // the same file name is written again (Chrome overwrites it here), so the earlier copy is removed first
+            for (String name : pdfNames(downloads)) {
+                Files.deleteIfExists(downloads.resolve(name));
+            }
             Set<String> savedBefore = pdfNames(downloads);
             clickDownload("/receipt");
             Path savedEnglish = newSaved(downloads, "receipt-" + orderNumber, savedBefore);
@@ -362,6 +370,9 @@ class OrderDocumentsSeleniumTest extends StorefrontSeleniumTest {
         assertTrue(driver.findElement(PANEL).getText().contains("Tải phiếu bảo hành"), driver.findElement(PANEL).getText());
         // the staff pick the language of the customer: a NEW file is saved, and reading it shows that it is English (the page itself is Vietnamese)
         new org.openqa.selenium.support.ui.Select(driver.findElement(By.id("docLang"))).selectByValue("en");
+        for (String name : pdfNames(downloads)) { // the same file name is written again, so the earlier copy is removed first
+            Files.deleteIfExists(downloads.resolve(name));
+        }
         Set<String> before = pdfNames(downloads);
         clickDownload("/receipt");
         assertEquals("Đã tải tệp PDF.", notice());
