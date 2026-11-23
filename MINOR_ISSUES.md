@@ -121,3 +121,14 @@ Các điểm review thấy nhưng chưa sửa, gom lại để dọn một lư�
 ## Đã sửa trong nhánh fix/minor-polish
 - V35: offerCount của AggregateOffer đếm số biến thể; mô tả không cắt đôi emoji; khai báo prefix og/product trên trang xe.
 - V33: javadoc savingsCeiling về đúng chỗ; README ghi giới hạn 90 lượt/phút của API tiết kiệm.
+
+## Tình trạng xử lý (cập nhật 2026-11-24, nhánh fix/minor-polish)
+**Đã sửa:** tài khoản bị khóa/xóa không nhận nhắc bảo dưỡng và thông báo bảo hành; giờ mở/đóng cửa hàng tách hai cột (`update_showroom_hours.sql`); lái thử: ghi chú "khách không đến", số `0084`, thông báo ngày đã qua, nhãn nút hộp thoại, nhãn yêu cầu quá giờ, hằng DELETED, phiên bản CSS; bảo hành: lý do từ chối phải mới, thông báo ghi chú, ràng buộc trùng yêu cầu, thứ tự ổn định, tiêu đề cột EN, comment test; trả góp: nhận khách đúng vai trò, thử lại khi lỗi mạng, nhãn quá hạn duyệt, xác nhận ngừng kỳ hạn, CCCD có mã tỉnh, thanh toán lỗi thành "đã hủy", lời xóa tài khoản cho khách, kết quả VNPay của khoản trả trước, thu nhập tối đa và số nguyên, newline cuối js-en.json; V27: bỏ khóa chữ chết, overload chỉ dùng cho test thành package-private; V26: link phiếu nhập chỉ hiện khi có quyền; V33: sàn kWh 0,75, tên quy tắc EN, từ chối quá 2 chữ số thập phân, nút Thử lại bị khóa khi đang gửi, ChatbotService nhận SavingsService là bean; V35: offerCount, mô tả không cắt đôi emoji, prefix og/product.
+
+**Đã có sẵn / không còn lỗi:** danh sách phiếu nhập đã dùng `@BatchSize` (V26); `application.properties` đã thống nhất line ending trong git (V27).
+
+**Chấp nhận có chủ đích (ghi lại, không sửa):** nhật ký kiểm toán chỉ tiếng Việt như các mục khác; tên "KINETIC" cố định trong dữ liệu SEO (là tên thương hiệu của site, khác tên pháp lý trên chứng từ); lịch sử commit dài (viết lại lịch sử cần chủ dự án); ảnh og-default chỉ có chữ tiếng Anh (cần ảnh mới từ thiết kế).
+
+**Cần chủ sản phẩm quyết:** giữ ghi chú nhân viên của lịch lái thử đã đóng khi khách xóa tài khoản (V23, như V20) hay xóa; ảnh bảo hành khi có S3 và yêu cầu của tài khoản đã xóa (V20); nhắc bảo dưỡng "tối đa một lần" (V20).
+
+**Chưa làm (việc lớn, cần PR riêng):** phân trang hàng đợi trả góp và danh sách lái thử; truy vấn lái thử có/không showroomId; thông báo song ngữ và email khi đơn trả góp tự hủy; ẩn thu nhập/CCCD với nhân viên chỉ xem; deadlock khi tự hủy đơn trả góp hàng loạt; cache cấu hình trả góp; tách bean SeoAddress; các test Selenium còn dùng sleep.
