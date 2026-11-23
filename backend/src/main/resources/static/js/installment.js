@@ -145,11 +145,13 @@ window.KineticInstallment = (() => {
         line.textContent = t('Khoản trả hàng tháng vượt {n}% thu nhập bạn khai. Hãy tăng khoản trả trước hoặc chọn kỳ hạn dài hơn.', {n: limits.maxPaymentPercentOfIncome});
       }
     };
+    // a hidden box must not hold invalid fields: the browser would refuse the whole checkout form without showing why
+    const setEnabled = on => box.querySelectorAll('input, textarea, select').forEach(field => { field.disabled = !on; });
     const build = async () => {
       try { limits = await config(); } catch (error) { holder.innerHTML = `<p class="installment-problem" role="alert">${esc(error.message)}</p>`; return; }
       holder.innerHTML = `<div class="installment-form"><div data-sim></div>
         <label>${t('Số CCCD')} <b>*</b><input name="idNumber" inputmode="numeric" autocomplete="off" maxlength="16" placeholder="${esc(t('12 chữ số'))}"></label>
-        <label>${t('Thu nhập hằng tháng (VND)')} <b>*</b><input name="monthlyIncome" type="number" inputmode="numeric" min="0" step="100000" autocomplete="off"></label>
+        <label>${t('Thu nhập hằng tháng (VND)')} <b>*</b><input name="monthlyIncome" type="number" inputmode="numeric" min="0" step="any" autocomplete="off"></label>
         <p class="installment-problem" data-affordability role="alert"></p>
         <p class="muted">${t('Cửa hàng chỉ lưu 4 số cuối của CCCD (các số còn lại được che) và mức thu nhập bạn khai, không lưu ảnh giấy tờ. Dữ liệu này bị xóa khi bạn xóa tài khoản.')}</p></div>`;
       holder.append(note);
@@ -161,6 +163,7 @@ window.KineticInstallment = (() => {
         refreshAffordability();
       }, t('Chọn hình thức nhận hàng để tính khoản trả góp.'));
       form.querySelector('[name="monthlyIncome"]').addEventListener('input', refreshAffordability);
+      setEnabled(!box.hidden);
     };
     const identify = async () => {
       if (identified) return;
@@ -176,7 +179,7 @@ window.KineticInstallment = (() => {
       holder.append(note);
     };
     return {
-      show(on) { box.hidden = !on; if (on) identify(); },
+      show(on) { box.hidden = !on; setEnabled(on); if (on) identify(); },
       setTotal(value) { total = Number(value) || null; if (sim) sim.refresh(); },
       /** The text of what is missing or wrong, or null when the application can be sent. */
       error() {
