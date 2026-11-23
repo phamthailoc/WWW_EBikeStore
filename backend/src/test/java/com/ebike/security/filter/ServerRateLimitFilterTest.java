@@ -68,6 +68,27 @@ class ServerRateLimitFilterTest {
         return response.getContentAsString();
     }
     @Test
+    void theSavingsCalculatorHasAFloodGuardPerAddressSharedByEveryBike() throws Exception {
+        ServerRateLimitFilter filter = new ServerRateLimitFilter(true);
+        int status = 200;
+        int allowed = 0;
+        while (status == 200 && allowed < 300) {
+            String path = "/api/v1/products/" + (allowed % 2 == 0 ? "amy" : "ella") + "/savings";
+            MockHttpServletRequest request = new MockHttpServletRequest("GET", path);
+            request.setServletPath(path);
+            request.setRemoteAddr("203.0.113.40");
+            MockHttpServletResponse response = new MockHttpServletResponse();
+            filter.doFilter(request, response, new MockFilterChain());
+            status = response.getStatus();
+            if (status == 200) {
+                allowed++;
+            }
+        }
+        assertEquals(429, status);
+        assertEquals(90, allowed);
+    }
+
+    @Test
     void thePublicInstalmentConfigHasAFloodGuardPerAddress() throws Exception {
         ServerRateLimitFilter filter = new ServerRateLimitFilter(true);
         int status = 200;
