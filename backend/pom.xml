@@ -113,6 +113,22 @@
       <artifactId>pdfbox</artifactId>
       <version>2.0.30</version>
     </dependency>
+    <dependency>
+      <groupId>com.openhtmltopdf</groupId>
+      <artifactId>openhtmltopdf-pdfbox</artifactId>
+      <version>1.0.10</version>
+    </dependency>
+    <dependency>
+      <groupId>com.openhtmltopdf</groupId>
+      <artifactId>openhtmltopdf-slf4j</artifactId>
+      <version>1.0.10</version>
+    </dependency>
+    <!-- V27: DejaVu Sans (free licence) has every Vietnamese letter; the PDF embeds it so the text shows the same on any device -->
+    <dependency>
+      <groupId>net.sf.jasperreports</groupId>
+      <artifactId>jasperreports-fonts</artifactId>
+      <version>6.20.0</version>
+    </dependency>
   </dependencies>
 
   <build>
