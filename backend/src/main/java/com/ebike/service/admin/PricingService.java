@@ -47,11 +47,13 @@ public class PricingService {
     public static final BigDecimal DEFAULT_SAVINGS_ELECTRICITY_PRICE = new BigDecimal("2900");
     public static final BigDecimal DEFAULT_SAVINGS_PETROL_PRICE = new BigDecimal("22000");
 
-    /** V33: the default litres per 100 km of the petrol motorbike a vehicle type is compared with. */
+    /**
+     * V33: the default litres per 100 km of the petrol motorbike a vehicle type is compared with. The electric motorbikes of the catalogue are the slow
+     * 50cc class (35-45 km/h), so they are compared with a small petrol bike and use no more than the (stronger) scooters.
+     */
     public static BigDecimal defaultPetrolUse(String vehicleType) {
         return switch (vehicleType) {
-            case "E_BIKE" -> new BigDecimal("1.8");
-            case "E_MOTORBIKE" -> new BigDecimal("2.5");
+            case "E_BIKE", "E_MOTORBIKE" -> new BigDecimal("1.8");
             default -> new BigDecimal("2.0");
         };
     }

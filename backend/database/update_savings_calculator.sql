@@ -10,5 +10,11 @@ INSERT INTO pricing_rules(code,name,description,amount,unit,status,effective_fro
 ('SAVINGS_PETROL_PRICE','Giá xăng dùng để so sánh tiền xăng','Giá một lít xăng dùng trong công cụ "Xe điện tiết kiệm bao nhiêu". Chỉ để ước tính, không cộng vào đơn.',22000,'VND/lít','ACTIVE',NOW()),
 ('SAVINGS_PETROL_USE_E_SCOOTER','Mức tiêu hao xăng của xe ga cùng phân khúc','So với xe điện loại xe ga (E_SCOOTER). Lít xăng xe máy chạy 100 km.',2,'lít/100 km','ACTIVE',NOW()),
 ('SAVINGS_PETROL_USE_E_BIKE','Mức tiêu hao xăng của xe máy số nhỏ','So với xe đạp điện (E_BIKE). Lít xăng xe máy chạy 100 km.',1.8,'lít/100 km','ACTIVE',NOW()),
-('SAVINGS_PETROL_USE_E_MOTORBIKE','Mức tiêu hao xăng của xe máy phân khúc lớn hơn','So với xe máy điện (E_MOTORBIKE). Lít xăng xe máy chạy 100 km.',2.5,'lít/100 km','ACTIVE',NOW())
+('SAVINGS_PETROL_USE_E_MOTORBIKE','Mức tiêu hao xăng của xe máy 50cc cùng phân khúc','So với xe máy điện (E_MOTORBIKE, cỡ 50cc, 35-45 km/h). Lít xăng xe máy 50cc chạy 100 km.',1.8,'lít/100 km','ACTIVE',NOW())
 ON DUPLICATE KEY UPDATE code = code;
+
+-- The electric motorbikes are the slow 50cc class, so their default was lowered from 2.5 to 1.8 litres/100 km (not above the scooters' 2).
+-- Only a value still at the old 2.5 is changed; one an admin has set is kept.
+UPDATE pricing_rules SET amount = 1.8, name = 'Mức tiêu hao xăng của xe máy 50cc cùng phân khúc',
+    description = 'So với xe máy điện (E_MOTORBIKE, cỡ 50cc, 35-45 km/h). Lít xăng xe máy 50cc chạy 100 km.'
+WHERE code = 'SAVINGS_PETROL_USE_E_MOTORBIKE' AND amount = 2.5;

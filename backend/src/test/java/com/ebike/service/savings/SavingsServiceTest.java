@@ -67,7 +67,7 @@ class SavingsServiceTest {
         assertEquals(20, answer.kmPerDay());
         assertEquals(26, answer.daysPerMonth());
         assertEquals(0, answer.electricityPricePerKwh().compareTo(new BigDecimal("2900")));
-        assertEquals(0, answer.petrolLitersPer100Km().compareTo(new BigDecimal("2.5")));
+        assertEquals(0, answer.petrolLitersPer100Km().compareTo(new BigDecimal("1.8")));
         assertTrue(answer.saves());
     }
 
