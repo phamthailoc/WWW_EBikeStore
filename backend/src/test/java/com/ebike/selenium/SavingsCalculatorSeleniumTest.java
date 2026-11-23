@@ -94,8 +94,13 @@ class SavingsCalculatorSeleniumTest extends StorefrontSeleniumTest {
         JsonNode far = call(api, "GET", "/api/v1/products/" + slug + "/savings?kmPerDay=60&daysPerMonth=26", null);
         wait.until(d -> digits(d.findElement(MONTHLY_SAVING).getText()).equals(far.path("monthlySaving").decimalValue().toBigInteger().toString()));
         assertNotEquals(before, digits(driver.findElement(MONTHLY_SAVING).getText()), "more kilometres, a different figure");
-        assertTrue(driver.findElement(BOX).getText().contains(defaults.path("electricityPricePerKwh").decimalValue().toBigInteger().toString().substring(0, 1)),
-            "the assumptions are written under the figures");
+        // the sentence under the figures names the price of electricity (as the page writes money), the share of the range and the charger efficiency
+        String assumptions = driver.findElement(By.cssSelector("#savingsBox [data-assumptions]")).getText();
+        String electricity = java.text.NumberFormat.getIntegerInstance(java.util.Locale.forLanguageTag("vi-VN"))
+            .format(defaults.path("electricityPricePerKwh").decimalValue().toBigInteger());
+        assertTrue(assumptions.contains(electricity), "the price of a kWh (" + electricity + ") is in: " + assumptions);
+        assertTrue(assumptions.contains(defaults.path("realRangePercent").asInt() + "%"), "the share of the published range is in: " + assumptions);
+        assertTrue(assumptions.contains(defaults.path("chargerEfficiencyPercent").asInt() + "%"), "the charger efficiency is in: " + assumptions);
     }
 
     @Test
