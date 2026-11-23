@@ -408,4 +408,15 @@ class TestRideRulesTest {
         assertFalse(TestRideRules.reminderDue("REQUESTED", NOW.plusHours(3), null, NOW, 24), "not confirmed");
         assertFalse(TestRideRules.reminderDue("CANCELLED", NOW.plusHours(3), null, NOW, 24));
     }
+
+    @Test
+    void theTwoTimeColumnsDecideTheHoursAndTheTextOnlyGivesDaysOff() {
+        // the columns win over a text the parser could not read
+        assertEquals(new TestRideRules.Hours(LocalTime.of(9, 0), LocalTime.of(18, 0)), TestRideRules.hoursOf("by appointment", LocalTime.of(9, 0), LocalTime.of(18, 0)));
+        // the text still gives the days off
+        assertEquals(java.util.Set.of(java.time.DayOfWeek.SUNDAY), TestRideRules.hoursOf("CN nghỉ", LocalTime.of(9, 0), LocalTime.of(18, 0)).closedDays());
+        // one column missing, or open not before close: the text is read as before
+        assertEquals(TestRideRules.parseOpeningHours("08:00 - 12:00"), TestRideRules.hoursOf("08:00 - 12:00", LocalTime.of(9, 0), null));
+        assertEquals(TestRideRules.parseOpeningHours("08:00 - 12:00"), TestRideRules.hoursOf("08:00 - 12:00", LocalTime.of(18, 0), LocalTime.of(9, 0)));
+    }
 }

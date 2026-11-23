@@ -101,6 +101,18 @@ public final class TestRideRules {
      * simple range and, at most, a weekday off. A text that only says the showroom is shut, even with a date or a reason ("Tạm nghỉ đến 01/12", "Closed for renovation"),
      * is read as shut for good, and a day off with an hour ("CN nghỉ từ 12h") is read as the whole day off.
      */
+    /**
+     * The hours of a showroom: its two time columns when both are set and open is before close, else the free text ({@link #parseOpeningHours}).
+     * With the columns, the text is read only for its days off ("CN nghỉ"), so the hours no longer depend on how a manager happened to write them.
+     */
+    public static Hours hoursOf(String text, LocalTime openTime, LocalTime closeTime) {
+        if (openTime == null || closeTime == null || !openTime.isBefore(closeTime)) {
+            return parseOpeningHours(text);
+        }
+        Hours fromText = parseOpeningHours(text);
+        return new Hours(openTime, closeTime, fromText.closedDays());
+    }
+
     public static Hours parseOpeningHours(String text) {
         if (text == null) {
             return new Hours(DEFAULT_OPEN, DEFAULT_CLOSE);

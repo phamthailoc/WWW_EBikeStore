@@ -33,6 +33,13 @@ public class Showroom {
     @Column(name = "opening_hours", length = 255)
     private String openingHours;
 
+    /** Opening and closing time as two plain values (V23). When both are set they decide the test-ride slots; the free text above is then only for display and for the days off. */
+    @Column(name = "open_time")
+    private java.time.LocalTime openTime;
+
+    @Column(name = "close_time")
+    private java.time.LocalTime closeTime;
+
     @Column(name = "is_active", nullable = false)
     private Boolean active = true;
 
@@ -82,6 +89,22 @@ public class Showroom {
 
     public void setPhone(String phone) {
         this.phone = phone;
+    }
+
+    public java.time.LocalTime getOpenTime() {
+        return openTime;
+    }
+
+    public void setOpenTime(java.time.LocalTime openTime) {
+        this.openTime = openTime;
+    }
+
+    public java.time.LocalTime getCloseTime() {
+        return closeTime;
+    }
+
+    public void setCloseTime(java.time.LocalTime closeTime) {
+        this.closeTime = closeTime;
     }
 
     public String getOpeningHours() {
