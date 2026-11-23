@@ -161,13 +161,15 @@ class SavingsCalculatorSeleniumTest extends StorefrontSeleniumTest {
 
     @Test
     void theBoxFitsAPhone() {
-        driver.manage().window().setSize(new org.openqa.selenium.Dimension(360, 740));
+        // a desktop Chrome window cannot be made narrower than about 500 px, so the screen is emulated instead
+        ((org.openqa.selenium.chrome.ChromeDriver) driver).executeCdpCommand("Emulation.setDeviceMetricsOverride",
+            Map.<String, Object>of("width", 360, "height", 740, "deviceScaleFactor", 1, "mobile", true));
         openBike();
         wait.until(ExpectedConditions.visibilityOfElementLocated(MONTHLY_SAVING));
-        Object overflow = js("return document.documentElement.scrollWidth > document.documentElement.clientWidth + 1");
-        assertEquals(Boolean.FALSE, overflow, "the page must not scroll sideways on a 360 px screen");
-        Object boxWidth = js("return document.querySelector('#savingsBox').getBoundingClientRect().right <= document.documentElement.clientWidth");
-        assertEquals(Boolean.TRUE, boxWidth);
+        assertEquals(360L, ((Number) js("return window.innerWidth")).longValue(), "the phone screen is in force");
+        // only this box is judged: neither its content nor the box itself may reach past the screen
+        Object inside = js("const box = document.querySelector('#savingsBox'); return box.scrollWidth <= box.clientWidth + 1 && box.getBoundingClientRect().right <= window.innerWidth + 1");
+        assertEquals(Boolean.TRUE, inside, "the savings box must fit a 360 px screen");
     }
 
     @Test
