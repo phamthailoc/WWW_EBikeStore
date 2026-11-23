@@ -223,6 +223,8 @@ window.KineticInstallment = (() => {
         if (!/^(\d{9}|\d{12})$/.test(form.querySelector('[name=idNumber]').value.replace(/[\s.\-]/g, ''))) return t('Số CCCD chưa hợp lệ. Vui lòng nhập 12 chữ số (hoặc 9 chữ số với chứng minh nhân dân cũ).');
         const income = Number(form.querySelector('[name=monthlyIncome]').value);
         if (!income || income < limits.minMonthlyIncome) return t('Vui lòng nhập thu nhập hằng tháng (tối thiểu {n}).', {n: money(limits.minMonthlyIncome)});
+        if (limits.maxMonthlyIncome && income > limits.maxMonthlyIncome) return t('Thu nhập hằng tháng tối đa {n}.', {n: money(limits.maxMonthlyIncome)});
+        if (!Number.isInteger(income)) return t('Thu nhập hằng tháng phải là số đồng nguyên, không có phần thập phân.');
         if (plan.monthlyPayment > income * limits.maxPaymentPercentOfIncome / 100) return t('Khoản trả hàng tháng vượt {n}% thu nhập bạn khai. Hãy tăng khoản trả trước hoặc chọn kỳ hạn dài hơn.', {n: limits.maxPaymentPercentOfIncome});
         return null;
       },

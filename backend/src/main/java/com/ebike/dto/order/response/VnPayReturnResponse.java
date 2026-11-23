@@ -14,6 +14,7 @@ public record VnPayReturnResponse(
     Long paymentId,
     Long orderId,
     String orderNumber,
-    String paymentStatus
+    String paymentStatus,
+    String paymentMethod
 ) {
 }
