@@ -204,4 +204,11 @@ class SeoPagesTest {
         String local = unconfigured.perform(get("/robots.txt")).andReturn().getResponse().getContentAsString();
         assertTrue(local.contains("Sitemap: http://localhost/sitemap.xml"), local);
     }
+
+    @Test
+    void theLocalDefaultCountsAsNotSetSoTheVisitorsAddressIsUsed() throws Exception {
+        MockMvc defaulted = build("vi", "http://localhost:8080");
+        String robots = defaulted.perform(get("/robots.txt").with(r -> { r.setScheme("https"); r.setServerName("kinetic.example"); r.setServerPort(443); return r; })).andReturn().getResponse().getContentAsString();
+        assertTrue(robots.contains("Sitemap: https://kinetic.example/sitemap.xml"), robots);
+    }
 }

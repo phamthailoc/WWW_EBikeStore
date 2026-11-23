@@ -41,9 +41,14 @@ public class SeoController {
         return ResponseEntity.ok().cacheControl(CACHE).body(markup(publicBaseUrl, request).robotsTxt());
     }
 
-    /** The shop's configured public address, or the address this request came by when none is configured. */
+    /** True when an address that means something to a crawler is set: blank and the local default (localhost, 127.0.0.1) count as not set. */
+    static boolean isConfigured(String configured) {
+        return configured != null && !configured.isBlank() && !com.ebike.service.document.StoreProfile.isLocalAddress(configured);
+    }
+
+    /** The shop's configured public address, or the address this request came by when none is configured (or only the local default is). */
     static SeoMarkup markup(String configured, HttpServletRequest request) {
-        if (configured != null && !configured.isBlank()) {
+        if (isConfigured(configured)) {
             return new SeoMarkup(configured);
         }
         String scheme = request.getScheme();
