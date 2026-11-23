@@ -21,7 +21,7 @@ Mỗi mục ghi: vì sao nên làm, làm gì, dùng lại phần nào đã có, 
 | V30. Tồn kho theo từng cửa hàng | P3 | 3 ngày | ⬜ Chưa làm | – |
 | V31. Đăng nhập bằng Google | P3 | 1 ngày | ⬜ Chưa làm | – |
 | V32. Đánh giá có ảnh, hỏi đáp dưới mỗi xe | P3 | 2 ngày | ⬜ Chưa làm | – |
-| V33. Công cụ "Xe điện tiết kiệm bao nhiêu" | P3 | ½ ngày | ⬜ Chưa làm | – |
+| V33. Công cụ "Xe điện tiết kiệm bao nhiêu" | P3 | ½ ngày | 🟡 Code xong (23/11), chưa kiểm thử Selenium, chưa chạy app: mục "Xe điện tiết kiệm bao nhiêu?" ở trang xe (mọi vai trò, cả khách vãng lai), `GET /api/v1/products/{slug}/savings?kmPerDay=&daysPerMonth=` (không cache, 404 xe lạ, 400 số ngoài khoảng); tiền sạc tính từ Ah x V của pin và quãng đường (thực tế 80% công bố, hiệu suất sạc 85%), so với xe máy xăng cùng phân khúc; 5 quy tắc giá của Admin (`SAVINGS_ELECTRICITY_PRICE`, `SAVINGS_PETROL_PRICE`, `SAVINGS_PETROL_USE_E_SCOOTER/E_BIKE/E_MOTORBIKE`; Admin không nhập được 0 hoặc quá lớn, quy tắc 0/INACTIVE dùng giá mặc định); xe thiếu thông số pin báo chưa tính được, pin/phụ kiện ẩn mục; chatbot trả lời câu hỏi chi phí bằng giá hiện hành và dẫn tới trang xe; chạy `update_savings_calculator.sql` trước; đã viết `SavingsCalculatorSeleniumTest`, chưa chạy | `feat/savings-calculator` |
 | V34. Docker Compose (app + MariaDB) | P3 | ½ ngày | ⬜ Chưa làm | – |
 | V35. SEO: sitemap, dữ liệu cấu trúc, Open Graph | P3 | ½ ngày | ⬜ Chưa làm | – |
 
