@@ -75,8 +75,6 @@ public final class DocumentText {
         add("receipt.thanks", "Cảm ơn quý khách đã mua xe tại cửa hàng.", "Thank you for buying from us.");
         add("receipt.signCustomer", "Khách hàng (ký, ghi rõ họ tên)", "Customer (signature and name)");
         add("receipt.signSeller", "Đại diện cửa hàng (ký, đóng dấu)", "Shop representative (signature and stamp)");
-        add("receipt.page", "Trang", "Page");
-        add("receipt.of", "/", "/");
 
         // ---- warranty card ----
         add("card.title", "PHIẾU BẢO HÀNH", "WARRANTY CARD");

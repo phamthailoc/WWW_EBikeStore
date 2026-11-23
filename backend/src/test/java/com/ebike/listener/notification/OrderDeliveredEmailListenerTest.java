@@ -37,7 +37,7 @@ class OrderDeliveredEmailListenerTest {
 
     @Test
     void theDocumentsOfTheOrderAreSentToTheCustomer() {
-        var found = new OrderDocumentService.DeliveryDocuments("an@example.com", "An", "ORD-1", "vi", List.of(new PdfFile("receipt-ORD-1.pdf", new byte[] {1})));
+        var found = new OrderDocumentService.DeliveryDocuments("an@example.com", "An", "ORD-1", "vi", List.of(new PdfFile("receipt-ORD-1.pdf", new byte[] {1})), false, false);
         when(documents.forDeliveredOrder(5L)).thenReturn(Optional.of(found));
 
         listener.onOrderDelivered(new OrderDeliveredEvent(5L));

@@ -52,14 +52,13 @@ public class DeliveryEmailSender {
             return false;
         }
         String language = documents.language();
-        boolean hasCard = documents.files().stream().anyMatch(file -> file.filename().startsWith("warranty-card"));
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, StandardCharsets.UTF_8.name());
             helper.setFrom(fromAddress);
             helper.setTo(documents.email().trim());
-            helper.setSubject(subject(language, documents.orderNumber(), hasCard));
-            helper.setText(body(language, documents, hasCard), false);
+            helper.setSubject(subject(language, documents.orderNumber(), documents.hasCard()));
+            helper.setText(body(language, documents), false);
             for (PdfFile file : documents.files()) {
                 helper.addAttachment(file.filename(), new ByteArrayResource(file.content()), "application/pdf");
             }
@@ -75,13 +74,13 @@ public class DeliveryEmailSender {
         return DocumentText.text(language, hasCard ? "mail.subject" : "mail.subjectReceiptOnly", store.getName(), orderNumber);
     }
 
-    String body(String language, OrderDocumentService.DeliveryDocuments documents, boolean hasCard) {
+    String body(String language, OrderDocumentService.DeliveryDocuments documents) {
         StringBuilder text = new StringBuilder();
         text.append(DocumentText.text(language, "mail.greeting", documents.recipientName())).append("\n\n");
         text.append(DocumentText.text(language, "mail.body", documents.orderNumber(), store.getName())).append("\n\n");
         text.append(DocumentText.text(language, "mail.attached")).append('\n');
         text.append(DocumentText.text(language, "mail.receipt")).append('\n');
-        if (hasCard) {
+        if (documents.hasCard()) {
             text.append(DocumentText.text(language, "mail.card")).append('\n');
         }
         text.append('\n').append(DocumentText.text(language, "mail.notInvoice")).append("\n\n");

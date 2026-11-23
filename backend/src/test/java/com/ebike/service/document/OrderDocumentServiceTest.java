@@ -203,6 +203,7 @@ class OrderDocumentServiceTest {
         assertEquals("an@example.com", documents.email());
         assertEquals("en", documents.language());
         assertEquals("Nguyễn Văn An", documents.recipientName());
+        assertTrue(documents.hasCard());
         assertEquals(java.util.List.of("receipt-ORD-20261110-00000010.pdf", "warranty-card-ORD-20261110-00000010.pdf"),
             documents.files().stream().map(PdfFile::filename).toList());
     }
@@ -251,6 +252,7 @@ class OrderDocumentServiceTest {
 
         assertEquals(1, documents.files().size());
         assertTrue(documents.files().get(0).filename().startsWith("receipt-"));
+        assertFalse(documents.hasCard());
     }
 
     @Test

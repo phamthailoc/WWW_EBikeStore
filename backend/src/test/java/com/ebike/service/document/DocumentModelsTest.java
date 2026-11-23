@@ -167,10 +167,10 @@ class DocumentModelsTest {
     void theCustomerNameFallsBackToTheAccountThenToADash() {
         Order order = DocumentFixtures.order(8, OrderStatus.DELIVERED, 1, true);
         order.getShipment().setRecipientName("  ");
-        assertEquals("Nguyễn Văn An", DocumentModels.customerName(order));
+        assertEquals("Nguyễn Văn An", DocumentModels.customerName(order, "vi"));
 
         order.setUser(null);
-        assertEquals("—", DocumentModels.customerName(order));
+        assertEquals("—", DocumentModels.customerName(order, "vi"));
     }
 
     @Test

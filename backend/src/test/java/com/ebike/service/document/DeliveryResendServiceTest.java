@@ -22,7 +22,7 @@ class DeliveryResendServiceTest {
     private final AuditLogService auditLog = mock(AuditLogService.class);
     private final DeliveryResendService service = new DeliveryResendService(documents, sender, auditLog);
     private final OrderDocumentService.DeliveryDocuments found =
-        new OrderDocumentService.DeliveryDocuments("an@example.com", "An", "ORD-1", "vi", List.of(new PdfFile("receipt-ORD-1.pdf", new byte[] {1})));
+        new OrderDocumentService.DeliveryDocuments("an@example.com", "An", "ORD-1", "vi", List.of(new PdfFile("receipt-ORD-1.pdf", new byte[] {1})), false, false);
 
     private static HttpStatus statusOf(Runnable action) {
         return HttpStatus.valueOf(assertThrows(ResponseStatusException.class, action::run).getStatusCode().value());

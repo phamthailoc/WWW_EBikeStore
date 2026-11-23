@@ -40,12 +40,8 @@ public class OrderDocumentService {
 
     private static final Logger log = LoggerFactory.getLogger(OrderDocumentService.class);
 
-    /** What the hand-over email carries: who gets it, in which language, and the files. */
-    public record DeliveryDocuments(String email, String recipientName, String orderNumber, String language, List<PdfFile> files, boolean guest) {
-
-        public DeliveryDocuments(String email, String recipientName, String orderNumber, String language, List<PdfFile> files) {
-            this(email, recipientName, orderNumber, language, files, false);
-        }
+    /** What the hand-over email carries: who gets it, in which language, and the files ({@code hasCard}: the warranty card is among them). */
+    public record DeliveryDocuments(String email, String recipientName, String orderNumber, String language, List<PdfFile> files, boolean guest, boolean hasCard) {
     }
 
     private final OrderRepository orders;
@@ -85,7 +81,7 @@ public class OrderDocumentService {
     private record Draft(String template, java.util.Map<String, Object> model, String filename) {
     }
 
-    private record Pending(String email, String recipientName, String orderNumber, String language, List<Draft> drafts, boolean guest) {
+    private record Pending(String email, String recipientName, String orderNumber, String language, List<Draft> drafts, boolean guest, boolean hasCard) {
     }
 
     /** The sales receipt of an order that is not cancelled. Before the bike is handed over it is marked "provisional". */
@@ -144,7 +140,7 @@ public class OrderDocumentService {
         for (Draft draft : pending.drafts()) {
             files.add(render(draft, pending.language()));
         }
-        return Optional.of(new DeliveryDocuments(pending.email(), pending.recipientName(), pending.orderNumber(), pending.language(), files, pending.guest()));
+        return Optional.of(new DeliveryDocuments(pending.email(), pending.recipientName(), pending.orderNumber(), pending.language(), files, pending.guest(), pending.hasCard()));
     }
 
     private Optional<Pending> pendingDelivery(Long orderId) {
@@ -168,11 +164,12 @@ public class OrderDocumentService {
         List<Draft> drafts = new ArrayList<>();
         drafts.add(receiptDraft(order, language));
         List<OrderItemUnit> units = unitsOf(order);
-        if (!units.isEmpty()) {
+        boolean hasCard = !units.isEmpty();
+        if (hasCard) {
             drafts.add(cardDraft(order, units, language, null));
         }
         String name = DocumentModels.customerName(order, language);
-        return Optional.of(new Pending(email, "—".equals(name) ? DocumentText.text(language, "mail.guestName") : name, order.getOrderNumber(), language, drafts, user == null));
+        return Optional.of(new Pending(email, "—".equals(name) ? DocumentText.text(language, "mail.guestName") : name, order.getOrderNumber(), language, drafts, user == null, hasCard));
     }
 
     private <T> T reading(java.util.function.Supplier<T> work) {

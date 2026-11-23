@@ -254,10 +254,6 @@ public final class DocumentModels {
     }
 
     /** The name on the document: who receives the bike, else the account holder, else a dash. The name printed on an order is part of the sales record and stays after an account is erased. */
-    static String customerName(Order order) {
-        return customerName(order, "vi");
-    }
-
     static String customerName(Order order, String lang) {
         Shipment shipment = order.getShipment();
         String recipient = shipment == null ? null : blankToNull(shipment.getRecipientName());

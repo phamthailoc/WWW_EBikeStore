@@ -40,7 +40,7 @@ class DeliveryEmailSenderTest {
         List<PdfFile> files = card
             ? List.of(new PdfFile("receipt-ORD-1.pdf", new byte[] {1, 2, 3}), new PdfFile("warranty-card-ORD-1.pdf", new byte[] {4, 5}))
             : List.of(new PdfFile("receipt-ORD-1.pdf", new byte[] {1, 2, 3}));
-        return new OrderDocumentService.DeliveryDocuments(email, "Lan", "ORD-1", language, files);
+        return new OrderDocumentService.DeliveryDocuments(email, "Lan", "ORD-1", language, files, false, card);
     }
 
     private MimeMessage sent() {
@@ -83,7 +83,7 @@ class DeliveryEmailSenderTest {
     void theBodyIsVietnameseByDefaultAndLinksToTheOrdersWhenTheAddressIsKnown() {
         DeliveryEmailSender sender = sender("smtp.example.com", true, "https://shop.example.com/");
 
-        String body = sender.body("vi", documents("lan@example.com", "vi", true), true);
+        String body = sender.body("vi", documents("lan@example.com", "vi", true));
 
         assertTrue(body.startsWith("Xin chào Lan,"), body);
         assertTrue(body.contains("Phiếu bảo hành cho từng xe"), body);
@@ -94,9 +94,9 @@ class DeliveryEmailSenderTest {
     @Test
     void aGuestOrderEmailHasNoSignInLine() {
         DeliveryEmailSender sender = sender("smtp.example.com", true, "https://shop.example.com");
-        var guest = new OrderDocumentService.DeliveryDocuments("khach@example.com", "Khach", "ORD-1", "vi", List.of(new PdfFile("receipt-ORD-1.pdf", new byte[] {1})), true);
+        var guest = new OrderDocumentService.DeliveryDocuments("khach@example.com", "Khach", "ORD-1", "vi", List.of(new PdfFile("receipt-ORD-1.pdf", new byte[] {1})), true, false);
 
-        String body = sender.body("vi", guest, false);
+        String body = sender.body("vi", guest);
 
         assertFalse(body.contains("customer/orders"), body);
     }
@@ -105,7 +105,7 @@ class DeliveryEmailSenderTest {
     void withoutACardTheBodyAndSubjectNameOnlyTheReceiptAndWithoutAnAddressThereIsNoLink() {
         DeliveryEmailSender sender = sender("smtp.example.com", true, "");
 
-        String body = sender.body("en", documents("lan@example.com", "en", false), false);
+        String body = sender.body("en", documents("lan@example.com", "en", false));
 
         assertFalse(body.contains("Warranty card"), body);
         assertFalse(body.contains("http"), body);
