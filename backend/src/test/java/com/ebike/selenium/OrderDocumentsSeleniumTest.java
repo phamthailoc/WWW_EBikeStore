@@ -3,6 +3,7 @@ package com.ebike.selenium;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import java.io.IOException;
@@ -10,10 +11,13 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.Duration;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.junit.jupiter.api.Tag;
@@ -24,13 +28,14 @@ import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.junit.jupiter.api.parallel.ResourceLock;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 
 /**
  * V27: the sales receipt and the warranty card as PDF. A customer places an order and can already download a provisional receipt (no warranty
  * card yet); once the manager has delivered it with frame numbers, the order page offers the receipt and the warranty card, the warranty book
  * offers the card of each bike, the files read back with the right words in both languages, a stranger gets 404 and a visitor 401, the staff
- * can open any order's files, and a cancelled order has no receipt. The hand-over email needs a mail server and is covered by unit tests only.
+ * can open any order's files (also an admin, and a store pick-up order names the showroom), and a cancelled order has no receipt. The rate limiter is off in Selenium runs, so the 429 notice is not covered here. The hand-over email needs a mail server and is covered by unit tests only.
  * Needs {@code -Dselenium.managerUser} and {@code -Dselenium.managerPassword}; skipped otherwise.
  *
  * <pre>
@@ -115,6 +120,49 @@ class OrderDocumentsSeleniumTest extends StorefrontSeleniumTest {
         }
     }
 
+    /** Sends the browser's downloads to a folder of their own, so a test can see that a file was really saved. */
+    private Path downloadFolder() throws IOException {
+        Path folder = Files.createTempDirectory("selenium-pdf");
+        ((ChromeDriver) driver).executeCdpCommand("Browser.setDownloadBehavior", Map.<String, Object>of("behavior", "allow", "downloadPath", folder.toString()));
+        return folder;
+    }
+
+    /** Waits until a finished PDF whose name starts with {@code prefix} is in the folder (Chrome writes a .crdownload file until it is done). */
+    private void assertSaved(Path folder, String prefix) {
+        wait.until(d -> {
+            try (Stream<Path> files = Files.list(folder)) {
+                return files.map(file -> file.getFileName().toString()).anyMatch(name -> name.startsWith(prefix) && name.endsWith(".pdf"));
+            } catch (IOException e) {
+                return false;
+            }
+        });
+    }
+
+    private static long placePickupOrderOverRest() throws Exception {
+        JsonNode product = call(api, "GET", "/api/v1/products/" + productSlug, null);
+        JsonNode color = null;
+        for (JsonNode variant : listOf(product.path("variants"))) {
+            if (color == null || variant.path("stockQuantity").asInt() > color.path("stockQuantity").asInt()) {
+                color = variant;
+            }
+        }
+        assumeTrue(color == null || color.path("stockQuantity").asInt() > 0, "every colour of " + productSlug + " is sold out");
+        long showroom = listOf(call(api, "GET", "/api/v1/showrooms", null)).iterator().next().path("id").asLong();
+        Map<String, Object> item = new LinkedHashMap<>();
+        item.put("productId", product.path("id").asLong());
+        item.put("quantity", 1);
+        item.put("productVariantId", color == null ? null : color.path("id").asLong());
+        Map<String, Object> order = new LinkedHashMap<>();
+        order.put("customerName", "Selenium Tester");
+        order.put("phoneNumber", "0901234567");
+        order.put("customerEmail", username + "@example.com");
+        order.put("deliveryMethod", "STORE_PICKUP");
+        order.put("pickupShowroomId", showroom);
+        order.put("paymentMethod", "PAY_LATER");
+        order.put("items", List.of(item));
+        return call(api, "POST", "/api/v1/orders", order).path("id").asLong();
+    }
+
     // ---- scenarios ----
 
     @Test
@@ -129,6 +177,7 @@ class OrderDocumentsSeleniumTest extends StorefrontSeleniumTest {
     }
 
     private void walkThrough(HttpClient manager) throws Exception {
+        Path downloads = downloadFolder();
         String orderNumber = placePayLaterOrder();
         long orderId = findOrder(orderNumber).path("id").asLong();
 
@@ -143,12 +192,14 @@ class OrderDocumentsSeleniumTest extends StorefrontSeleniumTest {
         HttpResponse<byte[]> provisional = download(api, "/api/v1/orders/" + orderId + "/receipt");
         assertPdf(provisional);
         assertTrue(textOf(provisional.body()).contains("PHIẾU TẠM TÍNH"), textOf(provisional.body()));
+        assertTrue(textOf(provisional.body()).contains("Công ty TNHH"), "the shop heading keeps its accents: " + textOf(provisional.body()));
         HttpResponse<byte[]> tooEarly = download(api, "/api/v1/orders/" + orderId + "/warranty-card");
         assertEquals(409, tooEarly.statusCode(), "the card exists only after the hand-over");
 
         // 2. the button saves the file and says so (a refusal would show in red instead)
         clickDownload("/receipt");
         assertEquals("Đã tải tệp PDF.", notice());
+        assertSaved(downloads, "receipt-" + orderNumber);
         assertFalse(driver.findElement(By.id("notice")).getAttribute("class").contains("error"));
 
         // 3. deliver it with frame numbers
@@ -174,12 +225,15 @@ class OrderDocumentsSeleniumTest extends StorefrontSeleniumTest {
         assertTrue(receiptText.contains(orderNumber), receiptText);
         assertTrue(receiptText.contains(frame), "the frame number is on the receipt: " + receiptText);
         assertTrue(receiptText.contains("không phải hóa đơn điện tử"), receiptText);
+        assertTrue(receiptText.contains("Công ty TNHH") && receiptText.contains("Nguyễn Văn Linh"), "the shop heading keeps its accents: " + receiptText);
         HttpResponse<byte[]> card = download(api, "/api/v1/orders/" + orderId + "/warranty-card");
         assertPdf(card);
         assertEquals(bikes, pagesOf(card.body()), "one page for each bike");
         assertTrue(textOf(card.body()).contains("PHIẾU BẢO HÀNH") && textOf(card.body()).contains(frame), textOf(card.body()));
+        assertTrue(textOf(card.body()).contains("Công ty TNHH"), textOf(card.body()));
         clickDownload("/warranty-card");
         assertEquals("Đã tải tệp PDF.", notice());
+        assertSaved(downloads, "warranty-card-" + orderNumber);
 
         // 5. the warranty book has the card of each bike, one at a time
         driver.get(baseUrl + "/customer/warranty");
@@ -189,6 +243,7 @@ class OrderDocumentsSeleniumTest extends StorefrontSeleniumTest {
         js("var n=document.querySelector('#notice');n.hidden=true;n.textContent='';");
         click(row.findElement(By.cssSelector("[data-doc-url*='unitId=" + unitId + "']")));
         assertEquals("Đã tải tệp PDF.", notice());
+        assertSaved(downloads, "warranty-card-" + frame);
         HttpResponse<byte[]> single = download(api, "/api/v1/orders/" + orderId + "/warranty-card?unitId=" + unitId);
         assertPdf(single);
         assertEquals(1, pagesOf(single.body()));
@@ -196,17 +251,21 @@ class OrderDocumentsSeleniumTest extends StorefrontSeleniumTest {
         assertEquals(404, download(api, "/api/v1/orders/" + orderId + "/warranty-card?unitId=999999999").statusCode(), "a bike that is not in the order");
 
         // 6. English: the page and the file
-        driver.get(baseUrl + "/lang/en?back=/customer/orders/" + orderId);
-        wait.until(ExpectedConditions.visibilityOfElementLocated(PANEL));
-        panel = driver.findElement(PANEL);
-        assertTrue(panel.getText().contains("Receipt and warranty card"), panel.getText());
-        assertTrue(panel.getText().contains("Download receipt"), panel.getText());
-        assertTrue(panel.getText().contains("Download warranty card"), panel.getText());
-        assertTrue(panel.getText().contains("not an electronic invoice"), panel.getText());
-        String english = textOf(download(api, "/api/v1/orders/" + orderId + "/receipt?lang=en").body());
-        assertTrue(english.contains("SALES RECEIPT") && english.contains("Subtotal") && !english.contains("Tạm tính"), english);
-        assertTrue(textOf(download(api, "/api/v1/orders/" + orderId + "/warranty-card?lang=en").body()).contains("WARRANTY CARD"));
-        driver.get(baseUrl + "/lang/vi?back=/customer/orders/" + orderId);
+        try {
+            driver.get(baseUrl + "/lang/en?back=/customer/orders/" + orderId);
+            wait.until(ExpectedConditions.visibilityOfElementLocated(PANEL));
+            panel = driver.findElement(PANEL);
+            assertTrue(panel.getText().contains("Receipt and warranty card"), panel.getText());
+            assertTrue(panel.getText().contains("Download receipt"), panel.getText());
+            assertTrue(panel.getText().contains("Download warranty card"), panel.getText());
+            assertTrue(panel.getText().contains("not an electronic invoice"), panel.getText());
+            String english = textOf(download(api, "/api/v1/orders/" + orderId + "/receipt?lang=en").body());
+            assertTrue(english.contains("SALES RECEIPT") && english.contains("Subtotal") && !english.contains("Tạm tính"), english);
+            assertTrue(textOf(download(api, "/api/v1/orders/" + orderId + "/warranty-card?lang=en").body()).contains("WARRANTY CARD"));
+        } finally {
+            // the language is saved in the profile of the shared test customer: always put Vietnamese back, whatever the asserts above found
+            driver.get(baseUrl + "/lang/vi?back=/customer/orders/" + orderId);
+        }
 
         // 7. a phone: the panel fits the screen
         driver.manage().window().setSize(new org.openqa.selenium.Dimension(375, 812));
@@ -221,8 +280,17 @@ class OrderDocumentsSeleniumTest extends StorefrontSeleniumTest {
         call(stranger, "POST", "/api/v1/auth/register", Map.of("username", other, "email", other + "@example.com", "password", PASSWORD,
             "firstName", "Other", "lastName", "Customer"));
         call(stranger, "POST", "/api/v1/auth/login", Map.of("usernameOrEmail", other, "password", PASSWORD));
-        assertEquals(404, download(stranger, "/api/v1/orders/" + orderId + "/receipt").statusCode());
-        assertEquals(404, download(stranger, "/api/v1/orders/" + orderId + "/warranty-card").statusCode());
+        try {
+            assertEquals(404, download(stranger, "/api/v1/orders/" + orderId + "/receipt").statusCode());
+            assertEquals(404, download(stranger, "/api/v1/orders/" + orderId + "/warranty-card").statusCode());
+        } finally {
+            // the stranger is a throw-away account: erase it, like the test customer is erased at the end of a class
+            try {
+                call(stranger, "DELETE", "/api/v1/auth/account", Map.of("password", PASSWORD, "confirmEmail", other + "@example.com"));
+            } catch (Exception e) {
+                System.err.println("Could not erase the account " + other + ": " + e.getMessage());
+            }
+        }
         assertEquals(401, download(newClient(), "/api/v1/orders/" + orderId + "/receipt").statusCode());
         assertEquals(401, download(newClient(), "/api/v1/orders/" + orderId + "/warranty-card").statusCode());
         assertPdf(download(manager, "/api/v1/orders/" + orderId + "/receipt"));
@@ -233,6 +301,43 @@ class OrderDocumentsSeleniumTest extends StorefrontSeleniumTest {
         driver.get(baseUrl + "/manager/orders/" + orderId);
         wait.until(ExpectedConditions.visibilityOfElementLocated(PANEL));
         assertTrue(driver.findElement(PANEL).getText().contains("Tải phiếu bảo hành"), driver.findElement(PANEL).getText());
+        // the staff pick the language of the customer, and the English file really is English
+        new org.openqa.selenium.support.ui.Select(driver.findElement(By.id("docLang"))).selectByValue("en");
+        clickDownload("/receipt");
+        assertEquals("Đã tải tệp PDF.", notice());
+        assertSaved(downloads, "receipt-" + orderNumber);
+    }
+
+    @Test
+    void aStorePickupOrderNamesTheShowroomAndTheAdminMayOpenTheFiles() throws Exception {
+        HttpClient manager = managerApi();
+        Map<Long, Integer> stockBefore = stockOf(productSlug);
+        try {
+            long orderId = placePickupOrderOverRest();
+            String showroom = listOf(call(api, "GET", "/api/v1/showrooms", null)).iterator().next().path("name").asText();
+            for (String status : new String[] {"CONFIRMED", "PROCESSING"}) {
+                call(manager, "PATCH", "/api/v1/orders/" + orderId + "/status", Map.of("status", status));
+            }
+            call(manager, "PATCH", "/api/v1/orders/" + orderId + "/status", Map.of("status", "READY_FOR_PICKUP"));
+            enterUnits(manager, orderId);
+            call(manager, "PATCH", "/api/v1/orders/" + orderId + "/status", Map.of("status", "DELIVERED"));
+
+            String receipt = textOf(download(api, "/api/v1/orders/" + orderId + "/receipt").body());
+            assertTrue(receipt.contains("Nhận tại cửa hàng") && receipt.contains(showroom), "the pick-up place is the showroom: " + receipt);
+            String card = textOf(download(api, "/api/v1/orders/" + orderId + "/warranty-card").body());
+            assertTrue(card.contains(showroom), "the card names the showroom: " + card);
+
+            String adminUser = System.getProperty("selenium.adminUser", "");
+            String adminPassword = System.getProperty("selenium.adminPassword", "");
+            if (!adminUser.isBlank() && !adminPassword.isBlank()) {
+                HttpClient admin = newClient();
+                call(admin, "POST", "/api/v1/auth/login", Map.of("usernameOrEmail", adminUser, "password", adminPassword));
+                assertPdf(download(admin, "/api/v1/orders/" + orderId + "/receipt"));
+                assertPdf(download(admin, "/api/v1/orders/" + orderId + "/warranty-card"));
+            }
+        } finally {
+            restoreStock(manager, productSlug, stockBefore);
+        }
     }
 
     @Test
