@@ -227,6 +227,7 @@ class InstallmentSeleniumTest extends StorefrontSeleniumTest {
         wait.until(d -> !box.findElements(By.cssSelector("[data-field=monthly]")).isEmpty());
         fill("idNumber", ID_NUMBER);
         fill("monthlyIncome", String.valueOf(INCOME));
+        wait.until(ExpectedConditions.elementToBeClickable(By.id("placeOrder"))); // the button stays disabled until the quote is read again
         click(By.id("placeOrder"));
         wait.until(ExpectedConditions.urlContains("/checkout/success"));
         return wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".order-number"))).getText();
@@ -510,6 +511,7 @@ class InstallmentSeleniumTest extends StorefrontSeleniumTest {
         assertTrue(box.getText().contains("mô phỏng"), box.getText());
 
         // an empty application is refused in the page, and no order is made
+        wait.until(ExpectedConditions.elementToBeClickable(By.id("placeOrder"))); // the button stays disabled until the quote is read again
         click(By.id("placeOrder"));
         String message = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("checkoutError"))).getText();
         assertFalse(message.isBlank());

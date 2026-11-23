@@ -208,15 +208,15 @@ window.KineticInstallment = (() => {
         if (!form || !simulatorReady) return t('Chưa tải được bảng trả góp. Vui lòng thử lại.');
         if (problem) return problem;
         if (!plan) return t('Đang tính khoản trả góp. Vui lòng đợi một chút.');
-        if (!/^(\d{9}|\d{12})$/.test(form.elements.idNumber.value.replace(/[\s.\-]/g, ''))) return t('Số CCCD chưa hợp lệ. Vui lòng nhập 12 chữ số (hoặc 9 chữ số với chứng minh nhân dân cũ).');
-        const income = Number(form.elements.monthlyIncome.value);
+        if (!/^(\d{9}|\d{12})$/.test(form.querySelector('[name=idNumber]').value.replace(/[\s.\-]/g, ''))) return t('Số CCCD chưa hợp lệ. Vui lòng nhập 12 chữ số (hoặc 9 chữ số với chứng minh nhân dân cũ).');
+        const income = Number(form.querySelector('[name=monthlyIncome]').value);
         if (!income || income < limits.minMonthlyIncome) return t('Vui lòng nhập thu nhập hằng tháng (tối thiểu {n}).', {n: money(limits.minMonthlyIncome)});
         if (plan.monthlyPayment > income * limits.maxPaymentPercentOfIncome / 100) return t('Khoản trả hàng tháng vượt {n}% thu nhập bạn khai. Hãy tăng khoản trả trước hoặc chọn kỳ hạn dài hơn.', {n: limits.maxPaymentPercentOfIncome});
         return null;
       },
       value() {
         const choice = sim.choice();
-        return {idNumber: form.elements.idNumber.value.trim(), monthlyIncome: Number(form.elements.monthlyIncome.value), downPaymentPercent: choice.percent, termMonths: choice.term};
+        return {idNumber: form.querySelector('[name=idNumber]').value.trim(), monthlyIncome: Number(form.querySelector('[name=monthlyIncome]').value), downPaymentPercent: choice.percent, termMonths: choice.term};
       }
     };
   }
