@@ -17,8 +17,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * the account's), unless {@code lang=vi|en} says otherwise. That choice is only the language of the document: the texts of an error stay in the language of the page asking. The files carry personal data, so they are never cached.
- * the account's), unless {@code lang=vi|en} says otherwise. The files carry personal data, so they are never cached.
+ * V27: downloads of the sales receipt and the warranty card. The document is in the page language (cookie or account) unless {@code lang=vi|en} says otherwise;
+ * that choice is only the language of the document, the texts of an error stay in the page language, and the files carry personal data so they are never cached.
  */
 @RestController
 @RequestMapping("/api/v1/orders/{id}")
