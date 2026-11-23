@@ -385,7 +385,12 @@ public class OrderServiceImpl implements OrderService {
             .sorted()
             .toList();
 
-        List<Order> expired = new ArrayList<>();
+        // Two passes, so the locks keep the order every other operation takes (an order's row, then its vehicles' rows): first every due order is locked and
+        // checked, in id order, touching no vehicle; only then are the vehicles put back. A customer or a staff member cancelling an order holds that
+        // order's row and wants its vehicles; the job never holds a vehicle while it still waits for an order, so the two cannot wait for each other in a circle.
+        record DueOrder(Order order, String reason, String log) {
+        }
+        List<DueOrder> due = new ArrayList<>();
         for (Long id : possiblyDue) {
             Order order = orderRepository.findLockedById(id).orElse(null);
             if (order == null || order.getStatus() != OrderStatus.PENDING) {
@@ -403,11 +408,10 @@ public class OrderServiceImpl implements OrderService {
                 if (!since.isBefore(now.minus(approved ? installmentDownPaymentHold : installmentReviewHold))) {
                     continue;
                 }
-                cancelOrder(order, approved
+                due.add(new DueOrder(order, approved
                     ? "Tự động hủy: quá hạn thanh toán khoản trả trước của hồ sơ trả góp."
-                    : "Tự động hủy: cửa hàng chưa duyệt hồ sơ trả góp trong thời hạn giữ hàng.", null,
-                    approved ? "Expired before down payment" : "Expired before review");
-                expired.add(order);
+                    : "Tự động hủy: cửa hàng chưa duyệt hồ sơ trả góp trong thời hạn giữ hàng.",
+                    approved ? "Expired before down payment" : "Expired before review"));
                 continue;
             }
             // VNPay orders have no payment row until the first payment URL is created.
@@ -418,8 +422,12 @@ public class OrderServiceImpl implements OrderService {
             String reason = online
                 ? "Tự động hủy: quá hạn thanh toán online."
                 : "Tự động hủy: cửa hàng chưa xác nhận đơn trả sau trong thời hạn giữ hàng.";
-            cancelOrder(order, reason, null, "Expired before payment");
-            expired.add(order);
+            due.add(new DueOrder(order, reason, "Expired before payment"));
+        }
+        List<Order> expired = new ArrayList<>();
+        for (DueOrder item : due) {
+            cancelOrder(item.order(), item.reason(), null, item.log());
+            expired.add(item.order());
         }
         orderRepository.saveAll(expired);
         return expired.size();
