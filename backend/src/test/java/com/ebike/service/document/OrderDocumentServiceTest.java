@@ -54,7 +54,7 @@ class OrderDocumentServiceTest {
     }
 
     private Order stored(Order order) {
-        when(orders.findById(order.getId())).thenReturn(Optional.of(order));
+        when(orders.findForDocuments(order.getId())).thenReturn(Optional.of(order));
         return order;
     }
 

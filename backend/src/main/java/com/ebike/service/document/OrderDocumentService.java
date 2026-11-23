@@ -109,7 +109,7 @@ public class OrderDocumentService {
      */
     @Transactional(readOnly = true)
     public Optional<DeliveryDocuments> forDeliveredOrder(Long orderId) {
-        Order order = orders.findById(orderId).orElse(null);
+        Order order = orders.findForDocuments(orderId).orElse(null);
         if (order == null || order.getStatus() != OrderStatus.DELIVERED) {
             return Optional.empty();
         }
@@ -167,7 +167,7 @@ public class OrderDocumentService {
     }
 
     private Order readable(Long orderId, Authentication authentication, String language) {
-        Order order = orderId == null ? null : orders.findById(orderId).orElse(null);
+        Order order = orderId == null ? null : orders.findForDocuments(orderId).orElse(null);
         if (order == null || !mayRead(order, authentication)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, DocumentText.text(language, "error.notFound"));
         }

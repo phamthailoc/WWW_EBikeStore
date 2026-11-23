@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
@@ -28,6 +29,16 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     List<Long> findDeliveredBuyerIds(@Param("productId") Long productId);
 
     List<Order> findByUserId(Long userId);
+
+    /**
+     * V27: an order with what a receipt and a warranty card print, in one query instead of about four per line.
+     */
+    @EntityGraph(attributePaths = {
+        "user", "payment", "shipment", "shipment.pickupShowroom",
+        "items", "items.units", "items.productVariant", "items.product", "items.product.specification"
+    })
+    @Query("select o from Order o where o.id = :id")
+    Optional<Order> findForDocuments(@Param("id") Long id);
 
     List<Order> findByUserIsNullAndCustomerEmail(String customerEmail);
 
