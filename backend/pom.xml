@@ -19,6 +19,8 @@
   <properties>
     <!-- Newer than Spring Boot 3.1's managed Selenium so Selenium Manager can drive current Chrome builds. -->
     <selenium.version>4.27.0</selenium.version>
+    <!-- one PDFBox version for pdfbox, fontbox and xmpbox (openhtmltopdf 1.0.10 would bring xmpbox 2.0.24) -->
+    <pdfbox.version>2.0.30</pdfbox.version>
   </properties>
 
   <dependencyManagement>
@@ -111,7 +113,7 @@
     <dependency>
       <groupId>org.apache.pdfbox</groupId>
       <artifactId>pdfbox</artifactId>
-      <version>2.0.30</version>
+      <version>${pdfbox.version}</version>
     </dependency>
     <dependency>
       <groupId>com.openhtmltopdf</groupId>
@@ -119,11 +121,16 @@
       <version>1.0.10</version>
     </dependency>
     <dependency>
+      <groupId>org.apache.pdfbox</groupId>
+      <artifactId>xmpbox</artifactId>
+      <version>${pdfbox.version}</version>
+    </dependency>
+    <dependency>
       <groupId>com.openhtmltopdf</groupId>
       <artifactId>openhtmltopdf-slf4j</artifactId>
       <version>1.0.10</version>
     </dependency>
-    <!-- V27: DejaVu Sans (free licence) has every Vietnamese letter; the PDF embeds it so the text shows the same on any device -->
+    <!-- V27: DejaVu Sans (free licence) has every Vietnamese letter; the PDF embeds it so the text shows the same on any device. The jar is 2.4 MB (all DejaVu variants plus JasperReports files) but is the only Maven source of the font; the app embeds only two files of it. openhtmltopdf 1.0.10 is no longer maintained; its successor io.github.openhtmltopdf 1.1.x needs PDFBox 3, which is a separate migration. -->
     <dependency>
       <groupId>net.sf.jasperreports</groupId>
       <artifactId>jasperreports-fonts</artifactId>
