@@ -188,14 +188,17 @@ class SeoMarkupTest {
     }
 
     @Test
-    void robotsKeepsCrawlersOutOfAccountStaffCartAndApiPagesAndNamesTheSitemap() {
+    void robotsOnlyKeepsCrawlersOutOfTheApiAndTheLanguageSwitchAndNamesTheSitemap() {
         String robots = seo.robotsTxt();
         assertTrue(robots.startsWith("User-agent: *\nAllow: /\n"));
-        for (String path : List.of("/api/", "/admin", "/manager", "/customer", "/cart", "/checkout", "/favorites", "/login", "/signup", "/lang/")) {
+        for (String path : List.of("/api/", "/lang/")) {
             assertTrue(robots.contains("Disallow: " + path + "\n"), path);
         }
         assertFalse(robots.contains("Disallow: /\n"), "the shop itself stays open");
         assertFalse(robots.contains("Disallow: /product"), "products stay open");
+        for (String path : List.of("/admin", "/manager", "/customer", "/cart", "/checkout", "/favorites", "/login", "/signup", "/auth", "/payment/")) {
+            assertFalse(robots.contains("Disallow: " + path + "\n"), path + " must stay crawlable so its noindex is read");
+        }
         assertTrue(robots.contains("Sitemap: https://shop.example.vn/sitemap.xml\n"));
     }
     private static ProductDetailDto withVariants(BigDecimal price, BigDecimal discount, ProductVariantDto... variants) {

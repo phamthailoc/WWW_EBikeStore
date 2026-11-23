@@ -30,10 +30,11 @@ public class SeoMarkup {
     static final String SELLER = "KINETIC";
     private static final ObjectMapper JSON = new ObjectMapper();
 
-    /** Pages that need an account or hold someone's data, or only make sense mid-purchase: crawlers are asked to stay out. */
-    static final List<String> PRIVATE_PATHS = List.of(
-        "/api/", "/admin", "/manager", "/customer", "/cart", "/checkout", "/payment/", "/favorites", "/compare", "/chatbot",
-        "/login", "/auth", "/signup", "/lang/");
+    /**
+     * Paths crawlers are asked to stay out of: the API and the language switch, which are not pages. The private HTML pages
+     * (login, cart, staff areas) stay crawlable on purpose: they carry a noindex tag, which a crawler only sees if it may fetch them.
+     */
+    static final List<String> PRIVATE_PATHS = List.of("/api/", "/lang/");
     /** Public pages that are not products. */
     static final List<String> STATIC_PATHS = List.of("/products", "/support", "/warranty");
 
@@ -288,7 +289,7 @@ public class SeoMarkup {
         return xml.append("</urlset>\n").toString();
     }
 
-    /** {@code robots.txt}: open to crawlers except the account, staff, cart and API pages; points at the sitemap. */
+    /** {@code robots.txt}: open to crawlers except the API and the language switch (private pages stay open so their noindex is seen); points at the sitemap. */
     public String robotsTxt() {
         StringBuilder text = new StringBuilder("User-agent: *\nAllow: /\n");
         for (String path : PRIVATE_PATHS) {
