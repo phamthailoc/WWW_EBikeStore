@@ -101,6 +101,12 @@ public class WorkspaceController {
             links.add(stockAt + 1, new Link(m("staff.stockReceiptsMenu", "Nhập kho"), "/manager/stock-receipts"));
         }
         model.addAttribute("canManageStock", canManageStock);
+        // V28: the "Export to Excel" button of the order list and of the revenue report, only for staff the export endpoint will serve (the report needs its own permission)
+        String exportPermission = section.equals("manager/orders") ? PermissionConstants.OrderManagement.ORDER_VIEW_ALL
+            : section.equals("manager/reports") ? PermissionConstants.Reporting.REPORT_VIEW : null;
+        boolean canExport = exportPermission != null && authentication != null
+            && authentication.getAuthorities().stream().anyMatch(a -> exportPermission.equals(a.getAuthority()));
+        model.addAttribute("canExport", canExport);
         model.addAttribute("workspaceRole", role);
         model.addAttribute("title", title);
         model.addAttribute("description", description);
@@ -108,7 +114,7 @@ public class WorkspaceController {
         model.addAttribute("secondaryApi", section.equals("admin/pricing") ? "/api/v1/admin/promotions" : "");
         model.addAttribute("mode", mode);
         // V27: the PDF download buttons are on the order page and on the Manager warranty queue
-        model.addAttribute("loadDocuments", "detail".equals(mode) || "warranty".equals(mode) || "manager/warranty".equals(section));
+        model.addAttribute("loadDocuments", "detail".equals(mode) || "warranty".equals(mode) || "manager/warranty".equals(section) || canExport);
         model.addAttribute("links", links);
         model.addAttribute("activePath", path);
         model.addAttribute("vnpayEnabled", vnPayProperties.isConfigured());

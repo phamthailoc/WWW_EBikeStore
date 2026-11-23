@@ -204,3 +204,6 @@ h1,h2,h3,.brand,.eyebrow,.metric b,.metric small{font-family:'Space Grotesk','Se
 .savings-figures .installment-main dd{color:var(--c-1d5b3a)}
 .savings-figures .installment-main dd[data-field=no-saving]{font-size:15px;color:var(--c-c53a31)}
 @media(max-width:380px){.savings-inputs{grid-template-columns:1fr}}
+
+/* V28: the heading of a table panel may hold three buttons (Export to Excel, Refresh...); on a phone they drop under the title instead of squeezing it */
+@media(max-width:640px){.panel-heading{flex-wrap:wrap;gap:12px}.panel-heading .product-action{width:100%}}
