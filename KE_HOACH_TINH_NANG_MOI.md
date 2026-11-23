@@ -169,6 +169,8 @@ Ký hiệu: P1 nên làm trước; P2 làm tiếp nếu còn thời gian; P3 là
 
 **Cần chốt:** thông tin cửa hàng in trên hóa đơn (tên, mã số thuế giả định); hóa đơn này chỉ là phiếu bán hàng, **không** phải hóa đơn điện tử theo luật.
 
+**Quyết định sau rà soát:** phiếu tạm tính (xe chưa bàn giao) mang số `TT-<mã đơn>`, phiếu bán hàng chính thức mang số `PBH-<mã đơn>`, để hai bản khác nhau của cùng một đơn không trùng số. Email và PDF gửi khách vãng lai luôn bằng tiếng Việt vì đơn không lưu ngôn ngữ lúc đặt hàng (lưu thêm cần đổi schema, để lại); Manager chọn được ngôn ngữ phiếu khi tải. Email bàn giao có hàng đợi riêng, không tự gửi lại, lỗi chỉ ghi log kèm mã đơn; chưa có nút "gửi lại email phiếu".
+
 ---
 
 ## P3. Làm thêm
