@@ -18,7 +18,6 @@
 <meta property="og:image" th:if="${image != null and !image.isEmpty()}" th:content="${image}">
 <meta property="og:image:alt" th:if="${image != null and !image.isEmpty()}" th:content="${title}">
 <meta property="og:locale" th:content="${#locale.language == 'en' ? 'en_US' : 'vi_VN'}" content="vi_VN">
-<meta property="og:locale:alternate" th:content="${#locale.language == 'en' ? 'vi_VN' : 'en_US'}" content="en_US">
 <meta name="twitter:card" th:content="${image != null and !image.isEmpty() ? 'summary_large_image' : 'summary'}" content="summary_large_image">
 <meta name="twitter:title" th:content="${title}">
 <meta name="twitter:description" th:content="${description}">
