@@ -40,13 +40,12 @@ window.KineticDocuments = (() => {
     setTimeout(() => URL.revokeObjectURL(href), 60000);
   }
 
-  let busy = false;
   document.addEventListener('click', async event => {
     const button = event.target.closest('[data-doc-url]');
     if (!button) return;
     event.preventDefault();
-    if (busy) return;
-    busy = true;
+    if (button.dataset.busy) return;
+    button.dataset.busy = '1';
     const label = button.textContent;
     button.disabled = true;
     button.textContent = t('Đang tạo PDF…');
@@ -56,7 +55,7 @@ window.KineticDocuments = (() => {
     } catch (error) {
       tell(error.message, true);
     } finally {
-      busy = false;
+      delete button.dataset.busy;
       button.disabled = false;
       button.textContent = label;
     }
