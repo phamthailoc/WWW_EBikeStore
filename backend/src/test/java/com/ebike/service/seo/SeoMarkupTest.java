@@ -78,7 +78,7 @@ class SeoMarkupTest {
         ProductDetailDto sale = detail("X", new BigDecimal("25990000"), new BigDecimal("23990000.4"), null, 0, 5, List.of());
         assertEquals("25990000", SeoMarkup.priceText(SeoMarkup.effectivePrice(full)));
         assertEquals("23990000", SeoMarkup.priceText(SeoMarkup.effectivePrice(sale)));
-        assertEquals("0", SeoMarkup.priceText(null));
+        assertEquals("", SeoMarkup.priceText(null));
     }
 
     @Test
@@ -227,5 +227,12 @@ class SeoMarkupTest {
         JsonNode offer = JSON.readTree(seo.productJsonLd(product)).path("offers");
         assertEquals("Offer", offer.path("@type").asText());
         assertEquals("20000000", offer.path("price").asText());
+    }
+    @Test
+    void aProductWithoutAPriceIsNotPublishedAsFree() throws Exception {
+        JsonNode node = JSON.readTree(seo.productJsonLd(detail("X", null, null, null, 0, 5, List.of())));
+        assertTrue(node.path("offers").isMissingNode(), "no price, no offer");
+        JsonNode zero = JSON.readTree(seo.productJsonLd(detail("X", BigDecimal.ZERO, null, null, 0, 5, List.of())));
+        assertTrue(zero.path("offers").isMissingNode());
     }
 }

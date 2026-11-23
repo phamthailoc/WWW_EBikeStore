@@ -127,9 +127,18 @@ public class SeoMarkup {
         return variantPrice(product, defaultVariant(product));
     }
 
-    /** Price as the plain number a crawler expects (dong has no decimals): {@code 25990000}. */
+    /** True when the product has a price worth publishing (a missing or zero price would read as free). */
+    public static boolean hasPrice(ProductDetailDto product) {
+        BigDecimal price = effectivePrice(product);
+        return price != null && price.signum() > 0;
+    }
+
+    /** Price as the plain number a crawler expects (dong has no decimals): {@code 25990000}; empty when there is none. */
     public static String priceText(BigDecimal price) {
-        return (price == null ? BigDecimal.ZERO : price).setScale(0, RoundingMode.HALF_UP).toPlainString();
+        if (price == null) {
+            return "";
+        }
+        return price.setScale(0, RoundingMode.HALF_UP).toPlainString();
     }
 
     public static boolean inStock(ProductDetailDto product) {
@@ -165,35 +174,38 @@ public class SeoMarkup {
         if (product.category() != null && product.category().name() != null) {
             node.put("category", product.category().name());
         }
-        Map<String, Object> offer = new LinkedHashMap<>();
-        BigDecimal low = effectivePrice(product);
-        BigDecimal high = low;
-        java.util.Set<String> distinct = new java.util.LinkedHashSet<>();
-        if (product.variants() != null) {
-            for (ProductVariantDto variant : product.variants()) {
-                BigDecimal price = variant == null ? null : variantPrice(product, variant);
-                if (price != null) {
-                    distinct.add(priceText(price));
-                    low = low == null || price.compareTo(low) < 0 ? price : low;
-                    high = high == null || price.compareTo(high) > 0 ? price : high;
+        // a product with no price is not free: say nothing about its offer rather than "0"
+        if (hasPrice(product)) {
+            Map<String, Object> offer = new LinkedHashMap<>();
+            BigDecimal low = effectivePrice(product);
+            BigDecimal high = low;
+            java.util.Set<String> distinct = new java.util.LinkedHashSet<>();
+            if (product.variants() != null) {
+                for (ProductVariantDto variant : product.variants()) {
+                    BigDecimal price = variant == null ? null : variantPrice(product, variant);
+                    if (price != null) {
+                        distinct.add(priceText(price));
+                        low = low == null || price.compareTo(low) < 0 ? price : low;
+                        high = high == null || price.compareTo(high) > 0 ? price : high;
+                    }
                 }
             }
+            if (distinct.size() > 1) {
+                // variants cost different amounts: say so, rather than one price that is wrong for some of them
+                offer.put("@type", "AggregateOffer");
+                offer.put("lowPrice", priceText(low));
+                offer.put("highPrice", priceText(high));
+                offer.put("offerCount", distinct.size());
+            } else {
+                offer.put("@type", "Offer");
+                offer.put("price", priceText(effectivePrice(product)));
+            }
+            offer.put("url", productUrl(product.slug()));
+            offer.put("priceCurrency", "VND");
+            offer.put("itemCondition", "https://schema.org/NewCondition");
+            offer.put("availability", inStock(product) ? "https://schema.org/InStock" : "https://schema.org/OutOfStock");
+            node.put("offers", offer);
         }
-        if (distinct.size() > 1) {
-            // variants cost different amounts: say so, rather than one price that is wrong for some of them
-            offer.put("@type", "AggregateOffer");
-            offer.put("lowPrice", priceText(low));
-            offer.put("highPrice", priceText(high));
-            offer.put("offerCount", distinct.size());
-        } else {
-            offer.put("@type", "Offer");
-            offer.put("price", priceText(effectivePrice(product)));
-        }
-        offer.put("url", productUrl(product.slug()));
-        offer.put("priceCurrency", "VND");
-        offer.put("itemCondition", "https://schema.org/NewCondition");
-        offer.put("availability", inStock(product) ? "https://schema.org/InStock" : "https://schema.org/OutOfStock");
-        node.put("offers", offer);
         // An aggregate rating with no reviews is invalid and would be a made-up number: leave it out.
         if (product.reviewCount() != null && product.reviewCount() > 0 && product.rating() != null && product.rating().signum() > 0) {
             Map<String, Object> rating = new LinkedHashMap<>();
