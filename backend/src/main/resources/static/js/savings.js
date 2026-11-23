@@ -16,9 +16,15 @@
   let sequence = 0, timer = null;
 
   async function request(km, days) {
-    const response = await fetch(`/api/v1/products/${encodeURIComponent(page.dataset.slug)}/savings?kmPerDay=${km}&daysPerMonth=${days}`, {
-      credentials: 'same-origin', headers: {Accept: 'application/json'}
-    });
+    let response;
+    try {
+      response = await fetch(`/api/v1/products/${encodeURIComponent(page.dataset.slug)}/savings?kmPerDay=${km}&daysPerMonth=${days}`, {
+        credentials: 'same-origin', headers: {Accept: 'application/json'}
+      });
+    } catch (offline) {
+      // no network: the browser's own message ("Failed to fetch") is English whatever the page language is
+      throw Error(t('Không thực hiện được. Vui lòng thử lại sau.'));
+    }
     if (!response.ok) {
       let message = '';
       try { message = (await response.json()).message || ''; } catch (ignored) { /* not JSON */ }
