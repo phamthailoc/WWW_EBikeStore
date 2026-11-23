@@ -188,6 +188,11 @@ public class Order {
         this.status = status;
     }
 
+    /** Called once the change of status was announced, so a second flush of the same order in the same transaction does not announce it again. */
+    public void markStatusAnnounced() {
+        previousStatusForNotification = status;
+    }
+
     public OrderStatus getPreviousStatusForNotification() {
         return previousStatusForNotification;
     }

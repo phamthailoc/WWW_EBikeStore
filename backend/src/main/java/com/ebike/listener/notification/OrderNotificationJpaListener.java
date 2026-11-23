@@ -34,6 +34,7 @@ public class OrderNotificationJpaListener {
         if (order.getStatus() == order.getPreviousStatusForNotification()) {
             return;
         }
+        order.markStatusAnnounced();
         // V27: the receipt and the warranty card are emailed at hand-over, also for a guest order (it has no account to notify)
         if (order.getStatus() == OrderStatus.DELIVERED) {
             NotificationEventBridge.publish(new OrderDeliveredEvent(order.getId()));

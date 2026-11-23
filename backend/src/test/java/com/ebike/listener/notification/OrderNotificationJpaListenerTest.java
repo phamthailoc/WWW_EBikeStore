@@ -3,6 +3,7 @@ package com.ebike.listener.notification;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import com.ebike.event.notification.OrderDeliveredEvent;
@@ -103,5 +104,18 @@ class OrderNotificationJpaListenerTest {
     void anotherCancellationStillSendsTheOrderNotice() {
         listener.afterUpdate(cancelledOrder("Đổi ý", false));
         verify(publisher).publishEvent(any(OrderStatusChangedEvent.class));
+    }
+
+    @Test
+    void flushingTheSameDeliveredOrderTwiceAnnouncesItOnce() {
+        User user = new User();
+        user.setId(7L);
+        Order order = deliveredOrder(user, OrderStatus.SHIPPED);
+
+        listener.afterUpdate(order);
+        listener.afterUpdate(order);
+
+        verify(publisher, times(1)).publishEvent(new OrderDeliveredEvent(11L));
+        verify(publisher, times(1)).publishEvent(any(OrderStatusChangedEvent.class));
     }
 }
