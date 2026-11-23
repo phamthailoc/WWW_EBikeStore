@@ -145,14 +145,18 @@ class SavingsCalculatorSeleniumTest extends StorefrontSeleniumTest {
     @Test
     void theBoxSpeaksEnglish() {
         driver.get(baseUrl + "/lang/en?back=/product/" + slug);
-        wait.until(ExpectedConditions.visibilityOfElementLocated(BOX));
-        String text = driver.findElement(BOX).getText();
-        assertTrue(text.contains("How much does an electric bike save?"), text);
-        wait.until(d -> d.findElement(BOX).getText().contains("Charging cost a month"));
-        assertFalse(driver.findElement(BOX).getText().matches("(?s).*(Tiền sạc|Tiết kiệm|tiết kiệm).*"), "no Vietnamese is left in the box");
-        type(KM, "0");
-        wait.until(d -> d.findElement(PROBLEM).getText().contains("whole number"));
-        driver.get(baseUrl + "/lang/vi?back=/product/" + slug);
+        try {
+            wait.until(ExpectedConditions.visibilityOfElementLocated(BOX));
+            String text = driver.findElement(BOX).getText();
+            assertTrue(text.contains("How much does an electric bike save?"), text);
+            wait.until(d -> d.findElement(BOX).getText().contains("Charging cost a month"));
+            assertFalse(driver.findElement(BOX).getText().matches("(?s).*(Tiền sạc|Tiết kiệm|tiết kiệm).*"), "no Vietnamese is left in the box");
+            type(KM, "0");
+            wait.until(d -> d.findElement(PROBLEM).getText().contains("whole number"));
+        } finally {
+            // the language is saved on the test customer's account, so a failure above must not leave the next tests in English
+            driver.get(baseUrl + "/lang/vi?back=/product/" + slug);
+        }
     }
 
     @Test
