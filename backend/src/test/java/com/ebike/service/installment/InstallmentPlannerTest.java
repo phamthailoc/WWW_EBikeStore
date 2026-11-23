@@ -211,6 +211,17 @@ class InstallmentPlannerTest {
     }
 
     @Test
+    void limitsThatMakeNoSenseStopTheStartInsteadOfBreakingTheFeatureQuietly() {
+        BigDecimal five = new BigDecimal("5000000"), big = new BigDecimal("300000000"), three = new BigDecimal("3000000"), billion = new BigDecimal("1000000000");
+        assertThrows(IllegalStateException.class, () -> new InstallmentPlanner(null, applications, users, big, five, three, billion, 60, 2));
+        assertThrows(IllegalStateException.class, () -> new InstallmentPlanner(null, applications, users, five, big, billion, three, 60, 2));
+        assertThrows(IllegalStateException.class, () -> new InstallmentPlanner(null, applications, users, five, big, three, billion, 0, 2));
+        assertThrows(IllegalStateException.class, () -> new InstallmentPlanner(null, applications, users, five, big, three, billion, 101, 2));
+        assertThrows(IllegalStateException.class, () -> new InstallmentPlanner(null, applications, users, five, big, three, billion, 60, 0));
+        assertThrows(IllegalStateException.class, () -> new InstallmentPlanner(null, applications, users, five, big, BigDecimal.ZERO, billion, 60, 2));
+    }
+
+    @Test
     void thePaymentsOfTheCustomersOtherPlansCountAgainstTheSameIncome() {
         // an income of 3,300,000 allows 1,980,000 a month: the new 1,925,000 plan fits alone, not next to a plan of 100,000
         when(applications.sumMonthlyPaymentOf(7L)).thenReturn(new BigDecimal("100000"));

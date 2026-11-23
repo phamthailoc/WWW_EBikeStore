@@ -41,6 +41,19 @@ public class InstallmentPlanner {
         @Value("${app.installment.max-payment-percent-of-income:60}") int maxPaymentPercentOfIncome,
         @Value("${app.installment.max-open-per-customer:2}") int maxOpenPerCustomer
     ) {
+        // a wrong setting must stop the start of the application, not leave the feature quietly refusing (or accepting) every order
+        if (minTotal == null || maxTotal == null || minTotal.signum() <= 0 || minTotal.compareTo(maxTotal) > 0) {
+            throw new IllegalStateException("app.installment.min-total must be greater than 0 and not above app.installment.max-total");
+        }
+        if (minIncome == null || maxIncome == null || minIncome.signum() <= 0 || minIncome.compareTo(maxIncome) > 0) {
+            throw new IllegalStateException("app.installment.min-income must be greater than 0 and not above app.installment.max-income");
+        }
+        if (maxPaymentPercentOfIncome < 1 || maxPaymentPercentOfIncome > 100) {
+            throw new IllegalStateException("app.installment.max-payment-percent-of-income must be from 1 to 100");
+        }
+        if (maxOpenPerCustomer < 1) {
+            throw new IllegalStateException("app.installment.max-open-per-customer must be at least 1");
+        }
         this.pricing = pricing;
         this.applications = applications;
         this.users = users;
