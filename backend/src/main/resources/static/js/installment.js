@@ -176,7 +176,8 @@ window.KineticInstallment = (() => {
       identified = true;
       try {
         const response = await fetch('/api/v1/auth/profile', {credentials: 'same-origin', headers: {Accept: 'application/json'}});
-        customer = response.ok ? ((await response.json()).roles || []).some(role => /CUSTOMER/.test(role)) : false;
+        // a customer account only: an account that also has a staff role may not apply for credit
+        customer = response.ok ? (roles => roles.length > 0 && roles.every(role => /CUSTOMER/.test(role)))((await response.json()).roles || []) : false;
       } catch (ignored) { customer = false; }
       if (customer) { await build(); if (total) sim && sim.refresh(); return; }
       // a visitor or a staff account: the application belongs to a customer account, so say so and offer the way in

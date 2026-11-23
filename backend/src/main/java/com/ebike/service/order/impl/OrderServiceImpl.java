@@ -960,8 +960,11 @@ public class OrderServiceImpl implements OrderService {
 
     /** V24: an instalment application is a customer's; Manager and Admin accounts can place orders too, but not apply for credit. */
     private void assertCustomerRole(Authentication authentication) {
+        // only a pure customer account: one that also holds a staff role may not apply for credit
         boolean customer = authentication != null && authentication.getAuthorities().stream()
-            .anyMatch(authority -> "ROLE_CUSTOMER".equals(authority.getAuthority()));
+            .anyMatch(authority -> "ROLE_CUSTOMER".equals(authority.getAuthority()))
+            && authentication.getAuthorities().stream()
+                .noneMatch(authority -> authority.getAuthority().startsWith("ROLE_") && !"ROLE_CUSTOMER".equals(authority.getAuthority()));
         if (authentication != null && !customer) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, RequestLanguage.text(
                 "Chỉ tài khoản khách hàng mới mua trả góp được.", "Only customer accounts can pay by instalments."));
