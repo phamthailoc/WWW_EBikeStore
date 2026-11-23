@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * V35: {@code /sitemap.xml} (every product on sale, read from the product list cache that stock, price and review changes already
  * evict) and {@code /robots.txt}. Both are public and are rebuilt on each request, so a product that is switched off or renamed
- * drops out at once; crawlers and proxies may keep the answer for ten minutes.
+ * drops out within ten minutes: crawlers and proxies may keep the answer that long.
  */
 @RestController
 public class SeoController {
