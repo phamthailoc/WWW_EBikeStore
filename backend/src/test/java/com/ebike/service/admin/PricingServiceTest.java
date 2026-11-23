@@ -53,6 +53,28 @@ class PricingServiceTest {
         assertEquals(0, BigDecimal.ZERO.compareTo(service.registrationServicePerBike()));
     }
 
+    @Test void aSavingsRuleThatIsScheduledOrNotInEffectYetUsesTheDefault() {
+        when(rules.findByCode(PricingService.SAVINGS_PETROL_PRICE))
+            .thenReturn(Optional.of(rule(PricingService.SAVINGS_PETROL_PRICE, "30000", "SCHEDULED", NOW.minusDays(1))));
+        assertEquals(0, PricingService.DEFAULT_SAVINGS_PETROL_PRICE.compareTo(service.savingsPetrolPricePerLiter()));
+        when(rules.findByCode(PricingService.SAVINGS_PETROL_PRICE))
+            .thenReturn(Optional.of(rule(PricingService.SAVINGS_PETROL_PRICE, "30000", "ACTIVE", NOW.plusDays(2))));
+        assertEquals(0, PricingService.DEFAULT_SAVINGS_PETROL_PRICE.compareTo(service.savingsPetrolPricePerLiter()));
+        when(rules.findByCode(PricingService.SAVINGS_PETROL_PRICE))
+            .thenReturn(Optional.of(rule(PricingService.SAVINGS_PETROL_PRICE, "30000", "ACTIVE", NOW.minusDays(2))));
+        assertEquals(0, new BigDecimal("30000").compareTo(service.savingsPetrolPricePerLiter()));
+    }
+
+    @Test void aScheduledConsumptionRuleUsesTheDefaultOfItsType() {
+        String code = PricingService.SAVINGS_PETROL_USE_PREFIX + "E_MOTORBIKE";
+        when(rules.findByCode(code)).thenReturn(Optional.of(rule(code, "9", "ACTIVE", NOW.plusHours(1))));
+        assertEquals(0, PricingService.defaultPetrolUse("E_MOTORBIKE").compareTo(service.savingsPetrolLitersPer100Km("E_MOTORBIKE")));
+    }
+
+    @Test void theElectricMotorbikeIsComparedWithNoThirstierPetrolBikeThanTheScooter() {
+        assertTrue(PricingService.defaultPetrolUse("E_MOTORBIKE").compareTo(PricingService.defaultPetrolUse("E_SCOOTER")) <= 0);
+    }
+
     @Test void scheduledInactiveAndFutureRulesAreIgnored() {
         when(rules.findByCode("REGISTRATION_SERVICE"))
             .thenReturn(Optional.of(rule("REGISTRATION_SERVICE", "750000", "SCHEDULED", NOW.minusDays(1))));

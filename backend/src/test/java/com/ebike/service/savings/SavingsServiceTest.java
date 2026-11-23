@@ -110,9 +110,32 @@ class SavingsServiceTest {
     }
 
     @Test
+    void theMessagesFollowThePageLanguage() {
+        org.springframework.context.i18n.LocaleContextHolder.setLocale(java.util.Locale.ENGLISH);
+        org.springframework.web.context.request.RequestContextHolder.setRequestAttributes(
+            new org.springframework.web.context.request.ServletRequestAttributes(new org.springframework.mock.web.MockHttpServletRequest()));
+        try {
+            when(products.findBySlug("missing")).thenReturn(Optional.empty());
+            assertEquals("Product not found.", assertThrows(ResponseStatusException.class, () -> service.forProduct("missing", null, null)).getReason());
+            bike(VehicleType.E_SCOOTER, "20", "60", "80", true);
+            assertEquals("Kilometres per day must be from 1 to 300.",
+                assertThrows(ResponseStatusException.class, () -> service.forProduct("amy", 0, 26)).getReason());
+            assertEquals("Days of riding per month must be from 1 to 30.",
+                assertThrows(ResponseStatusException.class, () -> service.forProduct("amy", 20, 31)).getReason());
+            bike(VehicleType.BATTERY, "22", "48", "70", true);
+            assertTrue(service.forProduct("amy", null, null).message().startsWith("This product is not a vehicle"));
+        } finally {
+            org.springframework.context.i18n.LocaleContextHolder.resetLocaleContext();
+            org.springframework.web.context.request.RequestContextHolder.resetRequestAttributes();
+        }
+        bike(VehicleType.E_SCOOTER, "20", "60", "80", true);
+        assertEquals("Số km mỗi ngày phải từ 1 đến 300.", assertThrows(ResponseStatusException.class, () -> service.forProduct("amy", 0, 26)).getReason());
+    }
+
+    @Test
     void numbersOutOfRangeAre400() {
         bike(VehicleType.E_SCOOTER, "20", "60", "80", true);
-        for (int[] bad : new int[][] {{0, 26}, {301, 26}, {20, 0}, {20, 32}, {-5, 26}}) {
+        for (int[] bad : new int[][] {{0, 26}, {301, 26}, {20, 0}, {20, 31}, {-5, 26}}) {
             assertEquals(HttpStatus.BAD_REQUEST,
                 assertThrows(ResponseStatusException.class, () -> service.forProduct("amy", bad[0], bad[1])).getStatusCode());
         }
