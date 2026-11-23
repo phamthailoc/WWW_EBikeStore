@@ -30,6 +30,7 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class OrderStatusUpdateTest {
     @Mock OrderRepository orders;
+    @Mock com.ebike.service.stock.StockLedger ledger;
     @Mock UserRepository users;
     @Mock ProductRepository products;
     @Mock ShowroomRepository showrooms;
@@ -43,7 +44,7 @@ class OrderStatusUpdateTest {
     Product product;
 
     @BeforeEach void setup() {
-        service = new OrderServiceImpl(orders, users, products, showrooms, promotions, verification, new com.ebike.service.admin.PricingService(pricingRules), org.mockito.Mockito.mock(com.ebike.service.admin.AuditLogService.class), stockAlerts, org.mockito.Mockito.mock(com.ebike.service.installment.InstallmentPlanner.class), org.mockito.Mockito.mock(com.ebike.repository.installment.InstallmentApplicationRepository.class), org.mockito.Mockito.mock(com.ebike.service.stock.StockLedger.class));
+        service = new OrderServiceImpl(orders, users, products, showrooms, promotions, verification, new com.ebike.service.admin.PricingService(pricingRules), org.mockito.Mockito.mock(com.ebike.service.admin.AuditLogService.class), stockAlerts, org.mockito.Mockito.mock(com.ebike.service.installment.InstallmentPlanner.class), org.mockito.Mockito.mock(com.ebike.repository.installment.InstallmentApplicationRepository.class), ledger);
         product = new Product();
         product.setId(1L);
         product.setStockQuantity(5);
@@ -181,6 +182,41 @@ class OrderStatusUpdateTest {
         assertEquals(99L, order.getCancellationRequestedBy().getId());
         assertEquals(PaymentStatus.CANCELLED, payment.getPaymentStatus());
         assertEquals(7, product.getStockQuantity());
+    }
+
+    @Test void aCancellationByStaffIsLockedThenWrittenOnTheLedgerWithTheStaffMember() {
+        saves();
+        staffMember();
+        order.setStatus(OrderStatus.PROCESSING);
+        order.setOrderNumber("EB-1");
+
+        service.updateOrderStatus(10L, new OrderStatusUpdateRequest("CANCELLED", "Hết xe trong kho"), staff);
+
+        @SuppressWarnings("unchecked")
+        org.mockito.ArgumentCaptor<java.util.List<com.ebike.service.stock.StockLedger.Entry>> entries = org.mockito.ArgumentCaptor.forClass(java.util.List.class);
+        org.mockito.InOrder inOrder = org.mockito.Mockito.inOrder(ledger);
+        inOrder.verify(ledger).lock(any(), any());
+        inOrder.verify(ledger).record(entries.capture(), org.mockito.ArgumentMatchers.eq(10L), org.mockito.ArgumentMatchers.eq("EB-1"),
+            org.mockito.ArgumentMatchers.isNull(), org.mockito.ArgumentMatchers.argThat(actor -> actor != null && actor.getId() == 99L));
+        assertEquals(1, entries.getValue().size());
+        assertEquals(2, entries.getValue().get(0).change());
+        assertEquals(7, entries.getValue().get(0).balanceAfter());
+        assertEquals(com.ebike.model.entity.stock.StockMovementReason.CANCEL_RESTORE, entries.getValue().get(0).reason());
+    }
+
+    @Test void aCancellationByTheCustomerWhoOwnsTheOrderNamesNobodyOnTheLedger() {
+        saves();
+        User owner = new User();
+        owner.setId(7L);
+        owner.setUsername("khach");
+        order.setUser(owner);
+        order.setStatus(OrderStatus.PENDING);
+        when(staff.getName()).thenReturn("khach");
+        when(users.findByUsername("khach")).thenReturn(Optional.of(owner));
+
+        service.updateOrderStatus(10L, new OrderStatusUpdateRequest("CANCELLED", "Đổi ý"), staff);
+
+        verify(ledger).record(any(), any(), any(), org.mockito.ArgumentMatchers.isNull(), org.mockito.ArgumentMatchers.isNull());
     }
 
     @Test void cancellingAnOrderBringsASoldOutColourBackAndTellsWhoWaits() {
