@@ -56,8 +56,8 @@ class SeoMarkupTest {
     @Test
     void theShareImageIsTheFirstPhotoOrThePlaceholder() {
         assertEquals("https://shop.example.vn/images/catalog/a.jpg", seo.productImage(List.of("", "/images/catalog/a.jpg", "/images/b.jpg")));
-        assertEquals("https://shop.example.vn/images/hero-fallback.svg", seo.productImage(List.of()));
-        assertEquals("https://shop.example.vn/images/hero-fallback.svg", seo.productImage(null));
+        assertEquals("https://shop.example.vn/images/og-default.png", seo.productImage(List.of()));
+        assertEquals("https://shop.example.vn/images/og-default.png", seo.productImage(null));
     }
 
     @Test
@@ -114,7 +114,7 @@ class SeoMarkupTest {
             JsonNode node = JSON.readTree(seo.productJsonLd(detail("X", BigDecimal.TEN, null, rating, rating == null ? null : 0, 0, List.of())));
             assertTrue(node.path("aggregateRating").isMissingNode(), "no reviews, no rating: " + rating);
             assertEquals("https://schema.org/OutOfStock", node.path("offers").path("availability").asText());
-            assertEquals("https://shop.example.vn/images/hero-fallback.svg", node.path("image").get(0).asText(), "a product without photos still names an image");
+            assertEquals("https://shop.example.vn/images/og-default.png", node.path("image").get(0).asText(), "a product without photos still names an image");
         }
     }
 

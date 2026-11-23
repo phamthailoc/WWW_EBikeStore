@@ -79,10 +79,10 @@ public class SeoMarkup {
         return baseUrl + "/product/" + encodeSegment(slug);
     }
 
-    /** First picture of a product as an absolute address, or the shop's placeholder for a product without photos. */
+    /** First picture of a product as an absolute address, or the shop's placeholder (a PNG: chat apps do not draw SVG) for a product without photos. */
     public String productImage(List<String> images) {
         String first = images == null ? null : images.stream().filter(i -> i != null && !i.isBlank()).findFirst().orElse(null);
-        return absolute(first == null ? "/images/hero-fallback.svg" : first);
+        return absolute(first == null ? "/images/og-default.png" : first);
     }
 
     /** Text for a description tag: one line, at most 160 characters, cut at a word; {@code fallback} when there is no text. */
