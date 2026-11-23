@@ -94,6 +94,7 @@ public class StorefrontController {
             || (brand != null && !brand.isBlank()) || (vehicleType != null && !vehicleType.isBlank()) || (batteryType != null && !batteryType.isBlank())
             || minRangeKm != null || maxRangeKm != null || Boolean.TRUE.equals(inStock) || !"default".equals(sort);
         model.addAttribute("seoRobots", narrowed ? "noindex,follow" : null);
+        model.addAttribute("seoPage", safePage);
         model.addAttribute("seoPath", narrowed || safePage == 1 ? "/products" : "/products?page=" + safePage);
         model.addAttribute("filterOptions", products.getFilterOptions());
         model.addAttribute("vehicleTypeLabels", java.util.Map.of(
