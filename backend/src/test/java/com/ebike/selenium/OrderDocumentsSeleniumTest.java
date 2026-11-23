@@ -1,0 +1,272 @@
+package com.ebike.selenium;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.Duration;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.text.PDFTextStripper;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
+import org.junit.jupiter.api.parallel.ResourceLock;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+
+/**
+ * V27: the sales receipt and the warranty card as PDF. A customer places an order and can already download a provisional receipt (no warranty
+ * card yet); once the manager has delivered it with frame numbers, the order page offers the receipt and the warranty card, the warranty book
+ * offers the card of each bike, the files read back with the right words in both languages, a stranger gets 404 and a visitor 401, the staff
+ * can open any order's files, and a cancelled order has no receipt. The hand-over email needs a mail server and is covered by unit tests only.
+ * Needs {@code -Dselenium.managerUser} and {@code -Dselenium.managerPassword}; skipped otherwise.
+ *
+ * <pre>
+ * mvn test -Dtest=OrderDocumentsSeleniumTest -Dselenium.baseUrl=http://localhost:8080 \
+ *     -Dselenium.managerUser=... -Dselenium.managerPassword=...
+ * </pre>
+ */
+@Tag("selenium")
+@Execution(ExecutionMode.SAME_THREAD)
+@ResourceLock("product-stock")
+@EnabledIfSystemProperty(named = "selenium.baseUrl", matches = "https?://.+")
+class OrderDocumentsSeleniumTest extends StorefrontSeleniumTest {
+
+    private static final By PANEL = By.id("orderDocuments");
+
+    // ---- helpers ----
+
+    private static HttpResponse<byte[]> download(HttpClient client, String path) throws Exception {
+        HttpRequest request = HttpRequest.newBuilder(URI.create(baseUrl + path))
+            .timeout(Duration.ofSeconds(30))
+            .header("Accept", "application/pdf, application/json")
+            .GET().build();
+        return client.send(request, HttpResponse.BodyHandlers.ofByteArray());
+    }
+
+    private static String textOf(byte[] pdf) throws IOException {
+        try (PDDocument document = PDDocument.load(pdf)) {
+            return new PDFTextStripper().getText(document).replaceAll("\\s+", " ");
+        }
+    }
+
+    private static int pagesOf(byte[] pdf) throws IOException {
+        try (PDDocument document = PDDocument.load(pdf)) {
+            return document.getNumberOfPages();
+        }
+    }
+
+    private static void assertPdf(HttpResponse<byte[]> response) {
+        assertEquals(200, response.statusCode(), new String(response.body()));
+        assertEquals("application/pdf", response.headers().firstValue("Content-Type").orElse(""));
+        assertTrue(response.headers().firstValue("Content-Disposition").orElse("").startsWith("attachment"), "an attachment");
+        assertTrue(response.headers().firstValue("Cache-Control").orElse("").contains("no-store"), "never cached");
+        assertEquals("%PDF", new String(response.body(), 0, 4));
+    }
+
+    private void logInAsManager() {
+        logIn(System.getProperty("selenium.managerUser"), System.getProperty("selenium.managerPassword"));
+    }
+
+    private void openOrder(long orderId) {
+        driver.get(baseUrl + "/customer/orders/" + orderId);
+        wait.until(ExpectedConditions.visibilityOfElementLocated(PANEL));
+    }
+
+    private void clickDownload(String urlPart) {
+        js("var n=document.querySelector('#notice');n.hidden=true;n.textContent='';");
+        click(By.cssSelector("#orderDocuments [data-doc-url*='" + urlPart + "']"));
+    }
+
+    private static Map<Long, Integer> stockOf(String slug) throws Exception {
+        Map<Long, Integer> stock = new LinkedHashMap<>();
+        for (JsonNode variant : listOf(call(api, "GET", "/api/v1/products/" + slug, null).path("variants"))) {
+            stock.put(variant.path("id").asLong(), variant.path("stockQuantity").asInt());
+        }
+        return stock;
+    }
+
+    /** Puts back the stock a test's orders used up, so the next test finds the bike as it was. */
+    private static void restoreStock(HttpClient manager, String slug, Map<Long, Integer> before) {
+        try {
+            long productId = call(api, "GET", "/api/v1/products/" + slug, null).path("id").asLong();
+            Map<Long, Integer> now = stockOf(slug);
+            for (Map.Entry<Long, Integer> entry : before.entrySet()) {
+                Integer current = now.get(entry.getKey());
+                if (current != null && !current.equals(entry.getValue())) {
+                    call(manager, "PATCH", "/api/v1/manager/products/" + productId + "/variants/" + entry.getKey() + "/stock",
+                        Map.of("stockQuantity", entry.getValue()));
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Could not put the stock of " + slug + " back: " + e.getMessage());
+        }
+    }
+
+    // ---- scenarios ----
+
+    @Test
+    void receiptBeforeAndAfterDeliveryWarrantyCardAndWhoMayOpenThem() throws Exception {
+        HttpClient manager = managerApi();
+        Map<Long, Integer> stockBefore = stockOf(productSlug);
+        try {
+            walkThrough(manager);
+        } finally {
+            restoreStock(manager, productSlug, stockBefore);
+        }
+    }
+
+    private void walkThrough(HttpClient manager) throws Exception {
+        String orderNumber = placePayLaterOrder();
+        long orderId = findOrder(orderNumber).path("id").asLong();
+
+        // 1. not handed over yet: a provisional receipt, and no warranty card
+        openOrder(orderId);
+        WebElement panel = driver.findElement(PANEL);
+        assertTrue(panel.getText().contains("Hóa đơn và phiếu bảo hành"), panel.getText());
+        assertTrue(panel.getText().contains("Tải phiếu tạm tính"), panel.getText());
+        assertTrue(panel.getText().contains("không phải hóa đơn điện tử"), panel.getText());
+        assertTrue(driver.findElements(By.cssSelector("#orderDocuments [data-doc-url*='warranty-card']")).isEmpty(), "no card before the hand-over");
+        assertTrue(panel.getText().contains("Phiếu bảo hành có sau khi xe được bàn giao"), panel.getText());
+        HttpResponse<byte[]> provisional = download(api, "/api/v1/orders/" + orderId + "/receipt");
+        assertPdf(provisional);
+        assertTrue(textOf(provisional.body()).contains("PHIẾU TẠM TÍNH"), textOf(provisional.body()));
+        HttpResponse<byte[]> tooEarly = download(api, "/api/v1/orders/" + orderId + "/warranty-card");
+        assertEquals(409, tooEarly.statusCode(), "the card exists only after the hand-over");
+
+        // 2. the button saves the file and says so (a refusal would show in red instead)
+        clickDownload("/receipt");
+        assertEquals("Đã tải tệp PDF.", notice());
+        assertFalse(driver.findElement(By.id("notice")).getAttribute("class").contains("error"));
+
+        // 3. deliver it with frame numbers
+        for (String status : new String[] {"CONFIRMED", "PROCESSING", "SHIPPED", "DELIVERED"}) {
+            if (status.equals("SHIPPED")) enterUnits(manager, orderId);
+            call(manager, "PATCH", "/api/v1/orders/" + orderId + "/status", Map.of("status", status));
+        }
+        JsonNode order = call(manager, "GET", "/api/v1/orders/" + orderId, null);
+        JsonNode unit = order.path("items").get(0).path("units").get(0);
+        String frame = unit.path("frameNumber").asText();
+        long unitId = unit.path("id").asLong();
+        int bikes = order.path("items").get(0).path("units").size();
+
+        // 4. the order page now offers the receipt and the warranty card
+        openOrder(orderId);
+        panel = driver.findElement(PANEL);
+        assertTrue(panel.getText().contains("Tải hóa đơn"), panel.getText());
+        assertTrue(panel.getText().contains("Tải phiếu bảo hành"), panel.getText());
+        HttpResponse<byte[]> receipt = download(api, "/api/v1/orders/" + orderId + "/receipt");
+        assertPdf(receipt);
+        String receiptText = textOf(receipt.body());
+        assertTrue(receiptText.contains("PHIẾU BÁN HÀNG"), receiptText);
+        assertTrue(receiptText.contains(orderNumber), receiptText);
+        assertTrue(receiptText.contains(frame), "the frame number is on the receipt: " + receiptText);
+        assertTrue(receiptText.contains("không phải hóa đơn điện tử"), receiptText);
+        HttpResponse<byte[]> card = download(api, "/api/v1/orders/" + orderId + "/warranty-card");
+        assertPdf(card);
+        assertEquals(bikes, pagesOf(card.body()), "one page for each bike");
+        assertTrue(textOf(card.body()).contains("PHIẾU BẢO HÀNH") && textOf(card.body()).contains(frame), textOf(card.body()));
+        clickDownload("/warranty-card");
+        assertEquals("Đã tải tệp PDF.", notice());
+
+        // 5. the warranty book has the card of each bike, one at a time
+        driver.get(baseUrl + "/customer/warranty");
+        WebElement row = wait.until(d -> d.findElements(By.cssSelector("#data-table tbody tr")).stream()
+            .filter(r -> r.getText().contains(frame)).findFirst().orElse(null));
+        assertTrue(row.getText().contains("Tải phiếu bảo hành"), row.getText());
+        js("var n=document.querySelector('#notice');n.hidden=true;n.textContent='';");
+        click(row.findElement(By.cssSelector("[data-doc-url*='unitId=" + unitId + "']")));
+        assertEquals("Đã tải tệp PDF.", notice());
+        HttpResponse<byte[]> single = download(api, "/api/v1/orders/" + orderId + "/warranty-card?unitId=" + unitId);
+        assertPdf(single);
+        assertEquals(1, pagesOf(single.body()));
+        assertTrue(single.headers().firstValue("Content-Disposition").orElse("").contains("warranty-card-" + frame));
+        assertEquals(404, download(api, "/api/v1/orders/" + orderId + "/warranty-card?unitId=999999999").statusCode(), "a bike that is not in the order");
+
+        // 6. English: the page and the file
+        driver.get(baseUrl + "/lang/en?back=/customer/orders/" + orderId);
+        wait.until(ExpectedConditions.visibilityOfElementLocated(PANEL));
+        panel = driver.findElement(PANEL);
+        assertTrue(panel.getText().contains("Receipt and warranty card"), panel.getText());
+        assertTrue(panel.getText().contains("Download receipt"), panel.getText());
+        assertTrue(panel.getText().contains("Download warranty card"), panel.getText());
+        assertTrue(panel.getText().contains("not an electronic invoice"), panel.getText());
+        String english = textOf(download(api, "/api/v1/orders/" + orderId + "/receipt?lang=en").body());
+        assertTrue(english.contains("SALES RECEIPT") && english.contains("Subtotal") && !english.contains("Tạm tính"), english);
+        assertTrue(textOf(download(api, "/api/v1/orders/" + orderId + "/warranty-card?lang=en").body()).contains("WARRANTY CARD"));
+        driver.get(baseUrl + "/lang/vi?back=/customer/orders/" + orderId);
+
+        // 7. a phone: the panel fits the screen
+        driver.manage().window().setSize(new org.openqa.selenium.Dimension(375, 812));
+        openOrder(orderId);
+        assertTrue((Boolean) js("return document.documentElement.scrollWidth <= window.innerWidth + 1"), "no sideways scroll on a phone");
+        assertTrue(driver.findElement(PANEL).isDisplayed());
+        driver.manage().window().setSize(new org.openqa.selenium.Dimension(1366, 900));
+
+        // 8. a stranger gets the same 404 as a missing order, a visitor 401, the staff may open it
+        HttpClient stranger = newClient();
+        String other = "selenium" + System.currentTimeMillis() + "x";
+        call(stranger, "POST", "/api/v1/auth/register", Map.of("username", other, "email", other + "@example.com", "password", PASSWORD,
+            "firstName", "Other", "lastName", "Customer"));
+        call(stranger, "POST", "/api/v1/auth/login", Map.of("usernameOrEmail", other, "password", PASSWORD));
+        assertEquals(404, download(stranger, "/api/v1/orders/" + orderId + "/receipt").statusCode());
+        assertEquals(404, download(stranger, "/api/v1/orders/" + orderId + "/warranty-card").statusCode());
+        assertEquals(401, download(newClient(), "/api/v1/orders/" + orderId + "/receipt").statusCode());
+        assertEquals(401, download(newClient(), "/api/v1/orders/" + orderId + "/warranty-card").statusCode());
+        assertPdf(download(manager, "/api/v1/orders/" + orderId + "/receipt"));
+        assertPdf(download(manager, "/api/v1/orders/" + orderId + "/warranty-card"));
+
+        // 9. the staff see the same panel on the order page
+        logInAsManager();
+        driver.get(baseUrl + "/manager/orders/" + orderId);
+        wait.until(ExpectedConditions.visibilityOfElementLocated(PANEL));
+        assertTrue(driver.findElement(PANEL).getText().contains("Tải phiếu bảo hành"), driver.findElement(PANEL).getText());
+    }
+
+    @Test
+    void aCancelledOrderHasNoReceiptAndShowsNoPanel() throws Exception {
+        HttpClient manager = managerApi();
+        Map<Long, Integer> stockBefore = stockOf(productSlug);
+        try {
+            String orderNumber = placePayLaterOrder();
+            long orderId = findOrder(orderNumber).path("id").asLong();
+            call(api, "POST", "/api/v1/orders/" + orderId + "/cancellation-request", Map.of("reason", "Selenium test"));
+
+            assertEquals(409, download(api, "/api/v1/orders/" + orderId + "/receipt").statusCode());
+            driver.get(baseUrl + "/customer/orders/" + orderId);
+            wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("orderTimeline")));
+            assertTrue(driver.findElements(PANEL).isEmpty(), "a cancelled order offers no documents");
+        } finally {
+            restoreStock(manager, productSlug, stockBefore);
+        }
+    }
+
+    @Test
+    void aRefusedDownloadShowsItsReasonInTheNoticeNotAJsonPage() throws Exception {
+        managerApi();
+        String orderNumber = placePayLaterOrder();
+        long orderId = findOrder(orderNumber).path("id").asLong();
+        openOrder(orderId);
+        // the order is cancelled behind the page's back, as another tab or the staff could do
+        call(api, "POST", "/api/v1/orders/" + orderId + "/cancellation-request", Map.of("reason", "Selenium test"));
+
+        clickDownload("/receipt");
+
+        String message = notice();
+        assertTrue(message.contains("đã hủy"), message);
+        assertTrue(driver.findElement(By.id("notice")).getAttribute("class").contains("error"));
+        assertEquals(List.of(), driver.findElements(By.cssSelector("pre")), "no raw JSON page opened");
+    }
+}
