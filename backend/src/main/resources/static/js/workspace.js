@@ -149,7 +149,8 @@
   const cellHtml = (row,k) => {
     const text = pricingCell(row,k) !== null ? pricingCell(row,k) : k === 'paymentStatus' && downPaymentPaid(row.paymentMethod,row.paymentStatus)
       ? downPaymentPaid(row.paymentMethod,row.paymentStatus)
-      : isRidePage && k === 'status' && row.status === 'CANCELLED' && rideCancelText(row) ? rideCancelText(row) : human(row[k],k);
+      : isRidePage && k === 'status' && row.status === 'CANCELLED' && rideCancelText(row) ? rideCancelText(row)
+      : isRidePage && k === 'status' && row.status === 'REQUESTED' && page.startsWith('/customer') && row.slotStart && new Date(row.slotStart) <= new Date() ? t('Chưa được xác nhận, đã qua giờ hẹn') : human(row[k],k);
     if ((CLAMPED_KEYS[page] || []).includes(k) && typeof row[k] === 'string' && row[k].length > 120) {
       return `<span class="clamped-text" title="${escape(text)}">${escape(text)}</span>`;
     }
