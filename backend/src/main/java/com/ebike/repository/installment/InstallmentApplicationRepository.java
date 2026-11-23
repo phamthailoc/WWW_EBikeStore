@@ -52,15 +52,16 @@ public interface InstallmentApplicationRepository extends JpaRepository<Installm
 
     /**
      * The staff queue: oldest first, so the application that has waited longest is on top. The graph brings what a row shows in the same query; the
-     * vehicles of the orders (a collection, which a paged query cannot join) load in batches, see @BatchSize on Order.items.
+     * vehicles of the orders (a collection, which a paged query cannot join) load in batches, see @BatchSize on Order.items. The one-to-one preference of a user is eager, so it is
+     * in the graph too: left out, every applicant and reviewer would cost a query of their own.
      */
-    @EntityGraph(attributePaths = {"user", "order", "order.payment", "order.shipment", "reviewedBy"})
+    @EntityGraph(attributePaths = {"user", "order", "order.payment", "order.shipment", "reviewedBy", "user.preference", "reviewedBy.preference"})
     List<InstallmentApplication> findByStatusOrderByCreatedAtAsc(String status, Pageable pageable);
 
-    @EntityGraph(attributePaths = {"user", "order", "order.payment", "order.shipment", "reviewedBy"})
+    @EntityGraph(attributePaths = {"user", "order", "order.payment", "order.shipment", "reviewedBy", "user.preference", "reviewedBy.preference"})
     List<InstallmentApplication> findByStatusOrderByCreatedAtDesc(String status, Pageable pageable);
 
-    @EntityGraph(attributePaths = {"user", "order", "order.payment", "order.shipment", "reviewedBy"})
+    @EntityGraph(attributePaths = {"user", "order", "order.payment", "order.shipment", "reviewedBy", "user.preference", "reviewedBy.preference"})
     List<InstallmentApplication> findAllByOrderByCreatedAtDesc(Pageable pageable);
 
     /** The order was cancelled: an application that was still open is closed with it (a rejected one keeps its verdict). */
