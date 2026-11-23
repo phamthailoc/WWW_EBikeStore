@@ -250,6 +250,10 @@ public class ManagerServiceImpl implements ManagerService {
 
         ManagerPaymentResponse confirmed = toPaymentResponse(paymentRepository.save(payment));
         auditLog.record("xác nhận đã thu tiền", order.getOrderNumber());
+        if (order.getStatus() == OrderStatus.DELIVERED) {
+            // V27: the bike was handed over before the money was taken, so the receipt emailed then said "unpaid": send it again, now marked paid
+            com.ebike.listener.notification.NotificationEventBridge.publish(new com.ebike.event.notification.OrderDeliveredEvent(order.getId()));
+        }
         return confirmed;
     }
 
