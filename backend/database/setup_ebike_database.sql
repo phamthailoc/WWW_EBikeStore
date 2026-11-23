@@ -1186,7 +1186,12 @@ INSERT INTO pricing_rules(code,name,description,amount,unit,status,effective_fro
 ('REGISTRATION_TAX_RATE_OTHER','Tỷ lệ lệ phí trước bạ (khu vực khác)','Chỉ hiển thị ước tính tham khảo, không cộng vào đơn.',2,'%','ACTIVE',NOW()),
 ('INSTALLMENT_RATE_6','Lãi suất trả góp 6 tháng (mô phỏng)','Lãi suất phẳng theo năm, tính trên số tiền còn lại sau khi trả trước. Đặt trạng thái INACTIVE để ngừng nhận kỳ hạn này.',8,'%/năm','ACTIVE',NOW()),
 ('INSTALLMENT_RATE_9','Lãi suất trả góp 9 tháng (mô phỏng)','Lãi suất phẳng theo năm, tính trên số tiền còn lại sau khi trả trước. Đặt trạng thái INACTIVE để ngừng nhận kỳ hạn này.',9,'%/năm','ACTIVE',NOW()),
-('INSTALLMENT_RATE_12','Lãi suất trả góp 12 tháng (mô phỏng)','Lãi suất phẳng theo năm, tính trên số tiền còn lại sau khi trả trước. Đặt trạng thái INACTIVE để ngừng nhận kỳ hạn này.',10,'%/năm','ACTIVE',NOW());
+('INSTALLMENT_RATE_12','Lãi suất trả góp 12 tháng (mô phỏng)','Lãi suất phẳng theo năm, tính trên số tiền còn lại sau khi trả trước. Đặt trạng thái INACTIVE để ngừng nhận kỳ hạn này.',10,'%/năm','ACTIVE',NOW()),
+('SAVINGS_ELECTRICITY_PRICE','Giá điện dùng để tính tiền sạc (bậc trung bình)','Giá một kWh điện sinh hoạt (đã gồm thuế) dùng trong công cụ "Xe điện tiết kiệm bao nhiêu" ở trang xe. Chỉ để ước tính, không cộng vào đơn.',2900,'VND/kWh','ACTIVE',NOW()),
+('SAVINGS_PETROL_PRICE','Giá xăng dùng để so sánh tiền xăng','Giá một lít xăng dùng trong công cụ "Xe điện tiết kiệm bao nhiêu". Chỉ để ước tính, không cộng vào đơn.',22000,'VND/lít','ACTIVE',NOW()),
+('SAVINGS_PETROL_USE_E_SCOOTER','Mức tiêu hao xăng của xe ga cùng phân khúc','So với xe điện loại xe ga (E_SCOOTER). Lít xăng xe máy chạy 100 km.',2,'lít/100 km','ACTIVE',NOW()),
+('SAVINGS_PETROL_USE_E_BIKE','Mức tiêu hao xăng của xe máy số nhỏ','So với xe đạp điện (E_BIKE). Lít xăng xe máy chạy 100 km.',1.8,'lít/100 km','ACTIVE',NOW()),
+('SAVINGS_PETROL_USE_E_MOTORBIKE','Mức tiêu hao xăng của xe máy phân khúc lớn hơn','So với xe máy điện (E_MOTORBIKE). Lít xăng xe máy chạy 100 km.',2.5,'lít/100 km','ACTIVE',NOW());
 INSERT INTO promotions(code,campaign_name,discount_type,discount_value,max_discount_amount,usage_count,usage_limit,status,starts_at,ends_at) VALUES
 ('KINETIC20','Chào hè xanh','PERCENTAGE',20,25000,326,800,'LIVE','2026-06-01 00:00:00','2026-06-30 23:59:59'),
 ('STUDENT15','Ưu đãi sinh viên','FIXED_AMOUNT',15000,NULL,1020,2000,'LIVE','2026-05-15 00:00:00','2026-07-15 23:59:59'),
