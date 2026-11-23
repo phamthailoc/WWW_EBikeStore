@@ -148,7 +148,13 @@ window.KineticInstallment = (() => {
     // a hidden box must not hold invalid fields: the browser would refuse the whole checkout form without showing why
     const setEnabled = on => box.querySelectorAll('input, textarea, select').forEach(field => { field.disabled = !on; });
     const build = async () => {
-      try { limits = await config(); } catch (error) { holder.innerHTML = `<p class="installment-problem" role="alert">${esc(error.message)}</p>`; return; }
+      try { limits = await config(); } catch (error) {
+        // let the next try start again instead of leaving the box without a form until the page is reloaded
+        identified = false;
+        holder.innerHTML = `<p class="installment-problem" role="alert">${esc(error.message)}</p><p><button type="button" class="button compact ghost" data-retry>${t('Thử lại')}</button></p>`;
+        holder.querySelector('[data-retry]').addEventListener('click', () => identify());
+        return;
+      }
       holder.innerHTML = `<div class="installment-form"><div data-sim></div>
         <label>${t('Số CCCD')} <b>*</b><input name="idNumber" inputmode="numeric" autocomplete="off" maxlength="16" placeholder="${esc(t('12 chữ số'))}"></label>
         <label>${t('Thu nhập hằng tháng (VND)')} <b>*</b><input name="monthlyIncome" type="number" inputmode="numeric" min="0" step="any" autocomplete="off"></label>
