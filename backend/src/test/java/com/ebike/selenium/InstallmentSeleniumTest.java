@@ -33,6 +33,8 @@ import org.openqa.selenium.support.ui.Select;
  * <p>Needs the manager account of the other tests (selenium.managerUser and selenium.managerPassword): without it the test is skipped. The customer of
  * this run is erased when the class is done. Every order made here is cancelled in the end, so no stock stays held.
  *
+ * <p>Start the app with APP_RATE_LIMIT_ENABLED=false (the calculator and the checks call the quote and the orders many times; a rate limit turns them into skips).
+ *
  * <pre>
  * mvn test -Dtest=InstallmentSeleniumTest -Dselenium.baseUrl=http://localhost:8080 -Dselenium.managerUser=... -Dselenium.managerPassword=...
  * </pre>
@@ -49,6 +51,25 @@ class InstallmentSeleniumTest extends StorefrontSeleniumTest {
     @org.junit.jupiter.api.BeforeAll
     static void eraseTheCustomerWhenDone() {
         eraseCustomerWhenDone = true;
+    }
+
+    /**
+     * The product the base class picked is just the first with enough stock, whatever it costs; instalments are offered only within a price range, so the
+     * main flows look for a bike inside it (with room for the colour surcharge) instead of skipping when the first one is too cheap or too dear.
+     */
+    @org.junit.jupiter.api.BeforeAll
+    static void chooseABikeTheStoreFinances() throws Exception {
+        if (api == null) {
+            return;
+        }
+        for (JsonNode product : listOf(call(api, "GET", "/api/v1/products", null))) {
+            JsonNode shown = product.path("discountPrice").isNumber() ? product.path("discountPrice") : product.path("price");
+            if (product.path("stockQuantity").asInt() >= 5 && shown.isNumber()
+                && shown.decimalValue().compareTo(new java.math.BigDecimal("15000000")) >= 0 && shown.decimalValue().compareTo(new java.math.BigDecimal("250000000")) <= 0) {
+                productSlug = product.path("slug").asText();
+                return;
+            }
+        }
     }
 
     // ---- helpers ----
