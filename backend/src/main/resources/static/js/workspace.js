@@ -37,7 +37,7 @@
   const isoDateKeys = ['warrantyEndsAt','nextMaintenanceAt','createdAt','updatedAt'];
   // Warranty pages show dates in the page language (the ISO value stays in data-iso); other pages keep what the API sent.
   const warrantyDate = (value,key) => {
-    if (typeof value === 'string' && isInstallPage && (key === 'createdAt' || key === 'reviewedAt')) { const when = new Date(value); return isNaN(when) ? null : when.toLocaleString(localeTag()); }
+    if (typeof value === 'string' && isInstallPage && (key === 'createdAt' || key === 'reviewedAt')) { const when = new Date(value); return isNaN(when) ? null : window.KineticInstallment ? window.KineticInstallment.when(value) : when.toLocaleString(localeTag()); }
     if (typeof value === 'string' && isRidePage && (key === 'slotStart' || key === 'createdAt')) { const when = new Date(value); return isNaN(when) ? null : when.toLocaleString(localeTag(), key === 'slotStart' ? {weekday:'short',day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'} : undefined); }
     if (typeof value !== 'string' || !/warranty$/.test(page) || !isoDateKeys.includes(key)) return null;
     if (key === 'createdAt' || key === 'updatedAt') { const when = new Date(value); return isNaN(when) ? null : when.toLocaleString(localeTag()); }

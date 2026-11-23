@@ -7,7 +7,19 @@ window.KineticInstallment = (() => {
   const localeTag = () => document.documentElement.lang === 'en' ? 'en-GB' : 'vi-VN';
   // the rate comes from a DECIMAL column ("8.00"): shown as 8 or 8.5 (8,5 in Vietnamese), never with trailing zeros
   const rate = value => new Intl.NumberFormat(localeTag(), {maximumFractionDigits: 2}).format(Number(value) || 0);
-  const when = iso => { const d = new Date(iso); return isNaN(d) ? '—' : d.toLocaleString(localeTag(), {day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'}); };
+  // The server sends a moment with the shop's offset ("2026-11-20T09:00:00+07:00"). It is shown in that offset, with the offset named like the notice and the
+  // email do, so a browser in another zone reads the same clock time as the email for the same deadline.
+  const when = iso => {
+    const d = new Date(iso);
+    if (isNaN(d)) return '—';
+    const format = {day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'};
+    const match = /([+-])(\d{2}):?(\d{2})$/.exec(String(iso));
+    const minutes = /Z$/.test(String(iso)) ? 0 : match ? (match[1] === '-' ? -1 : 1) * (Number(match[2]) * 60 + Number(match[3])) : null;
+    if (minutes === null) return d.toLocaleString(localeTag(), format);
+    const abs = Math.abs(minutes);
+    const label = ' (GMT' + (minutes < 0 ? '-' : '+') + Math.floor(abs / 60) + (abs % 60 ? ':' + String(abs % 60).padStart(2, '0') : '') + ')';
+    return new Date(d.getTime() + minutes * 60000).toLocaleString(localeTag(), {...format, timeZone: 'UTC'}) + label;
+  };
   const statusText = {PENDING: t('Chờ duyệt'), APPROVED: t('Đã duyệt'), REJECTED: t('Bị từ chối'), CANCELLED: t('Đã hủy')};
   const SIMULATION = t('Đây là công cụ mô phỏng: chưa kết nối công ty tài chính nào và không phát sinh khoản vay thật. Lãi suất phẳng theo năm, tính trên số tiền còn lại sau khi trả trước.');
   const tell = (message, error) => {
@@ -370,5 +382,5 @@ window.KineticInstallment = (() => {
   if (table && page === '/manager/installments') setupQueue(table);
   if (document.querySelector('#productPage')) setupBikePage();
   if (document.body.classList.contains('workspace') && /^\/(customer|manager)\/orders\/\d+$/.test(location.pathname)) setupOrderPage();
-  return {checkout, simulator, config};
+  return {checkout, simulator, config, when};
 })();
