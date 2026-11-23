@@ -92,6 +92,8 @@ public class WorkspaceController {
         model.addAttribute("api", api);
         model.addAttribute("secondaryApi", section.equals("admin/pricing") ? "/api/v1/admin/promotions" : "");
         model.addAttribute("mode", mode);
+        // V27: the PDF download buttons are on the order page and on the Manager warranty queue
+        model.addAttribute("loadDocuments", "detail".equals(mode) || "warranty".equals(mode) || "manager/warranty".equals(section));
         model.addAttribute("links", links);
         model.addAttribute("activePath", path);
         model.addAttribute("vnpayEnabled", vnPayProperties.isConfigured());
