@@ -323,11 +323,18 @@
   const renderDocuments=order=>{
     if(!order||order.status==='CANCELLED'||!order.id){removePanel('orderDocuments');return}
     const delivered=order.status==='DELIVERED';
-    const numbered=(order.items||[]).some(item=>(item.units||[]).length);
-    const note=delivered?(numbered?'':t('Đơn này chưa có số khung xe nên chưa có phiếu bảo hành.')):t('Phiếu bảo hành có sau khi xe được bàn giao.');
-    // only the staff pick the language of the document (the customer gets the one of the page, or the one of the saved profile)
+    const items=order.items||[];
+    const numbered=items.some(item=>(item.units||[]).length);
+    // a bike that needs frame and engine numbers but has none yet is a gap staff can fill; an order with no such bike (parts, accessories) simply has no card
+    const missingNumbers=items.some(item=>item.requiresUnitNumbers&&!(item.units||[]).length);
+    const note=delivered?(numbered?'':missingNumbers?t('Đơn này chưa có số khung xe nên chưa có phiếu bảo hành.'):t('Đơn này không có xe cần phiếu bảo hành.')):t('Phiếu bảo hành có sau khi xe được bàn giao.');
+    // only the staff pick the language of the document (the customer gets the one of the page, or the one of the saved profile); it starts as the language the customer ordered in
     const staff=page.startsWith("/manager");const langAttr=staff?' data-doc-lang-from="#docLang"':'';
-    const docsPanel=detailPanel('orderDocuments',`<h2>${t('Hóa đơn và phiếu bảo hành')}</h2><p class="muted">${t('Phiếu bán hàng là chứng từ của cửa hàng, không phải hóa đơn điện tử theo quy định của pháp luật về thuế.')}</p>${staff?`<p><label>${t('Ngôn ngữ của phiếu')} <select id="docLang"><option value="">${t('Theo ngôn ngữ trang')}</option><option value="vi">${t('Tiếng Việt')}</option><option value="en">English</option></select></label></p>`:''}<div class="product-action"><button type="button" class="table-action"${langAttr} data-doc-url="/api/v1/orders/${order.id}/receipt" data-doc-name="receipt.pdf">${delivered?t('Tải hóa đơn'):t('Tải phiếu tạm tính')}</button>${delivered&&numbered?`<button type="button" class="table-action"${langAttr} data-doc-url="/api/v1/orders/${order.id}/warranty-card" data-doc-name="warranty-card.pdf">${t('Tải phiếu bảo hành')}</button>`:''}${staff&&delivered?`<button type="button" class="table-action" id="resendDocuments">${t('Gửi lại email phiếu')}</button>`:''}</div>${note?`<p class="muted">${note}</p>`:''}`);
+    const placed=order.customerLanguage==='vi'||order.customerLanguage==='en'?order.customerLanguage:'';
+    const placedHint=lang=>placed===lang?' · '+t('khách đặt hàng bằng ngôn ngữ này'):'';
+    const picker=staff?`<p><label>${t('Ngôn ngữ của phiếu tải về')} <select id="docLang"><option value=""${placed?'':' selected'}>${t('Theo ngôn ngữ trang')}</option><option value="vi"${placed==='vi'?' selected':''}>${t('Tiếng Việt')}${placedHint('vi')}</option><option value="en"${placed==='en'?' selected':''}>English${placedHint('en')}</option></select></label></p>`:'';
+    const resend=staff&&canUpdate&&delivered?`<div class="product-action"><button type="button" class="table-action" id="resendDocuments">${t('Gửi lại email phiếu')}</button></div><p class="muted">${t('Email gửi lại dùng ngôn ngữ khách đã đặt hàng, không theo lựa chọn ở trên.')}</p>`:'';
+    const docsPanel=detailPanel('orderDocuments',`<h2>${t('Hóa đơn và phiếu bảo hành')}</h2><p class="muted">${t('Phiếu bán hàng là chứng từ của cửa hàng, không phải hóa đơn điện tử theo quy định của pháp luật về thuế.')}</p>${picker}<div class="product-action"><button type="button" class="table-action"${langAttr} data-doc-url="/api/v1/orders/${order.id}/receipt" data-doc-name="receipt.pdf">${delivered?t('Tải hóa đơn'):t('Tải phiếu tạm tính')}</button>${delivered&&numbered?`<button type="button" class="table-action"${langAttr} data-doc-url="/api/v1/orders/${order.id}/warranty-card" data-doc-name="warranty-card.pdf">${t('Tải phiếu bảo hành')}</button>`:''}</div>${note?`<p class="muted">${note}</p>`:''}${resend}`);
     // the first email is never retried (mail server down, queue full) and a guest cannot download the PDFs, so staff can send it again
     docsPanel.querySelector('#resendDocuments')?.addEventListener('click',async e=>{const b=e.currentTarget;const label=b.textContent;b.disabled=true;b.textContent=t('Đang gửi…');try{const done=await send('/api/v1/orders/'+order.id+'/documents/email','POST');tell(done?.message||t('Đã gửi email phiếu.'))}catch(err){tell(err.message,true)}finally{b.disabled=false;b.textContent=label}});
   };

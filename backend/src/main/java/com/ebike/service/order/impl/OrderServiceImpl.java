@@ -1187,7 +1187,8 @@ public class OrderServiceImpl implements OrderService {
                     shipment.getPickupShowroom().getOpeningHours(),
                     shipment.getPickupShowroom().getActive()
                 )
-            )
+            ),
+            order.getCustomerLanguage()
         );
     }
 }

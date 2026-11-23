@@ -723,7 +723,8 @@ public class ManagerServiceImpl implements ManagerService {
                     shipment.getPickupShowroom().getOpeningHours(),
                     shipment.getPickupShowroom().getActive()
                 )
-            )
+            ),
+            order.getCustomerLanguage()
         );
     }
 
