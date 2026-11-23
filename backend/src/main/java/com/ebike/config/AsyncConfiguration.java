@@ -49,7 +49,7 @@ public class AsyncConfiguration {
     public ThreadPoolTaskExecutor documentExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setThreadNamePrefix("documents-");
-        executor.setCorePoolSize(1);
+        executor.setCorePoolSize(2);
         executor.setMaxPoolSize(2);
         executor.setQueueCapacity(200);
         executor.setWaitForTasksToCompleteOnShutdown(true);
@@ -59,7 +59,7 @@ public class AsyncConfiguration {
 
     /**
      * Spring Boot creates its default "applicationTaskExecutor" (used by MVC async requests and by spring.task.execution.*
-     * settings) only when the application has no Executor bean at all. The two pools above are Executor beans, so the
+     * settings) only when the application has no Executor bean at all. The pools above are Executor beans, so the
      * default is declared here again, built by Boot's own builder so that spring.task.execution.* still applies.
      */
     @Bean(name = {TaskExecutionAutoConfiguration.APPLICATION_TASK_EXECUTOR_BEAN_NAME, AsyncAnnotationBeanPostProcessor.DEFAULT_TASK_EXECUTOR_BEAN_NAME})
