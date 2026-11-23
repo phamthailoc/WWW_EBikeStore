@@ -255,8 +255,10 @@ class InstallmentSeleniumTest extends StorefrontSeleniumTest {
         // 20% down, 6 months: the figure changes, and the server's quote for the same choice gives the same monthly payment
         js("const s=document.querySelector('#installmentBox [name=down]');s.value='20';s.dispatchEvent(new Event('input',{bubbles:true}))");
         click(By.cssSelector("#installmentBox input[name=term][value='6']"));
-        wait.until(d -> !firstMonthly.equals(d.findElement(By.cssSelector("#installmentBox [data-field=monthly]")).getText()));
         JsonNode quote = call(api, "GET", "/api/v1/installments/quote?amount=" + amount + "&downPaymentPercent=20&termMonths=6", null);
+        // wait for the figure of this very choice, not for any change: the page shows in-between figures while the slider and the term are applied
+        String expectedDigits = quote.path("monthlyPayment").decimalValue().toBigInteger().toString();
+        wait.until(d -> expectedDigits.equals(digits(d.findElement(By.cssSelector("#installmentBox [data-field=monthly]")).getText())));
         assertSameMoney(quote.path("monthlyPayment").decimalValue(), driver.findElement(By.cssSelector("#installmentBox [data-field=monthly]")).getText());
         assertEquals(20, quote.path("downPaymentPercent").asInt());
         assertEquals(6, quote.path("termMonths").asInt());

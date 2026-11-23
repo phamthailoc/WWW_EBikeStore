@@ -22,6 +22,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 public class AsyncConfiguration {
 
     public static final String MAIL_EXECUTOR = "mailExecutor";
+    public static final String DOCUMENT_EXECUTOR = "documentExecutor";
     public static final String NOTIFICATION_EXECUTOR = "notificationExecutor";
     private static final Logger log = LoggerFactory.getLogger(AsyncConfiguration.class);
 
@@ -41,8 +42,24 @@ public class AsyncConfiguration {
     }
 
     /**
+     * V27: the hand-over emails (they carry PDFs that take a moment to make) have a pool of their own, so a big restock or reminder run on the mail
+     * pool cannot push them out. A full queue is not hidden: the task is rejected and the listener logs the order id.
+     */
+    @Bean(DOCUMENT_EXECUTOR)
+    public ThreadPoolTaskExecutor documentExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setThreadNamePrefix("documents-");
+        executor.setCorePoolSize(2);
+        executor.setMaxPoolSize(2);
+        executor.setQueueCapacity(200);
+        executor.setWaitForTasksToCompleteOnShutdown(true);
+        executor.setAwaitTerminationSeconds(30);
+        return executor;
+    }
+
+    /**
      * Spring Boot creates its default "applicationTaskExecutor" (used by MVC async requests and by spring.task.execution.*
-     * settings) only when the application has no Executor bean at all. The two pools above are Executor beans, so the
+     * settings) only when the application has no Executor bean at all. The pools above are Executor beans, so the
      * default is declared here again, built by Boot's own builder so that spring.task.execution.* still applies.
      */
     @Bean(name = {TaskExecutionAutoConfiguration.APPLICATION_TASK_EXECUTOR_BEAN_NAME, AsyncAnnotationBeanPostProcessor.DEFAULT_TASK_EXECUTOR_BEAN_NAME})

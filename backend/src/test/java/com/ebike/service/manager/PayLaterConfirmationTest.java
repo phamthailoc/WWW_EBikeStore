@@ -82,6 +82,31 @@ class PayLaterConfirmationTest {
         verify(payments, never()).save(any());
     }
 
+    @Test void collectingTheMoneyAfterTheHandOverSendsTheReceiptAgainAsPaid() {
+        var publisher = org.mockito.Mockito.mock(org.springframework.context.ApplicationEventPublisher.class);
+        new com.ebike.listener.notification.NotificationEventBridge().setApplicationEventPublisher(publisher);
+        try {
+            when(payments.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+            order.setStatus(OrderStatus.DELIVERED);
+            service.confirmPayLaterPayment(7L, note());
+            verify(publisher).publishEvent(new com.ebike.event.notification.OrderDeliveredEvent(5L));
+        } finally {
+            new com.ebike.listener.notification.NotificationEventBridge().setApplicationEventPublisher(null);
+        }
+    }
+
+    @Test void collectingTheMoneyBeforeTheHandOverSendsNoReceipt() {
+        var publisher = org.mockito.Mockito.mock(org.springframework.context.ApplicationEventPublisher.class);
+        new com.ebike.listener.notification.NotificationEventBridge().setApplicationEventPublisher(publisher);
+        try {
+            when(payments.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+            service.confirmPayLaterPayment(7L, note());
+            verify(publisher, never()).publishEvent(any(Object.class));
+        } finally {
+            new com.ebike.listener.notification.NotificationEventBridge().setApplicationEventPublisher(null);
+        }
+    }
+
     @Test void failedPaymentCannotBeMarkedPaid() {
         payment.setPaymentStatus(PaymentStatus.FAILED);
         assertThrows(ResponseStatusException.class, () -> service.confirmPayLaterPayment(7L, note()));

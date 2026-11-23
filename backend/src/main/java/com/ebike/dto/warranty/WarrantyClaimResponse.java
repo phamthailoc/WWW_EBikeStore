@@ -17,6 +17,8 @@ public record WarrantyClaimResponse(
     LocalDate warrantyEndsAt,
     String staffNote,
     LocalDateTime createdAt,
-    LocalDateTime updatedAt
+    LocalDateTime updatedAt,
+    // V27: the order of the vehicle, so staff can download its warranty card from the claim row
+    Long orderId
 ) {
 }

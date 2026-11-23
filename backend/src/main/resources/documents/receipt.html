@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org" th:lang="${lang}">
+<head>
+<meta charset="UTF-8" />
+<title th:text="${title} + ' ' + ${number}">Sales receipt</title>
+<style>
+@page { size: A4; margin: 16mm 14mm 18mm 14mm; @bottom-center { content: counter(page) " / " counter(pages); font-size: 8pt; color: #666666; } }
+body { font-family: 'DejaVu Sans', sans-serif; font-size: 9.5pt; color: #1b1f1d; margin: 0; }
+table { border-collapse: collapse; width: 100%; }
+td, th { vertical-align: top; }
+.head td { padding: 0; }
+.brand { font-size: 18pt; font-weight: bold; color: #2f4a12; }
+.small { font-size: 8pt; color: #555555; }
+.meta { text-align: right; font-size: 8.5pt; }
+h1 { font-size: 15pt; text-align: center; margin: 14pt 0 2pt 0; letter-spacing: 0.5pt; }
+.sub { text-align: center; font-size: 8.5pt; color: #444444; margin: 0 0 10pt 0; }
+.banner { border: 1px solid #b06a00; background-color: #fff4e0; color: #7a4800; padding: 5pt 7pt; font-size: 8.5pt; margin: 6pt 0; }
+.box { border: 1px solid #c9cdc8; padding: 6pt 8pt; }
+.box h2 { font-size: 9pt; margin: 0 0 4pt 0; color: #2f4a12; text-transform: uppercase; }
+.two td { width: 50%; padding: 0 4pt 0 0; }
+.two td + td { padding: 0 0 0 4pt; }
+.kv td { padding: 1.5pt 0; }
+.kv td.k { width: 34%; color: #555555; }
+.items { margin-top: 10pt; }
+.items th { background-color: #e9eee3; border: 1px solid #c9cdc8; padding: 4pt 5pt; font-size: 8.5pt; text-align: left; }
+.items td { border: 1px solid #c9cdc8; padding: 4pt 5pt; }
+.items tr { page-break-inside: avoid; }
+.num { text-align: right; white-space: nowrap; }
+.ctr { text-align: center; }
+.numbers { display: block; font-size: 7.5pt; color: #555555; margin-top: 1.5pt; }
+.totals { width: 55%; margin-left: 45%; margin-top: 6pt; }
+.totals td { padding: 2.5pt 5pt; }
+.totals tr.strong td { font-weight: bold; font-size: 11pt; border-top: 1px solid #1b1f1d; }
+.words { margin: 6pt 0 0 0; font-style: normal; }
+.pay { margin-top: 10pt; }
+.sign { margin-top: 22pt; page-break-inside: avoid; }
+.sign td { width: 50%; text-align: center; font-size: 8.5pt; }
+.sign .space { height: 48pt; }
+.foot { margin-top: 12pt; font-size: 8pt; color: #555555; text-align: center; }
+</style>
+</head>
+<body>
+<table class="head">
+  <tr>
+    <td>
+      <div class="brand" th:text="${store.name}">Kinetic E-Bike</div>
+      <div class="small" th:text="${store.legalName}">Company</div>
+      <div class="small" th:if="${!#strings.isEmpty(store.address)}" th:text="${store.address}">Address</div>
+      <div class="small" th:if="${!#strings.isEmpty(store.taxCode)}" th:text="${t['receipt.taxCode']} + ': ' + ${store.taxCode}">Tax</div>
+      <div class="small" th:if="${!#strings.isEmpty(store.contact)}" th:text="${store.contact}">Contact</div>
+    </td>
+    <td class="meta">
+      <div><b th:text="${t['receipt.number']}">No.</b>: <span th:text="${number}">PBH-1</span></div>
+      <div><b th:text="${t['receipt.orderNumber']}">Order</b>: <span th:text="${orderNumber}">ORD-1</span></div>
+      <div><b th:text="${t['receipt.orderedAt']}">Ordered</b>: <span th:text="${orderedAt}">date</span></div>
+      <div th:if="${deliveredAt != null}"><b th:text="${t['receipt.deliveredAt']}">Delivered</b>: <span th:text="${deliveredAt}">date</span></div>
+      <div><b th:text="${t['receipt.status']}">Status</b>: <span th:text="${status}">Status</span></div>
+      <div><b th:text="${t['receipt.issuedAt']}">Issued</b>: <span th:text="${issuedAt}">date</span></div>
+    </td>
+  </tr>
+</table>
+
+<h1 th:text="${title}">SALES RECEIPT</h1>
+<p class="sub" th:text="${t['receipt.notInvoice']}">Not an invoice.</p>
+<div class="banner" th:if="${provisional}" th:text="${t['receipt.provisionalNote']}">Provisional.</div>
+
+<table class="two">
+  <tr>
+    <td>
+      <div class="box">
+        <h2 th:text="${t['receipt.customer']}">Customer</h2>
+        <table class="kv">
+          <tr><td class="k" th:text="${t['receipt.name']}">Name</td><td th:text="${customer.name}">An</td></tr>
+          <tr><td class="k" th:text="${t['receipt.phone']}">Phone</td><td th:text="${customer.phone}">090</td></tr>
+          <tr><td class="k" th:text="${t['receipt.email']}">Email</td><td th:text="${customer.email}">a@b.c</td></tr>
+        </table>
+      </div>
+    </td>
+    <td>
+      <div class="box">
+        <h2 th:text="${t['receipt.handover']}">Handover</h2>
+        <table class="kv">
+          <tr><td class="k" th:text="${t['receipt.method']}">Method</td><td th:text="${handover.method}">Pickup</td></tr>
+          <tr><td class="k" th:text="${t['receipt.address']}">Address</td><td th:text="${handover.place}">Place</td></tr>
+          <tr th:if="${handover.tracking != null}"><td class="k" th:text="${t['receipt.tracking']}">Tracking</td><td th:text="${handover.tracking}">123</td></tr>
+        </table>
+      </div>
+    </td>
+  </tr>
+</table>
+
+<table class="items">
+  <thead>
+    <tr>
+      <th class="ctr" style="width: 7%" th:text="${t['receipt.colNo']}">No.</th>
+      <th th:text="${t['receipt.colItem']}">Item</th>
+      <th style="width: 14%" th:text="${t['receipt.colColour']}">Colour</th>
+      <th class="ctr" style="width: 7%" th:text="${t['receipt.colQty']}">Qty</th>
+      <th class="num" style="width: 17%" th:text="${t['receipt.colUnitPrice']}">Unit price</th>
+      <th class="num" style="width: 17%" th:text="${t['receipt.colAmount']}">Amount</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr th:each="line : ${lines}">
+      <td class="ctr" th:text="${line.no}">1</td>
+      <td><span th:text="${line.name}">Bike</span><span class="numbers" th:each="n : ${line.numbers}" th:text="${n}">Frame</span></td>
+      <td th:text="${line.colour}">Red</td>
+      <td class="ctr" th:text="${line.qty}">1</td>
+      <td class="num" th:text="${line.unitPrice}">1</td>
+      <td class="num" th:text="${line.amount}">1</td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="totals">
+  <tr th:each="row : ${totals}" th:class="${row.strong} ? 'strong' : ''">
+    <td th:text="${row.label}">Total</td>
+    <td class="num" th:text="${row.value}">1</td>
+  </tr>
+</table>
+<p class="words"><b th:text="${t['receipt.inWords']}">In words</b>: <i th:text="${inWords}">words</i></p>
+
+<div class="box pay">
+  <h2 th:text="${t['receipt.payment']}">Payment</h2>
+  <table class="kv">
+    <tr><td class="k" th:text="${t['receipt.method']}">Method</td><td th:text="${payment.method}">Pay later</td></tr>
+    <tr th:if="${payment.status != null}"><td class="k" th:text="${t['receipt.paymentStatus']}">Status</td><td th:text="${payment.status}">Paid</td></tr>
+    <tr th:if="${payment.paidAt != null}"><td class="k" th:text="${t['receipt.paidAt']}">Paid</td><td th:text="${payment.paidAt}">date</td></tr>
+    <tr th:if="${payment.reference != null}"><td class="k" th:text="${t['receipt.reference']}">Ref</td><td th:text="${payment.reference}">ref</td></tr>
+    <tr th:each="row : ${payment.installment}"><td class="k" th:text="${row.label}">Down</td><td th:text="${row.value}">1</td></tr>
+  </table>
+  <div class="small" th:if="${payment.installment != null}" th:text="${t['receipt.instNote']}">Simulation.</div>
+</div>
+<div class="box pay" th:if="${notes != null}">
+  <h2 th:text="${t['receipt.notes']}">Notes</h2>
+  <div th:text="${notes}">Note</div>
+</div>
+
+<table class="sign">
+  <tr>
+    <td><b th:text="${t['receipt.signCustomer']}">Customer</b><div class="space"></div></td>
+    <td><b th:text="${t['receipt.signSeller']}">Seller</b><div class="space"></div></td>
+  </tr>
+</table>
+<div class="foot" th:text="${t['receipt.thanks']}">Thank you.</div>
+</body>
+</html>

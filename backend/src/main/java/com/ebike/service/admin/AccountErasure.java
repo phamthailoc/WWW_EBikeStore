@@ -31,7 +31,7 @@ import org.springframework.web.server.ResponseStatusException;
  * reviews they wrote (product ratings are recomputed), and the ID number and income they declared on an instalment application (the plan and the staff's verdict stay, like orders). Email and username become
  * {@code deleted_<id>...} so the person can register again with the same ones. The shop's own note on a warranty request (staff_note) is
  * kept as part of the repair record, so staff must not write a customer's phone number or address in it. The name, phone and address printed on
- * past orders are part of the sales record and stay as they are.
+ * past orders are part of the sales record and stay as they are; the email typed at checkout stays on the order too, but a receipt or warranty card of an erased account never prints an email.
  */
 @Component
 public class AccountErasure {

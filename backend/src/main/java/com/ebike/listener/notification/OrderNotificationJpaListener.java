@@ -1,8 +1,10 @@
 package com.ebike.listener.notification;
 
 import com.ebike.event.notification.OrderCreatedEvent;
+import com.ebike.event.notification.OrderDeliveredEvent;
 import com.ebike.event.notification.OrderStatusChangedEvent;
 import com.ebike.model.entity.order.Order;
+import com.ebike.model.entity.order.OrderStatus;
 import com.ebike.model.entity.order.Payment;
 import jakarta.persistence.PostPersist;
 import jakarta.persistence.PostUpdate;
@@ -26,10 +28,18 @@ public class OrderNotificationJpaListener {
 
     @PostUpdate
     public void afterUpdate(Order order) {
-        if (order == null || order.getUser() == null || order.getPreviousStatusForNotification() == null) {
+        if (order == null || order.getPreviousStatusForNotification() == null) {
             return;
         }
         if (order.getStatus() == order.getPreviousStatusForNotification()) {
+            return;
+        }
+        order.markStatusAnnounced();
+        // V27: the receipt and the warranty card are emailed at hand-over, also for a guest order (it has no account to notify)
+        if (order.getStatus() == OrderStatus.DELIVERED) {
+            NotificationEventBridge.publish(new OrderDeliveredEvent(order.getId()));
+        }
+        if (order.getUser() == null) {
             return;
         }
         // a rejected instalment application cancels its order, and the customer already gets the notice and the email of the rejection (with the reason):

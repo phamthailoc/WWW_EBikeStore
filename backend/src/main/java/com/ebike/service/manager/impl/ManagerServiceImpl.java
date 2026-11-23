@@ -250,6 +250,10 @@ public class ManagerServiceImpl implements ManagerService {
 
         ManagerPaymentResponse confirmed = toPaymentResponse(paymentRepository.save(payment));
         auditLog.record("xác nhận đã thu tiền", order.getOrderNumber());
+        if (order.getStatus() == OrderStatus.DELIVERED) {
+            // V27: the bike was handed over before the money was taken, so the receipt emailed then said "unpaid": send it again, now marked paid
+            com.ebike.listener.notification.NotificationEventBridge.publish(new com.ebike.event.notification.OrderDeliveredEvent(order.getId()));
+        }
         return confirmed;
     }
 
@@ -394,7 +398,8 @@ public class ManagerServiceImpl implements ManagerService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "shipmentStatus is required");
         }
 
-        Order order = orderRepository.findById(orderId)
+        // locked like the status update, so two requests cannot both move the order to DELIVERED (and send two hand-over emails)
+        Order order = orderRepository.findLockedById(orderId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
 
         if (order.getStatus() == OrderStatus.CANCELLED) {
@@ -718,7 +723,8 @@ public class ManagerServiceImpl implements ManagerService {
                     shipment.getPickupShowroom().getOpeningHours(),
                     shipment.getPickupShowroom().getActive()
                 )
-            )
+            ),
+            order.getCustomerLanguage()
         );
     }
 
