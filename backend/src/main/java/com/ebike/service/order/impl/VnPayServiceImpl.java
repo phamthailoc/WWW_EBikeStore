@@ -40,6 +40,8 @@ public class VnPayServiceImpl implements VnPayService {
     private static final String SUCCESS_CODE = "00";
     private static final BigDecimal VNPAY_AMOUNT_MULTIPLIER = new BigDecimal("100");
     private static final ZoneId VNPAY_ZONE = VnPayUtil.ZONE;
+    /** A down payment page is not opened with less of the hold left than this: the customer could not finish paying before the order is cancelled. */
+    private static final Duration MIN_HOLD_LEFT_TO_PAY = Duration.ofMinutes(2);
     private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(VnPayServiceImpl.class);
 
     private final VnPayProperties properties;
@@ -97,13 +99,18 @@ public class VnPayServiceImpl implements VnPayService {
         // V24: an instalment order (its payment row is an INSTALLMENT one, or it has an application) is paid only after the staff approved the application,
         // only for the down payment, and only until the down payment is due. An instalment payment whose application row is missing is refused too.
         InstallmentApplication application = installmentApplications.findByOrderId(order.getId()).orElse(null);
+        Duration holdLeft = null;
         boolean installmentOrder = application != null || (existingPayment != null && existingPayment.getPaymentMethod() == PaymentMethod.INSTALLMENT);
         if (installmentOrder) {
             if (application == null || !InstallmentApplication.APPROVED.equals(application.getStatus())) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, com.ebike.common.i18n.RequestLanguage.text(
                     "Hồ sơ trả góp chưa được duyệt nên chưa thanh toán được khoản trả trước.", "The instalment application is not approved yet, so the down payment cannot be paid."));
             }
-            if (InstallmentRules.downPaymentOverdue(application.getReviewedAt(), downPaymentHold, LocalDateTime.now())) {
+            // a page opened with only moments of the hold left could still be paid after the expiry job cancelled the order, so it is refused, and a page
+            // that outlasts the hold is closed at the end of it
+            holdLeft = application.getReviewedAt() == null ? null : Duration.between(LocalDateTime.now(), application.getReviewedAt().plus(downPaymentHold));
+            if (InstallmentRules.downPaymentOverdue(application.getReviewedAt(), downPaymentHold, LocalDateTime.now())
+                || (holdLeft != null && holdLeft.compareTo(MIN_HOLD_LEFT_TO_PAY) < 0)) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, com.ebike.common.i18n.RequestLanguage.text(
                     "Đã quá hạn thanh toán khoản trả trước nên đơn hàng sắp bị hủy tự động.", "The down payment is overdue, so the order is about to be cancelled automatically."));
             }
@@ -112,7 +119,7 @@ public class VnPayServiceImpl implements VnPayService {
         Payment payment = existingPayment != null ? prepareExistingPayment(existingPayment, order) : createPendingPayment(order);
 
         LocalDateTime now = LocalDateTime.now(VNPAY_ZONE);
-        LocalDateTime expireTime = now.plus(VnPayUtil.PAYMENT_WINDOW);
+        LocalDateTime expireTime = now.plus(holdLeft != null && holdLeft.compareTo(VnPayUtil.PAYMENT_WINDOW) < 0 ? holdLeft : VnPayUtil.PAYMENT_WINDOW);
         Map<String, String> params = new HashMap<>();
         params.put("vnp_Version", "2.1.0");
         params.put("vnp_Command", "pay");

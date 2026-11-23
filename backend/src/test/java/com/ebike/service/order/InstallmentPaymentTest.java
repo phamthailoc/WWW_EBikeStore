@@ -125,6 +125,16 @@ class InstallmentPaymentTest {
     }
 
     @Test
+    void aPaymentPageIsNotOpenedWithMomentsOfTheHoldLeftAndNeverOutlastsIt() {
+        application.setReviewedAt(java.time.LocalDateTime.now().minusHours(72).plusMinutes(1));
+        assertThrows(ResponseStatusException.class, () -> vnpay.createPaymentUrl(pay(), "127.0.0.1", null, true));
+        verify(payments, never()).save(any());
+        application.setReviewedAt(java.time.LocalDateTime.now().minusHours(72).plusMinutes(10));
+        var response = vnpay.createPaymentUrl(pay(), "127.0.0.1", null, true);
+        assertTrue(response.expireTime().isBefore(java.time.LocalDateTime.now(com.ebike.util.order.VnPayUtil.ZONE).plusMinutes(11)));
+    }
+
+    @Test
     void anInstalmentPaymentWhoseApplicationRowIsMissingIsRefusedNotLetThrough() {
         when(installments.findByOrderId(10L)).thenReturn(Optional.empty());
         assertThrows(ResponseStatusException.class, () -> vnpay.createPaymentUrl(pay(), "127.0.0.1", null, true));
