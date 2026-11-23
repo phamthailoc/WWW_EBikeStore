@@ -186,11 +186,23 @@ window.KineticInstallment = (() => {
     const identify = async () => {
       if (identified) return;
       identified = true;
+      let unreachable = false;
       try {
         const response = await fetch('/api/v1/auth/profile', {credentials: 'same-origin', headers: {Accept: 'application/json'}});
         // a customer account only: an account that also has a staff role may not apply for credit
-        customer = response.ok ? (roles => roles.length > 0 && roles.every(role => /CUSTOMER/.test(role)))((await response.json()).roles || []) : false;
-      } catch (ignored) { customer = false; }
+        if (response.ok) {
+          customer = (roles => roles.length > 0 && roles.every(role => role === 'CUSTOMER' || role === 'ROLE_CUSTOMER'))((await response.json()).roles || []);
+        } else if (response.status === 401 || response.status === 403) {
+          customer = false;
+        } else { unreachable = true; }
+      } catch (ignored) { unreachable = true; }
+      if (unreachable) {
+        // a network error or a 5xx says nothing about the account: offer another try instead of asking the customer to sign in
+        identified = false;
+        holder.innerHTML = `<p class="installment-problem" role="alert">${t('Chưa kiểm tra được tài khoản của bạn. Vui lòng thử lại.')} <button type="button" class="installment-retry">${t('Thử lại')}</button></p>`;
+        holder.querySelector('.installment-retry').addEventListener('click', () => identify());
+        return;
+      }
       if (customer) { await build(); if (total) sim && sim.refresh(); return; }
       // a visitor or a staff account: the application belongs to a customer account, so say so and offer the way in
       const returnTo = encodeURIComponent(location.pathname + location.search);

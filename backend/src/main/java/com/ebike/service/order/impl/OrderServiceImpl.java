@@ -574,7 +574,8 @@ public class OrderServiceImpl implements OrderService {
         if (payment == null) {
             return;
         }
-        if (payment.getPaymentStatus() == PaymentStatus.PENDING) {
+        // a payment that failed (a card attempt that did not go through) is closed with its order too, so the staff do not see "failed" on an order that no longer exists
+        if (payment.getPaymentStatus() == PaymentStatus.PENDING || payment.getPaymentStatus() == PaymentStatus.FAILED) {
             payment.setPaymentStatus(PaymentStatus.CANCELLED);
             payment.setProviderResponse(note);
         }

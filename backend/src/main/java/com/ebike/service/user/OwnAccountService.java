@@ -69,7 +69,7 @@ public class OwnAccountService {
         }
 
         Long id = user.getId();
-        erasure.erase(user);
+        erasure.erase(user, true);
         users.save(user);
         // The audit entry names the account by number only: the person's own details were just erased.
         auditLog.recordBy("tài khoản #" + id, "khách tự xóa tài khoản", "tài khoản #" + id);
