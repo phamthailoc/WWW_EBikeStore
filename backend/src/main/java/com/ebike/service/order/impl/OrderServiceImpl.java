@@ -16,6 +16,8 @@ import com.ebike.service.installment.InstallmentPlanner;
 import com.ebike.service.order.OrderUnits;
 import com.ebike.service.stock.StockAlertRules;
 import com.ebike.service.stock.StockAlertService;
+import com.ebike.service.stock.StockLedger;
+import com.ebike.model.entity.stock.StockMovementReason;
 import com.ebike.dto.order.response.GuestOrderLinkResponse;
 import com.ebike.dto.order.response.OrderQuoteResponse;
 import com.ebike.dto.order.response.OrderResponse;
@@ -55,6 +57,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.regex.Pattern;
 import org.springframework.http.HttpStatus;
@@ -112,6 +115,7 @@ public class OrderServiceImpl implements OrderService {
     private final StockAlertService stockAlerts;
     private final InstallmentPlanner installmentPlanner;
     private final InstallmentApplicationRepository installments;
+    private final StockLedger stockLedger;
 
     public OrderServiceImpl(
         OrderRepository orderRepository,
@@ -124,7 +128,8 @@ public class OrderServiceImpl implements OrderService {
         AuditLogService auditLog,
         StockAlertService stockAlerts,
         InstallmentPlanner installmentPlanner,
-        InstallmentApplicationRepository installments
+        InstallmentApplicationRepository installments,
+        StockLedger stockLedger
     ) {
         this.orderRepository = orderRepository;
         this.userRepository = userRepository;
@@ -137,6 +142,7 @@ public class OrderServiceImpl implements OrderService {
         this.stockAlerts = stockAlerts;
         this.installmentPlanner = installmentPlanner;
         this.installments = installments;
+        this.stockLedger = stockLedger;
     }
 
     @Override
@@ -227,7 +233,8 @@ public class OrderServiceImpl implements OrderService {
             .filter(candidate -> Boolean.TRUE.equals(candidate.getActive()))
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cửa hàng nhận xe không còn hoạt động."));
 
-        BigDecimal subtotal = addItems(order, items);
+        List<StockLedger.Entry> stockEntries = new ArrayList<>();
+        BigDecimal subtotal = addItems(order, items, stockEntries);
         order.setSubtotal(subtotal);
         order.setShippingFee(shippingFee(isHomeDelivery(request), request.province(), items));
         order.setRegistrationFee(registrationFee(includeRegistrationService, pricingService.registrationServicePerBike(), items));
@@ -252,6 +259,8 @@ public class OrderServiceImpl implements OrderService {
         attachInitialPayment(order, request.paymentMethod(), installment);
 
         Order saved = orderRepository.save(order);
+        // V26: the sale goes in the stock ledger now that the order has its number and id (nobody in the shop is the actor: the customer or a guest ordered)
+        stockLedger.record(stockEntries, saved.getId(), saved.getOrderNumber(), null, null);
         if (installment != null) {
             installmentPlanner.record(saved, user, installment);
         }
@@ -425,6 +434,11 @@ public class OrderServiceImpl implements OrderService {
                 : "Tự động hủy: cửa hàng chưa xác nhận đơn trả sau trong thời hạn giữ hàng.";
             due.add(new DueOrder(order, reason, "Expired before payment"));
         }
+        // V26: the bikes and colours of every due order are locked together, in one fixed order, before the first one is put back; locking them order by
+        // order would take them in whatever order the orders list them and could wait in a circle with a customer ordering several bikes at once
+        stockLedger.lock(
+            due.stream().flatMap(item -> item.order().getItems().stream()).map(OrderItem::getProduct).filter(Objects::nonNull).toList(),
+            due.stream().flatMap(item -> item.order().getItems().stream()).map(OrderItem::getProductVariant).filter(Objects::nonNull).toList());
         List<Order> expired = new ArrayList<>();
         for (DueOrder item : due) {
             cancelOrder(item.order(), item.reason(), null, item.log());
@@ -515,14 +529,21 @@ public class OrderServiceImpl implements OrderService {
         if (order.getId() != null) {
             installments.cancelOpenOfOrder(order.getId(), LocalDateTime.now());
         }
-        restoreStock(order);
+        // V26: only a member of the shop's staff is written on the ledger line; the customer who cancels their own order, or the timer, is not
+        boolean byStaff = actor != null && (order.getUser() == null || !Objects.equals(order.getUser().getId(), actor.getId()));
+        restoreStock(order, byStaff ? actor : null);
         if (order.getPromotion() != null) {
             promotionRepository.releaseUsage(order.getPromotion().getId());
         }
     }
 
-    private void restoreStock(Order order) {
+    private void restoreStock(Order order, User ledgerActor) {
         java.util.List<ProductVariant> backInStock = new java.util.ArrayList<>();
+        // V26: the rows are locked first (re-read from the database, in a fixed order) so a sale or a receipt at the same moment is not overwritten
+        stockLedger.lock(
+            order.getItems().stream().map(OrderItem::getProduct).filter(Objects::nonNull).toList(),
+            order.getItems().stream().map(OrderItem::getProductVariant).filter(Objects::nonNull).toList());
+        List<StockLedger.Entry> stockEntries = new ArrayList<>();
         for (OrderItem item : order.getItems()) {
             Product product = item.getProduct();
             if (product != null) {
@@ -536,7 +557,11 @@ public class OrderServiceImpl implements OrderService {
                     backInStock.add(variant);
                 }
             }
+            if (product != null) {
+                stockEntries.add(StockLedger.Entry.of(product, variant, item.getQuantity(), StockMovementReason.CANCEL_RESTORE, null));
+            }
         }
+        stockLedger.record(stockEntries, order.getId(), order.getOrderNumber(), null, ledgerActor);
         // V22: a cancelled order can bring a sold-out colour back, so customers waiting for it hear about it too.
         backInStock.forEach(stockAlerts::notifyRestocked);
     }
@@ -637,8 +662,21 @@ public class OrderServiceImpl implements OrderService {
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Hình thức nhận hàng không hợp lệ.");
     }
 
-    private BigDecimal addItems(Order order, List<OrderCreateItemRequest> items) {
+    private BigDecimal addItems(Order order, List<OrderCreateItemRequest> items, List<StockLedger.Entry> stockEntries) {
         BigDecimal subtotal = ZERO;
+        // V26: the bikes and colours are found first and locked together (in a fixed order, re-read from the database) before any figure is read,
+        // so two customers ordering the last bike at the same moment cannot both take it
+        List<Product> bikes = new ArrayList<>();
+        List<ProductVariant> colours = new ArrayList<>();
+        for (OrderCreateItemRequest itemRequest : items) {
+            Product product = getActiveProduct(itemRequest.productId());
+            bikes.add(product);
+            ProductVariant variant = getActiveVariant(product, itemRequest.productVariantId());
+            if (variant != null) {
+                colours.add(variant);
+            }
+        }
+        stockLedger.lock(bikes, colours);
         for (OrderCreateItemRequest itemRequest : items) {
             Product product = getActiveProduct(itemRequest.productId());
             ProductVariant variant = getActiveVariant(product, itemRequest.productVariantId());
@@ -654,6 +692,7 @@ public class OrderServiceImpl implements OrderService {
                 }
                 variant.setStockQuantity(variantStock - itemRequest.quantity());
             }
+            stockEntries.add(StockLedger.Entry.of(product, variant, -itemRequest.quantity(), StockMovementReason.SALE, null));
 
             BigDecimal unitPrice = product.getDiscountPrice() != null ? product.getDiscountPrice() : product.getPrice();
             if (variant != null) {

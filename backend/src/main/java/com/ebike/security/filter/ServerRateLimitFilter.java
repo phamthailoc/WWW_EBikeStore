@@ -46,7 +46,9 @@ public class ServerRateLimitFilter extends OncePerRequestFilter {
         new RateLimitRule("order-receipt", HttpMethod.GET.name(), "/api/v1/orders/*/receipt", 40, Duration.ofMinutes(1)),
         new RateLimitRule("order-warranty-card", HttpMethod.GET.name(), "/api/v1/orders/*/warranty-card", 40, Duration.ofMinutes(1)),
         // V27: sending the hand-over email again renders two PDFs and talks to the mail server: a few a minute is plenty for staff
-        new RateLimitRule("order-documents-email", HttpMethod.POST.name(), "/api/v1/orders/*/documents/email", 6, Duration.ofMinutes(1))
+        new RateLimitRule("order-documents-email", HttpMethod.POST.name(), "/api/v1/orders/*/documents/email", 6, Duration.ofMinutes(1)),
+        // V26: a receipt adds stock; one address (the stock room's computer) may save a handful a minute, never a flood
+        new RateLimitRule("stock-receipt", HttpMethod.POST.name(), "/api/v1/manager/stock-receipts", 20, Duration.ofMinutes(1))
     );
 
     private final boolean enabled;

@@ -12,6 +12,10 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
 
     Optional<Product> findBySlug(String slug);
 
+    /** V26: every bike with its colours, for the pick list of a stock receipt (withdrawn bikes too: stock can still arrive for them). */
+    @Query("select distinct p from Product p left join fetch p.variants order by p.name asc")
+    java.util.List<Product> findAllWithVariants();
+
     @EntityGraph(attributePaths = {
         "category",
         "specification",

@@ -164,3 +164,37 @@ h1,h2,h3,.brand,.eyebrow,.metric b,.metric small{font-family:'Space Grotesk','Se
 .installment-status[data-status=APPROVED]{border-color:var(--c-149f50);color:var(--c-176437)}
 .installment-status[data-status=REJECTED]{border-color:var(--c-a33123);color:var(--c-a33123)}
 @media(max-width:700px){.installment-figures{grid-template-columns:1fr}.installment-figures .installment-main dd{font-size:20px}}
+
+/* V26: stock receipts and the stock history of a bike */
+.receipt-dialog{max-width:760px;max-height:calc(100vh - 32px);overflow:auto}
+.receipt-form label{display:block;margin:12px 0 0;font-size:14px}
+.receipt-form input[type=text],.receipt-form textarea{width:100%;box-sizing:border-box;margin-top:6px}
+.required{color:var(--c-922f1e)}
+.receipt-lines{margin-top:14px}
+.receipt-lines th{font-size:12px;text-align:left;color:var(--c-53605a);font-weight:600;padding:4px 6px}
+.receipt-lines select{width:100%;min-width:130px;box-sizing:border-box}
+.receipt-lines input{width:90px}
+.receipt-lines-actions{display:flex;align-items:center;gap:12px;margin:12px 0 0}
+.receipt-total td{border-top:2px solid var(--c-cfd8d6)}
+.receipt-note{margin:0 0 12px;padding:8px 12px;border-left:3px solid var(--c-cfd8d6);white-space:pre-wrap}
+.receipt-more{text-align:center;margin:12px 0 0}
+.stock-note{display:block;margin:12px 0 0;font-size:14px}
+.stock-note input{width:100%;box-sizing:border-box;margin-top:6px}
+.stock-hint{margin:10px 0 0}
+.stock-history-dialog{max-width:900px;max-height:calc(100vh - 32px);overflow:auto}
+.stock-history-filters{margin:12px 0}
+.stock-history-filters label{min-width:150px}
+.stock-balances th,.stock-lines th{font-size:12px;text-align:left;color:var(--c-53605a);font-weight:600;padding:4px 6px}
+.stock-lines td{font-size:13px}
+.stock-change{font-weight:600;white-space:nowrap}
+.stock-change.pos{color:var(--c-1d5b3a)}
+.stock-change.neg{color:var(--c-922f1e)}
+@media(max-width:700px){
+  .receipt-dialog,.stock-history-dialog{padding:18px}
+  .receipt-lines thead{display:none}
+  .receipt-lines,.receipt-lines tbody{display:block}
+  .receipt-lines tr{display:grid;grid-template-columns:1fr 1fr auto;gap:6px;align-items:center;padding:10px 0;border-bottom:1px solid var(--c-e3eae6)}
+  .receipt-lines td{display:block;padding:0;border:0}
+  .receipt-lines td:first-child{grid-column:1 / -1}
+  .receipt-lines input{width:100%;box-sizing:border-box}
+}

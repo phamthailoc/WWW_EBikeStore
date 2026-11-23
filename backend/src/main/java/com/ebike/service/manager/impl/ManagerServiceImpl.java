@@ -38,6 +38,9 @@ import com.ebike.repository.product.ProductRepository;
 import com.ebike.service.product.ProductService;
 import com.ebike.service.stock.StockAlertRules;
 import com.ebike.service.stock.StockAlertService;
+import com.ebike.service.stock.StockLedger;
+import com.ebike.service.stock.StockRules;
+import com.ebike.model.entity.stock.StockMovementReason;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalDate;
@@ -76,6 +79,7 @@ public class ManagerServiceImpl implements ManagerService {
     private final InstallmentApplicationRepository installments;
     // how long an approved instalment application waits for its down payment (the expiry job reads the same setting)
     private final Duration downPaymentHold;
+    private final StockLedger stockLedger;
 
     public ManagerServiceImpl(
         OrderRepository orderRepository,
@@ -86,7 +90,8 @@ public class ManagerServiceImpl implements ManagerService {
         AuditLogService auditLog,
         StockAlertService stockAlerts,
         InstallmentApplicationRepository installments,
-        @Value("${app.order.installment-down-payment-hold:PT72H}") Duration downPaymentHold
+        @Value("${app.order.installment-down-payment-hold:PT72H}") Duration downPaymentHold,
+        StockLedger stockLedger
     ) {
         this.orderRepository = orderRepository;
         this.paymentRepository = paymentRepository;
@@ -97,6 +102,7 @@ public class ManagerServiceImpl implements ManagerService {
         this.stockAlerts = stockAlerts;
         this.installments = installments;
         this.downPaymentHold = downPaymentHold;
+        this.stockLedger = stockLedger;
     }
 
     @Override
@@ -489,7 +495,15 @@ public class ManagerServiceImpl implements ManagerService {
                 "Sản phẩm có nhiều màu: hãy sửa tồn kho từng màu, tổng tồn kho sẽ tự tính.");
         }
 
+        String note = adjustmentNote(request);
+        // V26: locked and re-read first, so the figure the change is measured from is the one in the database
+        stockLedger.lock(List.of(product), List.of());
+        Integer stockBefore = product.getStockQuantity();
         product.setStockQuantity(request.stockQuantity());
+        int delta = StockRules.adjustmentDelta(stockBefore, request.stockQuantity());
+        if (delta != 0) {
+            stockLedger.record(List.of(StockLedger.Entry.of(product, null, delta, StockMovementReason.ADJUSTMENT, note)), null, null, null, stockLedger.currentStaff());
+        }
         auditLog.record("sửa tồn kho", product.getName() + ": " + request.stockQuantity());
         return productService.toSummaryDto(productRepository.save(product));
     }
@@ -515,8 +529,15 @@ public class ManagerServiceImpl implements ManagerService {
             .findFirst()
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy màu này của sản phẩm."));
 
+        String note = adjustmentNote(request);
+        // V26: the bike and all its colours are locked and re-read first (the bike's total is the sum of its colours), so a sale at the same moment is not overwritten
+        stockLedger.lock(List.of(product), List.copyOf(product.getVariants()));
         Integer stockBefore = variant.getStockQuantity();
         variant.setStockQuantity(request.stockQuantity());
+        int delta = StockRules.adjustmentDelta(stockBefore, request.stockQuantity());
+        if (delta != 0) {
+            stockLedger.record(List.of(StockLedger.Entry.of(product, variant, delta, StockMovementReason.ADJUSTMENT, note)), null, null, null, stockLedger.currentStaff());
+        }
         // Only active colours can be ordered, so only they make up what the product has in stock.
         product.setStockQuantity(product.getVariants().stream()
             .filter(candidate -> Boolean.TRUE.equals(candidate.getActive()))
@@ -529,6 +550,22 @@ public class ManagerServiceImpl implements ManagerService {
             stockAlerts.notifyRestocked(variant);
         }
         return summary;
+    }
+
+    /** V26: the note typed with a stock edit (optional, cleaned) after the figure and the note have been checked. */
+    private static String adjustmentNote(ManagerProductStockUpdateRequest request) {
+        if (request.stockQuantity() > StockRules.MAX_STOCK) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, RequestLanguage.text(
+                "Tồn kho không được vượt quá " + StockRules.MAX_STOCK + " xe.",
+                "The stock cannot be more than " + StockRules.MAX_STOCK + " bikes."));
+        }
+        String note = StockRules.clean(request.note());
+        if (note != null && note.length() > StockRules.MAX_NOTE_LENGTH) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, RequestLanguage.text(
+                "Ghi chú không được vượt quá " + StockRules.MAX_NOTE_LENGTH + " ký tự.",
+                "The note cannot be longer than " + StockRules.MAX_NOTE_LENGTH + " characters."));
+        }
+        return note;
     }
 
     private boolean isCustomer(User user) {

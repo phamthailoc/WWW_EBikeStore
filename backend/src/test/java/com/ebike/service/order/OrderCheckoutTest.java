@@ -28,6 +28,7 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class OrderCheckoutTest {
     @Mock OrderRepository orders;
+    @Mock com.ebike.service.stock.StockLedger ledger;
     @Mock UserRepository users;
     @Mock ProductRepository products;
     @Mock ShowroomRepository showrooms;
@@ -38,7 +39,7 @@ class OrderCheckoutTest {
     Product product;
 
     @BeforeEach void setup() {
-        service = new OrderServiceImpl(orders, users, products, showrooms, promotions, verification, new com.ebike.service.admin.PricingService(pricingRules), org.mockito.Mockito.mock(com.ebike.service.admin.AuditLogService.class), org.mockito.Mockito.mock(com.ebike.service.stock.StockAlertService.class), org.mockito.Mockito.mock(com.ebike.service.installment.InstallmentPlanner.class), org.mockito.Mockito.mock(com.ebike.repository.installment.InstallmentApplicationRepository.class));
+        service = new OrderServiceImpl(orders, users, products, showrooms, promotions, verification, new com.ebike.service.admin.PricingService(pricingRules), org.mockito.Mockito.mock(com.ebike.service.admin.AuditLogService.class), org.mockito.Mockito.mock(com.ebike.service.stock.StockAlertService.class), org.mockito.Mockito.mock(com.ebike.service.installment.InstallmentPlanner.class), org.mockito.Mockito.mock(com.ebike.repository.installment.InstallmentApplicationRepository.class), ledger);
         product = new Product();
         product.setId(1L); product.setName("KINETIC Test");
         product.setPrice(new BigDecimal("20300000")); product.setStockQuantity(8); product.setActive(true);
@@ -149,6 +150,34 @@ class OrderCheckoutTest {
 
     @Test void theOrderRecordsVietnameseWhenThePageIsVietnameseOrThereIsNoRequest() {
         assertEquals("vi", placeGuestOrder().getCustomerLanguage());
+    }
+
+    @Test void aSaleIsLockedFirstThenWrittenOnTheStockLedgerWithTheOrderNumber() {
+        stock(); save(); showroomIn("TP. Ho Chi Minh");
+        var req=new OrderCreateRequest(null,"Khách Hàng","0901234567","checkout@example.com",null,
+            null,"123 Nguyễn Trãi, Phường Bến Thành","PAY_LATER",null,BigDecimal.ZERO,null,false,null,
+            List.of(new OrderCreateItemRequest(1L,3)),"HOME_DELIVERY","Hà Nội");
+        var order=service.createOrder(req,null);
+        @SuppressWarnings("unchecked")
+        org.mockito.ArgumentCaptor<List<com.ebike.service.stock.StockLedger.Entry>> entries=org.mockito.ArgumentCaptor.forClass(List.class);
+        var inOrder=inOrder(ledger);
+        inOrder.verify(ledger).lock(any(), any());
+        inOrder.verify(ledger).record(entries.capture(), any(), eq(order.orderNumber()), isNull(), isNull());
+        assertEquals(1, entries.getValue().size());
+        var line=entries.getValue().get(0);
+        assertEquals(-3, line.change());
+        assertEquals(5, line.balanceAfter());
+        assertEquals(com.ebike.model.entity.stock.StockMovementReason.SALE, line.reason());
+        assertEquals(5, product.getStockQuantity());
+    }
+
+    @Test void anOrderThatIsRefusedLeavesNothingOnTheLedger() {
+        stock();
+        var req=new OrderCreateRequest(null,"Khách Hàng","0901234567","checkout@example.com",null,
+            null,"123 Nguyễn Trãi, Phường Bến Thành","PAY_LATER",null,BigDecimal.ZERO,null,false,null,
+            List.of(new OrderCreateItemRequest(1L,9)),"HOME_DELIVERY","Hà Nội");
+        assertThrows(ResponseStatusException.class,()->service.createOrder(req,null));
+        verify(ledger, never()).record(any(), any(), any(), any(), any());
     }
 
     @Test void orderTotalIncludesTheDeliveryFeeAndIgnoresTheClientsOwn() {

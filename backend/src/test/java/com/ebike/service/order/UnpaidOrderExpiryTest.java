@@ -31,6 +31,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class UnpaidOrderExpiryTest {
     @Mock OrderRepository orders;
+    @Mock com.ebike.service.stock.StockLedger ledger;
     @Mock UserRepository users;
     @Mock ProductRepository products;
     @Mock ShowroomRepository showrooms;
@@ -42,7 +43,7 @@ class UnpaidOrderExpiryTest {
     final LocalDateTime now = LocalDateTime.of(2026, 11, 6, 12, 0);
 
     @BeforeEach void setup() {
-        service = new OrderServiceImpl(orders, users, products, showrooms, promotions, verification, new com.ebike.service.admin.PricingService(pricingRules), org.mockito.Mockito.mock(com.ebike.service.admin.AuditLogService.class), org.mockito.Mockito.mock(com.ebike.service.stock.StockAlertService.class), org.mockito.Mockito.mock(com.ebike.service.installment.InstallmentPlanner.class), org.mockito.Mockito.mock(com.ebike.repository.installment.InstallmentApplicationRepository.class));
+        service = new OrderServiceImpl(orders, users, products, showrooms, promotions, verification, new com.ebike.service.admin.PricingService(pricingRules), org.mockito.Mockito.mock(com.ebike.service.admin.AuditLogService.class), org.mockito.Mockito.mock(com.ebike.service.stock.StockAlertService.class), org.mockito.Mockito.mock(com.ebike.service.installment.InstallmentPlanner.class), org.mockito.Mockito.mock(com.ebike.repository.installment.InstallmentApplicationRepository.class), ledger);
         product = new Product();
         product.setId(1L);
         product.setStockQuantity(5);
@@ -101,6 +102,19 @@ class UnpaidOrderExpiryTest {
         assertEquals(PaymentStatus.CANCELLED, abandoned.getPayment().getPaymentStatus());
         assertEquals(7, product.getStockQuantity());
         assertEquals("Tự động hủy: quá hạn thanh toán online.", abandoned.getCancellationReason());
+    }
+
+    @Test void expiredOrdersAreLockedTogetherFirstAndWrittenOnTheLedgerWithoutAnActor() {
+        Order first = order(now.minusMinutes(40), null, null);
+        Order second = order(now.minusMinutes(50), null, null);
+        stale(first, second);
+
+        assertEquals(2, service.expireUnpaidOrders(now));
+
+        // one lock for everything that will be put back (before the first order is touched), then each order locks its own rows again (already held, so a no-op)
+        // and writes its own lines
+        org.mockito.Mockito.verify(ledger, org.mockito.Mockito.times(3)).lock(any(), any());
+        org.mockito.Mockito.verify(ledger, org.mockito.Mockito.times(2)).record(any(), any(), any(), org.mockito.ArgumentMatchers.isNull(), org.mockito.ArgumentMatchers.isNull());
     }
 
     @Test void payLaterOrderIsHeldFor72Hours() {

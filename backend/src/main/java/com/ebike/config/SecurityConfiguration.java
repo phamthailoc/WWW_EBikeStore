@@ -157,6 +157,8 @@ public class SecurityConfiguration {
                 .requestMatchers(HttpMethod.PATCH, "/api/v1/manager/test-rides/*").hasAuthority(PermissionConstants.OrderManagement.ORDER_UPDATE_STATUS)
                 // V24: approving or rejecting an instalment application changes the order and messages the customer, so it needs the write permission.
                 .requestMatchers(HttpMethod.PATCH, "/api/v1/manager/installments/*").hasAuthority(PermissionConstants.OrderManagement.ORDER_UPDATE_STATUS)
+                // V26: stock receipts name the suppliers and add stock, so they need the stock permission (viewing the stock history of a bike only needs the view permission).
+                .requestMatchers("/api/v1/manager/stock-receipts", "/api/v1/manager/stock-receipts/**").hasAuthority(PermissionConstants.ProductManagement.PRODUCT_MANAGE_STOCK)
                 .requestMatchers("/api/v1/manager/**").hasAuthority(PermissionConstants.OrderManagement.ORDER_VIEW_ALL)
                 .requestMatchers("/api/v1/admin/**").hasAuthority(PermissionConstants.AccessControl.PERMISSION_MANAGE)
                 .anyRequest().denyAll()
