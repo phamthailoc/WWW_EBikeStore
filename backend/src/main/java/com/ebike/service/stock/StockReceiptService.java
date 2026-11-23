@@ -211,8 +211,9 @@ public class StockReceiptService {
             row.setVariant(line.variant());
             row.setQuantity(line.quantity());
             row.setProductName(line.product().getName());
-            row.setColorName(line.variant() == null ? null
-                : line.variant().getColorName() != null ? line.variant().getColorName() : line.variant().getVariantName());
+            String colour = line.variant() == null ? null
+                : line.variant().getColorName() != null ? line.variant().getColorName() : line.variant().getVariantName();
+            row.setColorName(colour != null && colour.length() > 100 ? colour.substring(0, 100) : colour);
             receipt.addLine(row);
         }
         StockReceipt saved = receipts.save(receipt);
