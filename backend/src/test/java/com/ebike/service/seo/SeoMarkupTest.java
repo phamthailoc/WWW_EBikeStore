@@ -197,4 +197,35 @@ class SeoMarkupTest {
         assertFalse(robots.contains("Disallow: /product"), "products stay open");
         assertTrue(robots.contains("Sitemap: https://shop.example.vn/sitemap.xml\n"));
     }
+    private static ProductDetailDto withVariants(BigDecimal price, BigDecimal discount, ProductVariantDto... variants) {
+        ProductDetailDto base = detail("X", price, discount, null, 0, 5, List.of());
+        return new ProductDetailDto(base.id(), base.name(), base.slug(), base.description(), base.price(), base.discountPrice(), base.rating(), base.reviewCount(),
+            base.stockQuantity(), base.featured(), base.category(), base.specification(), List.of(variants), base.images());
+    }
+
+    private static ProductVariantDto variant(String sku, String surcharge, boolean isDefault) {
+        return new ProductVariantDto(1L, sku, sku, sku, "#000", null, null, new BigDecimal(surcharge), 3, isDefault, List.of());
+    }
+
+    @Test
+    void theDefaultVariantsSurchargeAndSkuAreWhatTheOfferStates() throws Exception {
+        ProductDetailDto product = withVariants(new BigDecimal("20000000"), new BigDecimal("18000000"), variant("A", "0", false), variant("B", "0", true));
+        assertEquals("18000000", SeoMarkup.priceText(SeoMarkup.effectivePrice(product)));
+        ProductDetailDto surcharged = withVariants(new BigDecimal("20000000"), new BigDecimal("18000000"), variant("A", "0", false), variant("B", "500000", true));
+        assertEquals("18500000", SeoMarkup.priceText(SeoMarkup.effectivePrice(surcharged)));
+        JsonNode node = JSON.readTree(seo.productJsonLd(surcharged));
+        assertEquals("B", node.path("sku").asText(), "the default variant, not the first one");
+        assertEquals("AggregateOffer", node.path("offers").path("@type").asText());
+        assertEquals("18000000", node.path("offers").path("lowPrice").asText());
+        assertEquals("18500000", node.path("offers").path("highPrice").asText());
+        assertEquals(2, node.path("offers").path("offerCount").asInt());
+    }
+
+    @Test
+    void variantsThatCostTheSameGiveOneSimpleOffer() throws Exception {
+        ProductDetailDto product = withVariants(new BigDecimal("20000000"), null, variant("A", "0", true), variant("B", "0", false));
+        JsonNode offer = JSON.readTree(seo.productJsonLd(product)).path("offers");
+        assertEquals("Offer", offer.path("@type").asText());
+        assertEquals("20000000", offer.path("price").asText());
+    }
 }

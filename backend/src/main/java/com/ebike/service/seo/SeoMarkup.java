@@ -99,9 +99,32 @@ public class SeoMarkup {
         return cut.replaceAll("[\\s,;:.\\-]+$", "") + "…";
     }
 
-    /** The price a customer pays: the discount when there is one. */
-    public static BigDecimal effectivePrice(ProductDetailDto product) {
+    /** The price before any colour or battery surcharge: the discount when there is one. */
+    static BigDecimal basePrice(ProductDetailDto product) {
         return product.discountPrice() != null ? product.discountPrice() : product.price();
+    }
+
+    /** The variant the page shows first: the one marked default, else the first. */
+    static ProductVariantDto defaultVariant(ProductDetailDto product) {
+        if (product.variants() == null || product.variants().isEmpty()) {
+            return null;
+        }
+        return product.variants().stream().filter(v -> v != null && Boolean.TRUE.equals(v.defaultVariant())).findFirst()
+            .orElseGet(() -> product.variants().stream().filter(java.util.Objects::nonNull).findFirst().orElse(null));
+    }
+
+    /** What one variant costs: the base price plus its surcharge (the same sum the product page and the cart show). */
+    static BigDecimal variantPrice(ProductDetailDto product, ProductVariantDto variant) {
+        BigDecimal base = basePrice(product);
+        if (base == null || variant == null || variant.additionalPrice() == null) {
+            return base;
+        }
+        return base.add(variant.additionalPrice());
+    }
+
+    /** The price a customer sees first and pays by default: the discount when there is one, plus the default variant's surcharge. */
+    public static BigDecimal effectivePrice(ProductDetailDto product) {
+        return variantPrice(product, defaultVariant(product));
     }
 
     /** Price as the plain number a crawler expects (dong has no decimals): {@code 25990000}. */
@@ -131,7 +154,8 @@ public class SeoMarkup {
         }
         node.put("image", images.isEmpty() ? List.of(productImage(null)) : images);
         node.put("url", productUrl(product.slug()));
-        String sku = firstSku(product);
+        ProductVariantDto first = defaultVariant(product);
+        String sku = first == null || first.sku() == null || first.sku().isBlank() ? null : first.sku();
         if (sku != null) {
             node.put("sku", sku);
         }
@@ -142,10 +166,31 @@ public class SeoMarkup {
             node.put("category", product.category().name());
         }
         Map<String, Object> offer = new LinkedHashMap<>();
-        offer.put("@type", "Offer");
+        BigDecimal low = effectivePrice(product);
+        BigDecimal high = low;
+        java.util.Set<String> distinct = new java.util.LinkedHashSet<>();
+        if (product.variants() != null) {
+            for (ProductVariantDto variant : product.variants()) {
+                BigDecimal price = variant == null ? null : variantPrice(product, variant);
+                if (price != null) {
+                    distinct.add(priceText(price));
+                    low = low == null || price.compareTo(low) < 0 ? price : low;
+                    high = high == null || price.compareTo(high) > 0 ? price : high;
+                }
+            }
+        }
+        if (distinct.size() > 1) {
+            // variants cost different amounts: say so, rather than one price that is wrong for some of them
+            offer.put("@type", "AggregateOffer");
+            offer.put("lowPrice", priceText(low));
+            offer.put("highPrice", priceText(high));
+            offer.put("offerCount", distinct.size());
+        } else {
+            offer.put("@type", "Offer");
+            offer.put("price", priceText(effectivePrice(product)));
+        }
         offer.put("url", productUrl(product.slug()));
         offer.put("priceCurrency", "VND");
-        offer.put("price", priceText(effectivePrice(product)));
         offer.put("itemCondition", "https://schema.org/NewCondition");
         offer.put("availability", inStock(product) ? "https://schema.org/InStock" : "https://schema.org/OutOfStock");
         node.put("offers", offer);
@@ -181,13 +226,6 @@ public class SeoMarkup {
         item.put("name", name);
         item.put("item", url);
         return item;
-    }
-
-    private static String firstSku(ProductDetailDto product) {
-        if (product.variants() == null) {
-            return null;
-        }
-        return product.variants().stream().map(ProductVariantDto::sku).filter(s -> s != null && !s.isBlank()).findFirst().orElse(null);
     }
 
     /**
