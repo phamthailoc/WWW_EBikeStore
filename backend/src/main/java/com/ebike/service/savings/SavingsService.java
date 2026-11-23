@@ -58,8 +58,8 @@ public class SavingsService {
             specification.getBatteryCapacityAh(), specification.getBatteryVoltageV(), specification.getMaxRangeKm());
         if (!SavingsRules.hasBatteryData(battery)) {
             return unavailable(type, true, RequestLanguage.text(
-                "Xe này chưa có đủ thông số pin và quãng đường nên chưa tính được. Vui lòng liên hệ cửa hàng để được tư vấn.",
-                "This bike does not list its battery and range yet, so the estimate cannot be made. Please contact the store for advice."));
+                "Xe này chưa có đủ thông số pin và quãng đường hợp lý nên chưa tính được. Vui lòng liên hệ cửa hàng để được tư vấn.",
+                "This bike does not list a usable battery and range yet, so the estimate cannot be made. Please contact the store for advice."));
         }
 
         SavingsRules.Prices prices = new SavingsRules.Prices(

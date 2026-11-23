@@ -2,7 +2,7 @@
 -- The calculator compares the cost of charging the bike (battery size and range from the bike's specification, price per kWh from the rule below)
 -- with the cost of petrol for a motorbike of the same class (price per litre and litres per 100 km from the rules below).
 -- A rule that is INACTIVE or not yet in effect makes the calculator use the default shown here instead.
--- Rules an admin has already edited are kept (ON DUPLICATE KEY does not touch amount/status). Safe to run more than once.
+-- It also corrects the 12 V battery of one bike (see below). Rules an admin has already edited are kept (ON DUPLICATE KEY does not touch amount/status). Safe to run more than once.
 -- Apply with: mysql -u root -p --default-character-set=utf8mb4 ebike_db < update_savings_calculator.sql
 
 INSERT INTO pricing_rules(code,name,description,amount,unit,status,effective_from) VALUES
@@ -18,3 +18,9 @@ ON DUPLICATE KEY UPDATE code = code;
 UPDATE pricing_rules SET amount = 1.8, name = 'Mức tiêu hao xăng của xe máy 50cc cùng phân khúc',
     description = 'So với xe máy điện (E_MOTORBIKE, cỡ 50cc, 35-45 km/h). Lít xăng xe máy 50cc chạy 100 km.'
 WHERE code = 'SAVINGS_PETROL_USE_E_MOTORBIKE' AND amount = 2.5;
+
+-- DIBAO Tesla E was loaded with a 12 V battery; every bike of its line has 60 V. At 12 V the calculator showed a charging cost about five times too low.
+-- Only the wrong value is replaced; a voltage an admin has edited since is kept.
+UPDATE product_specifications s JOIN products p ON p.id = s.product_id
+SET s.battery_voltage_v = 60
+WHERE p.slug = 'kinetic-tesla-e' AND s.battery_voltage_v = 12;

@@ -4047,7 +4047,7 @@
         "vehicle_type": "E_SCOOTER",
         "battery_type": "LEAD_ACID",
         "battery_capacity_ah": 22.3,
-        "battery_voltage_v": 12,
+        "battery_voltage_v": 60,
         "charging_time_hours": 12.0,
         "max_speed_kmh": 45.0,
         "max_range_km": 70.0,

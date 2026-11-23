@@ -70,6 +70,14 @@ class SavingsRulesTest {
     }
 
     @Test
+    void aConsumptionOutsideWhatABikeCanDrawIsNotCalculated() {
+        // 22 Ah x 12 V (a typo for 60 V) gives 0.56 kWh per 100 km; 22 Ah x 600 V gives 28
+        assertFalse(SavingsRules.hasBatteryData(new SavingsRules.Battery(n("22.3"), n("12"), n("70"))));
+        assertFalse(SavingsRules.hasBatteryData(new SavingsRules.Battery(n("22"), n("600"), n("70"))));
+        assertTrue(SavingsRules.hasBatteryData(new SavingsRules.Battery(n("22.3"), n("60"), n("70"))));
+    }
+
+    @Test
     void theRidersNumbersAreRangeChecked() {
         assertTrue(SavingsRules.isValidKmPerDay(1));
         assertTrue(SavingsRules.isValidKmPerDay(SavingsRules.MAX_KM_PER_DAY));

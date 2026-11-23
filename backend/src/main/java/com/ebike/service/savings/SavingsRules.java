@@ -25,6 +25,9 @@ public final class SavingsRules {
     public static final int REAL_RANGE_PERCENT = 80;
     /** Share of the energy drawn from the socket that reaches the battery. */
     public static final int CHARGER_EFFICIENCY_PERCENT = 85;
+    /** What a road electric two-wheeler draws from the socket per 100 km; a figure outside this is a typo in the specification, not a result to show. */
+    public static final BigDecimal MIN_KWH_PER_100KM = new BigDecimal("1");
+    public static final BigDecimal MAX_KWH_PER_100KM = new BigDecimal("8");
 
     private static final MathContext MC = new MathContext(12, RoundingMode.HALF_UP);
     private static final BigDecimal HUNDRED = BigDecimal.valueOf(100);
@@ -66,17 +69,29 @@ public final class SavingsRules {
         return days >= MIN_DAYS_PER_MONTH && days <= MAX_DAYS_PER_MONTH;
     }
 
-    /** True when the specification has what the calculation needs: a battery size, a voltage and a range, each above zero. */
+    /**
+     * True when the specification has what the calculation needs: a battery size, a voltage and a range, each above zero, and together they give a
+     * believable consumption ({@value #MIN_KWH_PER_100KM} to {@value #MAX_KWH_PER_100KM} kWh per 100 km, wall to wheel); a 12 V entry for a 60 V bike would
+     * otherwise show a saving five times too large.
+     */
     public static boolean hasBatteryData(Battery battery) {
-        return battery != null && positive(battery.capacityAh()) && positive(battery.voltageV()) && positive(battery.maxRangeKm());
+        if (battery == null || !positive(battery.capacityAh()) || !positive(battery.voltageV()) || !positive(battery.maxRangeKm())) {
+            return false;
+        }
+        BigDecimal per100Km = wallKwhPerKm(battery).multiply(HUNDRED, MC);
+        return per100Km.compareTo(MIN_KWH_PER_100KM) >= 0 && per100Km.compareTo(MAX_KWH_PER_100KM) <= 0;
+    }
+
+    private static BigDecimal wallKwhPerKm(Battery battery) {
+        BigDecimal batteryKwh = battery.capacityAh().multiply(battery.voltageV()).divide(THOUSAND, MC);
+        BigDecimal realRangeKm = battery.maxRangeKm().multiply(BigDecimal.valueOf(REAL_RANGE_PERCENT)).divide(HUNDRED, MC);
+        return batteryKwh.divide(realRangeKm, MC).multiply(HUNDRED).divide(BigDecimal.valueOf(CHARGER_EFFICIENCY_PERCENT), MC);
     }
 
     /** The calculation; the caller has checked {@link #hasBatteryData}, the two numbers of the rider and that every price is above zero. */
     public static Result calculate(Battery battery, Prices prices, int kmPerDay, int daysPerMonth) {
         BigDecimal batteryKwh = battery.capacityAh().multiply(battery.voltageV()).divide(THOUSAND, MC);
-        BigDecimal realRangeKm = battery.maxRangeKm().multiply(BigDecimal.valueOf(REAL_RANGE_PERCENT)).divide(HUNDRED, MC);
-        BigDecimal batteryKwhPerKm = batteryKwh.divide(realRangeKm, MC);
-        BigDecimal wallKwhPerKm = batteryKwhPerKm.multiply(HUNDRED).divide(BigDecimal.valueOf(CHARGER_EFFICIENCY_PERCENT), MC);
+        BigDecimal wallKwhPerKm = wallKwhPerKm(battery);
 
         BigDecimal electricityPerKm = wallKwhPerKm.multiply(prices.electricityPerKwh(), MC);
         BigDecimal petrolPerKm = prices.petrolLitersPer100Km().divide(HUNDRED, MC).multiply(prices.petrolPerLiter(), MC);
