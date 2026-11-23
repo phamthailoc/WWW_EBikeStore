@@ -56,6 +56,7 @@ class DocumentModelsTest {
 
         assertEquals("PROVISIONAL RECEIPT (BIKE NOT HANDED OVER YET)", model.get("title"));
         assertEquals(true, model.get("provisional"));
+        assertEquals("TT-" + order.getOrderNumber(), model.get("number"));
         assertNull(model.get("deliveredAt"));
         assertEquals("Awaiting payment", map(model.get("payment")).get("status"));
     }

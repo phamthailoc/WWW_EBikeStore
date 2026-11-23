@@ -36,8 +36,9 @@ public final class DocumentModels {
         return order.getStatus() != OrderStatus.DELIVERED;
     }
 
+    /** A provisional receipt has its own number (TT-), so it is never mistaken for the final receipt (PBH-) of the same order, which says something else. */
     public static String receiptNumber(Order order) {
-        return "PBH-" + order.getOrderNumber();
+        return (isProvisional(order) ? "TT-" : "PBH-") + order.getOrderNumber();
     }
 
     /** The data of the sales receipt of one order. {@code installment} is the order's instalment application, or null. */
