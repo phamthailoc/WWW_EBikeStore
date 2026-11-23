@@ -315,7 +315,7 @@ public class WarrantyService {
         return WarrantyRules.startsAt(shipped != null ? shipped : order.getDeliveredAt(), order.getUpdatedAt());
     }
 
-    static Integer warrantyMonths(OrderItemUnit unit) {
+    public static Integer warrantyMonths(OrderItemUnit unit) {
         if (unit.getWarrantyMonths() != null) {
             return unit.getWarrantyMonths();
         }
@@ -324,7 +324,7 @@ public class WarrantyService {
         return product == null || product.getSpecification() == null ? null : product.getSpecification().getWarrantyMonths();
     }
 
-    static String colourOf(OrderItem item) {
+    public static String colourOf(OrderItem item) {
         var variant = item.getProductVariant();
         if (variant == null) {
             return null;

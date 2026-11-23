@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org" th:lang="${lang}">
+<head>
+<meta charset="UTF-8" />
+<title th:text="${title}">Warranty card</title>
+<style>
+@page { size: A4; margin: 12mm 12mm 12mm 12mm; }
+body { font-family: 'DejaVu Sans', sans-serif; font-size: 9pt; color: #1b1f1d; margin: 0; }
+table { border-collapse: collapse; width: 100%; }
+td, th { vertical-align: top; }
+.card { page-break-after: always; border: 2px solid #2f4a12; padding: 10pt 12pt; }
+.card.last { page-break-after: auto; }
+.brand { font-size: 16pt; font-weight: bold; color: #2f4a12; }
+.small { font-size: 7.5pt; color: #555555; }
+.meta { text-align: right; font-size: 8pt; }
+h1 { font-size: 16pt; text-align: center; margin: 8pt 0 6pt 0; letter-spacing: 1pt; color: #2f4a12; }
+h2 { font-size: 8.5pt; margin: 0 0 3pt 0; color: #2f4a12; text-transform: uppercase; border-bottom: 1px solid #c9cdc8; padding-bottom: 2pt; }
+.two td.col { width: 50%; padding: 0 6pt 0 0; }
+.two td.col + td.col { padding: 0 0 0 6pt; }
+.section { margin-top: 8pt; }
+.kv td { padding: 2pt 0; }
+.kv td.k { width: 36%; color: #555555; }
+.frame { font-size: 11pt; font-weight: bold; letter-spacing: 0.5pt; }
+.period { background-color: #e9eee3; padding: 5pt 8pt; margin-top: 8pt; }
+.period td { padding: 1pt 4pt 1pt 0; width: 33%; }
+.period .lbl { font-size: 7.5pt; color: #555555; }
+.sched { margin-top: 2pt; }
+.sched td { border: 1px solid #c9cdc8; padding: 2.5pt 5pt; font-size: 8pt; width: 25%; }
+.terms { margin: 2pt 0 0 0; padding-left: 14pt; font-size: 8pt; }
+.terms li { margin-bottom: 2pt; }
+.sign { margin-top: 8pt; page-break-inside: avoid; }
+.sign td { width: 50%; text-align: center; font-size: 8pt; }
+.sign .space { height: 30pt; }
+.foot { margin-top: 5pt; font-size: 7pt; color: #666666; text-align: center; }
+</style>
+</head>
+<body>
+<div th:each="card, it : ${cards}" th:class="${it.last} ? 'card last' : 'card'">
+  <table>
+    <tr>
+      <td>
+        <div class="brand" th:text="${store.name}">Kinetic E-Bike</div>
+        <div class="small" th:text="${store.legalName}">Company</div>
+        <div class="small" th:if="${!#strings.isEmpty(store.address)}" th:text="${store.address}">Address</div>
+        <div class="small" th:if="${!#strings.isEmpty(store.contact)}" th:text="${store.contact}">Contact</div>
+      </td>
+      <td class="meta">
+        <div><b th:text="${t['card.number']}">No.</b>: <span th:text="${card.number}">BH-1</span></div>
+        <div><b th:text="${t['card.orderNumber']}">Order</b>: <span th:text="${card.orderNumber}">ORD-1</span></div>
+        <div><b th:text="${t['receipt.issuedAt']}">Issued</b>: <span th:text="${issuedAt}">date</span></div>
+      </td>
+    </tr>
+  </table>
+
+  <h1 th:text="${title}">WARRANTY CARD</h1>
+
+  <table class="two">
+    <tr>
+      <td class="col">
+        <h2 th:text="${t['card.vehicle']}">Vehicle</h2>
+        <table class="kv">
+          <tr><td class="k" th:text="${t['card.model']}">Model</td><td><b th:text="${card.model}">Bike</b></td></tr>
+          <tr><td class="k" th:text="${t['card.colour']}">Colour</td><td th:text="${card.colour}">Red</td></tr>
+          <tr><td class="k" th:text="${t['card.frame']}">Frame</td><td class="frame" th:text="${card.frame}">FRAME</td></tr>
+          <tr><td class="k" th:text="${t['card.engine']}">Engine</td><td class="frame" th:text="${card.engine}">ENGINE</td></tr>
+        </table>
+      </td>
+      <td class="col">
+        <h2 th:text="${t['card.owner']}">Owner</h2>
+        <table class="kv">
+          <tr><td class="k" th:text="${t['receipt.name']}">Name</td><td th:text="${card.ownerName}">An</td></tr>
+          <tr><td class="k" th:text="${t['receipt.phone']}">Phone</td><td th:text="${card.ownerPhone}">090</td></tr>
+          <tr><td class="k" th:text="${t['card.handoverPlace']}">Place</td><td th:text="${card.place}">Showroom</td></tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+
+  <div class="period">
+    <table>
+      <tr>
+        <td><div class="lbl" th:text="${t['card.warranty']}">Period</div><b th:text="${card.periodText}">24 months</b></td>
+        <td><div class="lbl" th:text="${t['card.startsAt']}">Starts</div><b th:text="${card.startsAt}">date</b></td>
+        <td><div class="lbl" th:text="${t['card.endsAt']}">Ends</div><b th:text="${card.endsAt}">date</b></td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="section">
+    <h2 th:text="${t['card.schedule']}">Schedule</h2>
+    <table class="sched">
+      <tr th:each="pair : ${card.schedulePairs}">
+        <td th:text="${pair.leftLabel}">After 1 month</td>
+        <td th:text="${pair.leftValue}">From about</td>
+        <td th:text="${pair.rightLabel}">After 6 months</td>
+        <td th:text="${pair.rightValue}">From about</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="section">
+    <h2 th:text="${t['card.terms']}">Terms</h2>
+    <ol class="terms">
+      <li th:each="term : ${terms}" th:text="${term}">Term</li>
+    </ol>
+  </div>
+
+  <table class="sign">
+    <tr>
+      <td></td>
+      <td><b th:text="${t['card.signSeller']}">Seller</b><div class="space"></div></td>
+    </tr>
+  </table>
+  <div class="foot" th:if="${lookupUrl != null}" th:text="${t['card.lookup']} + ' ' + ${lookupUrl}">Lookup</div>
+  <div class="foot" th:text="${t['card.sample']}">Automatic.</div>
+</div>
+</body>
+</html>
