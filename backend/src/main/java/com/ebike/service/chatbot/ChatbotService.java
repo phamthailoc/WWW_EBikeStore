@@ -125,6 +125,7 @@ public class ChatbotService {
         Product mentionedProduct = findMentionedProduct(normalizedMessage);
         String showroomContext = buildShowroomContext(normalizedMessage);
         String orderPaymentContext = buildOrderPaymentContext(normalizedMessage);
+        String savingsContext = buildSavingsContext(normalizedMessage);
         PdfKnowledgeBaseService.PdfKnowledgeContext pdfKnowledgeContext = pdfKnowledgeBaseService.findRelevantContext(userMessage);
         ChatbotResponse ruleBasedResponse = buildRuleBasedResponse(
             faqMatch,
@@ -132,6 +133,7 @@ public class ChatbotService {
             mentionedProduct,
             showroomContext,
             orderPaymentContext,
+            savingsContext,
             isFollowUpPriceQuestion(normalizedMessage)
         );
 
@@ -150,6 +152,7 @@ public class ChatbotService {
             recommendations,
             showroomContext,
             orderPaymentContext,
+            savingsContext,
             pdfKnowledgeContext,
             ruleBasedResponse
         );
@@ -161,8 +164,17 @@ public class ChatbotService {
         Product mentionedProduct,
         String showroomContext,
         String orderPaymentContext,
+        String savingsContext,
         boolean priceQuestion
     ) {
+        if (!savingsContext.isBlank()) {
+            // V33: a question about the cost of riding is answered with the prices in force and the way to the calculator on the bike's page
+            List<ChatbotRecommendationDto> cards = mentionedProduct != null
+                ? List.of(toRecommendation(mentionedProduct, tr("mở trang xe này và dùng mục \"Xe điện tiết kiệm bao nhiêu?\"", "open this bike's page and use \"How much does an electric bike save?\"")))
+                : recommendations;
+            return new ChatbotResponse(savingsContext, "running_cost", cards);
+        }
+
         if (mentionedProduct != null) {
             return new ChatbotResponse(
                 buildProductDetailAnswer(mentionedProduct),
@@ -225,6 +237,7 @@ public class ChatbotService {
             "faq+product_recommendation",
             "showroom_context",
             "order_payment_context",
+            "running_cost",
             "price_followup_missing_context"
         ).contains(response.matchedIntent());
     }
@@ -559,6 +572,33 @@ public class ChatbotService {
             ).trim();
     }
 
+    /** V33: the answer to a question about what riding costs or saves, built from the admin's pricing table; empty for any other question. */
+    private String buildSavingsContext(String message) {
+        if (!isRunningCostQuestion(message)) {
+            return "";
+        }
+        return tr(
+            "Mỗi xe điện có công cụ \"Xe điện tiết kiệm bao nhiêu?\" ở trang chi tiết (phía dưới thông số): bạn nhập số km đi mỗi ngày và số ngày đi mỗi tháng, cửa hàng so tiền sạc theo dung lượng pin của đúng xe đó với tiền xăng của xe máy cùng phân khúc. Giá đang áp dụng: điện %s mỗi kWh, xăng %s mỗi lít; xe máy xăng cùng phân khúc tiêu hao khoảng %s lít/100 km (xe ga), %s (xe đạp điện) và %s (xe máy điện). Đây chỉ là ước tính tham khảo. Bạn hãy mở trang xe cần xem để tính.",
+            "Every electric bike has a \"How much does an electric bike save?\" tool on its page (below the specifications): enter the kilometres you ride a day and the days a month, and the store compares the cost of charging that bike's own battery with the petrol of a motorbike of the same class. Prices in use: electricity %s per kWh, petrol %s per litre; a petrol motorbike of the same class uses about %s litres per 100 km (scooter), %s (e-bike) and %s (electric motorbike). It is only an estimate. Open the page of the bike you want to look at.")
+            .formatted(
+                formatCurrency(pricingService.savingsElectricityPricePerKwh()),
+                formatCurrency(pricingService.savingsPetrolPricePerLiter()),
+                pricingService.savingsPetrolLitersPer100Km("E_SCOOTER").stripTrailingZeros().toPlainString(),
+                pricingService.savingsPetrolLitersPer100Km("E_BIKE").stripTrailingZeros().toPlainString(),
+                pricingService.savingsPetrolLitersPer100Km("E_MOTORBIKE").stripTrailingZeros().toPlainString());
+    }
+
+    private boolean isRunningCostQuestion(String message) {
+        return containsAny(
+            message,
+            "tiết kiệm", "tiet kiem", "tiền sạc", "tien sac", "tiền xăng", "tien xang", "tiền điện", "tien dien",
+            "chi phí đi lại", "chi phi di lai", "chi phí vận hành", "chi phi van hanh", "chi phí sử dụng", "chi phi su dung",
+            "so với xe xăng", "so voi xe xang", "mỗi tháng tốn", "moi thang ton",
+            "save money", "how much would i save", "how much does it save", "running cost", "cost to charge", "charging cost",
+            "cost of charging", "petrol cost", "cost per km", "compared to petrol", "compared with petrol", "vs petrol"
+        );
+    }
+
     private boolean isOrderPaymentQuestion(String message) {
         return containsAny(
             message,
@@ -659,6 +699,7 @@ public class ChatbotService {
 
         appendContextSection(context, "Showroom dang hoat dong", analysis.showroomContext());
         appendContextSection(context, "Thong tin dat hang va thanh toan", analysis.orderPaymentContext());
+        appendContextSection(context, "Cong cu tinh tien tiet kiem cua xe dien", analysis.savingsContext());
         appendContextSection(context, "Tai lieu PDF lien quan", analysis.pdfKnowledgeContext().combinedContext());
         appendContextSection(context, "Cau tra loi fallback neu thieu du lieu", analysis.ruleBasedResponse().answer());
 
@@ -825,6 +866,7 @@ public class ChatbotService {
         List<ChatbotRecommendationDto> recommendations,
         String showroomContext,
         String orderPaymentContext,
+        String savingsContext,
         PdfKnowledgeBaseService.PdfKnowledgeContext pdfKnowledgeContext,
         ChatbotResponse ruleBasedResponse
     ) {
