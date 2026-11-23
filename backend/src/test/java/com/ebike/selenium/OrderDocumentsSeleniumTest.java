@@ -17,6 +17,8 @@ import java.time.Duration;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
@@ -138,6 +140,37 @@ class OrderDocumentsSeleniumTest extends StorefrontSeleniumTest {
         });
     }
 
+    /** The names of the finished PDFs in the folder now. */
+    private static Set<String> pdfNames(Path folder) {
+        try (Stream<Path> files = Files.list(folder)) {
+            return files.map(file -> file.getFileName().toString()).filter(name -> name.endsWith(".pdf")).collect(Collectors.toSet());
+        } catch (IOException e) {
+            return Set.of();
+        }
+    }
+
+    /** Waits for a finished PDF that starts with {@code prefix} and was not in the folder before (so an earlier download of the same name cannot satisfy it), and returns it. */
+    private Path newSaved(Path folder, String prefix, Set<String> before) {
+        return wait.until(d -> {
+            try (Stream<Path> files = Files.list(folder)) {
+                return files.filter(file -> {
+                    String name = file.getFileName().toString();
+                    return name.startsWith(prefix) && name.endsWith(".pdf") && !before.contains(name);
+                }).findFirst().orElse(null);
+            } catch (IOException e) {
+                return null;
+            }
+        });
+    }
+
+    private static void deleteQuietly(Path folder) {
+        try (Stream<Path> files = Files.walk(folder)) {
+            files.sorted(java.util.Comparator.reverseOrder()).forEach(file -> file.toFile().delete());
+        } catch (IOException | RuntimeException e) {
+            System.err.println("Could not remove " + folder + ": " + e.getMessage());
+        }
+    }
+
     private static long placePickupOrderOverRest() throws Exception {
         JsonNode product = call(api, "GET", "/api/v1/products/" + productSlug, null);
         JsonNode color = null;
@@ -169,15 +202,16 @@ class OrderDocumentsSeleniumTest extends StorefrontSeleniumTest {
     void receiptBeforeAndAfterDeliveryWarrantyCardAndWhoMayOpenThem() throws Exception {
         HttpClient manager = managerApi();
         Map<Long, Integer> stockBefore = stockOf(productSlug);
+        Path downloads = downloadFolder();
         try {
-            walkThrough(manager);
+            walkThrough(manager, downloads);
         } finally {
             restoreStock(manager, productSlug, stockBefore);
+            deleteQuietly(downloads);
         }
     }
 
-    private void walkThrough(HttpClient manager) throws Exception {
-        Path downloads = downloadFolder();
+    private void walkThrough(HttpClient manager, Path downloads) throws Exception {
         String orderNumber = placePayLaterOrder();
         long orderId = findOrder(orderNumber).path("id").asLong();
 
@@ -262,17 +296,28 @@ class OrderDocumentsSeleniumTest extends StorefrontSeleniumTest {
             String english = textOf(download(api, "/api/v1/orders/" + orderId + "/receipt?lang=en").body());
             assertTrue(english.contains("SALES RECEIPT") && english.contains("Subtotal") && !english.contains("Tiền hàng"), english);
             assertTrue(textOf(download(api, "/api/v1/orders/" + orderId + "/warranty-card?lang=en").body()).contains("WARRANTY CARD"));
+            // the customer's own button sends no lang parameter: the file follows the language of the page (the cookie), so the saved file is English too
+            Set<String> savedBefore = pdfNames(downloads);
+            clickDownload("/receipt");
+            Path savedEnglish = newSaved(downloads, "receipt-" + orderNumber, savedBefore);
+            assertFalse(driver.findElement(By.id("notice")).getAttribute("class").contains("error"), notice());
+            String savedText = textOf(Files.readAllBytes(savedEnglish));
+            assertTrue(savedText.contains("SALES RECEIPT") && !savedText.contains("PHIẾU BÁN HÀNG"), savedText);
         } finally {
             // the language is saved in the profile of the shared test customer: always put Vietnamese back, whatever the asserts above found
             driver.get(baseUrl + "/lang/vi?back=/customer/orders/" + orderId);
         }
 
         // 7. a phone: the panel fits the screen
-        driver.manage().window().setSize(new org.openqa.selenium.Dimension(375, 812));
-        openOrder(orderId);
-        assertTrue((Boolean) js("return document.documentElement.scrollWidth <= window.innerWidth + 1"), "no sideways scroll on a phone");
-        assertTrue(driver.findElement(PANEL).isDisplayed());
-        driver.manage().window().setSize(new org.openqa.selenium.Dimension(1366, 900));
+        try {
+            driver.manage().window().setSize(new org.openqa.selenium.Dimension(375, 812));
+            openOrder(orderId);
+            assertTrue((Boolean) js("return document.documentElement.scrollWidth <= window.innerWidth + 1"), "no sideways scroll on a phone");
+            assertTrue(driver.findElement(PANEL).isDisplayed());
+        } finally {
+            // a failed phone check must not leave the later steps at phone width
+            driver.manage().window().setSize(new org.openqa.selenium.Dimension(1366, 900));
+        }
 
         // 8. a stranger gets the same 404 as a missing order, a visitor 401, the staff may open it
         HttpClient stranger = newClient();
@@ -301,11 +346,13 @@ class OrderDocumentsSeleniumTest extends StorefrontSeleniumTest {
         driver.get(baseUrl + "/manager/orders/" + orderId);
         wait.until(ExpectedConditions.visibilityOfElementLocated(PANEL));
         assertTrue(driver.findElement(PANEL).getText().contains("Tải phiếu bảo hành"), driver.findElement(PANEL).getText());
-        // the staff pick the language of the customer, and the English file really is English
+        // the staff pick the language of the customer: a NEW file is saved, and reading it shows that it is English (the page itself is Vietnamese)
         new org.openqa.selenium.support.ui.Select(driver.findElement(By.id("docLang"))).selectByValue("en");
+        Set<String> before = pdfNames(downloads);
         clickDownload("/receipt");
         assertEquals("Đã tải tệp PDF.", notice());
-        assertSaved(downloads, "receipt-" + orderNumber);
+        String staffText = textOf(Files.readAllBytes(newSaved(downloads, "receipt-" + orderNumber, before)));
+        assertTrue(staffText.contains("SALES RECEIPT") && !staffText.contains("PHIẾU BÁN HÀNG"), staffText);
     }
 
     @Test
@@ -360,18 +407,23 @@ class OrderDocumentsSeleniumTest extends StorefrontSeleniumTest {
 
     @Test
     void aRefusedDownloadShowsItsReasonInTheNoticeNotAJsonPage() throws Exception {
-        managerApi();
-        String orderNumber = placePayLaterOrder();
-        long orderId = findOrder(orderNumber).path("id").asLong();
-        openOrder(orderId);
-        // the order is cancelled behind the page's back, as another tab or the staff could do
-        call(api, "POST", "/api/v1/orders/" + orderId + "/cancellation-request", Map.of("reason", "Selenium test"));
+        HttpClient manager = managerApi();
+        Map<Long, Integer> stockBefore = stockOf(productSlug);
+        try {
+            String orderNumber = placePayLaterOrder();
+            long orderId = findOrder(orderNumber).path("id").asLong();
+            openOrder(orderId);
+            // the order is cancelled behind the page's back, as another tab or the staff could do
+            call(api, "POST", "/api/v1/orders/" + orderId + "/cancellation-request", Map.of("reason", "Selenium test"));
 
-        clickDownload("/receipt");
+            clickDownload("/receipt");
 
-        String message = notice();
-        assertTrue(message.contains("đã hủy"), message);
-        assertTrue(driver.findElement(By.id("notice")).getAttribute("class").contains("error"));
-        assertEquals(List.of(), driver.findElements(By.cssSelector("pre")), "no raw JSON page opened");
+            String message = notice();
+            assertTrue(message.contains("đã hủy"), message);
+            assertTrue(driver.findElement(By.id("notice")).getAttribute("class").contains("error"));
+            assertEquals(List.of(), driver.findElements(By.cssSelector("pre")), "no raw JSON page opened");
+        } finally {
+            restoreStock(manager, productSlug, stockBefore);
+        }
     }
 }
