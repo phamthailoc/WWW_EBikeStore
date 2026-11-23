@@ -23,7 +23,7 @@ Mỗi mục ghi: vì sao nên làm, làm gì, dùng lại phần nào đã có, 
 | V32. Đánh giá có ảnh, hỏi đáp dưới mỗi xe | P3 | 2 ngày | ⬜ Chưa làm | – |
 | V33. Công cụ "Xe điện tiết kiệm bao nhiêu" | P3 | ½ ngày | 🟡 Code xong (23/11), chưa kiểm thử Selenium, chưa chạy app: mục "Xe điện tiết kiệm bao nhiêu?" ở trang xe (khách vãng lai và mọi vai trò có quyền `product:view`; vai trò không có quyền này, như OPERATOR, SUPPORT, MAINTENANCE trong dữ liệu mẫu, nhận 403 và hộp tự ẩn), `GET /api/v1/products/{slug}/savings?kmPerDay=&daysPerMonth=` (không cache, 404 xe lạ, 400 số ngoài khoảng); tiền sạc tính từ Ah x V của pin và quãng đường (thực tế 80% công bố, hiệu suất sạc 85%), so với xe máy xăng cùng phân khúc; 5 quy tắc giá của Admin (`SAVINGS_ELECTRICITY_PRICE`, `SAVINGS_PETROL_PRICE`, `SAVINGS_PETROL_USE_E_SCOOTER/E_BIKE/E_MOTORBIKE`; Admin không nhập được 0 hoặc quá lớn, quy tắc 0/INACTIVE dùng giá mặc định); xe thiếu thông số pin báo chưa tính được, pin/phụ kiện ẩn mục; chatbot trả lời câu hỏi chi phí bằng giá hiện hành và dẫn tới trang xe; chạy `update_savings_calculator.sql` trước; đã viết `SavingsCalculatorSeleniumTest`, chưa chạy | `feat/savings-calculator` |
 | V34. Docker Compose (app + MariaDB) | P3 | ½ ngày | ⬜ Chưa làm | – |
-| V35. SEO: sitemap, dữ liệu cấu trúc, Open Graph | P3 | ½ ngày | ⬜ Chưa làm | – |
+| V35. SEO: sitemap, dữ liệu cấu trúc, Open Graph | P3 | ½ ngày | 🟡 Code xong (23/11), chưa kiểm thử Selenium, chưa chạy app: `/sitemap.xml`, `/robots.txt`, canonical, Open Graph và JSON-LD `Product` ở trang xe; trang riêng tư và bộ lọc gắn `noindex`. Toàn bộ unit test qua (24/11), `SeoSeleniumTest` viết xong nhưng chưa chạy | feat/seo |
 
 Ký hiệu: P1 nên làm trước; P2 làm tiếp nếu còn thời gian; P3 làm thêm. ⬜ chưa làm, 🟡 đang làm hoặc đã code chưa kiểm thử, ✅ xong và đã kiểm thử.
 
@@ -200,6 +200,14 @@ Spring Security OAuth2 client; sau khi Google trả về email đã xác thực 
 
 ### V35. SEO — khoảng ½ ngày
 `/sitemap.xml` sinh từ danh sách xe; `robots.txt`; dữ liệu cấu trúc JSON-LD `Product` (giá, còn hàng, điểm đánh giá) ở trang chi tiết xe; thẻ Open Graph (ảnh, tên, giá) để link xe hiện đẹp khi chia sẻ.
+
+Kiểm thử (Selenium, `SeoSeleniumTest`; khách chưa đăng nhập, không cookie):
+- `/robots.txt` và `/sitemap.xml` mở không cần tài khoản; sitemap có trang chủ, `/products`, `/support`, `/warranty` và đúng các xe đang bán; robots chỉ chặn `/api/` và `/lang/`.
+- Trang xe: một canonical dù vào bằng `/product`, `/bike` hay `/models`; Open Graph, giá và tồn kho trong JSON-LD khớp trang; không có đánh giá thì không có `aggregateRating`.
+- Trang riêng tư (đăng nhập, giỏ hàng, thanh toán, khu nhân viên...) và bộ lọc/tìm kiếm có `noindex`; trang thường được index.
+- Bản tiếng Anh: `og:locale` là `en_US`, mô tả tiếng Anh; xong thì trả lại tiếng Việt.
+- Điện thoại 390 px: không tràn ngang.
+- Xe đã tắt không có trong sitemap (cần tắt xe qua API quản lý rồi bật lại; chưa tự động hóa).
 
 ---
 

@@ -44,7 +44,7 @@ public class SecurityConfiguration {
                 PermissionConstants.ChatbotManagement.CHATBOT_USE
             ))
             .authorizeHttpRequests(authorize -> authorize
-                .requestMatchers("/", "/shop", "/products", "/models", "/bike/**", "/product/**", "/models/**", "/login", "/auth", "/signup", "/lang/*", "/checkout", "/checkout/success", "/payment/return", "/support", "/warranty", "/compare", "/chatbot", "/css/**", "/js/**", "/images/**", "/favicon.ico").permitAll()
+                .requestMatchers("/", "/shop", "/products", "/models", "/bike/**", "/product/**", "/models/**", "/login", "/auth", "/signup", "/lang/*", "/checkout", "/checkout/success", "/payment/return", "/support", "/warranty", "/compare", "/chatbot", "/sitemap.xml", "/robots.txt", "/css/**", "/js/**", "/images/**", "/favicon.ico").permitAll()
                 .requestMatchers("/cart", "/data/**").permitAll()
                 .requestMatchers("/favorites").authenticated()
                 .requestMatchers("/customer/**").hasAnyAuthority(PermissionConstants.Customer.PROFILE_VIEW, PermissionConstants.OrderManagement.ORDER_VIEW_ALL)

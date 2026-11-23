@@ -44,6 +44,8 @@ public class StorefrontController {
         var featured = catalog.stream().filter(p -> Boolean.TRUE.equals(p.featured())).limit(4).toList();
         model.addAttribute("featured", featured.isEmpty() ? catalog.stream().limit(4).toList() : featured);
         model.addAttribute("query", q == null ? "" : q);
+        // V35: a search result is not a page to list in a search engine; the plain home page is
+        model.addAttribute("seoRobots", q == null || q.isBlank() ? null : "noindex,follow");
         return "store/home";
     }
 
@@ -87,6 +89,13 @@ public class StorefrontController {
         model.addAttribute("maxRangeKm", maxRangeKm == null ? "" : maxRangeKm);
         model.addAttribute("inStock", inStock);
         model.addAttribute("sort", sort);
+        // V35: the plain catalogue (and its pages) is indexed under /products; any filtered, searched or re-sorted view is not
+        boolean narrowed = (q != null && !q.isBlank()) || categoryId != null || minPrice != null || maxPrice != null
+            || (brand != null && !brand.isBlank()) || (vehicleType != null && !vehicleType.isBlank()) || (batteryType != null && !batteryType.isBlank())
+            || minRangeKm != null || maxRangeKm != null || Boolean.TRUE.equals(inStock) || !"default".equals(sort);
+        model.addAttribute("seoRobots", narrowed ? "noindex,follow" : null);
+        model.addAttribute("seoPage", safePage);
+        model.addAttribute("seoPath", narrowed || safePage == 1 ? "/products" : "/products?page=" + safePage);
         model.addAttribute("filterOptions", products.getFilterOptions());
         model.addAttribute("vehicleTypeLabels", java.util.Map.of(
             "E_SCOOTER", "Xe tay ga điện", "E_MOTORBIKE", "Xe máy điện", "E_BIKE", "Xe đạp điện", "BATTERY", "Pin", "ACCESSORY", "Phụ kiện"));
