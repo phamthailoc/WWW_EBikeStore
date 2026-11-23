@@ -88,6 +88,27 @@ class ServerRateLimitFilterTest {
     }
 
     @Test
+    void thePdfDownloadsHaveAFloodGuardPerAddressAndEachKindCountsOnItsOwn() throws Exception {
+        ServerRateLimitFilter filter = new ServerRateLimitFilter(true);
+        for (int i = 0; i < 40; i++) {
+            assertEquals(200, download(filter, "/api/v1/orders/" + i + "/receipt"), "receipt " + i);
+        }
+        assertEquals(429, download(filter, "/api/v1/orders/41/receipt"));
+        assertEquals(200, download(filter, "/api/v1/orders/41/warranty-card"));
+        // the order detail itself is not limited by these rules
+        assertEquals(200, download(filter, "/api/v1/orders/41"));
+    }
+
+    private static int download(ServerRateLimitFilter filter, String path) throws Exception {
+        MockHttpServletRequest request = new MockHttpServletRequest("GET", path);
+        request.setServletPath(path);
+        request.setRemoteAddr("203.0.113.40");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        filter.doFilter(request, response, new MockFilterChain());
+        return response.getStatus();
+    }
+
+    @Test
     void switchedOffItNeverBlocks() throws Exception {
         ServerRateLimitFilter filter = new ServerRateLimitFilter(false);
         for (int i = 0; i < 10; i++) {

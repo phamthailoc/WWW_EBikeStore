@@ -5,6 +5,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
+import com.ebike.event.notification.OrderDeliveredEvent;
 import com.ebike.event.notification.OrderStatusChangedEvent;
 import com.ebike.model.entity.auth.User;
 import com.ebike.model.entity.order.Order;
@@ -57,6 +58,45 @@ class OrderNotificationJpaListenerTest {
     void aStaffCancellationWhoseReasonHappensToStartTheSameWayStillSendsTheNotice() {
         listener.afterUpdate(cancelledOrder(InstallmentService.REJECTED_REASON_PREFIX + "gõ tay", false));
         verify(publisher).publishEvent(any(OrderStatusChangedEvent.class));
+    }
+
+    private static Order deliveredOrder(User user, OrderStatus before) {
+        Order order = new Order();
+        order.setId(11L);
+        order.setOrderNumber("ORD-11");
+        order.setUser(user);
+        order.setStatus(OrderStatus.DELIVERED);
+        ReflectionTestUtils.setField(order, "previousStatusForNotification", before);
+        return order;
+    }
+
+    @Test
+    void handingOverAnOrderSendsTheNoticeAndAsksForTheDocumentsEmail() {
+        User user = new User();
+        user.setId(7L);
+
+        listener.afterUpdate(deliveredOrder(user, OrderStatus.SHIPPED));
+
+        verify(publisher).publishEvent(any(OrderStatusChangedEvent.class));
+        verify(publisher).publishEvent(new OrderDeliveredEvent(11L));
+    }
+
+    @Test
+    void aGuestOrderHasNoNoticeButStillGetsTheDocumentsEmail() {
+        listener.afterUpdate(deliveredOrder(null, OrderStatus.READY_FOR_PICKUP));
+
+        verify(publisher).publishEvent(new OrderDeliveredEvent(11L));
+        verify(publisher, never()).publishEvent(any(OrderStatusChangedEvent.class));
+    }
+
+    @Test
+    void savingAnOrderThatWasAlreadyDeliveredSendsNothing() {
+        User user = new User();
+        user.setId(7L);
+
+        listener.afterUpdate(deliveredOrder(user, OrderStatus.DELIVERED));
+
+        verify(publisher, never()).publishEvent(any(Object.class));
     }
 
     @Test
