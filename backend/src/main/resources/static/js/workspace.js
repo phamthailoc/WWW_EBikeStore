@@ -135,7 +135,9 @@
     : /^SAVINGS_PETROL_USE_/.test(code) ? t('Lít xăng cho 100 km (lớn hơn 0 và không quá 10, có thể nhập 1,8)') : t('Số tiền áp dụng');
   const pricingAmount = (code,text) => {
     const typed = text.trim();
-    const amount = Number(/^SAVINGS_PETROL_USE_/.test(code) && /^\d+,\d+$/.test(typed) ? typed.replace(',','.') : typed);
+    // a price in dong may be typed with thousands dots (2.900): read it as 2900, not 2.9; litres per 100 km keep their decimal comma
+    const grouped = /^\d{1,3}(\.\d{3})+$/.test(typed) && !/^SAVINGS_PETROL_USE_/.test(code) ? typed.replace(/\./g,'') : typed;
+    const amount = Number(/^SAVINGS_PETROL_USE_/.test(code) && /^\d+,\d+$/.test(typed) ? typed.replace(',','.') : grouped);
     return Number.isFinite(amount) && amount >= 0 ? amount : null;
   };
   const pricingCell = (row,k) => {

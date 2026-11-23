@@ -44,6 +44,8 @@ class AdminSavingsRuleTest {
         PricingRule rule = rule(PricingService.SAVINGS_ELECTRICITY_PRICE);
         assertThrows(ResponseStatusException.class, () -> service.updatePricingRule(1L, new PricingRuleUpdateRequest(BigDecimal.ZERO, "ACTIVE", null)));
         assertThrows(ResponseStatusException.class, () -> service.updatePricingRule(1L, new PricingRuleUpdateRequest(new BigDecimal("20001"), "ACTIVE", null)));
+        // 2.900 typed with a thousands dot arrives as 2.9: refused, not shown to every visitor as 2.9 dong
+        assertThrows(ResponseStatusException.class, () -> service.updatePricingRule(1L, new PricingRuleUpdateRequest(new BigDecimal("2.9"), "ACTIVE", null)));
         verify(pricingRules, never()).save(any());
         assertEquals(0, new BigDecimal("2900").compareTo(rule.getAmount()));
     }
@@ -52,12 +54,12 @@ class AdminSavingsRuleTest {
         PricingRule rule = rule(PricingService.SAVINGS_PETROL_USE_PREFIX + "E_BIKE");
         rule.setUnit("lít/100 km");
         PricingRuleUpdateRequest tooMuch = new PricingRuleUpdateRequest(new BigDecimal("11"), "ACTIVE", null);
-        assertEquals("Giá trị phải lớn hơn 0 và không vượt 10 (lít/100 km).", assertThrows(ResponseStatusException.class, () -> service.updatePricingRule(1L, tooMuch)).getReason());
+        assertEquals("Giá trị phải từ 0.5 đến 10 (lít/100 km). Nhập số không có dấu chấm ngăn cách hàng nghìn.", assertThrows(ResponseStatusException.class, () -> service.updatePricingRule(1L, tooMuch)).getReason());
         org.springframework.context.i18n.LocaleContextHolder.setLocale(java.util.Locale.ENGLISH);
         org.springframework.web.context.request.RequestContextHolder.setRequestAttributes(
             new org.springframework.web.context.request.ServletRequestAttributes(new org.springframework.mock.web.MockHttpServletRequest()));
         try {
-            assertEquals("The value must be above 0 and not exceed 10 (litres/100 km).",
+            assertEquals("The value must be from 0.5 to 10 (litres/100 km). Enter the number without a thousands separator.",
                 assertThrows(ResponseStatusException.class, () -> service.updatePricingRule(1L, tooMuch)).getReason());
         } finally {
             org.springframework.context.i18n.LocaleContextHolder.resetLocaleContext();

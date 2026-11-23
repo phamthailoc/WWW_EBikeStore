@@ -129,10 +129,12 @@ public class AdminServiceImpl implements AdminService {
         if (rule.getCode().startsWith(PricingService.SAVINGS_PREFIX)) {
             // V33: the savings calculator divides by nothing but shows these figures to every visitor, so a zero or a typo in the wrong unit is refused here
             BigDecimal ceiling = savingsCeiling(rule.getCode());
-            if (request.amount().signum() <= 0 || request.amount().compareTo(ceiling) > 0) {
+            BigDecimal floor = savingsFloor(rule.getCode());
+            if (request.amount().compareTo(floor) < 0 || request.amount().compareTo(ceiling) > 0) {
+                // a price typed with a thousands dot (2.900) arrives as 2.9: the floor catches it instead of showing every visitor a price of 2.9 dong
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, RequestLanguage.text(
-                    "Giá trị phải lớn hơn 0 và không vượt " + ceiling.toPlainString() + " (" + rule.getUnit() + ").",
-                    "The value must be above 0 and not exceed " + ceiling.toPlainString() + " (" + englishUnit(rule.getUnit()) + ")."));
+                    "Giá trị phải từ " + floor.toPlainString() + " đến " + ceiling.toPlainString() + " (" + rule.getUnit() + "). Nhập số không có dấu chấm ngăn cách hàng nghìn.",
+                    "The value must be from " + floor.toPlainString() + " to " + ceiling.toPlainString() + " (" + englishUnit(rule.getUnit()) + "). Enter the number without a thousands separator."));
             }
         }
 
@@ -549,6 +551,16 @@ public class AdminServiceImpl implements AdminService {
     /** The units are stored in Vietnamese ("VND/lít", "lít/100 km"); an English message names them in English. */
     private static String englishUnit(String unit) {
         return unit == null ? "" : unit.replace("lít/100 km", "litres/100 km").replace("lít", "litre");
+    }
+
+    private static BigDecimal savingsFloor(String code) {
+        if (PricingService.SAVINGS_ELECTRICITY_PRICE.equals(code)) {
+            return new BigDecimal("500");
+        }
+        if (PricingService.SAVINGS_PETROL_PRICE.equals(code)) {
+            return new BigDecimal("5000");
+        }
+        return new BigDecimal("0.5");
     }
 
     private static BigDecimal savingsCeiling(String code) {
