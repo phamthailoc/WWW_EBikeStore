@@ -134,7 +134,7 @@ public final class DocumentModels {
             rows.add(row(DocumentText.text(lang, "receipt.instDown"), DocumentFormat.money(installment.getDownPaymentAmount(), lang) + " (" + installment.getDownPaymentPercent() + "%)", false));
             rows.add(row(DocumentText.text(lang, "receipt.instFinanced"), DocumentFormat.money(installment.getFinancedAmount(), lang), false));
             rows.add(row(DocumentText.text(lang, "receipt.instTerm"), DocumentText.text(lang, installment.getTermMonths() != null && installment.getTermMonths() == 1 ? "card.month1" : "card.months", installment.getTermMonths()), false));
-            rows.add(row(DocumentText.text(lang, "receipt.instRate"), installment.getAnnualRatePercent() == null ? "—" : installment.getAnnualRatePercent().stripTrailingZeros().toPlainString() + "%/" + ("en".equals(lang) ? "year" : "năm"), false));
+            rows.add(row(DocumentText.text(lang, "receipt.instRate"), installment.getAnnualRatePercent() == null ? "—" : DocumentText.text(lang, "receipt.perYear", installment.getAnnualRatePercent().stripTrailingZeros().toPlainString()), false));
             rows.add(row(DocumentText.text(lang, "receipt.instMonthly"), DocumentFormat.money(installment.getMonthlyPayment(), lang), false));
             rows.add(row(DocumentText.text(lang, "receipt.instTotal"), DocumentFormat.money(installment.getTotalPayable(), lang), false));
             block.put("installment", rows);

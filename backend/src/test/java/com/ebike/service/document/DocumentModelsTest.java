@@ -122,6 +122,8 @@ class DocumentModelsTest {
         assertEquals("6.000.000 ₫ (30%)", rows.get(0).get("value"));
         assertEquals("12 tháng", rows.get(2).get("value"));
         assertEquals("10%/năm", rows.get(3).get("value"));
+        Map<String, Object> english = map(DocumentModels.receipt(order, plan, DocumentFixtures.store(), "en", NOW).get("payment"));
+        assertEquals("10%/year", list(english.get("installment")).get(3).get("value"));
     }
 
     @Test

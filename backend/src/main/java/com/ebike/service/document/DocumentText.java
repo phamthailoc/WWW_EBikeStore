@@ -67,6 +67,7 @@ public final class DocumentText {
         add("receipt.instTerm", "Kỳ hạn", "Term");
         add("receipt.instMonthly", "Trả mỗi tháng", "Monthly payment");
         add("receipt.instRate", "Lãi phẳng", "Flat rate");
+        add("receipt.perYear", "{0}%/năm", "{0}%/year");
         add("receipt.instTotal", "Tổng phải trả", "Total payable");
         add("receipt.instNote", "Kế hoạch trả góp chỉ là mô phỏng, không có hợp đồng tín dụng thật.",
             "The instalment plan is a simulation only; there is no real credit contract.");
