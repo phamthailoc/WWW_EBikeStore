@@ -37,7 +37,7 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
  * V27: the sales receipt and the warranty card as PDF. A customer places an order and can already download a provisional receipt (no warranty
  * card yet); once the manager has delivered it with frame numbers, the order page offers the receipt and the warranty card, the warranty book
  * offers the card of each bike, the files read back with the right words in both languages, a stranger gets 404 and a visitor 401, the staff
- * can open any order's files (also an admin, and a store pick-up order names the showroom), and a cancelled order has no receipt. The rate limiter is off in Selenium runs, so the 429 notice is not covered here. The hand-over email needs a mail server and is covered by unit tests only.
+ * can open any order's files (also an admin, and a store pick-up order names the showroom), and a cancelled order has no receipt. The rate limiter is off in Selenium runs, so the 429 notice is not covered here (documents.js has no unit test of its own: these scenarios are its only coverage). The hand-over email needs a mail server and is covered by unit tests only.
  * Needs {@code -Dselenium.managerUser} and {@code -Dselenium.managerPassword}; skipped otherwise.
  *
  * <pre>
@@ -182,14 +182,18 @@ class OrderDocumentsSeleniumTest extends StorefrontSeleniumTest {
     }
 
     private static long placePickupOrderOverRest() throws Exception {
-        JsonNode product = call(api, "GET", "/api/v1/products/" + productSlug, null);
+        return placePickupOrderOverRest(productSlug);
+    }
+
+    private static long placePickupOrderOverRest(String slug) throws Exception {
+        JsonNode product = call(api, "GET", "/api/v1/products/" + slug, null);
         JsonNode color = null;
         for (JsonNode variant : listOf(product.path("variants"))) {
             if (color == null || variant.path("stockQuantity").asInt() > color.path("stockQuantity").asInt()) {
                 color = variant;
             }
         }
-        assumeTrue(color == null || color.path("stockQuantity").asInt() > 0, "every colour of " + productSlug + " is sold out");
+        assumeTrue(color == null || color.path("stockQuantity").asInt() > 0, "every colour of " + slug + " is sold out");
         long showroom = listOf(call(api, "GET", "/api/v1/showrooms", null)).iterator().next().path("id").asLong();
         Map<String, Object> item = new LinkedHashMap<>();
         item.put("productId", product.path("id").asLong());
@@ -363,6 +367,28 @@ class OrderDocumentsSeleniumTest extends StorefrontSeleniumTest {
         assertEquals("Đã tải tệp PDF.", notice());
         String staffText = textOf(Files.readAllBytes(newSaved(downloads, "receipt-" + orderNumber, before)));
         assertTrue(staffText.contains("SALES RECEIPT") && !staffText.contains("PHIẾU BÁN HÀNG"), staffText);
+
+        // 10. send the email again: the Selenium app has no mail server, so the notice says why nothing was sent (and it is red); the button is usable again afterwards
+        js("var n=document.querySelector('#notice');n.hidden=true;n.textContent='';");
+        click(By.id("resendDocuments"));
+        String resendNotice = notice();
+        assertTrue(resendNotice.contains("Chưa bật email"), "the 409 text of a shop without mail: " + resendNotice);
+        assertTrue(driver.findElement(By.id("notice")).getAttribute("class").contains("error"));
+        wait.until(d -> d.findElement(By.id("resendDocuments")).isEnabled());
+        assertEquals("Gửi lại email phiếu", driver.findElement(By.id("resendDocuments")).getText());
+
+        // 11. the staff panel on a phone: the language select, both downloads and the resend button fit the screen
+        try {
+            driver.manage().window().setSize(new org.openqa.selenium.Dimension(375, 812));
+            driver.get(baseUrl + "/manager/orders/" + orderId);
+            wait.until(ExpectedConditions.visibilityOfElementLocated(PANEL));
+            assertTrue((Boolean) js("return document.documentElement.scrollWidth <= window.innerWidth + 1"), "no sideways scroll on a phone");
+            assertTrue((Boolean) js("return [...document.querySelectorAll('#orderDocuments select, #orderDocuments button')].length === 4 "
+                + "&& [...document.querySelectorAll('#orderDocuments select, #orderDocuments button')].every(e => { const r = e.getBoundingClientRect(); return r.width > 0 && r.left >= 0 && r.right <= window.innerWidth + 1; })"),
+                "the select and three buttons are all inside the screen");
+        } finally {
+            driver.manage().window().setSize(new org.openqa.selenium.Dimension(1366, 900));
+        }
     }
 
     @Test
@@ -432,8 +458,50 @@ class OrderDocumentsSeleniumTest extends StorefrontSeleniumTest {
             assertTrue(message.contains("đã hủy"), message);
             assertTrue(driver.findElement(By.id("notice")).getAttribute("class").contains("error"));
             assertEquals(List.of(), driver.findElements(By.cssSelector("pre")), "no raw JSON page opened");
+
+            // the words of a server error follow the language of the page: the cookie alone switches them, the page is not reloaded
+            driver.manage().addCookie(new org.openqa.selenium.Cookie.Builder("ebike_lang", "en").path("/").build());
+            clickDownload("/receipt");
+            String english = notice();
+            assertTrue(english.contains("cancelled") && !english.contains("đã hủy"), english);
+            assertTrue(driver.findElement(By.id("notice")).getAttribute("class").contains("error"));
         } finally {
+            driver.manage().deleteCookieNamed("ebike_lang");
             restoreStock(manager, productSlug, stockBefore);
+        }
+    }
+
+    /** The slug of a product that is sold without frame numbers (a battery or an accessory) and has stock, or null when the shop sells none. */
+    private static String productWithoutNumbers() throws Exception {
+        for (JsonNode summary : listOf(call(api, "GET", "/api/v1/products", null))) {
+            if (summary.path("stockQuantity").asInt() < 1) continue;
+            String type = call(api, "GET", "/api/v1/products/" + summary.path("slug").asText(), null).path("specification").path("vehicleType").asText("");
+            if (type.equals("BATTERY") || type.equals("ACCESSORY")) return summary.path("slug").asText();
+        }
+        return null;
+    }
+
+    @Test
+    void aDeliveredOrderWithNothingToNumberHasTheReceiptAndSaysThereIsNoWarrantyCard() throws Exception {
+        String slug = productWithoutNumbers();
+        assumeTrue(slug != null, "the shop sells no battery or accessory in stock");
+        HttpClient manager = managerApi();
+        Map<Long, Integer> stockBefore = stockOf(slug);
+        try {
+            long orderId = placePickupOrderOverRest(slug);
+            for (String status : new String[] {"CONFIRMED", "PROCESSING", "READY_FOR_PICKUP", "DELIVERED"}) {
+                call(manager, "PATCH", "/api/v1/orders/" + orderId + "/status", Map.of("status", status));
+            }
+            openOrder(orderId);
+            String text = driver.findElement(PANEL).getText();
+            assertTrue(text.contains("Tải hóa đơn"), text);
+            assertTrue(text.contains("Đơn này không có xe cần phiếu bảo hành"), "an order with no vehicle is not told that numbers are missing: " + text);
+            assertFalse(text.contains("chưa có số khung"), text);
+            assertTrue(driver.findElements(By.cssSelector("#orderDocuments [data-doc-url*='warranty-card']")).isEmpty(), "no card button");
+            assertEquals(409, download(api, "/api/v1/orders/" + orderId + "/warranty-card").statusCode());
+            assertPdf(download(api, "/api/v1/orders/" + orderId + "/receipt"));
+        } finally {
+            restoreStock(manager, slug, stockBefore);
         }
     }
 }
