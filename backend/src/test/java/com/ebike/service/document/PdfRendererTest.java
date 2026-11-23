@@ -85,6 +85,18 @@ class PdfRendererTest {
     }
 
     @Test
+    void controlCharactersInTheCustomersWordsDoNotBreakThePage() throws IOException {
+        Order order = DocumentFixtures.order(3, OrderStatus.DELIVERED, 1, true);
+        order.setNotes("Gọi trước\013 khi\b giao");
+        order.getShipment().setRecipientName("An\013 Nguyễn");
+
+        String text = textOf(receipt(order, "vi"));
+
+        assertTrue(text.contains("Gọi trước khi giao"), text);
+        assertTrue(text.contains("An Nguyễn"), text);
+    }
+
+    @Test
     void aProvisionalReceiptSaysSoOnThePage() throws IOException {
         Order order = DocumentFixtures.order(4, OrderStatus.CONFIRMED, 1, false);
 

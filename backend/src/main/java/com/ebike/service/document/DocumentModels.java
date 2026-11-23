@@ -84,7 +84,7 @@ public final class DocumentModels {
             line.put("amount", DocumentFormat.money(item.getLineTotal(), lang));
             List<String> numbers = new ArrayList<>();
             item.getUnits().stream().sorted(Comparator.comparing(OrderItemUnit::getId, Comparator.nullsLast(Comparator.naturalOrder()))).forEach(unit ->
-                numbers.add(DocumentText.text(lang, "receipt.frame") + " " + unit.getFrameNumber() + " · " + DocumentText.text(lang, "receipt.engine") + " " + unit.getEngineNumber()));
+                numbers.add(DocumentText.text(lang, "receipt.frame") + " " + xmlSafe(unit.getFrameNumber()) + " · " + DocumentText.text(lang, "receipt.engine") + " " + xmlSafe(unit.getEngineNumber())));
             line.put("numbers", numbers);
             lines.add(line);
         }
@@ -163,14 +163,14 @@ public final class DocumentModels {
         List<Map<String, Object>> cards = new ArrayList<>();
         for (OrderItemUnit unit : units) {
             Map<String, Object> card = new LinkedHashMap<>();
-            card.put("number", "BH-" + unit.getFrameNumber());
+            card.put("number", "BH-" + xmlSafe(unit.getFrameNumber()));
             card.put("orderNumber", order.getOrderNumber());
             card.put("ownerName", customerName(order, lang));
             card.put("ownerPhone", dash(shipment == null ? null : shipment.getPhoneNumber()));
             card.put("model", dash(unit.getOrderItem().getProductName()));
             card.put("colour", dash(WarrantyService.colourOf(unit.getOrderItem())));
-            card.put("frame", unit.getFrameNumber());
-            card.put("engine", unit.getEngineNumber());
+            card.put("frame", xmlSafe(unit.getFrameNumber()));
+            card.put("engine", xmlSafe(unit.getEngineNumber()));
             card.put("place", showroom != null ? join(showroom.getName(), showroom.getAddress()) : DocumentText.text(lang, "card.homeDelivery"));
             Integer months = WarrantyService.warrantyMonths(unit);
             LocalDateTime ends = WarrantyRules.endsAt(starts, months);
@@ -263,7 +263,7 @@ public final class DocumentModels {
             return DocumentText.text(lang, "name.deleted");
         }
         if (user != null) {
-            String name = ((user.getFirstName() == null ? "" : user.getFirstName()) + " " + (user.getLastName() == null ? "" : user.getLastName())).trim();
+            String name = xmlSafe((user.getFirstName() == null ? "" : user.getFirstName()) + " " + (user.getLastName() == null ? "" : user.getLastName())).trim();
             if (!name.isEmpty()) {
                 return name;
             }
@@ -292,7 +292,33 @@ public final class DocumentModels {
     }
 
     private static String blankToNull(String value) {
-        return value == null || value.isBlank() ? null : value.trim();
+        String text = xmlSafe(value);
+        return text == null || text.isBlank() ? null : text.trim();
+    }
+
+    /**
+     * Customer text goes into an XHTML page, and a control character such as a vertical tab is not allowed in XML 1.0, so the page would not
+     * parse and the receipt could not be made at all. Such characters are dropped (a tab, a line feed and a carriage return stay).
+     */
+    static String xmlSafe(String value) {
+        if (value == null) {
+            return null;
+        }
+        StringBuilder clean = null;
+        for (int index = 0; index < value.length(); ) {
+            int code = value.codePointAt(index);
+            int width = Character.charCount(code);
+            boolean valid = code == 0x9 || code == 0xA || code == 0xD || (code >= 0x20 && code <= 0xD7FF && code != 0xFFFE && code != 0xFFFF)
+                || (code >= 0xE000 && code <= 0xFFFD) || (code >= 0x10000 && code <= 0x10FFFF);
+            if (!valid && clean == null) {
+                clean = new StringBuilder(value.substring(0, index));
+            }
+            if (valid && clean != null) {
+                clean.appendCodePoint(code);
+            }
+            index += width;
+        }
+        return clean == null ? value : clean.toString();
     }
 
     private static String dash(String value) {
