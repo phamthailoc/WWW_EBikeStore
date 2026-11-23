@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * V33: the savings calculator of a bike. Open to every role, visitors included (it needs only the product:view permission every role has and changes
- * nothing). The prices live in the admin's pricing table, so no answer may be cached.
+ * V33: the savings calculator of a bike. Open to visitors and to every role that has the product:view permission (it changes nothing); a role without
+ * that permission, such as OPERATOR, SUPPORT or MAINTENANCE in the sample data, gets a 403 and the page hides the box. The prices live in the admin's pricing table, so no answer may be cached.
  */
 @RestController
 public class SavingsController {

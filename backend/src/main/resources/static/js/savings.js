@@ -35,6 +35,8 @@
     return response.json();
   }
 
+  // 404: the bike is hidden or removed; 401/403: the account has no right to view products (a few staff roles), so a retry would only fail again
+  const isGone = error => [401, 403, 404].includes(error.status);
   const field = name => body.querySelector(`[name="${name}"]`);
   const wholeNumber = (input, max) => {
     const text = String(input.value).trim();
@@ -74,7 +76,7 @@
       paintResult(answer);
     } catch (error) {
       if (mine !== sequence) return;
-      if (error.status === 404) { box.hidden = true; return; } // the bike was hidden while the rider was typing: hide the box as at the start
+      if (isGone(error)) { box.hidden = true; return; } // the bike was hidden while the rider was typing: hide the box as at the start
       paintProblem(error.message);
     }
   }
@@ -101,7 +103,7 @@
   }
 
   function showFailure(error) {
-    if (error.status === 404) { box.hidden = true; return; } // the bike was hidden or removed while the page was open
+    if (isGone(error)) { box.hidden = true; return; } // the bike was hidden or removed, or this account may not read products: nothing a retry could fix
     body.innerHTML = `<p class="installment-problem" role="alert">${esc(error.message)}</p><p><button type="button" class="button compact ghost" data-retry>${t('Thử lại')}</button></p>`;
     body.querySelector('[data-retry]').addEventListener('click', start);
     box.hidden = false;
