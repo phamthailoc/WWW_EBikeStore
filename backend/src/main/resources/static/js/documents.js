@@ -19,13 +19,16 @@ window.KineticDocuments = (() => {
     return fallback;
   }
 
-  async function download(url, fallbackName) {
-    const response = await fetch(url, {credentials: 'same-origin', headers: {Accept: 'application/pdf, application/json'}});
+  // options (V28, the Excel export reuses this): accept = the file type asked for, failure = the words when the server gives no reason
+  async function download(url, fallbackName, options) {
+    const settings = options || {};
+    const response = await fetch(url, {credentials: 'same-origin', headers: {Accept: settings.accept || 'application/pdf, application/json'}});
     if (response.status === 401) {
       location.href = '/login?returnTo=' + encodeURIComponent(location.pathname);
       throw Error(t('Vui lòng đăng nhập để tiếp tục.'));
     }
-    if (!response.ok) throw Error(await errorMessage(response, t('Không tải được tệp PDF. Vui lòng thử lại.')));
+    if (response.status === 403) throw Error(await errorMessage(response, t('Bạn không có quyền thực hiện thao tác này.')));
+    if (!response.ok) throw Error(await errorMessage(response, settings.failure || t('Không tải được tệp PDF. Vui lòng thử lại.')));
     const blob = await response.blob();
     const match = /filename="?([^";]+)"?/i.exec(response.headers.get('Content-Disposition') || '');
     const href = URL.createObjectURL(blob);

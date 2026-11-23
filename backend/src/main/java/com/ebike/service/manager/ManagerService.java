@@ -27,6 +27,9 @@ public interface ManagerService {
 
     ManagerRevenueReportResponse getRevenueReport(String period, String fromDate, String toDate);
 
+    /** V28: the same report plus the order counts the Excel file needs for the cancellation rate. */
+    com.ebike.service.report.RevenueReportExportData getRevenueReportForExport(String period, String fromDate, String toDate);
+
     ProductSummaryDto updateProductStock(Long productId, ManagerProductStockUpdateRequest request);
 
     /** Sets the stock of one colour and recomputes the product's total from its colours. */
