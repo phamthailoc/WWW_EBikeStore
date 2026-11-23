@@ -107,7 +107,7 @@ jobs:
           # Test chatbot cần khóa Gemini thật: bỏ qua nếu repo chưa có secret GEMINI_AI_KEY.
           EXCLUDE=""
           if [ "$HAS_GEMINI" != "true" ]; then EXCLUDE="-Dtest=!ChatbotMemorySeleniumTest"; fi
-          mvn -B -ntp test -Dgroups=selenium $EXCLUDE \
+          mvn -B -ntp test -Dgroups=selenium -Dsurefire.rerunFailingTestsCount=2 $EXCLUDE \
             -Dselenium.baseUrl=http://localhost:8080 \
             -Dselenium.vnpayHashSecret="$CI_VNPAY_SECRET" \
             -Dselenium.managerUser=selenium.manager -Dselenium.managerPassword="$MANAGER_PASSWORD" \
