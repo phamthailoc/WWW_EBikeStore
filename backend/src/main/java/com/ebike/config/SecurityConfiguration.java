@@ -82,6 +82,11 @@ public class SecurityConfiguration {
                     PermissionConstants.Customer.ORDER_VIEW_OWN,
                     PermissionConstants.OrderManagement.ORDER_VIEW_ALL
                 )
+                // V27: the receipt and the warranty card are read by the order's own customer or by the staff (the service checks which); a visitor gets 401.
+                .requestMatchers(HttpMethod.GET, "/api/v1/orders/*/receipt", "/api/v1/orders/*/warranty-card").hasAnyAuthority(
+                    PermissionConstants.Customer.ORDER_VIEW_OWN,
+                    PermissionConstants.OrderManagement.ORDER_VIEW_ALL
+                )
                 .requestMatchers(HttpMethod.POST, "/api/v1/orders").hasAuthority(PermissionConstants.Guest.ORDER_CREATE)
                 .requestMatchers(HttpMethod.POST, "/api/v1/orders/guest-orders/link").hasAuthority(PermissionConstants.Customer.ORDER_VIEW_OWN)
                 .requestMatchers(HttpMethod.POST, "/api/v1/orders/*/cancellation-request").hasAuthority(PermissionConstants.Customer.ORDER_CANCEL_OWN)

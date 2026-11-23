@@ -40,7 +40,11 @@ public class ServerRateLimitFilter extends OncePerRequestFilter {
         // V24: the calculator asks again as the slider moves (the page waits a moment between questions); a flood guard per address, wide enough for a shared computer
         new RateLimitRule("installment-quote", HttpMethod.GET.name(), "/api/v1/installments/quote", 90, Duration.ofMinutes(1)),
         // V24: the terms on offer are read from the pricing table (about six queries each time) and are public; each page of the calculator reads them once
-        new RateLimitRule("installment-config", HttpMethod.GET.name(), "/api/v1/installments/config", 60, Duration.ofMinutes(1))
+        new RateLimitRule("installment-config", HttpMethod.GET.name(), "/api/v1/installments/config", 60, Duration.ofMinutes(1)),
+        // V27: each download makes a PDF on the spot (a few tens of milliseconds of CPU, more for an order of many bikes), so one address may not ask in a flood;
+        // wide enough for a shop counter that prints one order after another
+        new RateLimitRule("order-receipt", HttpMethod.GET.name(), "/api/v1/orders/*/receipt", 40, Duration.ofMinutes(1)),
+        new RateLimitRule("order-warranty-card", HttpMethod.GET.name(), "/api/v1/orders/*/warranty-card", 40, Duration.ofMinutes(1))
     );
 
     private final boolean enabled;
