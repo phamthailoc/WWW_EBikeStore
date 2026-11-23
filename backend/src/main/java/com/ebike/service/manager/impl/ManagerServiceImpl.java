@@ -394,7 +394,8 @@ public class ManagerServiceImpl implements ManagerService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "shipmentStatus is required");
         }
 
-        Order order = orderRepository.findById(orderId)
+        // locked like the status update, so two requests cannot both move the order to DELIVERED (and send two hand-over emails)
+        Order order = orderRepository.findLockedById(orderId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
 
         if (order.getStatus() == OrderStatus.CANCELLED) {
