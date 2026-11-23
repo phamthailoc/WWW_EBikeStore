@@ -149,6 +149,21 @@ class PdfRendererTest {
     }
 
     @Test
+    void aLongScheduleAndALongShowroomTextStillTakeOnePagePerCard() throws IOException {
+        Order order = DocumentFixtures.order(6, OrderStatus.DELIVERED, 2, true);
+        var showroom = order.getShipment().getPickupShowroom();
+        showroom.setName("Showroom với một cái tên rất dài ".repeat(8));
+        showroom.setAddress("Số 12 đường Nguyễn Văn Linh, phường Tân Phong, Quận 7, Thành phố Hồ Chí Minh ".repeat(6));
+        List<OrderItemUnit> units = List.copyOf(order.getItems().iterator().next().getUnits());
+        String manyIntervals = String.join(",", java.util.stream.IntStream.rangeClosed(1, 40).mapToObj(month -> "P" + month + "M").toList());
+        for (String language : List.of("vi", "en")) {
+            Map<String, Object> model = DocumentModels.warrantyCards(order, units, DocumentFixtures.store(), WarrantyRules.parseIntervals(manyIntervals), language, NOW);
+
+            assertEquals(2, pagesOf(renderer.render("warranty-card", model)), language);
+        }
+    }
+
+    @Test
     void theEnglishWarrantyCardIsInEnglish() throws IOException {
         Order order = DocumentFixtures.order(7, OrderStatus.DELIVERED, 1, true);
         List<OrderItemUnit> units = List.copyOf(order.getItems().iterator().next().getUnits());

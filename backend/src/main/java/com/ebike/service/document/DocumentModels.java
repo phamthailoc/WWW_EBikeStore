@@ -31,6 +31,10 @@ import java.util.Map;
  */
 public final class DocumentModels {
 
+    /** What fits on one A4 card: the servicing dates (two to a row) and the length of the showroom's name and address. */
+    static final int MAX_MILESTONES = 12;
+    static final int MAX_PLACE = 160;
+
     /** The receipt says "Provisional" until the bike was handed over. */
     public static boolean isProvisional(Order order) {
         return order.getStatus() != OrderStatus.DELIVERED;
@@ -171,7 +175,7 @@ public final class DocumentModels {
             card.put("colour", dash(WarrantyService.colourOf(unit.getOrderItem())));
             card.put("frame", xmlSafe(unit.getFrameNumber()));
             card.put("engine", xmlSafe(unit.getEngineNumber()));
-            card.put("place", showroom != null ? join(showroom.getName(), showroom.getAddress()) : DocumentText.text(lang, "card.homeDelivery"));
+            card.put("place", showroom != null ? shorten(join(showroom.getName(), showroom.getAddress()), MAX_PLACE) : DocumentText.text(lang, "card.homeDelivery"));
             Integer months = WarrantyService.warrantyMonths(unit);
             LocalDateTime ends = WarrantyRules.endsAt(starts, months);
             boolean hasPeriod = ends != null;
@@ -180,13 +184,13 @@ public final class DocumentModels {
             card.put("startsAt", DocumentFormat.date(starts, lang));
             card.put("endsAt", hasPeriod ? DocumentFormat.date(ends, lang) : "—");
             List<Map<String, Object>> schedule = new ArrayList<>();
-            for (Period interval : intervals) {
+            for (Period interval : intervals.stream().limit(MAX_MILESTONES).toList()) {
                 schedule.add(row(
                     DocumentText.text(lang, "card.scheduleAfter", MaintenanceMilestones.describe(interval.toString(), lang)),
                     DocumentFormat.date(WarrantyRules.dueAt(starts, interval), lang), false));
             }
             card.put("schedule", schedule);
-            // two milestones to a row keeps the whole card on one page
+            // two milestones to a row, and at most MAX_MILESTONES of them, keep the whole card on one page
             List<Map<String, Object>> pairs = new ArrayList<>();
             for (int index = 0; index < schedule.size(); index += 2) {
                 Map<String, Object> pair = new LinkedHashMap<>();
@@ -328,6 +332,11 @@ public final class DocumentModels {
             index += width;
         }
         return clean == null ? value : clean.toString();
+    }
+
+    /** Cuts a text that is too long for its place on a card, so a card can never run onto a second page. */
+    private static String shorten(String value, int max) {
+        return value == null || value.length() <= max ? value : value.substring(0, max - 1).trim() + "…";
     }
 
     private static String dash(String value) {
