@@ -297,8 +297,9 @@ public class AdminServiceImpl implements AdminService {
         return toAccountResponse(saved);
     }
 
+    // READ_COMMITTED: see OwnAccountService.deleteOwnAccount (the erasure's count of open applications must see what is committed once it holds the lock)
     @Override
-    @Transactional
+    @Transactional(isolation = org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
     public void deleteAccount(Long id, String confirmEmail) {
         User user = userRepository.findById(id)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Account not found"));
