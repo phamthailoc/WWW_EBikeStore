@@ -563,6 +563,7 @@ public class AdminServiceImpl implements AdminService {
         return new BigDecimal("0.5");
     }
 
+    /** V33: the largest value an admin may type for a rule of the savings calculator (a typo guard, well above any real figure). */
     private static BigDecimal savingsCeiling(String code) {
         if (PricingService.SAVINGS_ELECTRICITY_PRICE.equals(code)) {
             return new BigDecimal("20000");

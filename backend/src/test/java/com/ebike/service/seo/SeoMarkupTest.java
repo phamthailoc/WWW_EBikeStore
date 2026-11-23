@@ -227,6 +227,21 @@ class SeoMarkupTest {
     }
 
     @Test
+    void offerCountIsTheNumberOfVariantsNotOfDistinctPrices() throws Exception {
+        ProductDetailDto product = withVariants(new BigDecimal("20000000"), null, variant("A", "0", true), variant("B", "0", false), variant("C", "500000", false));
+        JsonNode node = JSON.readTree(seo.productJsonLd(product));
+        assertEquals("AggregateOffer", node.path("offers").path("@type").asText());
+        assertEquals(3, node.path("offers").path("offerCount").asInt());
+    }
+
+    @Test
+    void aDescriptionIsNeverCutThroughAnEmoji() {
+        String cut = SeoMarkup.description("a".repeat(158) + "🚀" + "b".repeat(20), "x");
+        assertFalse(Character.isHighSurrogate(cut.charAt(cut.length() - 2)), "no lone surrogate before the ellipsis");
+        assertTrue(cut.endsWith("…"));
+    }
+
+    @Test
     void variantsThatCostTheSameGiveOneSimpleOffer() throws Exception {
         ProductDetailDto product = withVariants(new BigDecimal("20000000"), null, variant("A", "0", true), variant("B", "0", false));
         JsonNode offer = JSON.readTree(seo.productJsonLd(product)).path("offers");
