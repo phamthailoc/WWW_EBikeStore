@@ -26,7 +26,7 @@ public final class SavingsRules {
     /** Share of the energy drawn from the socket that reaches the battery. */
     public static final int CHARGER_EFFICIENCY_PERCENT = 85;
     /** What a road electric two-wheeler draws from the socket per 100 km; a figure outside this is a typo in the specification, not a result to show. */
-    public static final BigDecimal MIN_KWH_PER_100KM = new BigDecimal("1");
+    public static final BigDecimal MIN_KWH_PER_100KM = new BigDecimal("0.75");
     public static final BigDecimal MAX_KWH_PER_100KM = new BigDecimal("8");
 
     private static final MathContext MC = new MathContext(12, RoundingMode.HALF_UP);

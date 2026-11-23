@@ -123,7 +123,8 @@ window.KineticStock = (() => {
           text += line.orderId ? ` <a href="/manager/orders/${encodeURIComponent(line.orderId)}">${esc(line.orderNumber)}</a>` : ` ${esc(line.orderNumber)}`;
         }
         if (line.receiptNumber) {
-          text += ` <a href="/manager/stock-receipts?q=${encodeURIComponent(line.receiptNumber)}">${esc(line.receiptNumber)}</a>`;
+          // the receipt page needs a permission the history page does not: link it only when the menu offers it, else show the number alone
+          text += !document.querySelector('a[href="/manager/stock-receipts"]') ? ` ${esc(line.receiptNumber)}` : ` <a href="/manager/stock-receipts?q=${encodeURIComponent(line.receiptNumber)}">${esc(line.receiptNumber)}</a>`;
         }
         return text;
       };

@@ -130,6 +130,11 @@ public class AdminServiceImpl implements AdminService {
             // V33: the savings calculator divides by nothing but shows these figures to every visitor, so a zero or a typo in the wrong unit is refused here
             BigDecimal ceiling = savingsCeiling(rule.getCode());
             BigDecimal floor = savingsFloor(rule.getCode());
+            if (request.amount().stripTrailingZeros().scale() > 2) {
+                // the column keeps two decimals: 1.855 would be saved as 1.86 without a word
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, RequestLanguage.text(
+                    "Giá trị chỉ được có tối đa 2 chữ số thập phân.", "The value can have at most 2 decimal places."));
+            }
             if (request.amount().compareTo(floor) < 0 || request.amount().compareTo(ceiling) > 0) {
                 // a price typed with a thousands dot (2.900) arrives as 2.9: the floor catches it instead of showing every visitor a price of 2.9 dong
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, RequestLanguage.text(
