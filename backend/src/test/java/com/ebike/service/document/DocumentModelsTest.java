@@ -151,6 +151,18 @@ class DocumentModelsTest {
     }
 
     @Test
+    void anErasedAccountPrintsNoEmailOnTheReceipt() {
+        Order order = DocumentFixtures.order(8, OrderStatus.DELIVERED, 1, true);
+        order.setCustomerEmail(null);
+        order.getUser().setEmail("deleted_7@deleted.invalid");
+        order.getUser().setAccountStatus(com.ebike.service.admin.AccountErasure.DELETED);
+
+        Map<String, Object> customer = map(DocumentModels.receipt(order, null, DocumentFixtures.store(), "vi", NOW).get("customer"));
+
+        assertEquals("—", customer.get("email"));
+    }
+
+    @Test
     void theCustomerNameFallsBackToTheAccountThenToADash() {
         Order order = DocumentFixtures.order(8, OrderStatus.DELIVERED, 1, true);
         order.getShipment().setRecipientName("  ");

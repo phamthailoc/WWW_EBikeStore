@@ -61,7 +61,7 @@ public final class DocumentModels {
         Map<String, Object> customer = new LinkedHashMap<>();
         customer.put("name", customerName(order, lang));
         customer.put("phone", dash(shipment == null ? null : shipment.getPhoneNumber()));
-        customer.put("email", dash(contactEmail(order)));
+        customer.put("email", dash(printedEmail(order)));
         model.put("customer", customer);
 
         Map<String, Object> handover = new LinkedHashMap<>();
@@ -269,6 +269,15 @@ public final class DocumentModels {
             }
         }
         return "—";
+    }
+
+    /**
+     * The email printed on a document. The account of an erased customer is anonymised and its owner asked to be forgotten, so no address is printed:
+     * neither the {@code deleted_<id>@deleted.invalid} one nor the one typed at checkout (the name, phone and address of past orders stay, see AccountErasure).
+     */
+    static String printedEmail(Order order) {
+        User user = order.getUser();
+        return user != null && AccountErasure.DELETED.equals(user.getAccountStatus()) ? null : contactEmail(order);
     }
 
     /** The address a receipt is sent to: the one typed at checkout, else the recipient's, else the account's. */

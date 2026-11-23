@@ -49,7 +49,7 @@ Product lists and product details are cached in the application's memory (`Cache
 
 ## Receipts and warranty cards (V27)
 
-- `service/document` makes the sales receipt and the warranty card as PDF when they are asked for. Nothing is stored: there is no copy to go stale and no personal data to erase with an account.
+- `service/document` makes the sales receipt and the warranty card as PDF when they are asked for. Nothing is stored: there is no copy to go stale and no personal data to erase with an account. For an erased account the documents print no email address (the name, phone and address of past orders stay, as sales records).
 - Pages are Thymeleaf templates in `resources/documents/` (well-formed XHTML), turned into PDF by openhtmltopdf with DejaVu Sans embedded (the font comes from the `jasperreports-fonts` jar), so every Vietnamese letter shows.
 - `GET /api/v1/orders/{id}/receipt` and `/warranty-card[?unitId=]` (customer of the order, or staff; a stranger gets 404). The words follow the page language, or `lang=vi|en`.
 - When an order is saved as DELIVERED, `OrderNotificationJpaListener` publishes `OrderDeliveredEvent`; after the commit `OrderDeliveredEmailListener` emails both PDFs on a bounded pool of their own (`documentExecutor`; guest orders too, an erased account never). A full queue, a render failure or an SMTP failure is logged with the order and the email is not retried: there is no "resend" button yet, and the customer can still download both PDFs.
