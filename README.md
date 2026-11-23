@@ -52,6 +52,7 @@ Mặc định ứng dụng kết nối MariaDB ở `localhost:3306`. Thông tin 
 - `update_warranty_book.sql` (chạy **sau** `update_order_item_units.sql`, vì có khóa ngoại tới `order_item_units`): bảng `warranty_claims`, `maintenance_reminders`, cột `orders.delivered_at`, `order_item_units.warranty_months` và cột sinh `warranty_claims.open_unit_id` (sổ bảo hành điện tử, V20)
 - `update_test_ride_bookings.sql`: bảng `test_ride_bookings` (đặt lịch lái thử, V23); chạy được sau `update_stock_alerts.sql` hoặc độc lập, cần bảng `showrooms`, `products`, `users` đã có
 - `update_installments.sql`: bảng `installment_applications` và ba biểu lãi suất `INSTALLMENT_RATE_6/9/12` trong `pricing_rules` (trả góp mô phỏng, V24); cần bảng `orders`, `users`, `pricing_rules` đã có
+- `update_savings_calculator.sql`: năm quy tắc `SAVINGS_*` trong `pricing_rules` (giá điện, giá xăng, mức tiêu hao xăng theo loại xe; công cụ "Xe điện tiết kiệm bao nhiêu", V33) và sửa điện áp 12 V sai của xe `kinetic-tesla-e` thành 60 V; cần bảng `pricing_rules`, `products`, `product_specifications` đã có
 - `update_user_preferences_defaults.sql`: giao diện mặc định theo thiết bị (`system`), ngôn ngữ mặc định `vi`
 - `update_verified_electric_catalog.sql`: chuyển danh mục cũ (có xe xăng 50cc, ảnh `/images/products/`) sang danh mục xe điện, ảnh ở `/images/catalog/`. Chạy **một lần**, trước `update_vehicle_types.sql` và `update_product_stock_totals.sql`
 - `update_vehicle_types.sql`: xe trên 25 km/h hoặc 250 W là xe máy điện
