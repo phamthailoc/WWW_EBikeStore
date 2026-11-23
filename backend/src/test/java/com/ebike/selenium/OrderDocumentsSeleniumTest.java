@@ -260,7 +260,7 @@ class OrderDocumentsSeleniumTest extends StorefrontSeleniumTest {
             assertTrue(panel.getText().contains("Download warranty card"), panel.getText());
             assertTrue(panel.getText().contains("not an electronic invoice"), panel.getText());
             String english = textOf(download(api, "/api/v1/orders/" + orderId + "/receipt?lang=en").body());
-            assertTrue(english.contains("SALES RECEIPT") && english.contains("Subtotal") && !english.contains("Tạm tính"), english);
+            assertTrue(english.contains("SALES RECEIPT") && english.contains("Subtotal") && !english.contains("Tiền hàng"), english);
             assertTrue(textOf(download(api, "/api/v1/orders/" + orderId + "/warranty-card?lang=en").body()).contains("WARRANTY CARD"));
         } finally {
             // the language is saved in the profile of the shared test customer: always put Vietnamese back, whatever the asserts above found

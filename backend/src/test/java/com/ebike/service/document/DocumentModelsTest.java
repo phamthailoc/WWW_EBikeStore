@@ -98,7 +98,7 @@ class DocumentModelsTest {
 
         List<Map<String, Object>> totals = list(DocumentModels.receipt(order, null, DocumentFixtures.store(), "vi", NOW).get("totals"));
 
-        assertEquals(List.of("Tạm tính", "Tổng cộng"), totals.stream().map(row -> row.get("label")).toList());
+        assertEquals(List.of("Tiền hàng", "Tổng cộng"), totals.stream().map(row -> row.get("label")).toList());
     }
 
     @Test

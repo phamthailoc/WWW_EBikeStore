@@ -72,7 +72,7 @@ class PdfRendererTest {
         assertTrue(text.contains("Twenty million Vietnamese dong"), text);
         assertTrue(text.contains("Paid"), text);
         assertFalse(text.contains("PHIẾU BÁN HÀNG"), text);
-        assertFalse(text.contains("Tạm tính"), text);
+        assertFalse(text.contains("Tiền hàng"), text);
     }
 
     @Test

@@ -49,7 +49,7 @@ public final class DocumentText {
         add("receipt.colAmount", "Thành tiền", "Amount");
         add("receipt.frame", "Số khung", "Frame no.");
         add("receipt.engine", "Số máy", "Engine no.");
-        add("receipt.subtotal", "Tạm tính", "Subtotal");
+        add("receipt.subtotal", "Tiền hàng", "Subtotal");
         add("receipt.registration", "Dịch vụ đăng ký xe", "Registration service");
         add("receipt.shipping", "Phí giao hàng", "Delivery fee");
         add("receipt.discount", "Giảm giá", "Discount");
