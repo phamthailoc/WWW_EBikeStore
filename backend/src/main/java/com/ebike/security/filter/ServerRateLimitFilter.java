@@ -50,7 +50,10 @@ public class ServerRateLimitFilter extends OncePerRequestFilter {
         // V26: a receipt adds stock; one address (the stock room's computer) may save a handful a minute, never a flood
         new RateLimitRule("stock-receipt", HttpMethod.POST.name(), "/api/v1/manager/stock-receipts", 20, Duration.ofMinutes(1)),
         // V33: the calculator asks again after the rider stops typing; each answer reads the bike and about three pricing rules, so only a flood guard per address
-        new RateLimitRule("product-savings", HttpMethod.GET.name(), "/api/v1/products/*/savings", 90, Duration.ofMinutes(1))
+        new RateLimitRule("product-savings", HttpMethod.GET.name(), "/api/v1/products/*/savings", 90, Duration.ofMinutes(1)),
+        // V28: an Excel export reads every order and builds a workbook in memory; staff need a few a minute, never a flood
+        new RateLimitRule("revenue-report-export", HttpMethod.GET.name(), "/api/v1/manager/revenue-report/export", 10, Duration.ofMinutes(1)),
+        new RateLimitRule("orders-export", HttpMethod.GET.name(), "/api/v1/manager/orders/export", 10, Duration.ofMinutes(1))
     );
 
     private final boolean enabled;
