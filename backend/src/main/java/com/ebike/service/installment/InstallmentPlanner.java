@@ -123,6 +123,13 @@ public class InstallmentPlanner {
                 "Bạn đang có tối đa " + limits.maxOpenPerCustomer() + " hồ sơ trả góp chưa hoàn tất. Vui lòng đợi duyệt, thanh toán hoặc hủy bớt đơn trước khi gửi thêm.",
                 "You already have " + limits.maxOpenPerCustomer() + " instalment applications in progress. Please wait for a decision, pay or cancel an order before applying again."));
         }
+        // the 60% limit holds for all the customer's plans together, not for each one alone
+        BigDecimal other = applications.sumMonthlyPaymentOf(user.getId());
+        if (other != null && !InstallmentRules.affordable(plan.monthlyPayment().add(other), income, limits)) {
+            int percent = limits.maxPaymentShareOfIncome().movePointRight(2).intValue();
+            throw bad("Cùng với các hồ sơ trả góp khác của bạn (" + money("vi", other) + "/tháng), khoản trả hàng tháng vượt " + percent + "% thu nhập bạn khai. Hãy tăng khoản trả trước hoặc chọn kỳ hạn dài hơn.",
+                "Together with your other instalment plans (" + money("en", other) + " a month), the monthly payment is more than " + percent + "% of the income you declared. Raise the down payment or choose a longer term.");
+        }
         return new Prepared(plan, InstallmentRules.maskIdNumber(digits), income);
     }
 

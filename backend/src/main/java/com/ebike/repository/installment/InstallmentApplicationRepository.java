@@ -2,6 +2,7 @@ package com.ebike.repository.installment;
 
 import com.ebike.model.entity.installment.InstallmentApplication;
 import jakarta.persistence.LockModeType;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
@@ -34,6 +35,14 @@ public interface InstallmentApplicationRepository extends JpaRepository<Installm
     @Query("select count(a) from InstallmentApplication a where a.user.id = :userId and a.status in ('PENDING', 'APPROVED') "
         + "and a.order.status = com.ebike.model.entity.order.OrderStatus.PENDING")
     long countOpenOf(@Param("userId") Long userId);
+
+    /**
+     * What the customer's other plans cost each month: the applications still waiting or approved on orders that are not cancelled, including the ones
+     * whose down payment is paid. Null when there are none.
+     */
+    @Query("select sum(a.monthlyPayment) from InstallmentApplication a where a.user.id = :userId and a.status in ('PENDING', 'APPROVED') "
+        + "and a.order.status <> com.ebike.model.entity.order.OrderStatus.CANCELLED")
+    BigDecimal sumMonthlyPaymentOf(@Param("userId") Long userId);
 
     long countByStatus(String status);
 
