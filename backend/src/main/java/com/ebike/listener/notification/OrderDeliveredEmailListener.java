@@ -41,6 +41,11 @@ public class OrderDeliveredEmailListener {
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT, fallbackExecution = true)
     public void onOrderDelivered(OrderDeliveredEvent event) {
+        if (!sender.canSend()) {
+            // mail is off or there is no SMTP host (the default local setup): do not render two PDFs for nothing
+            log.debug("Hand-over email of order id {} skipped: mail is off or there is no SMTP host", event.orderId());
+            return;
+        }
         try {
             executor.execute(() -> send(event.orderId()));
         } catch (RejectedExecutionException exception) {
@@ -52,7 +57,7 @@ public class OrderDeliveredEmailListener {
         try {
             documents.forDeliveredOrder(orderId).ifPresent(found -> {
                 if (!sender.send(found)) {
-                    log.warn("The hand-over email of order {} was not sent (mail is off, there is no SMTP host or address, or the server refused it)", found.orderNumber());
+                    log.warn("The hand-over email of order {} was not sent (the order has no address, or the server refused it)", found.orderNumber());
                 }
             });
         } catch (RuntimeException exception) {

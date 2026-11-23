@@ -21,6 +21,20 @@ class OrderDeliveredEmailListenerTest {
     private final DeliveryEmailSender sender = mock(DeliveryEmailSender.class);
     private final OrderDeliveredEmailListener listener = new OrderDeliveredEmailListener(documents, sender, Runnable::run);
 
+    @org.junit.jupiter.api.BeforeEach
+    void mailIsOn() {
+        when(sender.canSend()).thenReturn(true);
+    }
+
+    @Test
+    void nothingIsRenderedWhileMailIsOff() {
+        when(sender.canSend()).thenReturn(false);
+
+        listener.onOrderDelivered(new OrderDeliveredEvent(5L));
+
+        verify(documents, never()).forDeliveredOrder(any());
+    }
+
     @Test
     void theDocumentsOfTheOrderAreSentToTheCustomer() {
         var found = new OrderDocumentService.DeliveryDocuments("an@example.com", "An", "ORD-1", "vi", List.of(new PdfFile("receipt-ORD-1.pdf", new byte[] {1})));

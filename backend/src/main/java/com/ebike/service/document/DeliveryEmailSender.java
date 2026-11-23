@@ -41,9 +41,14 @@ public class DeliveryEmailSender {
         this.publicBaseUrl = publicBaseUrl == null ? "" : publicBaseUrl.trim();
     }
 
+    /** False when mail is turned off or there is no SMTP host: then nothing is worth rendering, because nothing can be sent. */
+    public boolean canSend() {
+        return mailEnabled && smtpHost != null && !smtpHost.isBlank();
+    }
+
     /** Returns true when the message was handed to the mail server. */
     public boolean send(OrderDocumentService.DeliveryDocuments documents) {
-        if (!mailEnabled || smtpHost == null || smtpHost.isBlank() || documents == null || documents.email() == null || documents.email().isBlank()) {
+        if (!canSend() || documents == null || documents.email() == null || documents.email().isBlank()) {
             return false;
         }
         String language = documents.language();
