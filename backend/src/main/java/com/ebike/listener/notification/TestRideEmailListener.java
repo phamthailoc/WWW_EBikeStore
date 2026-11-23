@@ -37,7 +37,7 @@ public class TestRideEmailListener {
             return;
         }
         userRepository.findById(event.userId()).ifPresent(user -> {
-            if ("DELETED".equals(user.getAccountStatus())) {
+            if (com.ebike.service.admin.AccountErasure.DELETED.equals(user.getAccountStatus())) {
                 return;
             }
             // Like the in-app notice, this email is about a booking the customer made: the profile's notification switch does not stop it.

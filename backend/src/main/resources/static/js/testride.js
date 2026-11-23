@@ -283,7 +283,7 @@ window.KineticTestRide = (() => {
         intro: t('Ghi chú này khách sẽ thấy trong mục Lái thử của tài khoản.'),
         label: cancelling ? t('Lý do hủy (khách sẽ thấy)') : t('Ghi chú cho khách (có thể để trống)'),
         initial: cancelling ? '' : button.dataset.note || '', // a cancellation needs its own reason, not the note written at confirmation
-        required: cancelling, max: 1000, submit: t('Cập nhật')
+        required: cancelling, max: 1000, submit: t('Cập nhật'), cancelLabel: cancelling ? t('Giữ lịch') : t('Đóng')
       });
       if (note === null) return;
       button.disabled = true;

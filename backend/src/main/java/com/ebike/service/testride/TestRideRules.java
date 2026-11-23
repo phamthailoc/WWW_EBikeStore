@@ -364,6 +364,9 @@ public final class TestRideRules {
             return "";
         }
         String digits = phone.trim().replaceAll("[\\s.\\-()]", "");
+        if (digits.startsWith("0084")) {
+            digits = digits.substring(2); // 00 is the international prefix: "0084 90 123 4567" is "+84 90 123 4567"
+        }
         String rest;
         if (digits.startsWith("+84")) {
             rest = digits.substring(3);

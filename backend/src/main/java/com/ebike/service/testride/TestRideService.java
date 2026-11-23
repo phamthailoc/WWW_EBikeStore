@@ -138,7 +138,10 @@ public class TestRideService {
         }
         LocalDate day = parseDate(date);
         LocalDateTime now = LocalDateTime.now(clock);
-        if (day.isBefore(now.toLocalDate()) || day.isAfter(now.toLocalDate().plusDays(daysAhead))) {
+        if (day.isBefore(now.toLocalDate())) {
+            throw bad("Ngày này đã qua.", "This day has already passed.");
+        }
+        if (day.isAfter(now.toLocalDate().plusDays(daysAhead))) {
             throw bad("Chỉ đặt lịch trong " + daysAhead + " ngày tới.", "You can book only within the next " + daysAhead + " days.");
         }
         Showroom showroom = showrooms.findById(showroomId).filter(found -> Boolean.TRUE.equals(found.getActive()))

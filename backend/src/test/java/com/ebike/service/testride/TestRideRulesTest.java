@@ -309,6 +309,8 @@ class TestRideRulesTest {
         assertEquals("0901234567", TestRideRules.normalizePhone(" 0901 234.567 "));
         assertEquals("0901234567", TestRideRules.normalizePhone("0901-234-567"));
         assertEquals("0901234567", TestRideRules.normalizePhone("+84 901 234 567"));
+        assertEquals("0901234567", TestRideRules.normalizePhone("0084 90 123 4567"));
+        assertEquals("0901234567", TestRideRules.normalizePhone("0084901234567"));
         assertEquals("0901234567", TestRideRules.normalizePhone("84901234567"));
         assertEquals("0901234567", TestRideRules.normalizePhone("+84 (0) 901 234 567"));
         assertEquals("02839201234", TestRideRules.normalizePhone("+842839201234"));
