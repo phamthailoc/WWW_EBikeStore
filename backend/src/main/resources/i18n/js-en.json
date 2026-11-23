@@ -770,5 +770,8 @@
  "Đang tạo PDF…": "Creating PDF…",
  "Đã tải tệp PDF.": "PDF downloaded.",
  "Ngôn ngữ của phiếu": "Document language",
- "Theo ngôn ngữ trang": "Same as this page"
+ "Theo ngôn ngữ trang": "Same as this page",
+ "Gửi lại email phiếu": "Send the receipt email again",
+ "Đang gửi…": "Sending…",
+ "Đã gửi email phiếu.": "The receipt email was sent."
 }

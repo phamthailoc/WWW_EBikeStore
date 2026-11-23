@@ -91,6 +91,8 @@ public class SecurityConfiguration {
                 .requestMatchers(HttpMethod.POST, "/api/v1/orders/guest-orders/link").hasAuthority(PermissionConstants.Customer.ORDER_VIEW_OWN)
                 .requestMatchers(HttpMethod.POST, "/api/v1/orders/*/cancellation-request").hasAuthority(PermissionConstants.Customer.ORDER_CANCEL_OWN)
                 .requestMatchers(HttpMethod.PATCH, "/api/v1/orders/*/status").hasAuthority(PermissionConstants.OrderManagement.ORDER_UPDATE_STATUS)
+                // V27: sending the hand-over email again messages a customer, so it needs the write permission
+                .requestMatchers(HttpMethod.POST, "/api/v1/orders/*/documents/email").hasAuthority(PermissionConstants.OrderManagement.ORDER_UPDATE_STATUS)
                 // V24: an application is read by its own customer or by the staff (the service checks which); only the staff decide.
                 .requestMatchers(HttpMethod.GET, "/api/v1/installments/orders/*").hasAnyAuthority(
                     PermissionConstants.Customer.ORDER_VIEW_OWN,

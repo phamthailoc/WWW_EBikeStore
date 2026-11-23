@@ -144,6 +144,11 @@ public final class DocumentText {
             "This order has no frame numbers on record, so no warranty card can be made. Please contact the shop.");
         add("error.unitNotFound", "Không tìm thấy xe này trong đơn hàng.", "This vehicle is not part of the order.");
         add("error.render", "Không tạo được tệp PDF. Vui lòng thử lại sau.", "The PDF could not be made. Please try again later.");
+        add("error.resendMailOff", "Chưa bật email hoặc chưa cấu hình máy chủ thư nên không gửi được.", "Email is turned off or no mail server is set up, so nothing can be sent.");
+        add("error.resendNothing", "Không có gì để gửi: đơn chưa được bàn giao, chưa có địa chỉ email hoặc tài khoản đã bị xóa.",
+            "Nothing to send: the order was not handed over yet, has no email address, or its account was erased.");
+        add("error.resendFailed", "Máy chủ thư không nhận email. Vui lòng thử lại sau.", "The mail server did not accept the email. Please try again later.");
+        add("resend.done", "Đã gửi email phiếu tới {0}.", "The receipt email was sent to {0}.");
 
         // ---- delivery email ----
         add("mail.subject", "{0}: phiếu bán hàng và phiếu bảo hành cho đơn {1}", "{0}: your sales receipt and warranty card for order {1}");

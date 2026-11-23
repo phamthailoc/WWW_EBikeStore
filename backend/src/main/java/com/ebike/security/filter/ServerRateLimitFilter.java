@@ -44,7 +44,9 @@ public class ServerRateLimitFilter extends OncePerRequestFilter {
         // V27: each download makes a PDF on the spot (a few tens of milliseconds of CPU, more for an order of many bikes), so one address may not ask in a flood;
         // wide enough for a shop counter that prints one order after another
         new RateLimitRule("order-receipt", HttpMethod.GET.name(), "/api/v1/orders/*/receipt", 40, Duration.ofMinutes(1)),
-        new RateLimitRule("order-warranty-card", HttpMethod.GET.name(), "/api/v1/orders/*/warranty-card", 40, Duration.ofMinutes(1))
+        new RateLimitRule("order-warranty-card", HttpMethod.GET.name(), "/api/v1/orders/*/warranty-card", 40, Duration.ofMinutes(1)),
+        // V27: sending the hand-over email again renders two PDFs and talks to the mail server: a few a minute is plenty for staff
+        new RateLimitRule("order-documents-email", HttpMethod.POST.name(), "/api/v1/orders/*/documents/email", 6, Duration.ofMinutes(1))
     );
 
     private final boolean enabled;
