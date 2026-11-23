@@ -80,7 +80,7 @@ public class DeliveryEmailSender {
             text.append(DocumentText.text(language, "mail.card")).append('\n');
         }
         text.append('\n').append(DocumentText.text(language, "mail.notInvoice")).append("\n\n");
-        if (!publicBaseUrl.isEmpty()) {
+        if (!documents.guest() && !publicBaseUrl.isEmpty()) {
             String base = publicBaseUrl.endsWith("/") ? publicBaseUrl.substring(0, publicBaseUrl.length() - 1) : publicBaseUrl;
             text.append(DocumentText.text(language, "mail.signIn", base + "/customer/orders")).append("\n\n");
         }

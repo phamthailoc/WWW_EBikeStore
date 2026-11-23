@@ -41,7 +41,11 @@ public class OrderDocumentService {
     private static final Logger log = LoggerFactory.getLogger(OrderDocumentService.class);
 
     /** What the hand-over email carries: who gets it, in which language, and the files. */
-    public record DeliveryDocuments(String email, String recipientName, String orderNumber, String language, List<PdfFile> files) {
+    public record DeliveryDocuments(String email, String recipientName, String orderNumber, String language, List<PdfFile> files, boolean guest) {
+
+        public DeliveryDocuments(String email, String recipientName, String orderNumber, String language, List<PdfFile> files) {
+            this(email, recipientName, orderNumber, language, files, false);
+        }
     }
 
     private final OrderRepository orders;
@@ -130,7 +134,7 @@ public class OrderDocumentService {
             files.add(buildCard(order, units, language, null));
         }
         String name = DocumentModels.customerName(order);
-        return Optional.of(new DeliveryDocuments(email, "—".equals(name) ? DocumentText.text(language, "mail.guestName") : name, order.getOrderNumber(), language, files));
+        return Optional.of(new DeliveryDocuments(email, "—".equals(name) ? DocumentText.text(language, "mail.guestName") : name, order.getOrderNumber(), language, files, user == null));
     }
 
     private PdfFile buildReceipt(Order order, String language) {

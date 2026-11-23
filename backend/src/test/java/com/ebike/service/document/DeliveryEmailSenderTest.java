@@ -92,6 +92,16 @@ class DeliveryEmailSenderTest {
     }
 
     @Test
+    void aGuestOrderEmailHasNoSignInLine() {
+        DeliveryEmailSender sender = sender("smtp.example.com", true, "https://shop.example.com");
+        var guest = new OrderDocumentService.DeliveryDocuments("khach@example.com", "Khach", "ORD-1", "vi", List.of(new PdfFile("receipt-ORD-1.pdf", new byte[] {1})), true);
+
+        String body = sender.body("vi", guest, false);
+
+        assertFalse(body.contains("customer/orders"), body);
+    }
+
+    @Test
     void withoutACardTheBodyAndSubjectNameOnlyTheReceiptAndWithoutAnAddressThereIsNoLink() {
         DeliveryEmailSender sender = sender("smtp.example.com", true, "");
 
