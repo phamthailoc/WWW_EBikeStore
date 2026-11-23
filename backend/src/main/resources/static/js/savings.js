@@ -74,6 +74,7 @@
       paintResult(answer);
     } catch (error) {
       if (mine !== sequence) return;
+      if (error.status === 404) { box.hidden = true; return; } // the bike was hidden while the rider was typing: hide the box as at the start
       paintProblem(error.message);
     }
   }
