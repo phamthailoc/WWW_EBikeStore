@@ -17,6 +17,7 @@ import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.openqa.selenium.By;
+import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 
@@ -69,10 +70,15 @@ class SavingsCalculatorSeleniumTest extends StorefrontSeleniumTest {
         return wait.until(ExpectedConditions.visibilityOfElementLocated(BOX));
     }
 
+    /**
+     * Replaces what is in the box the way a person does, so that the page gets an input event for every value (WebDriver's clear() sends none, so an empty
+     * box would never be seen by the page).
+     */
     private void type(By locator, String value) {
         WebElement input = driver.findElement(locator);
-        input.clear();
-        input.sendKeys(value);
+        input.click();
+        input.sendKeys(Keys.chord(Keys.CONTROL, "a"));
+        input.sendKeys(value.isEmpty() ? Keys.BACK_SPACE.toString() : value);
     }
 
     @Test
@@ -103,15 +109,17 @@ class SavingsCalculatorSeleniumTest extends StorefrontSeleniumTest {
     void aWrongNumberShowsAMessageNotFigures() {
         openBike();
         for (String bad : new String[] {"0", "5000", "", "2.5"}) {
+            // a right number first, so that the message waited for below is this value's own and not one left by the previous value
+            type(KM, "15");
+            wait.until(ExpectedConditions.visibilityOfElementLocated(MONTHLY_SAVING));
+            assertTrue(driver.findElements(PROBLEM).isEmpty(), "the message goes away with a right number");
             type(KM, bad);
-            wait.until(ExpectedConditions.visibilityOfElementLocated(PROBLEM));
-            assertTrue(driver.findElements(MONTHLY_SAVING).isEmpty(), "no figures for \"" + bad + "\"");
+            wait.until(d -> d.findElements(MONTHLY_SAVING).isEmpty() && d.findElement(PROBLEM).getText().contains("số km mỗi ngày"));
         }
         type(KM, "15");
         wait.until(ExpectedConditions.visibilityOfElementLocated(MONTHLY_SAVING));
-        assertTrue(driver.findElements(PROBLEM).isEmpty(), "the message goes away with a right number");
         type(DAYS, "40");
-        wait.until(ExpectedConditions.visibilityOfElementLocated(PROBLEM));
+        wait.until(d -> d.findElements(MONTHLY_SAVING).isEmpty() && d.findElement(PROBLEM).getText().contains("số ngày đi mỗi tháng"));
     }
 
     @Test
