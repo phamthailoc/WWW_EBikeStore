@@ -19,7 +19,7 @@ class OrderDeliveredEmailListenerTest {
 
     private final OrderDocumentService documents = mock(OrderDocumentService.class);
     private final DeliveryEmailSender sender = mock(DeliveryEmailSender.class);
-    private final OrderDeliveredEmailListener listener = new OrderDeliveredEmailListener(documents, sender);
+    private final OrderDeliveredEmailListener listener = new OrderDeliveredEmailListener(documents, sender, Runnable::run);
 
     @Test
     void theDocumentsOfTheOrderAreSentToTheCustomer() {
@@ -46,6 +46,18 @@ class OrderDeliveredEmailListenerTest {
 
         listener.onOrderDelivered(new OrderDeliveredEvent(5L));
 
+        verify(sender, never()).send(any());
+    }
+
+    @Test
+    void aFullQueueDoesNotEscapeAndNothingIsSent() {
+        var listener = new OrderDeliveredEmailListener(documents, sender, task -> {
+            throw new java.util.concurrent.RejectedExecutionException("full");
+        });
+
+        listener.onOrderDelivered(new OrderDeliveredEvent(5L));
+
+        verify(documents, never()).forDeliveredOrder(any());
         verify(sender, never()).send(any());
     }
 }
