@@ -55,7 +55,7 @@ class InstallmentPaymentTest {
         properties.setPayUrl("https://sandbox.vnpayment.vn/paymentv2/vpcpay.html");
         properties.setReturnUrl("http://localhost:8080/payment/return");
         vnpay = new VnPayServiceImpl(properties, orders, payments, installments, new ObjectMapper(), java.time.Duration.ofHours(72));
-        manager = new ManagerServiceImpl(orders, payments, null, null, null, mock(AuditLogService.class), null, installments, java.time.Duration.ofHours(72));
+        manager = new ManagerServiceImpl(orders, payments, null, null, null, mock(AuditLogService.class), null, installments, java.time.Duration.ofHours(72), org.mockito.Mockito.mock(com.ebike.service.stock.StockLedger.class));
 
         order = new Order();
         order.setId(10L);

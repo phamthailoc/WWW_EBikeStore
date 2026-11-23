@@ -75,7 +75,7 @@ class InstallmentOrderTest {
         InstallmentPlanner planner = new InstallmentPlanner(pricing, installments, users,
             new BigDecimal("5000000"), new BigDecimal("300000000"), new BigDecimal("3000000"), new BigDecimal("1000000000"), 60, 2);
         service = new OrderServiceImpl(orders, users, products, showrooms, mock(PromotionRepository.class),
-            mock(OrderEmailVerificationService.class), pricing, mock(AuditLogService.class), mock(StockAlertService.class), planner, installments);
+            mock(OrderEmailVerificationService.class), pricing, mock(AuditLogService.class), mock(StockAlertService.class), planner, installments, org.mockito.Mockito.mock(com.ebike.service.stock.StockLedger.class));
 
         product = new Product();
         product.setId(1L);
