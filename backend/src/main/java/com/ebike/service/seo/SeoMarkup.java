@@ -292,6 +292,8 @@ public class SeoMarkup {
     /** {@code robots.txt}: open to crawlers except the API and the language switch (private pages stay open so their noindex is seen); points at the sitemap. */
     public String robotsTxt() {
         StringBuilder text = new StringBuilder("User-agent: *\nAllow: /\n");
+        // the reviews and colours of a product page are read from here by the page itself: a crawler that renders the page must be able to load them
+        text.append("Allow: /api/v1/products/\n");
         for (String path : PRIVATE_PATHS) {
             text.append("Disallow: ").append(path).append('\n');
         }
