@@ -750,5 +750,6 @@
  "Đang kiểm tra tài khoản. Vui lòng đợi một chút rồi đặt hàng lại.": "Checking your account. Please wait a moment and place the order again.",
  "Bật kỳ hạn": "Turn term on",
  "Ngừng kỳ hạn": "Turn term off",
- "Thử lại": "Try again"
+ "Thử lại": "Try again",
+ "Đã quá hạn thanh toán khoản trả trước, đơn hàng sắp bị hủy tự động.": "The down payment is overdue and the order is about to be cancelled automatically."
 }

@@ -61,6 +61,8 @@ public class InstallmentService {
     private final AuditLogService auditLog;
     // how long an approved application waits for its down payment before the order is cancelled (the expiry job reads the same setting)
     private final Duration downPaymentHold;
+    // how long a submitted application waits for the staff before the order is cancelled (same setting as the expiry job)
+    private final Duration reviewHold;
     // the shop's zone (app.time-zone): the times of an application are sent and worded with their offset in it, whatever zone the server runs in
     private final ZoneId zone;
 
@@ -71,6 +73,7 @@ public class InstallmentService {
         OrderRepository orderRepository,
         AuditLogService auditLog,
         @Value("${app.order.installment-down-payment-hold:PT72H}") Duration downPaymentHold,
+        @Value("${app.order.installment-review-hold:PT72H}") Duration reviewHold,
         @Value("${app.time-zone:Asia/Ho_Chi_Minh}") String timeZone
     ) {
         this.applications = applications;
@@ -79,6 +82,7 @@ public class InstallmentService {
         this.orderRepository = orderRepository;
         this.auditLog = auditLog;
         this.downPaymentHold = downPaymentHold;
+        this.reviewHold = reviewHold;
         this.zone = ZoneId.of(timeZone);
     }
 
@@ -174,6 +178,12 @@ public class InstallmentService {
                 "Đơn hàng không còn ở trạng thái chờ xác nhận nên không duyệt được hồ sơ.",
                 "The order is no longer waiting for confirmation, so the application cannot be decided."));
         }
+        // past the review hold the expiry job is about to cancel the order: approving now would only restart the clock of an order the store let lapse
+        if (approve && reviewOverdue(application, LocalDateTime.now())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, RequestLanguage.text(
+                "Đã quá thời hạn duyệt hồ sơ nên đơn hàng sắp bị hủy tự động. Không duyệt thêm được.",
+                "The review time has run out, so the order is about to be cancelled automatically. It can no longer be approved."));
+        }
         // an application of an account erased before this was checked can still be rejected (that frees the order's stock), but not approved
         if (approve && AccountErasure.DELETED.equals(application.getUser().getAccountStatus())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, RequestLanguage.text(
@@ -199,6 +209,10 @@ public class InstallmentService {
             application.getDownPaymentAmount(), application.getMonthlyPayment(), application.getTermMonths(),
             approve ? inShopZone(now.plus(downPaymentHold)) : null, note));
         return toResponse(application, true);
+    }
+
+    private boolean reviewOverdue(InstallmentApplication a, LocalDateTime now) {
+        return a.getCreatedAt() != null && now.isAfter(a.getCreatedAt().plus(reviewHold));
     }
 
     private InstallmentApplicationResponse toResponse(InstallmentApplication a, boolean forStaff) {
@@ -228,8 +242,9 @@ public class InstallmentService {
             a.getStatus(), a.getReviewNote(), reviewerName, inShopZone(a.getReviewedAt()), inShopZone(a.getCreatedAt()),
             payment == null ? null : payment.getPaymentStatus().name(),
             downPaymentOpen && a.getReviewedAt() != null ? inShopZone(a.getReviewedAt().plus(downPaymentHold)) : null,
-            downPaymentOpen,
-            InstallmentApplication.PENDING.equals(a.getStatus()) && orderOpen);
+            // past its hold the order is about to be cancelled by the expiry job: nobody is offered to pay or to decide any more
+            downPaymentOpen && !InstallmentRules.downPaymentOverdue(a.getReviewedAt(), downPaymentHold, LocalDateTime.now()),
+            InstallmentApplication.PENDING.equals(a.getStatus()) && orderOpen && !reviewOverdue(a, LocalDateTime.now()));
     }
 
     private User currentUser(Authentication authentication) {

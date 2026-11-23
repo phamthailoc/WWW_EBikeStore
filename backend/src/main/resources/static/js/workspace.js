@@ -71,7 +71,7 @@
     && (row.paymentMethod == null || row.paymentMethod === 'VNPAY') && !['PAID','REFUNDED'].includes(row.paymentStatus);
   const actionFor = row => {
     const id=row.id??row.orderId??row.paymentId??row.productId, buttons=[];
-    if(page==='/manager/payments'&&id!=null&&(row.paymentMethod==='PAY_LATER'||(row.paymentMethod==='INSTALLMENT'&&row.installmentStatus==='APPROVED'))&&(row.paymentStatus==='PENDING'||(row.paymentMethod==='INSTALLMENT'&&row.paymentStatus==='FAILED'))&&row.orderStatus!=='CANCELLED')buttons.push(`<button class="table-action" data-action="confirm-payment" data-id="${id}">${t('Xác nhận đã thu')}</button>`);
+    if(page==='/manager/payments'&&id!=null&&(row.paymentMethod==='PAY_LATER'||(row.paymentMethod==='INSTALLMENT'&&row.installmentStatus==='APPROVED'&&!row.downPaymentOverdue))&&(row.paymentStatus==='PENDING'||(row.paymentMethod==='INSTALLMENT'&&row.paymentStatus==='FAILED'))&&row.orderStatus!=='CANCELLED')buttons.push(`<button class="table-action" data-action="confirm-payment" data-id="${id}">${t('Xác nhận đã thu')}</button>`);
     if(page==='/manager/payments'&&id!=null&&row.paymentStatus==='PAID'&&row.orderStatus==='CANCELLED')buttons.push(`<button class="table-action" data-action="refund-payment" data-id="${id}">${t('Ghi nhận hoàn tiền')}</button>`);
     if(page==='/manager/orders'&&id!=null&&orderSteps(row).length)buttons.push(`<select class="table-action" data-action="order-status" data-id="${id}"><option value="">${t('Cập nhật trạng thái…')}</option>${orderSteps(row).map(s=>`<option value="${s}">${stepText(s,row)}</option>`).join('')}</select>`);
     if(page==='/manager/orders'&&awaitsInstalment(row))buttons.push(`<small class="muted">${t('Đơn trả góp: chờ duyệt hồ sơ và khoản trả trước')}</small>`);

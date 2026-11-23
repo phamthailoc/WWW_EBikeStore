@@ -66,7 +66,7 @@ class InstallmentServiceTest {
         users = mock(UserRepository.class);
         orders = mock(OrderService.class);
         orderRepository = mock(OrderRepository.class);
-        service = new InstallmentService(applications, users, orders, orderRepository, mock(AuditLogService.class), Duration.ofHours(72), "Asia/Ho_Chi_Minh");
+        service = new InstallmentService(applications, users, orders, orderRepository, mock(AuditLogService.class), Duration.ofHours(72), Duration.ofHours(72), "Asia/Ho_Chi_Minh");
 
         customer = user(7L, "khach", "An", "Nguyen");
         staffUser = user(2L, "quanly", "Binh", "Tran");
@@ -137,6 +137,24 @@ class InstallmentServiceTest {
         return assertThrows(ResponseStatusException.class, action::run);
     }
 
+    @Test
+    void anApplicationPastItsReviewHoldCanNoLongerBeApprovedOrOffered() {
+        org.springframework.test.util.ReflectionTestUtils.setField(application, "createdAt", java.time.LocalDateTime.now().minusHours(73));
+        assertFalse(service.forOrder(10L, staff()).canDecide());
+        ResponseStatusException error = refused(() -> service.decide(5L, new InstallmentDecisionRequest("APPROVE", null), staff()));
+        assertEquals(HttpStatus.CONFLICT, error.getStatusCode());
+        assertEquals(InstallmentApplication.PENDING, application.getStatus());
+    }
+
+    @Test
+    void aDownPaymentPastItsHoldIsNoLongerOfferedToThePayer() {
+        application.setStatus(InstallmentApplication.APPROVED);
+        application.setReviewedAt(java.time.LocalDateTime.now().minusHours(71));
+        assertTrue(service.forOrder(10L, auth("khach", PermissionConstants.Customer.ORDER_VIEW_OWN)).canPay());
+        application.setReviewedAt(java.time.LocalDateTime.now().minusHours(73));
+        assertFalse(service.forOrder(10L, auth("khach", PermissionConstants.Customer.ORDER_VIEW_OWN)).canPay());
+    }
+
     // ---- reading ----
 
     @Test
@@ -171,7 +189,7 @@ class InstallmentServiceTest {
 
     @Test
     void anApprovedApplicationLetsTheCustomerPayUntilTheDeadline() {
-        LocalDateTime reviewed = LocalDateTime.of(2026, 11, 20, 9, 0);
+        LocalDateTime reviewed = LocalDateTime.now().minusHours(1);
         application.setStatus(InstallmentApplication.APPROVED);
         application.setReviewedAt(reviewed);
         InstallmentApplicationResponse response = service.forOrder(10L, auth("khach", PermissionConstants.Customer.ORDER_VIEW_OWN));

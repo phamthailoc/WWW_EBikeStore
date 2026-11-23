@@ -297,7 +297,7 @@ window.KineticInstallment = (() => {
       let state;
       if (a.status === 'PENDING') state = `<p>${staff ? t('Hồ sơ đang chờ duyệt.') : t('Hồ sơ đang chờ cửa hàng duyệt. Khi có kết quả bạn sẽ nhận thông báo và email.')}</p>`;
       else if (a.status === 'APPROVED') {
-        state = `<p><strong>${t('Hồ sơ đã được duyệt.')}</strong> ${a.canPay ? t('Khoản trả trước cần thanh toán trước {when}, nếu không đơn hàng sẽ bị hủy.', {when: when(a.payBefore)}) : (a.paymentStatus === 'PAID' ? t('Khoản trả trước đã được thanh toán.') : '')}</p>`;
+        state = `<p><strong>${t('Hồ sơ đã được duyệt.')}</strong> ${a.canPay ? t('Khoản trả trước cần thanh toán trước {when}, nếu không đơn hàng sẽ bị hủy.', {when: when(a.payBefore)}) : (a.paymentStatus === 'PAID' ? t('Khoản trả trước đã được thanh toán.') : (a.payBefore ? t('Đã quá hạn thanh toán khoản trả trước, đơn hàng sắp bị hủy tự động.') : ''))}</p>`;
       } else if (a.status === 'REJECTED') state = `<p><strong>${t('Hồ sơ bị từ chối, đơn hàng đã được hủy.')}</strong></p>`;
       else state = `<p>${t('Hồ sơ đã đóng vì đơn hàng bị hủy.')}</p>`;
       const noteLine = a.reviewNote ? `<p><strong>${a.status === 'REJECTED' ? t('Lý do:') : t('Ghi chú của cửa hàng:')}</strong> ${esc(a.reviewNote)}</p>` : '';

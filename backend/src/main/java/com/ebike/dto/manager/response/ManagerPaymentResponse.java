@@ -20,6 +20,8 @@ public record ManagerPaymentResponse(
     LocalDateTime orderCreatedAt,
     String orderStatus,
     /** V24: the status of the instalment application when this is the down payment of an instalment order, else null. */
-    String installmentStatus
+    String installmentStatus,
+    /** V24: true when this is an instalment down payment past its hold: the expiry job is about to cancel the order, so it can no longer be taken. */
+    boolean downPaymentOverdue
 ) {
 }

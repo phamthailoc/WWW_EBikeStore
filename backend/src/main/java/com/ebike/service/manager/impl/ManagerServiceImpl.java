@@ -153,12 +153,12 @@ public class ManagerServiceImpl implements ManagerService {
             .filter(payment -> payment.getPaymentMethod() == PaymentMethod.INSTALLMENT)
             .map(payment -> payment.getOrder().getId())
             .toList();
-        Map<Long, String> installmentStatuses = new HashMap<>();
+        Map<Long, InstallmentApplication> installmentApplications = new HashMap<>();
         if (!instalmentOrderIds.isEmpty()) {
-            installments.findByOrderIdIn(instalmentOrderIds).forEach(a -> installmentStatuses.put(a.getOrder().getId(), a.getStatus()));
+            installments.findByOrderIdIn(instalmentOrderIds).forEach(a -> installmentApplications.put(a.getOrder().getId(), a));
         }
         return shown.stream()
-            .map(payment -> toPaymentResponse(payment, installmentStatuses.get(payment.getOrder().getId())))
+            .map(payment -> toPaymentResponse(payment, installmentApplications.get(payment.getOrder().getId())))
             .toList();
     }
 
@@ -623,12 +623,12 @@ public class ManagerServiceImpl implements ManagerService {
     }
 
     private ManagerPaymentResponse toPaymentResponse(Payment payment) {
-        String installmentStatus = payment.getPaymentMethod() != PaymentMethod.INSTALLMENT ? null
-            : installments.findByOrderId(payment.getOrder().getId()).map(InstallmentApplication::getStatus).orElse(null);
-        return toPaymentResponse(payment, installmentStatus);
+        InstallmentApplication application = payment.getPaymentMethod() != PaymentMethod.INSTALLMENT ? null
+            : installments.findByOrderId(payment.getOrder().getId()).orElse(null);
+        return toPaymentResponse(payment, application);
     }
 
-    private ManagerPaymentResponse toPaymentResponse(Payment payment, String installmentStatus) {
+    private ManagerPaymentResponse toPaymentResponse(Payment payment, InstallmentApplication application) {
         Order order = payment.getOrder();
         Shipment shipment = order.getShipment();
 
@@ -648,7 +648,9 @@ public class ManagerServiceImpl implements ManagerService {
             payment.getPaidAt(),
             order.getCreatedAt(),
             order.getStatus().name(),
-            installmentStatus
+            application == null ? null : application.getStatus(),
+            application != null && InstallmentApplication.APPROVED.equals(application.getStatus())
+                && InstallmentRules.downPaymentOverdue(application.getReviewedAt(), downPaymentHold, LocalDateTime.now())
         );
     }
 
