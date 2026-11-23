@@ -182,12 +182,18 @@ public final class DocumentText {
 
     /** A sentence with {0}, {1} holes filled. */
     public static String text(String language, String key, Object... values) {
-        String text = text(language, key);
-        for (int index = 0; index < values.length; index++) {
-            text = text.replace("{" + index + "}", String.valueOf(values[index]));
+        // one pass over the pattern: a value that itself contains "{1}" is printed as it is, never filled in again
+        java.util.regex.Matcher holes = HOLE.matcher(text(language, key));
+        StringBuilder result = new StringBuilder();
+        while (holes.find()) {
+            int index = Integer.parseInt(holes.group(1));
+            holes.appendReplacement(result, java.util.regex.Matcher.quoteReplacement(index < values.length ? String.valueOf(values[index]) : holes.group()));
         }
-        return text;
+        holes.appendTail(result);
+        return result.toString();
     }
+
+    private static final java.util.regex.Pattern HOLE = java.util.regex.Pattern.compile("\\{(\\d{1,3})}");
 
     /** Every word in one language, for the page templates ({@code t['receipt.title']}). */
     public static Map<String, String> labels(String language) {

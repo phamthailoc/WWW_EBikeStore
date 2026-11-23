@@ -3,6 +3,7 @@ package com.ebike.service.document;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
@@ -39,5 +40,14 @@ class DocumentTextTest {
     void holesAreFilledAndAnUnknownKeyShowsItself() {
         assertEquals("Hello Lan,", DocumentText.text("en", "mail.greeting", "Lan"));
         assertEquals("no.such.key", DocumentText.text("vi", "no.such.key"));
+    }
+
+    @Test
+    void aValueThatLooksLikeAHoleIsPrintedAsItIsAndNotFilledAgain() {
+        // mail.subject has the shop in {0} and the order number in {1}: a shop called "Shop {1}" must not swallow the order number
+        String subject = DocumentText.text("en", "mail.subject", "Shop {1}", "ORD-1");
+        assertTrue(subject.contains("Shop {1}"), subject);
+        assertTrue(subject.contains("ORD-1"), subject);
+        assertEquals("a$b\\c", DocumentText.text("en", "mail.greeting", "a$b\\c").replace("Hello ", "").replace(",", ""));
     }
 }
