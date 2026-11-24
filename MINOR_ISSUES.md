@@ -143,3 +143,12 @@ Chạy toàn bộ Selenium trên app local (135 test), unit test (932), `TestRid
 - V24: thu nhập khai và 4 số cuối CCCD chỉ trả cho nhân viên có quyền quyết định (`order:update-status`); lời báo giới hạn 200 hồ sơ của hàng đợi trả góp nói đúng việc (hồ sơ chờ lâu nhất).
 - **Chấp nhận, ghi lại:** thông báo trạng thái đơn (kể cả đơn trả góp tự hủy) hiện chỉ có tiếng Việt và không nêu lý do, như mọi thông báo đơn hàng khác của dự án; cần một đợt làm song ngữ cho toàn bộ thông báo đơn hàng.
 - **Để lại:** phân trang hàng đợi trả góp/lái thử, tách truy vấn lái thử theo showroom, cache cấu hình trả góp, N truy vấn khi hủy đơn trả góp hàng loạt, tách bean SEO, bỏ `Thread.sleep` trong vài test Selenium V33.
+
+## Đã xử lý (lô lớn, 2026-11-24)
+- **Phân trang hàng đợi trả góp và lịch lái thử của nhân viên:** API nhận `limit` (mặc định 200, tối đa 1.000); trang có nút "Xem thêm" thay cho dòng báo giới hạn (`workspace.js`, `InstallmentService.queue`, `TestRideService.schedule`).
+- **Truy vấn lịch lái thử theo cửa hàng:** tách thành hai truy vấn (`findScheduleOfAll`, `findScheduleOfShowroom`) để dùng được chỉ mục khi chọn cửa hàng.
+- **Cấu hình trả góp:** đọc mọi kỳ hạn bằng một truy vấn (`PricingService.offeredInstallmentRates`, `PricingRuleRepository.findByCodeIn`) thay cho hai truy vấn mỗi kỳ hạn.
+- **SEO:** bean `SeoAddress` dùng chung cho `SeoController` và `SeoModelAdvice`, không còn khai báo lặp `@Value` và hàm tĩnh dùng chéo.
+- **Test Selenium V33:** hộp tiết kiệm đặt `data-state` khi xong; hai ca không còn `Thread.sleep`.
+- **Test Selenium:** GET bị cắt giữa chừng (`chunked transfer encoding`) được gọi lại tối đa 3 lần.
+- **Chấp nhận, ghi lại:** `OrderServiceImpl.expireUnpaidOrders` vẫn đọc hồ sơ trả góp từng đơn sau khi khóa đơn. Đọc trước một lượt cho nhanh hơn sẽ bỏ qua một hồ sơ vừa được duyệt trong lúc job chạy và có thể hủy nhầm đơn; hai pha khóa theo thứ tự id và `stockLedger.lock` đã chặn nguy cơ deadlock. Các `Thread.sleep` còn lại trong `ReadyForPickupSeleniumTest` chờ thời gian thật trôi qua hoặc thăm dò thông báo, không bỏ được.
