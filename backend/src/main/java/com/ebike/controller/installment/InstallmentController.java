@@ -63,8 +63,8 @@ public class InstallmentController {
     }
 
     @GetMapping("/api/v1/manager/installments")
-    public ResponseEntity<List<InstallmentApplicationResponse>> queue(@RequestParam(required = false) String status) {
-        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(service.queue(status));
+    public ResponseEntity<List<InstallmentApplicationResponse>> queue(@RequestParam(required = false) String status, Authentication authentication) {
+        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(service.queue(status, authentication));
     }
 
     @GetMapping("/api/v1/manager/installments/backlog")

@@ -345,22 +345,33 @@ class InstallmentServiceTest {
     @Test
     void theQueueDefaultsToWaitingApplicationsOldestFirst() {
         when(applications.findByStatusOrderByCreatedAtAsc(eq("PENDING"), any())).thenReturn(List.of(application));
-        assertEquals(1, service.queue(null).size());
-        assertEquals(1, service.queue("pending").size());
+        assertEquals(1, service.queue(null, null).size());
+        assertEquals(1, service.queue("pending", null).size());
         verify(applications, never()).findAllByOrderByCreatedAtDesc(any());
+    }
+
+    @Test
+    void onlyAStaffMemberWhoMayDecideSeesTheIncomeAndTheIdNumber() {
+        when(applications.findByStatusOrderByCreatedAtAsc(eq("PENDING"), any())).thenReturn(List.of(application));
+        Authentication viewOnly = auth("xem", PermissionConstants.OrderManagement.ORDER_VIEW_ALL);
+        InstallmentApplicationResponse hidden = service.queue(null, viewOnly).get(0);
+        assertNull(hidden.monthlyIncome());
+        assertNull(hidden.idNumberMasked());
+        InstallmentApplicationResponse shown = service.queue(null, staff()).get(0);
+        assertEquals(new BigDecimal("20000000"), shown.monthlyIncome());
     }
 
     @Test
     void aClosedStatusListsNewestFirstAndAllListsEverything() {
         when(applications.findByStatusOrderByCreatedAtDesc(eq("REJECTED"), any())).thenReturn(List.of());
         when(applications.findAllByOrderByCreatedAtDesc(any())).thenReturn(List.of(application));
-        assertEquals(0, service.queue("rejected").size());
-        assertEquals(1, service.queue("ALL").size());
+        assertEquals(0, service.queue("rejected", null).size());
+        assertEquals(1, service.queue("ALL", null).size());
     }
 
     @Test
     void anUnknownQueueStatusIsRefused() {
-        assertEquals(HttpStatus.BAD_REQUEST, refused(() -> service.queue("DONE")).getStatusCode());
+        assertEquals(HttpStatus.BAD_REQUEST, refused(() -> service.queue("DONE", null)).getStatusCode());
     }
 
     @Test
