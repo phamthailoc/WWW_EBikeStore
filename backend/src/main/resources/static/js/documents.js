@@ -43,12 +43,8 @@ window.KineticDocuments = (() => {
     setTimeout(() => URL.revokeObjectURL(href), 60000);
   }
 
-  // a button may name a language picker (data-doc-lang-from): the staff choose the language of the customer, not their own
   function withLanguage(button) {
-    const picker = button.dataset.docLangFrom ? document.querySelector(button.dataset.docLangFrom) : null;
-    const url = button.dataset.docUrl;
-    if (!picker || !picker.value) return url;
-    return url + (url.includes('?') ? '&' : '?') + 'lang=' + encodeURIComponent(picker.value);
+    return button.dataset.docUrl;
   }
 
   document.addEventListener('click', async event => {
