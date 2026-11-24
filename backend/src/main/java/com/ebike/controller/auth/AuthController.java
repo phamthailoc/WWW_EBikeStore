@@ -99,7 +99,7 @@ public class AuthController {
         @RequestBody UpdateProfileRequest request
     ) {
         if (authentication == null || authentication.getName() == null || authentication.getName().isBlank()) {
-            throw new org.springframework.web.server.ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authentication is required");
+            throw new org.springframework.web.server.ResponseStatusException(HttpStatus.UNAUTHORIZED, "Bạn cần đăng nhập.");
         }
         return authenticationService.updateProfile(authentication.getName(), request);
     }
@@ -111,7 +111,7 @@ public class AuthController {
         @RequestBody ChangePasswordRequest request
     ) {
         if (authentication == null || authentication.getName() == null || authentication.getName().isBlank()) {
-            throw new org.springframework.web.server.ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authentication is required");
+            throw new org.springframework.web.server.ResponseStatusException(HttpStatus.UNAUTHORIZED, "Bạn cần đăng nhập.");
         }
         authenticationService.changePassword(authentication.getName(), request);
     }

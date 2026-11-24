@@ -72,11 +72,11 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         validateRegisterRequest(request);
 
         if (userRepository.existsByUsername(request.username().trim())) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Username already exists");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Tên đăng nhập đã được sử dụng.");
         }
         String normalizedEmail = request.email().trim().toLowerCase(Locale.ROOT);
         if (userRepository.existsByEmail(normalizedEmail)) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already exists");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Email đã được sử dụng.");
         }
 
         User user = new User();
@@ -89,7 +89,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         user.setVerified(false);
 
         Role defaultRole = roleRepository.findByName(DEFAULT_CUSTOMER_ROLE)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Default role is missing"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Hệ thống chưa có vai trò mặc định."));
         user.getRoles().add(defaultRole);
 
         // Guest orders with this email are NOT attached here: the email is unverified at sign-up.
@@ -101,17 +101,17 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     public AuthResponse login(LoginRequest request, String ipAddress, String userAgent) {
         if (request == null || isBlank(request.usernameOrEmail()) || isBlank(request.password())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "usernameOrEmail and password are required");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vui lòng nhập tên đăng nhập hoặc email và mật khẩu.");
         }
 
         User user = findUser(request.usernameOrEmail());
         if (!Boolean.TRUE.equals(user.getActive())) {
             auditSignIn(user, false, "tài khoản bị khóa");
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User is inactive");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Tài khoản đang bị khóa.");
         }
         if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
             auditSignIn(user, false, "sai mật khẩu");
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Tên đăng nhập hoặc mật khẩu chưa chính xác.");
         }
         auditSignIn(user, true, null);
 
@@ -129,7 +129,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Transactional(readOnly = true)
     public UserProfileResponse getProfile(String usernameOrEmail) {
         if (isBlank(usernameOrEmail)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "usernameOrEmail is required");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vui lòng nhập tên đăng nhập hoặc email.");
         }
 
         User user = findUser(usernameOrEmail);
@@ -139,10 +139,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     public UserProfileResponse updateProfile(String usernameOrEmail, UpdateProfileRequest request) {
         if (isBlank(usernameOrEmail)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "usernameOrEmail is required");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vui lòng nhập tên đăng nhập hoặc email.");
         }
         if (request == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Request body is required");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Thiếu nội dung yêu cầu.");
         }
 
         User user = findUser(usernameOrEmail);
@@ -152,7 +152,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         if (requestedEmail != null) {
             String normalizedEmail = requestedEmail.toLowerCase(Locale.ROOT);
             if (!normalizedEmail.equalsIgnoreCase(user.getEmail()) && userRepository.existsByEmail(normalizedEmail)) {
-                throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already exists");
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "Email đã được sử dụng.");
             }
             user.setEmail(normalizedEmail);
         }
@@ -163,10 +163,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     public void changePassword(String usernameOrEmail, ChangePasswordRequest request) {
         if (isBlank(usernameOrEmail)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "usernameOrEmail is required");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vui lòng nhập tên đăng nhập hoặc email.");
         }
         if (request == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Request body is required");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Thiếu nội dung yêu cầu.");
         }
 
         String currentPassword = trimToNull(request.currentPassword());
@@ -199,18 +199,18 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         String trimmed = usernameOrEmail.trim();
         return userRepository.findByEmail(trimmed.toLowerCase(Locale.ROOT))
             .or(() -> userRepository.findByUsername(trimmed))
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy người dùng."));
     }
 
     private void validateRegisterRequest(RegisterRequest request) {
         if (request == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Request body is required");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Thiếu nội dung yêu cầu.");
         }
         if (isBlank(request.username()) || isBlank(request.email()) || isBlank(request.password())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "username, email, and password are required");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vui lòng nhập tên đăng nhập, email và mật khẩu.");
         }
         if (request.password().trim().length() < 6) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Password must be at least 6 characters");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mật khẩu phải có ít nhất 6 ký tự.");
         }
     }
 

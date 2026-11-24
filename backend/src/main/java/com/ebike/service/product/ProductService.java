@@ -135,7 +135,7 @@ public class ProductService {
     public ProductDetailDto getProductBySlug(String slug) {
         Product product = productRepository.findDetailBySlug(slug)
             .filter(item -> Boolean.TRUE.equals(item.getActive()))
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy sản phẩm."));
 
         return toDetailDto(product);
     }
@@ -143,7 +143,7 @@ public class ProductService {
     public List<ProductSummaryDto> getRelatedProducts(String slug, Integer limit) {
         Product product = productRepository.findBySlug(slug)
             .filter(item -> Boolean.TRUE.equals(item.getActive()))
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy sản phẩm."));
 
         int resolvedLimit = resolveRelatedProductLimit(limit);
 
@@ -235,7 +235,7 @@ public class ProductService {
         try {
             return VehicleType.valueOf(rawValue.trim().toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException exception) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid vehicleType filter");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bộ lọc loại xe không hợp lệ.");
         }
     }
 
@@ -243,7 +243,7 @@ public class ProductService {
         try {
             return BatteryType.valueOf(rawValue.trim().toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException exception) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid batteryType filter");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bộ lọc loại pin không hợp lệ.");
         }
     }
 

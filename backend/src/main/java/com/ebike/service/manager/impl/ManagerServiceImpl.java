@@ -252,13 +252,13 @@ public class ManagerServiceImpl implements ManagerService {
     @Transactional
     public ManagerPaymentResponse refundPayment(Long paymentId, ManagerPaymentConfirmationRequest request) {
         Payment payment = paymentRepository.findById(paymentId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Payment not found"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy thanh toán."));
 
         if (payment.getPaymentStatus() != PaymentStatus.PAID) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Only paid payments can be refunded");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chỉ hoàn tiền được cho khoản đã thanh toán.");
         }
         if (payment.getOrder().getStatus() != OrderStatus.CANCELLED) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Only payments of cancelled orders can be refunded");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chỉ hoàn tiền được cho khoản thanh toán của đơn đã hủy.");
         }
 
         payment.setPaymentStatus(PaymentStatus.REFUNDED);
@@ -300,15 +300,15 @@ public class ManagerServiceImpl implements ManagerService {
         LocalDate toDate;
 
         if ("custom".equals(period)) {
-            fromDate = parseDate(rawFromDate, "from");
-            toDate = parseDate(rawToDate, "to");
+            fromDate = parseDate(rawFromDate, "Ngày bắt đầu");
+            toDate = parseDate(rawToDate, "Ngày kết thúc");
         } else {
-            toDate = rawToDate == null || rawToDate.isBlank() ? today : parseDate(rawToDate, "to");
-            fromDate = rawFromDate == null || rawFromDate.isBlank() ? defaultFromDate(period, toDate) : parseDate(rawFromDate, "from");
+            toDate = rawToDate == null || rawToDate.isBlank() ? today : parseDate(rawToDate, "Ngày kết thúc");
+            fromDate = rawFromDate == null || rawFromDate.isBlank() ? defaultFromDate(period, toDate) : parseDate(rawFromDate, "Ngày bắt đầu");
         }
 
         if (fromDate.isAfter(toDate)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "from date must be on or before to date");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ngày bắt đầu phải trước hoặc trùng ngày kết thúc.");
         }
 
         String bucketPeriod = "custom".equals(period) ? resolveCustomBucketPeriod(fromDate, toDate) : period;
@@ -365,15 +365,15 @@ public class ManagerServiceImpl implements ManagerService {
     @Transactional
     public OrderResponse updatePickupDeadline(Long orderId, com.ebike.dto.manager.request.ManagerPickupDeadlineRequest request) {
         if (request == null || request.pickupDeadlineAt() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "pickupDeadlineAt is required");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vui lòng nhập hạn giữ xe.");
         }
         Order order = orderRepository.findById(orderId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy đơn hàng."));
         if (order.getStatus() != OrderStatus.READY_FOR_PICKUP) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Only orders waiting for pickup have a pickup deadline");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chỉ đơn đang chờ lấy xe mới có hạn giữ xe.");
         }
         if (!request.pickupDeadlineAt().isAfter(LocalDateTime.now())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The pickup deadline must be in the future");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Hạn giữ xe phải ở tương lai.");
         }
         if (request.pickupDeadlineAt().equals(order.getPickupDeadlineAt())) {
             return toOrderResponse(order);
@@ -398,27 +398,27 @@ public class ManagerServiceImpl implements ManagerService {
     @Transactional
     public OrderResponse updateOrderShipment(Long orderId, ManagerShipmentUpdateRequest request) {
         if (request == null || request.shipmentStatus() == null || request.shipmentStatus().isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "shipmentStatus is required");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vui lòng chọn trạng thái giao nhận.");
         }
 
         // locked like the status update, so two requests cannot both move the order to DELIVERED (and send two hand-over emails)
         Order order = orderRepository.findLockedById(orderId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy đơn hàng."));
 
         if (order.getStatus() == OrderStatus.CANCELLED) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot update shipment for cancelled orders");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Không cập nhật giao nhận cho đơn đã hủy.");
         }
 
         Shipment shipment = order.getShipment();
         if (shipment == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Order has no shipment information");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Đơn hàng chưa có thông tin giao nhận.");
         }
 
         ShipmentStatus nextStatus;
         try {
             nextStatus = ShipmentStatus.valueOf(request.shipmentStatus().trim().toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException exception) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid shipment status");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Trạng thái giao nhận không hợp lệ.");
         }
 
         // The shipment must not push the order past a step it has not reached (e.g. a PENDING order straight to DELIVERED).
@@ -426,10 +426,10 @@ public class ManagerServiceImpl implements ManagerService {
         boolean pickup = shipment.getPickupShowroom() != null;
         boolean leavingWarehouse = nextStatus == ShipmentStatus.SHIPPED || nextStatus == ShipmentStatus.IN_TRANSIT;
         if (leavingWarehouse && pickup) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Store-pickup orders are not shipped; mark them ready for pickup instead");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Đơn nhận tại cửa hàng không giao đi; hãy chuyển sang \"Chờ lấy\".");
         }
         if (leavingWarehouse && order.getStatus() != OrderStatus.PROCESSING && order.getStatus() != OrderStatus.SHIPPED) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Only orders being processed can be handed over for shipping");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chỉ đơn đang xử lý mới giao cho đơn vị vận chuyển được.");
         }
         boolean leavesTheStore = leavingWarehouse || nextStatus == ShipmentStatus.DELIVERED;
         if (leavesTheStore && order.getStatus() != OrderStatus.DELIVERED && order.getStatus() != OrderStatus.SHIPPED && !com.ebike.service.order.OrderUnits.isComplete(order)) {
@@ -439,8 +439,8 @@ public class ManagerServiceImpl implements ManagerService {
         OrderStatus beforeDelivery = pickup ? OrderStatus.READY_FOR_PICKUP : OrderStatus.SHIPPED;
         if (nextStatus == ShipmentStatus.DELIVERED && order.getStatus() != beforeDelivery && order.getStatus() != OrderStatus.DELIVERED) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, pickup
-                ? "Only orders that are ready for pickup can be marked as received"
-                : "Only orders that are being shipped can be marked as delivered");
+                ? "Chỉ đơn đang chờ lấy xe mới chuyển được sang \"Đã nhận\"."
+                : "Chỉ đơn đang được giao mới chuyển được sang \"Đã giao\".");
         }
 
         shipment.setShipmentStatus(nextStatus);
@@ -476,14 +476,14 @@ public class ManagerServiceImpl implements ManagerService {
     })
     public ProductSummaryDto updateProductStock(Long productId, ManagerProductStockUpdateRequest request) {
         if (request == null || request.stockQuantity() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "stockQuantity is required");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vui lòng nhập số lượng tồn kho.");
         }
         if (request.stockQuantity() < 0) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Stock quantity cannot be negative");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Số lượng tồn kho không được âm.");
         }
 
         Product product = productRepository.findById(productId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy sản phẩm."));
 
         // Orders need stock in the product and in the chosen colour, so a total typed here would not make any
         // colour available. For a product with colours the total is the sum of the colours (see updateVariantStock).
@@ -520,7 +520,7 @@ public class ManagerServiceImpl implements ManagerService {
         }
 
         Product product = productRepository.findById(productId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy sản phẩm."));
         ProductVariant variant = product.getVariants().stream()
             .filter(candidate -> candidate.getId() != null && candidate.getId().equals(variantId))
             .findFirst()
@@ -583,7 +583,7 @@ public class ManagerServiceImpl implements ManagerService {
         try {
             return payment.getPaymentStatus() == PaymentStatus.valueOf(rawStatus.trim().toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException exception) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid payment status filter");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bộ lọc trạng thái thanh toán không hợp lệ.");
         }
     }
 
@@ -594,7 +594,7 @@ public class ManagerServiceImpl implements ManagerService {
         try {
             return payment.getPaymentMethod() == PaymentMethod.valueOf(rawMethod.trim().toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException exception) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid payment method filter");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bộ lọc phương thức thanh toán không hợp lệ.");
         }
     }
 
@@ -786,19 +786,19 @@ public class ManagerServiceImpl implements ManagerService {
     private String normalizePeriod(String rawPeriod) {
         String period = rawPeriod == null ? "day" : rawPeriod.trim().toLowerCase(Locale.ROOT);
         if (!List.of("day", "month", "quarter", "year", "custom").contains(period)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "period must be day, month, quarter, year, or custom");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Kỳ báo cáo phải là ngày, tháng, quý, năm hoặc tùy chọn.");
         }
         return period;
     }
 
     private LocalDate parseDate(String rawValue, String fieldName) {
         if (rawValue == null || rawValue.isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, fieldName + " date is required");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, fieldName + " là bắt buộc");
         }
         try {
             return LocalDate.parse(rawValue.trim());
         } catch (DateTimeParseException exception) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid " + fieldName + " date format, expected yyyy-MM-dd");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, fieldName + " không hợp lệ, định dạng đúng là yyyy-MM-dd");
         }
     }
 

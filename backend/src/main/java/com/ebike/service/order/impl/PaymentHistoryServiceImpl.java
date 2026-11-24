@@ -40,11 +40,11 @@ public class PaymentHistoryServiceImpl implements PaymentHistoryService {
 
     private User getAuthenticatedUser(Authentication authentication) {
         if (authentication == null || authentication.getName() == null || authentication.getName().isBlank()) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authentication is required");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Bạn cần đăng nhập.");
         }
         return userRepository.findByUsername(authentication.getName())
             .or(() -> userRepository.findByEmail(authentication.getName()))
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authenticated user not found"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Không tìm thấy tài khoản đang đăng nhập."));
     }
 
     private PaymentStatus parsePaymentStatus(String rawStatus) {
@@ -54,7 +54,7 @@ public class PaymentHistoryServiceImpl implements PaymentHistoryService {
         try {
             return PaymentStatus.valueOf(rawStatus.trim().toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException exception) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid payment status filter");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bộ lọc trạng thái thanh toán không hợp lệ.");
         }
     }
 

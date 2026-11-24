@@ -114,10 +114,10 @@ public class AdminServiceImpl implements AdminService {
     @Transactional
     public PricingRuleResponse updatePricingRule(Long id, PricingRuleUpdateRequest request) {
         PricingRule rule = pricingRuleRepository.findById(id)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Pricing rule not found"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy quy tắc giá."));
 
         if (request.amount() == null || request.amount().compareTo(BigDecimal.ZERO) < 0) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Amount must not be negative");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Số tiền không được âm.");
         }
         if (rule.getCode().startsWith(PricingService.INSTALLMENT_RATE_PREFIX) && request.amount().compareTo(new BigDecimal("60")) > 0) {
             // V24: a yearly rate above 60% is a typo (an amount in dong), and customers would be shown it
@@ -161,16 +161,16 @@ public class AdminServiceImpl implements AdminService {
     @Override
     @Transactional
     public PromotionResponse createPromotion(PromotionCreateRequest request) {
-        String code = normalizeRequired(request.code(), "Promotion code").replaceAll("\\s+", "");
+        String code = normalizeRequired(request.code(), "Mã khuyến mãi").replaceAll("\\s+", "");
         if (promotionRepository.existsByCode(code)) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Promotion code already exists");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Mã khuyến mãi đã tồn tại.");
         }
 
         Promotion promotion = new Promotion();
         promotion.setCode(code);
-        promotion.setCampaignName(normalizeRequired(request.campaignName(), "Campaign name"));
+        promotion.setCampaignName(normalizeRequired(request.campaignName(), "Tên chiến dịch"));
         promotion.setDiscountType(normalizeOrDefault(request.discountType(), "PERCENTAGE", DISCOUNT_TYPES));
-        promotion.setDiscountValue(validatePositive(request.discountValue(), "Discount value"));
+        promotion.setDiscountValue(validatePositive(request.discountValue(), "Giá trị giảm"));
         promotion.setMaxDiscountAmount(request.maxDiscountAmount());
         promotion.setUsageLimit(request.usageLimit() == null || request.usageLimit() < 0 ? 0 : request.usageLimit());
         promotion.setUsageCount(0);
@@ -188,7 +188,7 @@ public class AdminServiceImpl implements AdminService {
     @Transactional
     public PromotionResponse updatePromotion(Long id, PromotionUpdateRequest request) {
         Promotion promotion = promotionRepository.findById(id)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Promotion not found"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy khuyến mãi."));
 
         if (request.campaignName() != null && !request.campaignName().isBlank()) {
             promotion.setCampaignName(request.campaignName().trim());
@@ -197,7 +197,7 @@ public class AdminServiceImpl implements AdminService {
             promotion.setDiscountType(normalizeOrDefault(request.discountType(), promotion.getDiscountType(), DISCOUNT_TYPES));
         }
         if (request.discountValue() != null) {
-            promotion.setDiscountValue(validatePositive(request.discountValue(), "Discount value"));
+            promotion.setDiscountValue(validatePositive(request.discountValue(), "Giá trị giảm"));
         }
         if (request.maxDiscountAmount() != null) {
             // 0 (or less) means "no cap"
@@ -245,21 +245,21 @@ public class AdminServiceImpl implements AdminService {
             : request.username().trim();
 
         if (userRepository.existsByEmail(email)) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already exists");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Email đã được sử dụng.");
         }
         if (userRepository.existsByUsername(username)) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Username already exists");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Tên đăng nhập đã được sử dụng.");
         }
 
         String normalizedRole = normalizeRole(request.role());
         Role role = roleRepository.findByName(normalizedRole)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Role not found: " + normalizedRole));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Không tìm thấy vai trò: " + normalizedRole));
 
         User user = new User();
         user.setEmail(email);
         user.setUsername(username);
         user.setPasswordHash(passwordEncoder.encode(requiredPassword(request.password())));
-        applyName(user, normalizeRequired(request.name(), "Name"));
+        applyName(user, normalizeRequired(request.name(), "Tên"));
         user.setVerified(Boolean.TRUE.equals(request.verified()));
         user.setAccountStatus(normalizeOrDefault(request.status(), "ACTIVE", ACCOUNT_STATUSES));
         user.setActive("ACTIVE".equals(user.getAccountStatus()));
@@ -274,11 +274,11 @@ public class AdminServiceImpl implements AdminService {
     @Transactional
     public AdminAccountResponse updateAccountRole(Long id, AdminAccountRoleUpdateRequest request) {
         User user = userRepository.findById(id)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Account not found"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy tài khoản."));
         assertNotDeleted(user);
         String normalizedRole = normalizeRole(request.role());
         Role role = roleRepository.findByName(normalizedRole)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Role not found: " + normalizedRole));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Không tìm thấy vai trò: " + normalizedRole));
 
         if (!"ADMIN".equals(normalizedRole)) {
             assertNotSelf(user, "Bạn không thể tự đổi vai trò của chính mình.");
@@ -294,7 +294,7 @@ public class AdminServiceImpl implements AdminService {
     @Transactional
     public AdminAccountResponse updateAccountStatus(Long id, AdminAccountStatusUpdateRequest request) {
         User user = userRepository.findById(id)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Account not found"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy tài khoản."));
         assertNotDeleted(user);
         String status = normalizeOrDefault(request.status(), "ACTIVE", ACCOUNT_STATUSES);
 
@@ -314,7 +314,7 @@ public class AdminServiceImpl implements AdminService {
     @Transactional(isolation = org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
     public void deleteAccount(Long id, String confirmEmail) {
         User user = userRepository.findById(id)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Account not found"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy tài khoản."));
         assertNotSelf(user, "Bạn không thể tự xóa tài khoản của chính mình.");
         assertNotLastAdmin(user, "Đây là quản trị viên cuối cùng đang hoạt động, không thể xóa.");
         assertNotDeleted(user);
@@ -496,7 +496,7 @@ public class AdminServiceImpl implements AdminService {
             normalized = defaultValue;
         }
         if (!allowedValues.contains(normalized)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unsupported value: " + value);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Giá trị không được hỗ trợ: " + value);
         }
         return normalized;
     }
@@ -510,14 +510,14 @@ public class AdminServiceImpl implements AdminService {
 
     private String normalizeRequired(String value, String label) {
         if (value == null || value.isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, label + " is required");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, label + " là bắt buộc");
         }
         return value.trim();
     }
 
     private BigDecimal validatePositive(BigDecimal value, String label) {
         if (value == null || value.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, label + " must be greater than zero");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, label + " phải lớn hơn 0");
         }
         return value;
     }

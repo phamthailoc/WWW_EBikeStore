@@ -152,30 +152,30 @@ public class ProductReviewService {
 
     private Product findActiveProduct(String productSlug) {
         if (isBlank(productSlug)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Product slug is required");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Thiếu đường dẫn sản phẩm.");
         }
         return productRepository.findBySlug(productSlug)
             .filter(product -> Boolean.TRUE.equals(product.getActive()))
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy sản phẩm."));
     }
 
     private Review findReview(Long reviewId) {
         return reviewRepository.findById(reviewId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Review not found"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy đánh giá."));
     }
 
     private User currentUser(Authentication authentication) {
         if (authentication == null || isBlank(authentication.getName())) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authentication is required");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Bạn cần đăng nhập.");
         }
         return userRepository.findByUsername(authentication.getName())
             .or(() -> userRepository.findByEmail(authentication.getName()))
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authenticated user not found"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Không tìm thấy tài khoản đang đăng nhập."));
     }
 
     private void validateRequest(ProductReviewRequest request) {
         if (request == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Request body is required");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Thiếu nội dung yêu cầu.");
         }
         if (request.rating() == null || request.rating() < MIN_RATING || request.rating() > MAX_RATING) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vui lòng chọn số sao từ 1 đến 5.");

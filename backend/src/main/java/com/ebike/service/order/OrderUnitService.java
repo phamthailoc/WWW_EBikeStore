@@ -59,7 +59,7 @@ public class OrderUnitService {
         // then be deleted out from under it). A request being filed at this moment waits for us instead.
         unitRepository.findLockedByOrderId(orderId);
         Order order = orders.findById(orderId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy đơn hàng."));
         if (!EDITABLE.contains(order.getStatus())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                 "Chỉ nhập số khung, số máy khi đơn đã sang bước đang xử lý.");

@@ -78,18 +78,18 @@ public class VnPayServiceImpl implements VnPayService {
     ) {
         validateConfigured();
         if (request == null || request.orderId() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "orderId is required");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Thiếu mã đơn hàng.");
         }
 
         // the order row is locked (the first read of the transaction): a payment attempt resets the payment row, so it must not run in the middle of a cancellation
         Order order = orderRepository.findLockedById(request.orderId())
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy đơn hàng."));
         if (
             !backOfficeUser
                 && order.getUser() != null
                 && (username == null || !username.equals(order.getUser().getUsername()))
         ) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can only pay your own orders");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn chỉ thanh toán được đơn hàng của mình.");
         }
         if (order.getStatus() == OrderStatus.CANCELLED) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Đơn hàng đã bị hủy nên không thanh toán được.");
@@ -379,7 +379,7 @@ public class VnPayServiceImpl implements VnPayService {
 
     private void validateConfigured() {
         if (!properties.isConfigured()) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "VNPay is not configured");
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Cửa hàng chưa cấu hình thanh toán VNPay.");
         }
     }
 }

@@ -91,7 +91,7 @@ public class UserProfileServiceImpl implements UserProfileService {
         assertCanAccessUser(userId, authentication);
         validateUser(userId);
         UserAddress address = userAddressRepository.findByIdAndUserId(addressId, userId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Address not found"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy địa chỉ."));
 
         validateAddress(request);
         address.setAddressType(parseAddressType(request.addressType()));
@@ -114,7 +114,7 @@ public class UserProfileServiceImpl implements UserProfileService {
         assertCanAccessUser(userId, authentication);
         validateUser(userId);
         userAddressRepository.findByIdAndUserId(addressId, userId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Address not found"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy địa chỉ."));
         userAddressRepository.deleteByIdAndUserId(addressId, userId);
     }
 
@@ -180,7 +180,7 @@ public class UserProfileServiceImpl implements UserProfileService {
         if (request != null && request.theme() != null && !request.theme().isBlank()) {
             String theme = request.theme().trim().toLowerCase(java.util.Locale.ROOT);
             if (!java.util.List.of("system", "light", "dark").contains(theme)) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "theme must be system, light or dark");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Giao diện phải là theo thiết bị, sáng hoặc tối.");
             }
             preference.setTheme(theme);
         }
@@ -193,10 +193,10 @@ public class UserProfileServiceImpl implements UserProfileService {
 
     private User getUserOrThrow(Long userId) {
         if (userId == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "userId is required");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Thiếu mã người dùng.");
         }
         return userRepository.findById(userId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy người dùng."));
     }
 
     private void validateUser(Long userId) {
@@ -209,17 +209,17 @@ public class UserProfileServiceImpl implements UserProfileService {
         }
         User currentUser = getAuthenticatedUser(authentication);
         if (!currentUser.getId().equals(userId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can only access your own profile data");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn chỉ xem được thông tin của chính mình.");
         }
     }
 
     private User getAuthenticatedUser(Authentication authentication) {
         if (authentication == null || authentication.getName() == null || authentication.getName().isBlank()) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authentication is required");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Bạn cần đăng nhập.");
         }
         return userRepository.findByUsername(authentication.getName())
             .or(() -> userRepository.findByEmail(authentication.getName()))
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authenticated user not found"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Không tìm thấy tài khoản đang đăng nhập."));
     }
 
     private boolean isBackOffice(Authentication authentication) {
@@ -237,7 +237,7 @@ public class UserProfileServiceImpl implements UserProfileService {
         try {
             return AddressType.valueOf(value.trim().toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException exception) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid addressType. Use BILLING or SHIPPING");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Loại địa chỉ không hợp lệ (BILLING hoặc SHIPPING).");
         }
     }
 
