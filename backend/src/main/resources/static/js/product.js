@@ -65,7 +65,9 @@
     button.querySelector('.color-dot').style.background=tones.length>1?`linear-gradient(135deg,${tones[0]} 50%,${tones[1]} 50%)`:tones[0];
     button.addEventListener('click', () => pickVariant(button));
   });
-  const selected=document.querySelector('.variant-option.selected');
+  // the page opens on the colour the shop marked as default; when that one is sold out and another is in stock, it opens on the first colour that can be bought (not when a customer comes to wait for a sold-out colour)
+  let selected=document.querySelector('.variant-option.selected');
+  if(selected&&Number(selected.dataset.stock)<1&&!new URLSearchParams(location.search).has('notify')){selected=[...document.querySelectorAll('.variant-option')].find(option=>Number(option.dataset.stock)>0)||selected;}
   if(selected) pickVariant(selected); else {
     updateQuantity(1);document.querySelector('#addToCart').disabled=true;document.querySelector('#buyNow').disabled=true;
     document.querySelector('#stockHint').textContent='Màu xe và hình ảnh đang được cập nhật.';

@@ -236,7 +236,7 @@ class OrderDocumentsSeleniumTest extends StorefrontSeleniumTest {
         // 1. not handed over yet: a provisional receipt, and no warranty card
         openOrder(orderId);
         WebElement panel = driver.findElement(PANEL);
-        assertTrue(panel.getText().contains("Hóa đơn và phiếu bảo hành"), panel.getText());
+        assertTrue(panel.getText().contains("Phiếu bán hàng và phiếu bảo hành"), panel.getText());
         assertTrue(panel.getText().contains("Tải phiếu tạm tính"), panel.getText());
         assertTrue(panel.getText().contains("không phải hóa đơn điện tử"), panel.getText());
         assertTrue(driver.findElements(By.cssSelector("#orderDocuments [data-doc-url*='warranty-card']")).isEmpty(), "no card before the hand-over");
@@ -268,7 +268,7 @@ class OrderDocumentsSeleniumTest extends StorefrontSeleniumTest {
         // 4. the order page now offers the receipt and the warranty card
         openOrder(orderId);
         panel = driver.findElement(PANEL);
-        assertTrue(panel.getText().contains("Tải hóa đơn"), panel.getText());
+        assertTrue(panel.getText().contains("Tải phiếu bán hàng"), panel.getText());
         assertTrue(panel.getText().contains("Tải phiếu bảo hành"), panel.getText());
         HttpResponse<byte[]> receipt = download(api, "/api/v1/orders/" + orderId + "/receipt");
         assertPdf(receipt);
@@ -473,7 +473,7 @@ class OrderDocumentsSeleniumTest extends StorefrontSeleniumTest {
             }
             openOrder(orderId);
             String text = driver.findElement(PANEL).getText();
-            assertTrue(text.contains("Tải hóa đơn"), text);
+            assertTrue(text.contains("Tải phiếu bán hàng"), text);
             assertTrue(text.contains("Đơn này không có xe cần phiếu bảo hành"), "an order with no vehicle is not told that numbers are missing: " + text);
             assertFalse(text.contains("chưa có số khung"), text);
             assertTrue(driver.findElements(By.cssSelector("#orderDocuments [data-doc-url*='warranty-card']")).isEmpty(), "no card button");
