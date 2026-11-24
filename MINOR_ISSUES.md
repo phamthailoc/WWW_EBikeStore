@@ -152,3 +152,7 @@ Chạy toàn bộ Selenium trên app local (135 test), unit test (932), `TestRid
 - **Test Selenium V33:** hộp tiết kiệm đặt `data-state` khi xong; hai ca không còn `Thread.sleep`.
 - **Test Selenium:** GET bị cắt giữa chừng (`chunked transfer encoding`) được gọi lại tối đa 3 lần.
 - **Chấp nhận, ghi lại:** `OrderServiceImpl.expireUnpaidOrders` vẫn đọc hồ sơ trả góp từng đơn sau khi khóa đơn. Đọc trước một lượt cho nhanh hơn sẽ bỏ qua một hồ sơ vừa được duyệt trong lúc job chạy và có thể hủy nhầm đơn; hai pha khóa theo thứ tự id và `stockLedger.lock` đã chặn nguy cơ deadlock. Các `Thread.sleep` còn lại trong `ReadyForPickupSeleniumTest` chờ thời gian thật trôi qua hoặc thăm dò thông báo, không bỏ được.
+
+## Duyệt tay trang quản trị (2026-11-24)
+- **Đã sửa:** ngày giờ hiện dạng ISO thô (`2026-11-24T11:17:49`) ở Tài khoản, Người dùng, Nhật ký, Giá, Hỗ trợ; trang Khách hàng của Manager thiếu tên và có nhãn tiếng Anh "Total Spent"; menu Admin đổi sang menu Manager khi mở Bảo hành, Lái thử, Trả góp, Nhập kho (nay có `/admin/...` giữ menu Admin).
+- **Chấp nhận:** danh sách Tài khoản, Người dùng, Khách hàng tải hết một lần (khoảng 770 dòng trên máy thử, mất vài giây để vẽ); khi có hàng nghìn tài khoản cần phân trang như hàng đợi trả góp. Dòng "401" trong console của khách chưa đăng nhập là lần kiểm tra hồ sơ trước khi đăng nhập.

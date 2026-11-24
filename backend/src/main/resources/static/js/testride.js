@@ -2,7 +2,7 @@
 window.KineticTestRide = (() => {
   const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
   const page = document.body.dataset.page || '';
-  const localeTag = () => document.documentElement.lang === 'en' ? 'en-GB' : 'vi-VN';
+  const localeTag = () => 'vi-VN';
   const pad = n => String(n).padStart(2, '0');
   const isoDay = date => `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
   const timeText = iso => new Date(iso).toLocaleTimeString(localeTag(), {hour: '2-digit', minute: '2-digit'});

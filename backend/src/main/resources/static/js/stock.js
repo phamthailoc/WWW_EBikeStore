@@ -76,7 +76,7 @@ window.KineticStock = (() => {
   const reasonText = {
     RECEIPT: 'Nhập kho', SALE: 'Bán hàng', CANCEL_RESTORE: 'Hoàn kho do hủy đơn', ADJUSTMENT: 'Điều chỉnh', OPENING: 'Tồn đầu kỳ'
   };
-  const localeTag = () => document.documentElement.lang === 'en' ? 'en-GB' : 'vi-VN';
+  const localeTag = () => 'vi-VN';
   const whenText = iso => { const d = new Date(iso); return isNaN(d) ? '—' : d.toLocaleString(localeTag()); };
 
   async function fetchJson(url) {

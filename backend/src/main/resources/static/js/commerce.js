@@ -7,7 +7,7 @@
   const validItems=items=>items.length>0 && items.every(i=>!i.unavailable && i.quantity<=C.limit(i) && C.limit(i)>0);
   const vnpayEnabled=document.body.dataset.vnpayEnabled==='true';
   const emailOtpRequired=document.body.dataset.emailOtpRequired==='true';
-  async function startVnPay(orderId){const payment=await request('/api/v1/payments/vnpay/create',{orderId,language:'vn'});if(!payment?.paymentUrl)throw Error('VNPay không trả về đường dẫn thanh toán.');location.href=payment.paymentUrl;}
+  async function startVnPay(orderId){const payment=await request('/api/v1/payments/vnpay/create',{orderId});if(!payment?.paymentUrl)throw Error('VNPay không trả về đường dẫn thanh toán.');location.href=payment.paymentUrl;}
   const normalizeSearch=value=>value.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').toLowerCase();
 
   async function renderCart(target,finish,tell){
