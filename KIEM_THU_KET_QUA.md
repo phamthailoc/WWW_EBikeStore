@@ -32,14 +32,14 @@ Còn mở: `/api/v1/notifications` trả 200 cho cả ba vai trò không quyền
 | 4 | Mua trả góp | ✅ đi tay trọn vẹn: khách đặt (công cụ trả góp, CCCD, thu nhập), Manager duyệt kèm ghi chú, thu trả trước tại cửa hàng, chuyển trạng thái, nhập số khung, giao xe; thông báo của khách đầy đủ. Quá hạn duyệt và quá hạn trả trước: 🟡 unit test |
 | 5 | Hủy đơn, yêu cầu hủy | 🟡 Selenium (`CancelOrder`) |
 | 6 | Khách vãng lai đặt rồi liên kết đơn | 🟡 Selenium (`GuestOrderLink`) |
-| 7 | Báo khi có hàng lại | 🟡 Selenium (`StockAlert`) |
-| 8 | Lái thử | 🟡 Selenium (`TestRide`), test DB thật (`TestRideDatabaseTest`) |
+| 7 | Báo khi có hàng lại | ✅ đi tay: khách đăng ký màu hết hàng (đăng ký lại trả 200, không trùng), Manager nhập kho 3 xe, khách nhận thông báo "đã có hàng lại", hồ sơ ghi giờ đã báo |
+| 8 | Lái thử | ✅ đi tay: xem khung giờ, đặt lịch, đặt trùng giờ 409, giờ đã qua 400, Manager xác nhận kèm ghi chú, hủy không ghi lý do 400, khách nhận thông báo |
 | 9 | Bảo hành | ✅ đi tay: khách thấy xe trong Sổ bảo hành, gửi yêu cầu, Manager thấy đủ điện thoại và mã đơn, tiếp nhận kèm ghi chú, khách nhận thông báo; từ chối, sửa, hoàn tất: 🟡 Selenium (`Warranty`) |
-| 10 | Kho: phiếu nhập, điều chỉnh, lịch sử | 🟡 Selenium (`StockReceipt`, `StockHistory`) |
+| 10 | Kho: phiếu nhập, điều chỉnh, lịch sử | ✅ đi tay: phiếu nhập PN-000010, số lượng 0 bị từ chối, sổ kho khớp tồn ở mọi màu |
 | 11 | Báo cáo và Excel | 🟡 Selenium (`ExcelExport`); Manager mở báo cáo bằng tay: ✅ |
 | 12 | Admin: giá, khuyến mãi, tài khoản, nhật ký | ✅ duyệt tay các trang (🔧 sửa ngày giờ ISO thô, 🔧 trang Khách hàng thiếu cột); sửa giá và hiện ở trang xe: 🟡 Selenium (`AdminPricing`, `SavingsCalculator`) |
 | 13 | Xóa tài khoản, tài khoản bị khóa | 🟡 unit và Selenium (`AccountErasure`...); bản ghi cửa hàng giữ, thông tin cá nhân ẩn danh |
-| 14 | Việc chạy ngầm (hủy quá hạn, nhắc bảo dưỡng, nhắc lái thử, quét báo hàng) | 🟡 unit test từng job; chưa chạy thử với thời hạn rút ngắn |
+| 14 | Việc chạy ngầm (hủy quá hạn, nhắc bảo dưỡng, nhắc lái thử, quét báo hàng) | ✅ chạy thử với thời hạn rút ngắn: đơn VNPay và đơn trả sau quá hạn tự hủy đúng lý do, tồn kho hoàn lại và sổ kho khớp; khách nhận thông báo hủy và nhắc lịch lái thử. Nhắc bảo dưỡng: job chạy, chưa có xe đến hạn nên không gửi (🟡 unit test) |
 
 ## 4. Lỗi tìm thấy trong lúc kiểm thử
 
@@ -64,6 +64,6 @@ Còn mở: `/api/v1/notifications` trả 200 cho cả ba vai trò không quyền
 
 ## 6. Phần còn lại của kế hoạch
 
-- Duyệt tay các luồng đánh dấu 🟡 (đặc biệt 1, 2, 5, 7, 8, 10, 14).
+- Còn đi tay: luồng 3 hiện chỉ có Selenium với khóa giả.
 - Không chức năng còn lại: máy tính bảng, dữ liệu lớn, truy cập đồng thời, giới hạn tần suất bật.
 - Dịch vụ ngoài (email, VNPay, Gemini): để sau.

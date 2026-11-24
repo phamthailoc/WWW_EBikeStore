@@ -2,7 +2,9 @@
 
 Rà soát ngày 06/11/2026 trên nhánh `MinhTien` (đã merge `develop`, commit `79f6baf`).
 
-## Tình hình hiện tại (cập nhật 06/11/2026)
+## Tình hình hiện tại (cập nhật 24/11/2026)
+
+**Tóm tắt 24/11:** V1–V19 đã xong (trừ V16 dùng OTP email, chưa chuyển SMS). Từ 20/11 đã bỏ toàn bộ tiếng Anh (giao diện, API, PDF, email, Excel, chatbot, test), chỉ còn tiếng Việt, và có test `VietnameseMessagesTest` chặn lỗi quay lại. Các PR #19–#28 đã merge vào `develop` với CI xanh. Bảng phân quyền đã kiểm thử đủ 7 vai trò (sửa lỗi OPERATOR/SUPPORT/MAINTENANCE vào được trang Admin). Đã duyệt tay các luồng 1, 2, 4, 5, 7, 8, 9, 10, 11, 12, 14; còn luồng 3 (VNPay thật), máy tính bảng, dữ liệu lớn, truy cập đồng thời. Chi tiết: [KIEM_THU_KET_QUA.md](KIEM_THU_KET_QUA.md), [MINOR_ISSUES.md](MINOR_ISSUES.md). Email, VNPay và Gemini thật để sau. Dòng V19 dưới đây là lịch sử: tiếng Anh sau đó đã được gỡ bỏ theo yêu cầu.
 
 | Việc | Trạng thái | Nhánh / PR |
 |---|---|---|
