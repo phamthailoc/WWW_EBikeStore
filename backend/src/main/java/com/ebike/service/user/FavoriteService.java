@@ -47,14 +47,14 @@ public class FavoriteService {
     public ProductSummaryDto addFavorite(String username, Long productId) {
         requireUsername(username);
         if (productId == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "productId is required");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Thiếu mã sản phẩm.");
         }
 
         User user = userRepository.findByUsername(username)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy người dùng."));
         Product product = productRepository.findById(productId)
             .filter(item -> Boolean.TRUE.equals(item.getActive()))
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy sản phẩm."));
 
         if (!userFavoriteRepository.existsByUserIdAndProductId(user.getId(), product.getId())) {
             UserFavorite favorite = new UserFavorite();
@@ -75,7 +75,7 @@ public class FavoriteService {
 
     private void requireUsername(String username) {
         if (username == null || username.isBlank()) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authentication is required");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Bạn cần đăng nhập.");
         }
     }
 }

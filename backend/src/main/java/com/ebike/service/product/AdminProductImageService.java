@@ -195,7 +195,7 @@ public class AdminProductImageService {
                 LOGGER.warn("Failed to delete S3 object for image id {} and key {}", imageId, image.getS3Key(), exception);
                 throw new ResponseStatusException(
                     HttpStatus.BAD_GATEWAY,
-                    "Image marked for deletion but S3 cleanup failed. Please retry cleanup."
+                    "Ảnh đã được đánh dấu xóa nhưng dọn ảnh trên S3 chưa thành công. Vui lòng thử dọn lại."
                 );
             }
         } else {
@@ -221,7 +221,7 @@ public class AdminProductImageService {
 
     private Product findProduct(Long productId) {
         return productRepository.findById(productId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy sản phẩm."));
     }
 
     private ProductVariant validateVariant(Product product, Long variantId) {
@@ -230,10 +230,10 @@ public class AdminProductImageService {
         }
 
         ProductVariant variant = productVariantRepository.findById(variantId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Variant not found"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy màu xe."));
 
         if (!Objects.equals(variant.getProduct().getId(), product.getId())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Variant does not belong to the selected product");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Màu xe này không thuộc sản phẩm đã chọn.");
         }
 
         return variant;
@@ -241,30 +241,30 @@ public class AdminProductImageService {
 
     private ProductImage findImage(Long imageId) {
         ProductImage image = productImageRepository.findById(imageId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Image not found"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy ảnh."));
 
         if (image.getStatus() == ProductImageStatus.DELETED) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Image not found");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy ảnh.");
         }
         return image;
     }
 
     private byte[] readImageBytes(MultipartFile file) {
         if (file == null || file.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Image file is required");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vui lòng chọn tệp ảnh.");
         }
 
         try {
             return file.getBytes();
         } catch (IOException exception) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unable to read image file", exception);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Không đọc được tệp ảnh.", exception);
         }
     }
 
     private String resolveContentType(MultipartFile file) {
         String contentType = file.getContentType();
         if (contentType == null || !contentType.toLowerCase(Locale.ROOT).startsWith("image/")) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Only image uploads are supported");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chỉ tải lên được tệp ảnh.");
         }
         return contentType;
     }

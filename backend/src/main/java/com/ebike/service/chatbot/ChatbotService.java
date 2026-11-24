@@ -121,7 +121,7 @@ public class ChatbotService {
     private ChatbotAnalysis analyze(ChatbotAskRequest request) {
         String userMessage = request == null ? null : request.effectiveMessage();
         if (userMessage == null || userMessage.trim().isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "message is required");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vui lòng nhập câu hỏi.");
         }
 
         String chatId = normalizeChatId(request.chatId());

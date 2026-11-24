@@ -54,7 +54,7 @@ public class NotificationServiceImpl implements NotificationService {
     public NotificationResponse markAsRead(Long id, Authentication authentication) {
         User user = getAuthenticatedUser(authentication);
         Notification notification = notificationRepository.findByIdAndUserId(id, user.getId())
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Notification not found"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy thông báo."));
         if (notification.getReadAt() == null) {
             notification.setReadAt(LocalDateTime.now());
         }
@@ -84,11 +84,11 @@ public class NotificationServiceImpl implements NotificationService {
 
     private User getAuthenticatedUser(Authentication authentication) {
         if (authentication == null || authentication.getName() == null || authentication.getName().isBlank()) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authentication is required");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Bạn cần đăng nhập.");
         }
         return userRepository.findByUsername(authentication.getName())
             .or(() -> userRepository.findByEmail(authentication.getName()))
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authenticated user not found"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Không tìm thấy tài khoản đang đăng nhập."));
     }
 
     private NotificationResponse toResponse(Notification notification) {

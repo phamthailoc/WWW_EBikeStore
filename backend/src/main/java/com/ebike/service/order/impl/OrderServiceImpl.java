@@ -175,7 +175,7 @@ public class OrderServiceImpl implements OrderService {
     @Transactional(readOnly = true)
     public OrderResponse getOrderById(Long id, Authentication authentication) {
         Order order = orderRepository.findById(id)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy đơn hàng."));
         assertCanAccessOrder(order, authentication);
         return toResponse(order);
     }
@@ -201,7 +201,7 @@ public class OrderServiceImpl implements OrderService {
     }, allEntries = true)
     public OrderResponse createOrder(OrderCreateRequest request, Authentication authentication) {
         if (request == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Request body is required");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Thiếu nội dung yêu cầu.");
         }
         if (request.items() == null || request.items().isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Đơn hàng cần có ít nhất một sản phẩm.");
@@ -288,17 +288,17 @@ public class OrderServiceImpl implements OrderService {
     }, allEntries = true)
     public OrderResponse updateOrderStatus(Long id, OrderStatusUpdateRequest request, Authentication authentication) {
         if (request == null || request.status() == null || request.status().isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "status is required");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vui lòng chọn trạng thái.");
         }
 
         Order order = orderRepository.findLockedById(id)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy đơn hàng."));
 
         OrderStatus nextStatus;
         try {
             nextStatus = OrderStatus.valueOf(request.status().trim().toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException exception) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid order status");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Trạng thái đơn hàng không hợp lệ.");
         }
 
         OrderStatus previousStatus = order.getStatus();
@@ -472,27 +472,27 @@ public class OrderServiceImpl implements OrderService {
     public OrderResponse requestCancellation(Long id, OrderCancellationRequest request, Authentication authentication) {
         // the order row is locked first (before the account is read), see OrderRepository.findLockedById
         Order order = orderRepository.findLockedById(id)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy đơn hàng."));
         User currentUser = getAuthenticatedUser(authentication);
 
         if (order.getUser() == null || !order.getUser().getId().equals(currentUser.getId())) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can only cancel your own orders");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn chỉ hủy được đơn hàng của mình.");
         }
 
         if (order.getStatus() == OrderStatus.CANCELLED) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "This order has already been cancelled");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Đơn hàng này đã được hủy.");
         }
         if (order.getStatus() == OrderStatus.DELIVERED) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Delivered orders cannot be cancelled");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Đơn đã giao không hủy được.");
         }
         if (order.getStatus() == OrderStatus.SHIPPED) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Orders that are already shipping cannot be cancelled");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Đơn đang được giao không hủy được.");
         }
         if (!isCancellationEligibleStatus(order.getStatus())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "This order is no longer eligible for cancellation");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Đơn hàng này không còn hủy được.");
         }
         if (isShipmentInTransitOrDelivered(order.getShipment())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Orders that are already shipping or delivered cannot be cancelled");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Đơn đang giao hoặc đã giao không hủy được.");
         }
 
         cancelOrder(order, request == null ? null : request.reason(), currentUser, "Cancelled by customer");
@@ -503,10 +503,10 @@ public class OrderServiceImpl implements OrderService {
     private void cancelOrder(Order order, String rawReason, User actor, String paymentNote) {
         String reason = normalizeOptional(rawReason);
         if (reason == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cancellation reason is required");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vui lòng nhập lý do hủy.");
         }
         if (reason.length() > MAX_CANCELLATION_REASON_LENGTH) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cancellation reason cannot exceed " + MAX_CANCELLATION_REASON_LENGTH + " characters");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Lý do hủy không được quá " + MAX_CANCELLATION_REASON_LENGTH + " ký tự.");
         }
 
         order.setCancellationRequestedFromStatus(order.getStatus());
@@ -677,13 +677,13 @@ public class OrderServiceImpl implements OrderService {
             ProductVariant variant = getActiveVariant(product, itemRequest.productVariantId());
             int currentStockQuantity = product.getStockQuantity() == null ? 0 : product.getStockQuantity();
             if (currentStockQuantity < itemRequest.quantity()) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Product is out of stock: " + product.getName());
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Sản phẩm đã hết hàng: " + product.getName());
             }
             product.setStockQuantity(currentStockQuantity - itemRequest.quantity());
             if (variant != null) {
                 int variantStock = variant.getStockQuantity() == null ? 0 : variant.getStockQuantity();
                 if (variantStock < itemRequest.quantity()) {
-                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Selected color is out of stock: " + variant.getColorName());
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Màu xe đã chọn đã hết hàng: " + variant.getColorName());
                 }
                 variant.setStockQuantity(variantStock - itemRequest.quantity());
             }
@@ -713,7 +713,7 @@ public class OrderServiceImpl implements OrderService {
     private Product getActiveProduct(Long productId) {
         return productRepository.findById(productId)
             .filter(product -> Boolean.TRUE.equals(product.getActive()))
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found: " + productId));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy sản phẩm: " + productId));
     }
 
     private ProductVariant getActiveVariant(Product product, Long variantId) {
@@ -727,7 +727,7 @@ public class OrderServiceImpl implements OrderService {
             .filter(variant -> variantId.equals(variant.getId()))
             .filter(variant -> Boolean.TRUE.equals(variant.getActive()))
             .findFirst()
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Selected color is not available for this product"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Màu xe đã chọn không có cho sản phẩm này."));
     }
 
     private Shipment buildShipment(Order order, Showroom showroom, OrderCreateRequest request) {
@@ -757,7 +757,7 @@ public class OrderServiceImpl implements OrderService {
 
     private List<OrderCreateItemRequest> validateQuoteItems(List<OrderCreateItemRequest> items) {
         if (items == null || items.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "At least one order item is required");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Đơn hàng cần có ít nhất một xe.");
         }
         if (items.size() > MAX_ORDER_ITEMS) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Đơn hàng chỉ được có tối đa " + MAX_ORDER_ITEMS + " sản phẩm.");
@@ -1040,7 +1040,7 @@ public class OrderServiceImpl implements OrderService {
             OrderStatus status = OrderStatus.valueOf(rawStatus.trim().toUpperCase(Locale.ROOT));
             return order.getStatus() == status;
         } catch (IllegalArgumentException exception) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid order status filter");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bộ lọc trạng thái đơn hàng không hợp lệ.");
         }
     }
 
@@ -1056,7 +1056,7 @@ public class OrderServiceImpl implements OrderService {
             PaymentStatus paymentStatus = PaymentStatus.valueOf(rawPaymentStatus.trim().toUpperCase(Locale.ROOT));
             return payment.getPaymentStatus() == paymentStatus;
         } catch (IllegalArgumentException exception) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid payment status filter");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bộ lọc trạng thái thanh toán không hợp lệ.");
         }
     }
 
@@ -1121,11 +1121,11 @@ public class OrderServiceImpl implements OrderService {
 
     private User getAuthenticatedUser(Authentication authentication) {
         if (authentication == null || authentication.getName() == null || authentication.getName().isBlank()) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authentication is required");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Bạn cần đăng nhập.");
         }
         return userRepository.findByUsername(authentication.getName())
             .or(() -> userRepository.findByEmail(authentication.getName()))
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authenticated user not found"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Không tìm thấy tài khoản đang đăng nhập."));
     }
 
     private void assertCanAccessOrder(Order order, Authentication authentication) {
@@ -1134,10 +1134,10 @@ public class OrderServiceImpl implements OrderService {
         }
         User currentUser = getAuthenticatedUser(authentication);
         if (order.getUser() == null) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Guest orders can only be accessed from checkout or payment return");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Đơn của khách vãng lai chỉ xem được từ trang thanh toán hoặc trang kết quả thanh toán.");
         }
         if (!order.getUser().getId().equals(currentUser.getId())) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can only access your own orders");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn chỉ xem được đơn hàng của mình.");
         }
     }
 
