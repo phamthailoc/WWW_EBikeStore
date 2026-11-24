@@ -204,14 +204,26 @@ abstract class StorefrontSeleniumTest {
 
     /** Scrolls the element to the middle of the viewport first; the storefront uses smooth scrolling. */
     protected void click(WebElement element) {
-        js("arguments[0].scrollIntoView({block:'center',behavior:'instant'})", element);
-        try {
-            wait.until(ExpectedConditions.elementToBeClickable(element)).click();
-        } catch (ElementClickInterceptedException e) {
-            Object blocker = js("const r=arguments[0].getBoundingClientRect();"
-                + "const el=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);return el?el.outerHTML.slice(0,300):null", element);
-            throw new AssertionError("click blocked by " + blocker + "; " + pageState("click"), e);
+        // a sticky header, a late image or a dialog still opening can cover the element for a moment: scroll and try again a few times before giving up
+        ElementClickInterceptedException last = null;
+        for (int attempt = 0; attempt < 4; attempt++) {
+            js("arguments[0].scrollIntoView({block:'center',behavior:'instant'})", element);
+            try {
+                wait.until(ExpectedConditions.elementToBeClickable(element)).click();
+                return;
+            } catch (ElementClickInterceptedException e) {
+                last = e;
+                try {
+                    Thread.sleep(400);
+                } catch (InterruptedException interrupted) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+            }
         }
+        Object blocker = js("const r=arguments[0].getBoundingClientRect();"
+            + "const el=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);return el?el.outerHTML.slice(0,300):null", element);
+        throw new AssertionError("click blocked by " + blocker + "; " + pageState("click"), last);
     }
 
     protected void fill(String name, String value) {

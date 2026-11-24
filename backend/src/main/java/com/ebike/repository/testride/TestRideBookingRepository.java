@@ -109,9 +109,10 @@ public interface TestRideBookingRepository extends JpaRepository<TestRideBooking
     int cancelOpenOf(@Param("userId") Long userId, @Param("now") LocalDateTime now);
 
     /**
-     * Account erasure: the phone number, the words of the customer and the shop's note go (staff tend to write a name or a number in it, and the
-     * customer could read it); the booking row itself stays as a record of the slot.     */
+     * Account erasure: the phone number and the words of the customer go; the shop's own note stays with the booking, like the repair
+     * notes of a warranty request (the shop's record, which the customer can no longer read once the account is gone), so staff must not write a phone number in it.
+     */
     @Modifying
-    @Query("update TestRideBooking b set b.contactPhone = '', b.customerNote = null, b.staffNote = null, b.updatedAt = :now where b.user.id = :userId")
+    @Query("update TestRideBooking b set b.contactPhone = '', b.customerNote = null, b.updatedAt = :now where b.user.id = :userId")
     int clearPersonalDataOf(@Param("userId") Long userId, @Param("now") LocalDateTime now);
 }

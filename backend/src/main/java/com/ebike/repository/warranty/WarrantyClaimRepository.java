@@ -50,4 +50,10 @@ public interface WarrantyClaimRepository extends JpaRepository<WarrantyClaim, Lo
     @Modifying
     @Query("update WarrantyClaim c set c.description = :text where c.user.id = :userId")
     int clearDescriptionsOf(@Param("userId") Long userId, @Param("text") String text);
+
+    /** Account erasure: a request still open has nobody to answer, so it is closed (rejected) with a note saying why; the note is added to the staff's own. */
+    @Modifying
+    @Query("update WarrantyClaim c set c.status = 'REJECTED', c.staffNote = case when c.staffNote is null then :note else concat(c.staffNote, ' | ', :note) end "
+        + "where c.user.id = :userId and c.status in ('NEW', 'RECEIVED', 'REPAIRING')")
+    int closeOpenOf(@Param("userId") Long userId, @Param("note") String note);
 }

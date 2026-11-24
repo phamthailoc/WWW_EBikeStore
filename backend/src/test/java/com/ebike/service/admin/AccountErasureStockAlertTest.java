@@ -1,6 +1,8 @@
 package com.ebike.service.admin;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
@@ -32,6 +34,7 @@ class AccountErasureStockAlertTest {
         erasure.erase(user);
         verify(stockAlerts).deleteByUserId(42L);
         verify(warrantyClaims).clearDescriptionsOf(42L, AccountErasure.ERASED_DESCRIPTION);
+        verify(warrantyClaims).closeOpenOf(eq(42L), any());
         assertEquals(AccountErasure.DELETED, user.getAccountStatus());
     }
 }
