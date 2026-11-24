@@ -39,7 +39,7 @@ Còn mở: `/api/v1/notifications` trả 200 cho cả ba vai trò không quyền
 | 11 | Báo cáo và Excel | 🟡 Selenium (`ExcelExport`); Manager mở báo cáo bằng tay: ✅ |
 | 12 | Admin: giá, khuyến mãi, tài khoản, nhật ký | ✅ duyệt tay các trang (🔧 sửa ngày giờ ISO thô, 🔧 trang Khách hàng thiếu cột); sửa giá và hiện ở trang xe: 🟡 Selenium (`AdminPricing`, `SavingsCalculator`) |
 | 13 | Xóa tài khoản, tài khoản bị khóa | 🟡 unit và Selenium (`AccountErasure`...); bản ghi cửa hàng giữ, thông tin cá nhân ẩn danh |
-| 14 | Việc chạy ngầm (hủy quá hạn, nhắc bảo dưỡng, nhắc lái thử, quét báo hàng) | 🟡 unit test từng job; chưa chạy thử với thời hạn rút ngắn |
+| 14 | Việc chạy ngầm (hủy quá hạn, nhắc bảo dưỡng, nhắc lái thử, quét báo hàng) | ✅ chạy thử với thời hạn rút ngắn: đơn VNPay và đơn trả sau quá hạn tự hủy đúng lý do, tồn kho hoàn lại và sổ kho khớp; khách nhận thông báo hủy và nhắc lịch lái thử. Nhắc bảo dưỡng: job chạy, chưa có xe đến hạn nên không gửi (🟡 unit test) |
 
 ## 4. Lỗi tìm thấy trong lúc kiểm thử
 
@@ -64,6 +64,6 @@ Còn mở: `/api/v1/notifications` trả 200 cho cả ba vai trò không quyền
 
 ## 6. Phần còn lại của kế hoạch
 
-- Còn đi tay: luồng 14 (việc chạy ngầm với thời hạn rút ngắn, cần khởi động lại app); luồng 3 hiện chỉ có Selenium với khóa giả.
+- Còn đi tay: luồng 3 hiện chỉ có Selenium với khóa giả.
 - Không chức năng còn lại: máy tính bảng, dữ liệu lớn, truy cập đồng thời, giới hạn tần suất bật.
 - Dịch vụ ngoài (email, VNPay, Gemini): để sau.
