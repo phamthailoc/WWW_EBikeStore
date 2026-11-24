@@ -157,8 +157,27 @@
     return escape(text);
   };
   // The most rows the test-ride API returns (TestRideService.SCHEDULE_LIMIT and MINE_LIMIT): a full list may be cut, so the page says so.
+  // The most rows each list asks the API for. The two staff queues grow by a page each time "Xem thêm" is pressed; the customer's own list is fixed.
   const RIDE_LIMITS={'/manager/test-rides':200,'/customer/test-rides':100,'/manager/installments':200};
-  const showRideLimit=()=>{const max=RIDE_LIMITS[page];if(!max)return;let note=document.querySelector('#rideLimit');if(!note){note=document.createElement('p');note.id='rideLimit';note.className='muted';table.insertAdjacentElement('afterend',note)}const full=records.length>=max;note.hidden=!full;note.textContent=full?(page==='/manager/installments'?`Chỉ hiện ${max} hồ sơ đầu tiên. Hãy lọc theo trạng thái để xem phần còn lại.`:page==='/manager/test-rides'?`Chỉ hiện ${max} lịch đầu tiên. Hãy lọc theo ngày hoặc cửa hàng để xem phần còn lại.`:`Chỉ hiện ${max} lịch mới nhất của bạn.`):''};
+  const PAGED=['/manager/test-rides','/manager/installments'];
+  let rowLimit=RIDE_LIMITS[page]||0;
+  const showRideLimit=()=>{
+    const max=RIDE_LIMITS[page];if(!max)return;
+    let note=document.querySelector('#rideLimit');
+    if(!note){note=document.createElement('p');note.id='rideLimit';note.className='muted';table.insertAdjacentElement('afterend',note)}
+    const full=records.length>=(PAGED.includes(page)?rowLimit:max);
+    note.hidden=!full;
+    if(!full){note.textContent='';return}
+    if(PAGED.includes(page)){
+      note.innerHTML='';
+      const text=document.createElement('span');text.textContent=`Đang hiện ${records.length} ${page==='/manager/installments'?'hồ sơ':'lịch'}. `;
+      const more=document.createElement('button');more.type='button';more.className='table-action';more.textContent='Xem thêm';
+      more.addEventListener('click',()=>{more.disabled=true;rowLimit+=RIDE_LIMITS[page];load()});
+      note.append(text,more);
+    }else{
+      note.textContent=`Chỉ hiện ${max} lịch mới nhất của bạn.`;
+    }
+  };
   const renderTable = rows => {
     records=Array.isArray(rows)?rows:rows==null?[]:[rows]; loading.hidden=true; showRideLimit();
     if(!records.length){if(emptyText[page])empty.textContent=page==='/manager/installments'&&filterQuery.get('status')?'Không có hồ sơ nào ở trạng thái này.':page==='/manager/test-rides'&&(filterQuery.get('date')||filterQuery.get('status')||filterQuery.get('showroomId'))?'Không có lịch lái thử nào khớp bộ lọc.':page==='/manager/warranty'&&!filterQuery.get('status')?'Không có yêu cầu bảo hành nào đang chờ xử lý.':page==='/manager/warranty'&&filterQuery.get('status')!=='ALL'?'Không có yêu cầu nào ở trạng thái này.':emptyText[page];empty.hidden=false;table.hidden=true;return}
@@ -408,7 +427,7 @@
     }
     return out;
   };
-  const withFilters=url=>filterQuery.toString()?url+(url.includes('?')?'&':'?')+filterQuery:url;
+  const withFilters=url=>{const query=new URLSearchParams(filterQuery);if(PAGED.includes(page))query.set('limit',rowLimit);return query.toString()?url+(url.includes('?')?'&':'?')+query:url};
   const setupFilters=()=>{
     const bar=document.querySelector('#filters'),fields=filterBars[page];
     if(!bar||!fields)return;

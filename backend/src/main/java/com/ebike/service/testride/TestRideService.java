@@ -61,6 +61,8 @@ public class TestRideService {
     public static final String ALL = "ALL";
     /** A staff list shows at most this many bookings (a day of every showroom is far below it). */
     public static final int SCHEDULE_LIMIT = 200;
+    /** The most rows one schedule request may ask for. */
+    public static final int SCHEDULE_MAX = 1000;
     /** What a customer's own list shows at most, newest slot first. */
     public static final int MINE_LIMIT = 100;
     /** A confirmed ride the customer withdrew shows in the staff backlog when its slot is this near. */
@@ -275,8 +277,13 @@ public class TestRideService {
      * unclosed past ride stay on top until handled; {@code ALL} lists every status and a closed status lists only that one, latest first when no date
      * is given. A date narrows the list to that day (soonest first), a showroom to that showroom. At most {@link #SCHEDULE_LIMIT} rows.
      */
-    @Transactional(readOnly = true)
     public List<TestRideResponse> schedule(String date, Long showroomId, String status) {
+        return schedule(date, showroomId, status, null);
+    }
+
+    /** {@code limit} rows at most (default {@link #SCHEDULE_LIMIT}, never more than {@link #SCHEDULE_MAX}): the page asks for more with a "load more" button. */
+    @Transactional(readOnly = true)
+    public List<TestRideResponse> schedule(String date, Long showroomId, String status, Integer limit) {
         String filter = status == null || status.isBlank() ? null : status.trim().toUpperCase(Locale.ROOT);
         if (filter != null && !ALL.equals(filter) && !TestRideRules.isKnownStatus(filter)) {
             throw bad("Trạng thái không hợp lệ.");
@@ -293,7 +300,7 @@ public class TestRideService {
         boolean soonestFirst = hasDate || TestRideRules.OPEN.containsAll(statuses);
         Sort sort = soonestFirst ? Sort.by(Sort.Order.asc("slotStart"), Sort.Order.asc("id")) : Sort.by(Sort.Order.desc("slotStart"), Sort.Order.desc("id"));
         LocalDateTime now = LocalDateTime.now(clock);
-        return bookings.findSchedule(from, to, statuses, showroomId == null ? 0L : showroomId, PageRequest.of(0, SCHEDULE_LIMIT, sort))
+        return bookings.findSchedule(from, to, statuses, showroomId == null ? 0L : showroomId, PageRequest.of(0, limit == null ? SCHEDULE_LIMIT : Math.max(1, Math.min(limit, SCHEDULE_MAX)), sort))
             .stream().map(booking -> toResponse(booking, now, true)).toList();
     }
 

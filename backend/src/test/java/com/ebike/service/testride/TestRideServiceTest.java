@@ -662,4 +662,16 @@ class TestRideServiceTest {
         assertEquals(List.of(), mine.get(0).nextSteps());
         assertNotNull(mine.get(1).slotStart());
     }
+
+    @Test
+    void theScheduleSizeFollowsTheLimitButNeverPassesTheMaximum() {
+        when(bookings.findSchedule(any(), any(), anyCollection(), anyLong(), any(Pageable.class))).thenReturn(List.of());
+        service.schedule(null, null, null, 300);
+        service.schedule(null, null, null, 50000);
+        service.schedule(null, null, null, null);
+        ArgumentCaptor<Pageable> page = ArgumentCaptor.forClass(Pageable.class);
+        verify(bookings, org.mockito.Mockito.times(3)).findSchedule(any(), any(), anyCollection(), anyLong(), page.capture());
+        assertEquals(List.of(300, TestRideService.SCHEDULE_MAX, TestRideService.SCHEDULE_LIMIT),
+            page.getAllValues().stream().map(Pageable::getPageSize).toList());
+    }
 }
