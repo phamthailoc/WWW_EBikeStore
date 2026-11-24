@@ -109,6 +109,28 @@ public class PricingService {
         return amount(REGISTRATION_TAX_RATE_OTHER, DEFAULT_REGISTRATION_TAX_RATE_OTHER);
     }
 
+    /**
+     * V24: the terms on offer with their yearly rates, in the order given, read with one query instead of two per term. A term is offered with the
+     * rate the admin set, or with the default rate when it has no rule at all; a rule that is not ACTIVE or not in effect yet switches the term off.
+     */
+    public java.util.Map<Integer, BigDecimal> offeredInstallmentRates(java.util.Collection<Integer> terms) {
+        LocalDateTime now = LocalDateTime.now(clock);
+        java.util.Map<String, PricingRule> byCode = new java.util.HashMap<>();
+        for (PricingRule rule : pricingRuleRepository.findByCodeIn(terms.stream().map(term -> INSTALLMENT_RATE_PREFIX + term).toList())) {
+            byCode.put(rule.getCode(), rule);
+        }
+        java.util.Map<Integer, BigDecimal> offered = new java.util.LinkedHashMap<>();
+        for (Integer term : terms) {
+            PricingRule rule = byCode.get(INSTALLMENT_RATE_PREFIX + term);
+            if (rule == null) {
+                offered.put(term, defaultInstallmentRate(term));
+            } else if ("ACTIVE".equals(rule.getStatus()) && (rule.getEffectiveFrom() == null || !rule.getEffectiveFrom().isAfter(now))) {
+                offered.put(term, rule.getAmount());
+            }
+        }
+        return offered;
+    }
+
     /** V24: the yearly flat rate (percent) of an instalment term. */
     public BigDecimal installmentRate(int termMonths) {
         return amount(INSTALLMENT_RATE_PREFIX + termMonths, defaultInstallmentRate(termMonths));

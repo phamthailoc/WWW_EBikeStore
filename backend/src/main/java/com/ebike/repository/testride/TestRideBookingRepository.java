@@ -30,12 +30,24 @@ public interface TestRideBookingRepository extends JpaRepository<TestRideBooking
 
     /**
      * The staff schedule. {@code showroomId} 0 means every showroom; the time window is half open ({@code from} inclusive, {@code to} exclusive).
-     * The caller passes real values (not null) so the query reads the same on every database.
+     * The caller passes real values (not null) so the query reads the same on every database. Two queries, so the index of a showroom is used when
+     * one is asked for (one query with "0 or showroom" cannot use it).
      */
+    default List<TestRideBooking> findSchedule(LocalDateTime from, LocalDateTime to, Collection<String> statuses, long showroomId, Pageable pageable) {
+        return showroomId == 0L ? findScheduleOfAll(from, to, statuses, pageable) : findScheduleOfShowroom(from, to, statuses, showroomId, pageable);
+    }
+
     @EntityGraph(attributePaths = {"user", "user.preference", "product", "product.specification", "showroom"})
-    @Query("select b from TestRideBooking b where b.slotStart >= :from and b.slotStart < :to and b.status in :statuses "
-        + "and (:showroomId = 0L or b.showroom.id = :showroomId)")
-    List<TestRideBooking> findSchedule(
+    @Query("select b from TestRideBooking b where b.slotStart >= :from and b.slotStart < :to and b.status in :statuses")
+    List<TestRideBooking> findScheduleOfAll(
+        @Param("from") LocalDateTime from,
+        @Param("to") LocalDateTime to,
+        @Param("statuses") Collection<String> statuses,
+        Pageable pageable);
+
+    @EntityGraph(attributePaths = {"user", "user.preference", "product", "product.specification", "showroom"})
+    @Query("select b from TestRideBooking b where b.slotStart >= :from and b.slotStart < :to and b.status in :statuses and b.showroom.id = :showroomId")
+    List<TestRideBooking> findScheduleOfShowroom(
         @Param("from") LocalDateTime from,
         @Param("to") LocalDateTime to,
         @Param("statuses") Collection<String> statuses,

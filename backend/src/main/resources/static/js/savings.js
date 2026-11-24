@@ -74,7 +74,7 @@
       paintResult(answer);
     } catch (error) {
       if (mine !== sequence) return;
-      if (isGone(error)) { box.hidden = true; return; } // the bike was hidden while the rider was typing: hide the box as at the start
+      if (isGone(error)) { box.hidden = true; box.dataset.state = 'hidden'; return; } // the bike was hidden while the rider was typing: hide the box as at the start
       paintProblem(error.message);
     }
   }
@@ -82,9 +82,9 @@
 
   function showUnavailable(answer) {
     // a battery pack or an accessory has nothing to compare: stay hidden; a bike without its figures says so
-    if (!answer.applicable) { box.hidden = true; return; }
+    if (!answer.applicable) { box.hidden = true; box.dataset.state = 'hidden'; return; }
     body.innerHTML = `<p class="muted" data-unavailable>${esc(answer.message || 'Chưa tính được cho xe này.')}</p>`;
-    box.hidden = false;
+    box.hidden = false; box.dataset.state = 'shown';
   }
 
   function showForm(first) {
@@ -97,14 +97,14 @@
       <div data-result aria-live="polite"></div>`;
     body.querySelectorAll('input').forEach(input => input.addEventListener('input', later));
     paintResult(first);
-    box.hidden = false;
+    box.hidden = false; box.dataset.state = 'shown';
   }
 
   function showFailure(error) {
-    if (isGone(error)) { box.hidden = true; return; } // the bike was hidden or removed, or this account may not read products: nothing a retry could fix
+    if (isGone(error)) { box.hidden = true; box.dataset.state = 'hidden'; return; } // the bike was hidden or removed, or this account may not read products: nothing a retry could fix
     body.innerHTML = `<p class="installment-problem" role="alert">${esc(error.message)}</p><p><button type="button" class="button compact ghost" data-retry>${'Thử lại'}</button></p>`;
     body.querySelector('[data-retry]').addEventListener('click', event => { event.currentTarget.disabled = true; start(); }); // one try at a time
-    box.hidden = false;
+    box.hidden = false; box.dataset.state = 'shown';
   }
 
   async function start() {

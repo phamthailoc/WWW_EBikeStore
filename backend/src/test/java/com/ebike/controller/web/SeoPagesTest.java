@@ -10,6 +10,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
+import com.ebike.service.seo.SeoAddress;
 import com.ebike.dto.product.response.CategorySummaryDto;
 import com.ebike.dto.product.response.ProductDetailDto;
 import com.ebike.dto.product.response.ProductFilterOptionsDto;
@@ -65,9 +66,9 @@ class SeoPagesTest {
         views.setCharacterEncoding("UTF-8");
         views.setContentType("text/html;charset=UTF-8");
         return MockMvcBuilders
-            .standaloneSetup(new StorefrontController(products, 14, CLOCK), new SeoController(products, publicBaseUrl),
+            .standaloneSetup(new StorefrontController(products, 14, CLOCK), new SeoController(products, new SeoAddress(publicBaseUrl)),
                 new WorkspaceController(mock(com.ebike.config.order.VnPayProperties.class), messages))
-            .setControllerAdvice(new SeoModelAdvice(publicBaseUrl))
+            .setControllerAdvice(new SeoModelAdvice(new SeoAddress(publicBaseUrl)))
             .setViewResolvers(views)
             .setLocaleResolver(new FixedLocaleResolver(Locale.forLanguageTag(language)))
             .build();

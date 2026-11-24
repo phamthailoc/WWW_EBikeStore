@@ -62,9 +62,8 @@ public class InstallmentPlanner {
 
     /** The terms on offer now, in months order (an admin can switch one off in the pricing table). */
     public List<InstallmentTermResponse> terms() {
-        return InstallmentRules.TERMS.stream()
-            .filter(pricing::installmentTermOffered)
-            .map(months -> new InstallmentTermResponse(months, pricing.installmentRate(months)))
+        return pricing.offeredInstallmentRates(InstallmentRules.TERMS).entrySet().stream()
+            .map(entry -> new InstallmentTermResponse(entry.getKey(), entry.getValue()))
             .toList();
     }
 
