@@ -23,15 +23,15 @@ public class DeliveryResendService {
         this.auditLog = auditLog;
     }
 
-    /** Sends the receipt (and the warranty cards) again and returns the address it went to. Errors are worded in {@code pageLanguage}. */
-    public String resend(Long orderId, String pageLanguage) {
+    /** Sends the receipt (and the warranty cards) again and returns the address it went to. */
+    public String resend(Long orderId) {
         if (!sender.canSend()) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, DocumentText.text(pageLanguage, "error.resendMailOff"));
+            throw new ResponseStatusException(HttpStatus.CONFLICT, DocumentText.text("error.resendMailOff"));
         }
         OrderDocumentService.DeliveryDocuments found = documents.forDeliveredOrder(orderId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.CONFLICT, DocumentText.text(pageLanguage, "error.resendNothing")));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.CONFLICT, DocumentText.text("error.resendNothing")));
         if (!sender.send(found)) {
-            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, DocumentText.text(pageLanguage, "error.resendFailed"));
+            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, DocumentText.text("error.resendFailed"));
         }
         auditLog.record("gửi lại email phiếu", found.orderNumber());
         return found.email();

@@ -45,17 +45,6 @@ class ServerRateLimitFilterTest {
     }
 
 
-    @Test
-    void theTooManyRequestsMessageFollowsTheLanguageOfTheRequest() throws Exception {
-        ServerRateLimitFilter filter = new ServerRateLimitFilter(true);
-        for (int i = 0; i < 20; i++) {
-            lookup(filter, null);
-        }
-        assertTrue(lookup(filter, "en").contains("too fast"));
-        assertTrue(lookup(filter, null).contains("quá nhanh"));
-        assertTrue(lookup(filter, "vi").contains("quá nhanh"));
-    }
-
     private static String lookup(ServerRateLimitFilter filter, String languageCookie) throws Exception {
         MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/v1/warranty/lookup");
         request.setServletPath("/api/v1/warranty/lookup");

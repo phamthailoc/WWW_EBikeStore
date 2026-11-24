@@ -1,7 +1,6 @@
 package com.ebike.controller.manager;
 
 import com.ebike.common.constants.PermissionConstants;
-import com.ebike.common.i18n.RequestLanguage;
 import com.ebike.service.report.ReportExportService;
 import com.ebike.service.report.ReportText;
 import org.springframework.http.CacheControl;
@@ -38,10 +37,9 @@ public class ReportExportController {
     public ResponseEntity<byte[]> revenueReport(
         @RequestParam(defaultValue = "day") String period,
         @RequestParam(required = false) String from,
-        @RequestParam(required = false) String to,
-        @RequestParam(required = false) String lang
+        @RequestParam(required = false) String to
     ) {
-        return xlsx(exports.revenueReport(period, from, to, language(lang)));
+        return xlsx(exports.revenueReport(period, from, to));
     }
 
     @GetMapping("/orders/export")
@@ -51,14 +49,9 @@ public class ReportExportController {
         @RequestParam(required = false) String status,
         @RequestParam(required = false) String paymentStatus,
         @RequestParam(required = false) String search,
-        @RequestParam(required = false) Long showroomId,
-        @RequestParam(required = false) String lang
+        @RequestParam(required = false) Long showroomId
     ) {
-        return xlsx(exports.orders(authentication, status, paymentStatus, search, showroomId, language(lang)));
-    }
-
-    private static String language(String requested) {
-        return requested == null || requested.isBlank() ? RequestLanguage.current() : ReportText.language(requested);
+        return xlsx(exports.orders(authentication, status, paymentStatus, search, showroomId));
     }
 
     private static ResponseEntity<byte[]> xlsx(ReportExportService.ExportFile file) {

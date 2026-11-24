@@ -35,15 +35,15 @@ public class StockAlertEmailSender {
     }
 
     /** {@code userId} is only for the log: a customer's address does not belong in the log file. */
-    public void send(Long userId, String email, String productName, String colorName, String productSlug, String language) {
+    public void send(Long userId, String email, String productName, String colorName, String productSlug) {
         if (!mailEnabled || smtpHost == null || smtpHost.isBlank() || email == null || email.isBlank()) {
             return;
         }
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom(fromAddress);
         message.setTo(email);
-        message.setSubject(StockAlertMessages.emailSubject(language, productName, colorName));
-        message.setText(StockAlertMessages.emailBody(language, productName, colorName, StockAlertMessages.productUrl(publicBaseUrl, productSlug)));
+        message.setSubject(StockAlertMessages.emailSubject(productName, colorName));
+        message.setText(StockAlertMessages.emailBody(productName, colorName, StockAlertMessages.productUrl(publicBaseUrl, productSlug)));
         try {
             mailSender.send(message);
         } catch (MailException exception) {

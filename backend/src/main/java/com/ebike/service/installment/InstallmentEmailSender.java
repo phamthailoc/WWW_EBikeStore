@@ -36,17 +36,17 @@ public class InstallmentEmailSender {
         this.publicBaseUrl = publicBaseUrl;
     }
 
-    /** {@code language} is the customer's saved language ("vi" or "en"); {@code kind} is a constant of InstallmentMessages. */
+    /** {@code kind} is a constant of InstallmentMessages. */
     public void send(String email, String kind, Long orderId, String orderNumber, BigDecimal downPayment, BigDecimal monthlyPayment,
-                     int termMonths, OffsetDateTime payBefore, String note, String language) {
+                     int termMonths, OffsetDateTime payBefore, String note) {
         if (!mailEnabled || smtpHost == null || smtpHost.isBlank() || email == null || email.isBlank()) {
             return;
         }
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom(fromAddress);
         message.setTo(email);
-        message.setSubject(InstallmentMessages.emailSubject(language, kind, orderNumber));
-        message.setText(InstallmentMessages.emailBody(language, kind, orderNumber, downPayment, monthlyPayment, termMonths, payBefore, note,
+        message.setSubject(InstallmentMessages.emailSubject(kind, orderNumber));
+        message.setText(InstallmentMessages.emailBody(kind, orderNumber, downPayment, monthlyPayment, termMonths, payBefore, note,
             InstallmentMessages.orderUrl(publicBaseUrl, orderId)));
         try {
             mailSender.send(message);

@@ -41,9 +41,9 @@ public interface StockAlertRepository extends JpaRepository<StockAlert, Long> {
     @Query("select a from StockAlert a where a.variant.id = :variantId and a.notifiedAt is null")
     List<StockAlert> lockWaitingByVariantId(@Param("variantId") Long variantId);
 
-    /** The accounts and languages of waiting rows, in one query (a join, not one read per customer). */
-    @Query("select new com.ebike.repository.product.StockAlertRecipient(a.id, u.id, u.accountStatus, u.active, p.language) "
-        + "from StockAlert a join a.user u left join UserPreference p on p.user = u where a.id in :ids")
+    /** The accounts of waiting rows, in one query (a join, not one read per customer). */
+    @Query("select new com.ebike.repository.product.StockAlertRecipient(a.id, u.id, u.accountStatus, u.active) "
+        + "from StockAlert a join a.user u where a.id in :ids")
     List<StockAlertRecipient> findRecipients(@Param("ids") Collection<Long> ids);
 
     /** Marks the rows as used with one UPDATE instead of one per row. */

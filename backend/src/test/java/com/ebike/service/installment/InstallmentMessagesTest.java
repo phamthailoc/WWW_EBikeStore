@@ -18,63 +18,41 @@ class InstallmentMessagesTest {
     private static final OffsetDateTime DEADLINE = OffsetDateTime.of(2026, 11, 25, 9, 30, 0, 0, ZoneOffset.ofHours(7));
 
     @Test
-    void anythingButEnglishIsVietnamese() {
-        assertEquals("en", InstallmentMessages.normalize("en"));
-        assertEquals("en", InstallmentMessages.normalize(" EN-GB "));
-        assertEquals("vi", InstallmentMessages.normalize("vi"));
-        assertEquals("vi", InstallmentMessages.normalize(null));
-        assertEquals("vi", InstallmentMessages.normalize("fr"));
+    void anApprovalWithoutADeadlineLeavesTheDeadlineSentenceOut() {
+        String text = InstallmentMessages.body(InstallmentMessages.APPROVED, "ORD-10", DOWN, MONTHLY, 6, null, null);
+        assertFalse(text.contains("Vui lòng thanh toán trước"));
     }
 
     @Test
-    void moneyUsesTheLanguagesOwnGroupingAndUnit() {
-        assertEquals("9.000.000 ₫", InstallmentMessages.money("vi", DOWN));
-        assertEquals("9,000,000 VND", InstallmentMessages.money("en", DOWN));
-        assertEquals("0 ₫", InstallmentMessages.money("vi", null));
+    void moneyUsesTheDongSignAndDotGrouping() {
+        assertEquals("9.000.000 ₫", InstallmentMessages.money(DOWN));
+        assertEquals("0 ₫", InstallmentMessages.money(null));
     }
 
     @Test
-    void theTitleNamesTheVerdictInBothLanguages() {
-        assertEquals("Hồ sơ trả góp đã được duyệt", InstallmentMessages.title("vi", InstallmentMessages.APPROVED));
-        assertEquals("Instalment application approved", InstallmentMessages.title("en", InstallmentMessages.APPROVED));
-        assertEquals("Hồ sơ trả góp bị từ chối", InstallmentMessages.title("vi", InstallmentMessages.REJECTED));
-        assertEquals("Instalment application rejected", InstallmentMessages.title("en", InstallmentMessages.REJECTED));
+    void theTitleNamesTheVerdict() {
+        assertEquals("Hồ sơ trả góp đã được duyệt", InstallmentMessages.title(InstallmentMessages.APPROVED));
+        assertEquals("Hồ sơ trả góp bị từ chối", InstallmentMessages.title(InstallmentMessages.REJECTED));
     }
 
     @Test
     void anApprovalSaysHowMuchToPayWhereAndByWhen() {
-        String vi = InstallmentMessages.body("vi", InstallmentMessages.APPROVED, "ORD-10", DOWN, MONTHLY, 12, DEADLINE, "Mang theo CCCD");
-        assertTrue(vi.contains("ORD-10"));
-        assertTrue(vi.contains("9.000.000 ₫"));
-        assertTrue(vi.contains("09:30 25/11/2026 (GMT+7)"), "the offset is part of the deadline");
-        assertTrue(vi.contains("1.925.000 ₫"));
-        assertTrue(vi.contains("12 tháng"));
-        assertTrue(vi.contains("Mang theo CCCD"));
-        assertTrue(vi.contains("mô phỏng"));
-        String en = InstallmentMessages.body("en", InstallmentMessages.APPROVED, "ORD-10", DOWN, MONTHLY, 12, DEADLINE, null);
-        assertTrue(en.contains("9,000,000 VND"));
-        assertTrue(en.contains("25/11/2026 at 09:30 (GMT+7)"));
-        assertTrue(en.contains("1,925,000 VND a month for 12 months"));
-        assertTrue(en.contains("simulation"));
-        assertFalse(en.contains("Note from the store"));
-    }
-
-    @Test
-    void anApprovalWithoutADeadlineLeavesTheDeadlineSentenceOut() {
-        String en = InstallmentMessages.body("en", InstallmentMessages.APPROVED, "ORD-10", DOWN, MONTHLY, 6, null, null);
-        assertFalse(en.contains("Please pay it before"));
+        String text = InstallmentMessages.body(InstallmentMessages.APPROVED, "ORD-10", DOWN, MONTHLY, 12, DEADLINE, "Mang theo CCCD");
+        assertTrue(text.contains("ORD-10"));
+        assertTrue(text.contains("9.000.000 ₫"));
+        assertTrue(text.contains("09:30 25/11/2026 (GMT+7)"), "the offset is part of the deadline");
+        assertTrue(text.contains("1.925.000 ₫"));
+        assertTrue(text.contains("12 tháng"));
+        assertTrue(text.contains("Mang theo CCCD"));
+        assertTrue(text.contains("mô phỏng"));
     }
 
     @Test
     void aRejectionGivesTheReasonAndSaysTheOrderWasCancelled() {
-        String vi = InstallmentMessages.body("vi", InstallmentMessages.REJECTED, "ORD-10", DOWN, MONTHLY, 12, null, "Thu nhập chưa đủ");
-        assertTrue(vi.contains("bị từ chối"));
-        assertTrue(vi.contains("Lý do: Thu nhập chưa đủ"));
-        assertTrue(vi.contains("Đơn hàng đã được hủy"));
-        String en = InstallmentMessages.body("en", InstallmentMessages.REJECTED, "ORD-10", DOWN, MONTHLY, 12, null, "Income too low");
-        assertTrue(en.contains("was rejected"));
-        assertTrue(en.contains("Reason: Income too low"));
-        assertTrue(en.contains("has been cancelled"));
+        String text = InstallmentMessages.body(InstallmentMessages.REJECTED, "ORD-10", DOWN, MONTHLY, 12, null, "Thu nhập chưa đủ");
+        assertTrue(text.contains("bị từ chối"));
+        assertTrue(text.contains("Lý do: Thu nhập chưa đủ"));
+        assertTrue(text.contains("Đơn hàng đã được hủy"));
     }
 
     @Test
@@ -84,30 +62,26 @@ class InstallmentMessagesTest {
         assertNull(InstallmentMessages.orderUrl("", 10L));
         assertNull(InstallmentMessages.orderUrl(null, 10L));
         assertNull(InstallmentMessages.orderUrl("https://shop.example", null));
-        String withLink = InstallmentMessages.emailBody("en", InstallmentMessages.APPROVED, "ORD-10", DOWN, MONTHLY, 12, DEADLINE, null, "https://shop.example/customer/orders/10");
-        assertTrue(withLink.contains("Your order: https://shop.example/customer/orders/10"));
-        String withoutLink = InstallmentMessages.emailBody("vi", InstallmentMessages.REJECTED, "ORD-10", DOWN, MONTHLY, 12, null, "Hết xe mẫu", null);
+        String withLink = InstallmentMessages.emailBody(InstallmentMessages.APPROVED, "ORD-10", DOWN, MONTHLY, 12, DEADLINE, null, "https://shop.example/customer/orders/10");
+        assertTrue(withLink.contains("Đơn hàng của bạn: https://shop.example/customer/orders/10"));
+        String withoutLink = InstallmentMessages.emailBody(InstallmentMessages.REJECTED, "ORD-10", DOWN, MONTHLY, 12, null, "Hết xe mẫu", null);
         assertFalse(withoutLink.contains("http"));
         assertTrue(withoutLink.contains("Xin chào"));
         assertTrue(withoutLink.contains("mô phỏng"));
     }
 
     @Test
-    void theDownPaymentNoticeIsInBothLanguagesAndDoesNotOfferAnotherPaymentMethod() {
-        assertEquals("Đã nhận khoản trả trước", InstallmentMessages.downPaymentTitle("vi", true));
-        assertEquals("Down payment received", InstallmentMessages.downPaymentTitle("en", true));
-        assertEquals("Down payment not paid", InstallmentMessages.downPaymentTitle("en", false));
-        String failedEn = InstallmentMessages.downPaymentBody("en", false, "ORD-10");
-        String failedVi = InstallmentMessages.downPaymentBody("vi", false, "ORD-10");
-        assertTrue(failedEn.contains("ORD-10") && failedEn.contains("at the store"));
-        assertTrue(failedVi.contains("ORD-10") && failedVi.contains("tại cửa hàng"));
-        assertFalse(failedVi.contains("hình thức khác"));
-        assertTrue(InstallmentMessages.downPaymentBody("en", true, "ORD-10").contains("was received"));
+    void theDownPaymentNoticeDoesNotOfferAnotherPaymentMethod() {
+        assertEquals("Đã nhận khoản trả trước", InstallmentMessages.downPaymentTitle(true));
+        assertEquals("Thanh toán khoản trả trước thất bại", InstallmentMessages.downPaymentTitle(false));
+        String failed = InstallmentMessages.downPaymentBody(false, "ORD-10");
+        assertTrue(failed.contains("ORD-10") && failed.contains("tại cửa hàng"));
+        assertFalse(failed.contains("hình thức khác"));
     }
 
     @Test
-    void theEmailSubjectNamesTheOrderAndTheVerdictInBothLanguages() {
-        assertEquals("Kinetic E-Bike: hồ sơ trả góp đơn ORD-10 đã được duyệt", InstallmentMessages.emailSubject("vi", InstallmentMessages.APPROVED, "ORD-10"));
-        assertEquals("Kinetic E-Bike: your instalment application for ORD-10 was rejected", InstallmentMessages.emailSubject("en", InstallmentMessages.REJECTED, "ORD-10"));
+    void theEmailSubjectNamesTheOrderAndTheVerdict() {
+        assertEquals("Kinetic E-Bike: hồ sơ trả góp đơn ORD-10 đã được duyệt", InstallmentMessages.emailSubject(InstallmentMessages.APPROVED, "ORD-10"));
+        assertTrue(InstallmentMessages.emailSubject(InstallmentMessages.REJECTED, "ORD-10").contains("ORD-10"));
     }
 }

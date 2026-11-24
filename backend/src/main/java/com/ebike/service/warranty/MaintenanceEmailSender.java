@@ -34,16 +34,15 @@ public class MaintenanceEmailSender {
         this.publicBaseUrl = publicBaseUrl;
     }
 
-    /** {@code language} is the customer's saved language ("vi" or "en"). */
-    public void send(String email, String productName, String frameNumber, String milestone, String language) {
+    public void send(String email, String productName, String frameNumber, String milestone) {
         if (!mailEnabled || smtpHost == null || smtpHost.isBlank() || email == null || email.isBlank()) {
             return;
         }
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom(fromAddress);
         message.setTo(email);
-        message.setSubject(WarrantyMessages.maintenanceEmailSubject(language, productName));
-        message.setText(WarrantyMessages.maintenanceEmailBody(language, productName, frameNumber, milestone, WarrantyMessages.warrantyUrl(publicBaseUrl)));
+        message.setSubject(WarrantyMessages.maintenanceEmailSubject(productName));
+        message.setText(WarrantyMessages.maintenanceEmailBody(productName, frameNumber, milestone, WarrantyMessages.warrantyUrl(publicBaseUrl)));
         try {
             mailSender.send(message);
         } catch (MailException exception) {

@@ -302,34 +302,6 @@ class OrderDocumentsSeleniumTest extends StorefrontSeleniumTest {
         assertTrue(single.headers().firstValue("Content-Disposition").orElse("").contains("warranty-card-" + frame));
         assertEquals(404, download(api, "/api/v1/orders/" + orderId + "/warranty-card?unitId=999999999").statusCode(), "a bike that is not in the order");
 
-        // 6. English: the page and the file
-        try {
-            driver.get(baseUrl + "/lang/en?back=/customer/orders/" + orderId);
-            wait.until(ExpectedConditions.visibilityOfElementLocated(PANEL));
-            panel = driver.findElement(PANEL);
-            assertTrue(panel.getText().contains("Receipt and warranty card"), panel.getText());
-            assertTrue(panel.getText().contains("Download receipt"), panel.getText());
-            assertTrue(panel.getText().contains("Download warranty card"), panel.getText());
-            assertTrue(panel.getText().contains("not an electronic invoice"), panel.getText());
-            String english = textOf(download(api, "/api/v1/orders/" + orderId + "/receipt?lang=en").body());
-            assertTrue(english.contains("SALES RECEIPT") && english.contains("Subtotal") && !english.contains("Tiền hàng"), english);
-            assertTrue(textOf(download(api, "/api/v1/orders/" + orderId + "/warranty-card?lang=en").body()).contains("WARRANTY CARD"));
-            // the customer's own button sends no lang parameter: the file follows the language of the page (the cookie), so the saved file is English too
-            // the same file name is written again (Chrome overwrites it here), so the earlier copy is removed first
-            for (String name : pdfNames(downloads)) {
-                Files.deleteIfExists(downloads.resolve(name));
-            }
-            Set<String> savedBefore = pdfNames(downloads);
-            clickDownload("/receipt");
-            Path savedEnglish = newSaved(downloads, "receipt-" + orderNumber, savedBefore);
-            assertFalse(driver.findElement(By.id("notice")).getAttribute("class").contains("error"), notice());
-            String savedText = textOf(Files.readAllBytes(savedEnglish));
-            assertTrue(savedText.contains("SALES RECEIPT") && !savedText.contains("PHIẾU BÁN HÀNG"), savedText);
-        } finally {
-            // the language is saved in the profile of the shared test customer: always put Vietnamese back, whatever the asserts above found
-            driver.get(baseUrl + "/lang/vi?back=/customer/orders/" + orderId);
-        }
-
         // 7. a phone: the panel fits the screen
         try {
             driver.manage().window().setSize(new org.openqa.selenium.Dimension(375, 812));
@@ -371,8 +343,6 @@ class OrderDocumentsSeleniumTest extends StorefrontSeleniumTest {
         driver.get(baseUrl + "/manager/orders/" + orderId);
         wait.until(ExpectedConditions.visibilityOfElementLocated(PANEL));
         assertTrue(driver.findElement(PANEL).getText().contains("Tải phiếu bảo hành"), driver.findElement(PANEL).getText());
-        // the staff pick the language of the customer: a NEW file is saved, and reading it shows that it is English (the page itself is Vietnamese)
-        new org.openqa.selenium.support.ui.Select(driver.findElement(By.id("docLang"))).selectByValue("en");
         for (String name : pdfNames(downloads)) { // the same file name is written again, so the earlier copy is removed first
             Files.deleteIfExists(downloads.resolve(name));
         }
@@ -380,7 +350,7 @@ class OrderDocumentsSeleniumTest extends StorefrontSeleniumTest {
         clickDownload("/receipt");
         assertEquals("Đã tải tệp PDF.", notice());
         String staffText = textOf(Files.readAllBytes(newSaved(downloads, "receipt-" + orderNumber, before)));
-        assertTrue(staffText.contains("SALES RECEIPT") && !staffText.contains("PHIẾU BÁN HÀNG"), staffText);
+        assertTrue(staffText.contains("PHIẾU BÁN HÀNG"), staffText);
 
         // 10. send the email again: the Selenium app has no mail server, so the notice says why nothing was sent (and it is red); the button is usable again afterwards
         js("var n=document.querySelector('#notice');n.hidden=true;n.textContent='';");
@@ -400,8 +370,8 @@ class OrderDocumentsSeleniumTest extends StorefrontSeleniumTest {
                 "return 'inner=' + window.innerWidth + ' scroll=' + document.documentElement.scrollWidth + ' wide=' + [...document.querySelectorAll('body *')]"
                 + ".filter(e => e.getBoundingClientRect().right > window.innerWidth + 1 && !e.closest('[style*=overflow], nav, .tabs, .nav-scroll') && !(function(x){for(x=x.parentElement;x;x=x.parentElement){var o=getComputedStyle(x).overflowX;if(o==='auto'||o==='scroll'||o==='hidden')return true;}return false;})(e)).slice(0, 8)"
                 + ".map(e => e.tagName + '#' + e.id + '.' + e.className + ':' + Math.round(e.getBoundingClientRect().right)).join(' | ')"));
-            assertTrue((Boolean) js("return [...document.querySelectorAll('#orderDocuments select, #orderDocuments button')].length === 4 "
-                + "&& [...document.querySelectorAll('#orderDocuments select, #orderDocuments button')].every(e => { const r = e.getBoundingClientRect(); return r.width > 0 && r.left >= 0 && r.right <= window.innerWidth + 1; })"),
+            assertTrue((Boolean) js("return [...document.querySelectorAll('#orderDocuments button')].length === 3 "
+                + "&& [...document.querySelectorAll('#orderDocuments button')].every(e => { const r = e.getBoundingClientRect(); return r.width > 0 && r.left >= 0 && r.right <= window.innerWidth + 1; })"),
                 "the select and three buttons are all inside the screen");
         } finally {
             driver.manage().window().setSize(new org.openqa.selenium.Dimension(1366, 900));
@@ -475,15 +445,7 @@ class OrderDocumentsSeleniumTest extends StorefrontSeleniumTest {
             assertTrue(message.contains("đã hủy"), message);
             assertTrue(driver.findElement(By.id("notice")).getAttribute("class").contains("error"));
             assertEquals(List.of(), driver.findElements(By.cssSelector("pre")), "no raw JSON page opened");
-
-            // the words of a server error follow the language of the page: the cookie alone switches them, the page is not reloaded
-            driver.manage().addCookie(new org.openqa.selenium.Cookie.Builder("ebike_lang", "en").path("/").build());
-            clickDownload("/receipt");
-            String english = notice();
-            assertTrue(english.contains("cancelled") && !english.contains("đã hủy"), english);
-            assertTrue(driver.findElement(By.id("notice")).getAttribute("class").contains("error"));
         } finally {
-            driver.manage().deleteCookieNamed("ebike_lang");
             restoreStock(manager, productSlug, stockBefore);
         }
     }

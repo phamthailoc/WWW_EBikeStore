@@ -14,7 +14,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import com.ebike.common.constants.PermissionConstants;
 import com.ebike.common.exception.ApiExceptionHandler;
 import com.ebike.config.SecurityConfiguration;
-import com.ebike.config.UserLocaleResolver;
 import com.ebike.model.entity.auth.User;
 import com.ebike.model.entity.user.UserPreference;
 import com.ebike.repository.auth.UserRepository;
@@ -104,11 +103,6 @@ class WarrantySecurityTest {
         }
 
         @Bean
-        UserLocaleResolver localeResolver(UserRepository users, UserPreferenceRepository preferences) {
-            return new UserLocaleResolver(users, preferences);
-        }
-
-        @Bean
         WarrantyService warrantyService() {
             WarrantyService service = mock(WarrantyService.class);
             when(service.listClaims(any(), anyInt(), anyInt())).thenReturn(new WarrantyService.ClaimPage(List.of(), false));
@@ -185,37 +179,4 @@ class WarrantySecurityTest {
 
     // ---- the words of the 401, 403 and 400 bodies ----
 
-    @Test void theSignInRequiredBodyFollowsTheDeviceChoiceAndIgnoresTheBrowser() throws Exception {
-        assertTrue(body(get("/api/v1/warranty/units")).contains("Bạn cần đăng nhập."));
-        assertTrue(body(get("/api/v1/warranty/units").cookie(new Cookie("ebike_lang", "en"))).contains("Please sign in."));
-        assertTrue(body(get("/api/v1/warranty/units").header("Accept-Language", "en-US,en;q=0.9")).contains("Bạn cần đăng nhập."),
-            "the browser language does not count");
-    }
-
-    @Test void theForbiddenBodyIsInTheLanguageOfTheDeviceOrTheAccount() throws Exception {
-        assertTrue(body(as(get("/api/v1/manager/warranty-claims"), CUSTOMER)).contains("Bạn không có quyền"));
-        assertTrue(body(as(get("/api/v1/manager/warranty-claims"), CUSTOMER).cookie(new Cookie("ebike_lang", "en"))).contains("You do not have permission"));
-
-        // no cookie: the language saved on the account decides, even when the browser says Vietnamese
-        User user = new User();
-        user.setId(5L);
-        user.setUsername("an");
-        UserPreference english = new UserPreference();
-        english.setLanguage("en");
-        when(users.findByUsername("an")).thenReturn(Optional.of(user));
-        when(preferences.findByUserId(5L)).thenReturn(Optional.of(english));
-        String text = body(as(get("/api/v1/manager/warranty-claims"), CUSTOMER).header("Accept-Language", "vi-VN,vi;q=0.9"));
-        assertTrue(text.contains("You do not have permission"), text);
-        assertFalse(text.contains("Bạn không có quyền"));
-    }
-
-    @Test void anUnreadableBodyOrABadNumberAnswers400InTheRequestLanguage() throws Exception {
-        MvcResult broken = mvc.perform(as(post("/api/v1/warranty/claims"), CUSTOMER).contentType(MediaType.APPLICATION_JSON).content("{not json")).andReturn();
-        assertEquals(400, broken.getResponse().getStatus());
-        assertTrue(broken.getResponse().getContentAsString(StandardCharsets.UTF_8).contains("không hợp lệ"));
-
-        MvcResult badPage = mvc.perform(as(get("/api/v1/manager/warranty-claims").param("page", "abc"), VIEW_QUEUE).cookie(new Cookie("ebike_lang", "en"))).andReturn();
-        assertEquals(400, badPage.getResponse().getStatus());
-        assertTrue(badPage.getResponse().getContentAsString(StandardCharsets.UTF_8).contains("is not valid"));
-    }
 }

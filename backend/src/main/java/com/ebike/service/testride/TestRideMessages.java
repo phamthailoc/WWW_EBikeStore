@@ -23,31 +23,25 @@ public final class TestRideMessages {
     public static final String NOTE_UPDATED = "NOTE_UPDATED";
 
     private static final DateTimeFormatter VI = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy", Locale.ROOT);
-    private static final DateTimeFormatter EN = DateTimeFormatter.ofPattern("dd/MM/yyyy 'at' HH:mm", Locale.ENGLISH);
 
     private TestRideMessages() {
     }
 
-    public static String normalize(String language) {
-        return language != null && language.trim().toLowerCase(Locale.ROOT).startsWith("en") ? "en" : "vi";
-    }
-
     /** The slot as one phrase: "09:00 22/11/2026" in Vietnamese, "22/11/2026 at 09:00" in English. */
-    public static String when(String language, LocalDateTime slotStart) {
-        return slotStart.format(isEnglish(language) ? EN : VI);
+    public static String when(LocalDateTime slotStart) {
+        return slotStart.format(VI);
     }
 
     // ---- notification (in-app) ----
 
-    public static String title(String language, String kind) {
-        boolean english = isEnglish(language);
+    public static String title(String kind) {
         return switch (kind) {
-            case CONFIRMED -> english ? "Test ride confirmed" : "Lịch lái thử đã được xác nhận";
-            case CANCELLED -> english ? "Test ride cancelled" : "Lịch lái thử đã bị hủy";
-            case NO_SHOW -> english ? "Test ride missed" : "Lịch lái thử đã bỏ lỡ";
-            case EXPIRED -> english ? "Test ride request expired" : "Yêu cầu lái thử đã hết hạn";
-            case NOTE_UPDATED -> english ? "New note on your test ride" : "Lịch lái thử có ghi chú mới";
-            default -> english ? "Test ride reminder" : "Nhắc lịch lái thử";
+            case CONFIRMED -> "Lịch lái thử đã được xác nhận";
+            case CANCELLED -> "Lịch lái thử đã bị hủy";
+            case NO_SHOW -> "Lịch lái thử đã bỏ lỡ";
+            case EXPIRED -> "Yêu cầu lái thử đã hết hạn";
+            case NOTE_UPDATED -> "Lịch lái thử có ghi chú mới";
+            default -> "Nhắc lịch lái thử";
         };
     }
 
@@ -57,29 +51,16 @@ public final class TestRideMessages {
     }
 
     /** {@code place} is the showroom as {@link #place(String, String)} writes it, so the customer reads where to go and not only a name. */
-    public static String body(String language, String kind, String productName, String place, LocalDateTime slotStart, String note) {
-        boolean english = isEnglish(language);
-        String bike = productName + " - " + place + ", " + when(language, slotStart);
-        String reason = note == null || note.isBlank() ? "" : (english ? " Note from the store: " : " Ghi chú của cửa hàng: ") + note.trim();
+    public static String body(String kind, String productName, String place, LocalDateTime slotStart, String note) {
+        String bike = productName + " - " + place + ", " + when(slotStart);
+        String reason = note == null || note.isBlank() ? "" : (" Ghi chú của cửa hàng: ") + note.trim();
         return switch (kind) {
-            case CONFIRMED -> english
-                ? "Your test ride is confirmed: " + bike + ". Please bring your ID." + reason
-                : "Lịch lái thử của bạn đã được xác nhận: " + bike + ". Vui lòng mang theo giấy tờ tùy thân." + reason;
-            case CANCELLED -> english
-                ? "The store had to cancel your test ride: " + bike + "." + reason + " You can book another time."
-                : "Cửa hàng phải hủy lịch lái thử của bạn: " + bike + "." + reason + " Bạn có thể đặt lại khung giờ khác.";
-            case NO_SHOW -> english
-                ? "You did not come to your test ride: " + bike + "." + reason + " You can book another time."
-                : "Bạn đã không đến buổi lái thử: " + bike + "." + reason + " Bạn có thể đặt lại khung giờ khác.";
-            case EXPIRED -> english
-                ? "Your test ride request was not confirmed in time and has been closed: " + bike + ". You can book another time."
-                : "Yêu cầu lái thử chưa được xác nhận kịp và đã được đóng: " + bike + ". Bạn có thể đặt lại khung giờ khác.";
-            case NOTE_UPDATED -> english
-                ? "The store updated the note on your test ride: " + bike + "." + reason
-                : "Cửa hàng vừa cập nhật ghi chú cho lịch lái thử của bạn: " + bike + "." + reason;
-            default -> english
-                ? "Your test ride is coming up: " + bike + ". Please bring your ID. If you cannot come, cancel it so another customer can have the place."
-                : "Sắp đến lịch lái thử của bạn: " + bike + ". Vui lòng mang theo giấy tờ tùy thân. Nếu không đến được, hãy hủy lịch để nhường chỗ cho khách khác.";
+            case CONFIRMED -> "Lịch lái thử của bạn đã được xác nhận: " + bike + ". Vui lòng mang theo giấy tờ tùy thân." + reason;
+            case CANCELLED -> "Cửa hàng phải hủy lịch lái thử của bạn: " + bike + "." + reason + " Bạn có thể đặt lại khung giờ khác.";
+            case NO_SHOW -> "Bạn đã không đến buổi lái thử: " + bike + "." + reason + " Bạn có thể đặt lại khung giờ khác.";
+            case EXPIRED -> "Yêu cầu lái thử chưa được xác nhận kịp và đã được đóng: " + bike + ". Bạn có thể đặt lại khung giờ khác.";
+            case NOTE_UPDATED -> "Cửa hàng vừa cập nhật ghi chú cho lịch lái thử của bạn: " + bike + "." + reason;
+            default -> "Sắp đến lịch lái thử của bạn: " + bike + ". Vui lòng mang theo giấy tờ tùy thân. Nếu không đến được, hãy hủy lịch để nhường chỗ cho khách khác.";
         };
     }
 
@@ -99,33 +80,26 @@ public final class TestRideMessages {
         return CONFIRMED.equals(kind) || CANCELLED.equals(kind) || REMINDER.equals(kind);
     }
 
-    public static String emailSubject(String language, String kind, String productName) {
-        boolean english = isEnglish(language);
+    public static String emailSubject(String kind, String productName) {
         return switch (kind) {
-            case CONFIRMED -> english ? "Kinetic E-Bike: your test ride of " + productName + " is confirmed" : "Kinetic E-Bike: đã xác nhận lịch lái thử " + productName;
-            case CANCELLED -> english ? "Kinetic E-Bike: your test ride of " + productName + " was cancelled" : "Kinetic E-Bike: lịch lái thử " + productName + " đã bị hủy";
-            default -> english ? "Kinetic E-Bike: reminder, test ride of " + productName : "Kinetic E-Bike: nhắc lịch lái thử " + productName;
+            case CONFIRMED -> "Kinetic E-Bike: đã xác nhận lịch lái thử " + productName;
+            case CANCELLED -> "Kinetic E-Bike: lịch lái thử " + productName + " đã bị hủy";
+            default -> "Kinetic E-Bike: nhắc lịch lái thử " + productName;
         };
     }
 
     /** {@code address} and {@code bookingsUrl} are left out of the text when blank. */
-    public static String emailBody(String language, String kind, String productName, String showroomName, String address,
+    public static String emailBody(String kind, String productName, String showroomName, String address,
                                    LocalDateTime slotStart, String note, String bookingsUrl) {
-        boolean english = isEnglish(language);
         String where = place(showroomName, address);
         String link = bookingsUrl == null || bookingsUrl.isBlank() ? null : bookingsUrl.trim();
         StringBuilder text = new StringBuilder();
-        text.append(body(language, kind, productName, where, slotStart, note)).append("\n\n");
+        text.append(body(kind, productName, where, slotStart, note)).append("\n\n");
         if (link != null) {
-            text.append(english ? "Your test rides: " : "Lịch lái thử của bạn: ").append(link).append("\n\n");
+            text.append("Lịch lái thử của bạn: ").append(link).append("\n\n");
         }
-        text.append(english
-            ? "You are receiving this email because you booked a test ride at Kinetic.\n"
-            : "Bạn nhận email này vì đã đặt lịch lái thử tại Kinetic.\n");
+        text.append("Bạn nhận email này vì đã đặt lịch lái thử tại Kinetic.\n");
         return text.toString();
     }
 
-    private static boolean isEnglish(String language) {
-        return "en".equals(normalize(language));
-    }
 }

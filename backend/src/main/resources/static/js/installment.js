@@ -20,8 +20,8 @@ window.KineticInstallment = (() => {
     const label = ' (GMT' + (minutes < 0 ? '-' : '+') + Math.floor(abs / 60) + (abs % 60 ? ':' + String(abs % 60).padStart(2, '0') : '') + ')';
     return new Date(d.getTime() + minutes * 60000).toLocaleString(localeTag(), {...format, timeZone: 'UTC'}) + label;
   };
-  const statusText = {PENDING: t('Chờ duyệt'), APPROVED: t('Đã duyệt'), REJECTED: t('Bị từ chối'), CANCELLED: t('Đã hủy')};
-  const SIMULATION = t('Đây là công cụ mô phỏng: chưa kết nối công ty tài chính nào và không phát sinh khoản vay thật. Lãi suất phẳng theo năm, tính trên số tiền còn lại sau khi trả trước.');
+  const statusText = {PENDING: 'Chờ duyệt', APPROVED: 'Đã duyệt', REJECTED: 'Bị từ chối', CANCELLED: 'Đã hủy'};
+  const SIMULATION = 'Đây là công cụ mô phỏng: chưa kết nối công ty tài chính nào và không phát sinh khoản vay thật. Lãi suất phẳng theo năm, tính trên số tiền còn lại sau khi trả trước.';
   const tell = (message, error) => {
     const box = document.querySelector('#notice');
     if (!box) return;
@@ -41,7 +41,7 @@ window.KineticInstallment = (() => {
     if (!response.ok) {
       let message = '';
       try { message = (await response.json()).message || ''; } catch (ignored) { /* not JSON */ }
-      const error = Error(message || t('Không thực hiện được. Vui lòng thử lại sau.'));
+      const error = Error(message || 'Không thực hiện được. Vui lòng thử lại sau.');
       error.status = response.status;
       throw error;
     }
@@ -62,20 +62,20 @@ window.KineticInstallment = (() => {
    */
   function simulator(root, amount, onResult, emptyText) {
     let offer = null, sequence = 0, timer = null, last = null;
-    root.innerHTML = `<p class="muted">${t('Đang tải bảng lãi suất…')}</p>`;
+    root.innerHTML = `<p class="muted">${'Đang tải bảng lãi suất…'}</p>`;
     const view = () => ({percent: Number(root.querySelector('[name="down"]')?.value), term: Number(root.querySelector('[name="term"]:checked')?.value)});
     const paint = (result, problem) => {
       const box = root.querySelector('[data-result]');
       if (!box) return;
       if (problem) { box.innerHTML = `<p class="installment-problem" role="alert">${esc(problem)}</p>`; return; }
-      if (!result) { box.innerHTML = `<p class="muted">${esc(emptyText || t('Chọn xe để xem khoản trả góp.'))}</p>`; return; }
+      if (!result) { box.innerHTML = `<p class="muted">${esc(emptyText || 'Chọn xe để xem khoản trả góp.')}</p>`; return; }
       box.innerHTML = `<dl class="installment-figures">
-        <div class="installment-main"><dt>${t('Trả mỗi tháng')}</dt><dd data-field="monthly">${esc(money(result.monthlyPayment))}</dd></div>
-        <div><dt>${t('Trả trước')} (${result.downPaymentPercent}%)</dt><dd data-field="down">${esc(money(result.downPayment))}</dd></div>
-        <div><dt>${t('Số tiền trả góp')}</dt><dd>${esc(money(result.financed))}</dd></div>
-        <div><dt>${t('Lãi suất')}</dt><dd>${esc(rate(result.annualRatePercent))}%/${t('năm')}</dd></div>
-        <div><dt>${t('Tổng tiền lãi')}</dt><dd>${esc(money(result.totalInterest))}</dd></div>
-        <div><dt>${t('Tổng phải trả')}</dt><dd data-field="total">${esc(money(result.totalPayable))}</dd></div></dl>
+        <div class="installment-main"><dt>${'Trả mỗi tháng'}</dt><dd data-field="monthly">${esc(money(result.monthlyPayment))}</dd></div>
+        <div><dt>${'Trả trước'} (${result.downPaymentPercent}%)</dt><dd data-field="down">${esc(money(result.downPayment))}</dd></div>
+        <div><dt>${'Số tiền trả góp'}</dt><dd>${esc(money(result.financed))}</dd></div>
+        <div><dt>${'Lãi suất'}</dt><dd>${esc(rate(result.annualRatePercent))}%/${'năm'}</dd></div>
+        <div><dt>${'Tổng tiền lãi'}</dt><dd>${esc(money(result.totalInterest))}</dd></div>
+        <div><dt>${'Tổng phải trả'}</dt><dd data-field="total">${esc(money(result.totalPayable))}</dd></div></dl>
         ${result.eligible ? '' : `<p class="installment-problem" role="alert">${esc(result.reason || '')}</p>`}`;
     };
     async function refresh() {
@@ -100,14 +100,14 @@ window.KineticInstallment = (() => {
     config().then(loaded => {
       offer = loaded;
       if (!loaded.terms.length) {
-        root.innerHTML = `<p class="muted">${t('Hiện cửa hàng chưa áp dụng trả góp. Vui lòng chọn hình thức thanh toán khác.')}</p>`;
+        root.innerHTML = `<p class="muted">${'Hiện cửa hàng chưa áp dụng trả góp. Vui lòng chọn hình thức thanh toán khác.'}</p>`;
         onResult && onResult(null, true);
         return;
       }
       const start = Math.min(loaded.maxDownPaymentPercent, Math.max(loaded.minDownPaymentPercent, 30));
-      root.innerHTML = `<label class="installment-slider">${t('Trả trước')} <b data-percent>${start}%</b>
-          <input type="range" name="down" min="${loaded.minDownPaymentPercent}" max="${loaded.maxDownPaymentPercent}" step="5" value="${start}" aria-label="${esc(t('Phần trăm trả trước'))}"></label>
-        <fieldset class="installment-terms"><legend>${t('Kỳ hạn')}</legend>${loaded.terms.map((term, index) => `<label><input type="radio" name="term" value="${term.termMonths}" ${index === loaded.terms.length - 1 ? 'checked' : ''}> ${term.termMonths} ${t('tháng')} <small>${esc(rate(term.annualRatePercent))}%/${t('năm')}</small></label>`).join('')}</fieldset>
+      root.innerHTML = `<label class="installment-slider">${'Trả trước'} <b data-percent>${start}%</b>
+          <input type="range" name="down" min="${loaded.minDownPaymentPercent}" max="${loaded.maxDownPaymentPercent}" step="5" value="${start}" aria-label="${esc('Phần trăm trả trước')}"></label>
+        <fieldset class="installment-terms"><legend>${'Kỳ hạn'}</legend>${loaded.terms.map((term, index) => `<label><input type="radio" name="term" value="${term.termMonths}" ${index === loaded.terms.length - 1 ? 'checked' : ''}> ${term.termMonths} ${'tháng'} <small>${esc(rate(term.annualRatePercent))}%/${'năm'}</small></label>`).join('')}</fieldset>
         <div data-result aria-live="polite"></div>`;
       root.querySelector('[name="down"]').addEventListener('input', event => {
         root.querySelector('[data-percent]').textContent = event.target.value + '%';
@@ -131,7 +131,7 @@ window.KineticInstallment = (() => {
     // the figures are on the price of the bike alone: the exact amount is worked out at checkout, with delivery, registration and a discount code
     const note = document.createElement('p');
     note.className = 'muted';
-    note.textContent = SIMULATION + ' ' + t('Chưa gồm phí giao hàng, phí đăng ký và mã giảm giá; số tiền chính xác được tính ở bước thanh toán.');
+    note.textContent = SIMULATION + ' ' + 'Chưa gồm phí giao hàng, phí đăng ký và mã giảm giá; số tiền chính xác được tính ở bước thanh toán.';
     box.append(note);
     window.addEventListener('kinetic:amount', () => sim.refresh());
     box.hidden = false;
@@ -154,7 +154,7 @@ window.KineticInstallment = (() => {
       const income = Number(box.querySelector('[name="monthlyIncome"]')?.value);
       line.textContent = '';
       if (plan && income > 0 && plan.monthlyPayment > income * limits.maxPaymentPercentOfIncome / 100) {
-        line.textContent = t('Khoản trả hàng tháng vượt {n}% thu nhập bạn khai. Hãy tăng khoản trả trước hoặc chọn kỳ hạn dài hơn.', {n: limits.maxPaymentPercentOfIncome});
+        line.textContent = `Khoản trả hàng tháng vượt ${limits.maxPaymentPercentOfIncome}% thu nhập bạn khai. Hãy tăng khoản trả trước hoặc chọn kỳ hạn dài hơn.`;
       }
     };
     // a hidden box must not hold invalid fields: the browser would refuse the whole checkout form without showing why
@@ -163,23 +163,23 @@ window.KineticInstallment = (() => {
       try { limits = await config(); } catch (error) {
         // let the next try start again instead of leaving the box without a form until the page is reloaded
         identified = false;
-        holder.innerHTML = `<p class="installment-problem" role="alert">${esc(error.message)}</p><p><button type="button" class="button compact ghost" data-retry>${t('Thử lại')}</button></p>`;
+        holder.innerHTML = `<p class="installment-problem" role="alert">${esc(error.message)}</p><p><button type="button" class="button compact ghost" data-retry>${'Thử lại'}</button></p>`;
         holder.querySelector('[data-retry]').addEventListener('click', () => identify());
         return;
       }
       holder.innerHTML = `<div class="installment-form"><div data-sim></div>
-        <label>${t('Số CCCD')} <b>*</b><input name="idNumber" inputmode="numeric" autocomplete="off" maxlength="16" placeholder="${esc(t('12 chữ số'))}"></label>
-        <label>${t('Thu nhập hằng tháng (VND)')} <b>*</b><input name="monthlyIncome" type="number" inputmode="numeric" min="0" step="any" autocomplete="off"></label>
+        <label>${'Số CCCD'} <b>*</b><input name="idNumber" inputmode="numeric" autocomplete="off" maxlength="16" placeholder="${esc('12 chữ số')}"></label>
+        <label>${'Thu nhập hằng tháng (VND)'} <b>*</b><input name="monthlyIncome" type="number" inputmode="numeric" min="0" step="any" autocomplete="off"></label>
         <p class="installment-problem" data-affordability role="alert"></p>
-        <p class="muted">${t('Cửa hàng chỉ lưu 4 số cuối của CCCD (các số còn lại được che) và mức thu nhập bạn khai, không lưu ảnh giấy tờ. Dữ liệu này bị xóa khi bạn xóa tài khoản.')}</p></div>`;
+        <p class="muted">${'Cửa hàng chỉ lưu 4 số cuối của CCCD (các số còn lại được che) và mức thu nhập bạn khai, không lưu ảnh giấy tờ. Dữ liệu này bị xóa khi bạn xóa tài khoản.'}</p></div>`;
       holder.append(note);
       form = holder.querySelector('.installment-form');
       sim = simulator(form.querySelector('[data-sim]'), () => total, (result, failed) => {
         plan = result;
         simulatorReady = !failed;
-        problem = failed ? t('Hiện chưa chọn được kỳ hạn trả góp. Vui lòng chọn hình thức thanh toán khác.') : result && !result.eligible ? result.reason : null;
+        problem = failed ? 'Hiện chưa chọn được kỳ hạn trả góp. Vui lòng chọn hình thức thanh toán khác.' : result && !result.eligible ? result.reason : null;
         refreshAffordability();
-      }, t('Chọn hình thức nhận hàng để tính khoản trả góp.'));
+      }, 'Chọn hình thức nhận hàng để tính khoản trả góp.');
       form.querySelector('[name="monthlyIncome"]').addEventListener('input', refreshAffordability);
       setEnabled(!box.hidden);
     };
@@ -199,14 +199,14 @@ window.KineticInstallment = (() => {
       if (unreachable) {
         // a network error or a 5xx says nothing about the account: offer another try instead of asking the customer to sign in
         identified = false;
-        holder.innerHTML = `<p class="installment-problem" role="alert">${t('Chưa kiểm tra được tài khoản của bạn. Vui lòng thử lại.')} <button type="button" class="installment-retry">${t('Thử lại')}</button></p>`;
+        holder.innerHTML = `<p class="installment-problem" role="alert">${'Chưa kiểm tra được tài khoản của bạn. Vui lòng thử lại.'} <button type="button" class="installment-retry">${'Thử lại'}</button></p>`;
         holder.querySelector('.installment-retry').addEventListener('click', () => identify());
         return;
       }
       if (customer) { await build(); if (total) sim && sim.refresh(); return; }
       // a visitor or a staff account: the application belongs to a customer account, so say so and offer the way in
       const returnTo = encodeURIComponent(location.pathname + location.search);
-      holder.innerHTML = `<p class="installment-problem" role="alert">${t('Mua trả góp cần tài khoản khách hàng để theo dõi hồ sơ. Vui lòng đăng nhập bằng tài khoản khách hàng.')} <a href="/login?returnTo=${returnTo}">${t('Đăng nhập')}</a></p>`;
+      holder.innerHTML = `<p class="installment-problem" role="alert">${'Mua trả góp cần tài khoản khách hàng để theo dõi hồ sơ. Vui lòng đăng nhập bằng tài khoản khách hàng.'} <a href="/login?returnTo=${returnTo}">${'Đăng nhập'}</a></p>`;
       holder.append(note);
     };
     return {
@@ -215,17 +215,17 @@ window.KineticInstallment = (() => {
       /** The text of what is missing or wrong, or null when the application can be sent. */
       error() {
         // the profile is still being asked for: a real customer must not be told to sign in
-        if (customer === null) return t('Đang kiểm tra tài khoản. Vui lòng đợi một chút rồi đặt hàng lại.');
-        if (!customer) return t('Mua trả góp cần tài khoản khách hàng. Vui lòng đăng nhập bằng tài khoản khách hàng hoặc chọn hình thức thanh toán khác.');
-        if (!form || !simulatorReady) return t('Chưa tải được bảng trả góp. Vui lòng thử lại.');
+        if (customer === null) return 'Đang kiểm tra tài khoản. Vui lòng đợi một chút rồi đặt hàng lại.';
+        if (!customer) return 'Mua trả góp cần tài khoản khách hàng. Vui lòng đăng nhập bằng tài khoản khách hàng hoặc chọn hình thức thanh toán khác.';
+        if (!form || !simulatorReady) return 'Chưa tải được bảng trả góp. Vui lòng thử lại.';
         if (problem) return problem;
-        if (!plan) return t('Đang tính khoản trả góp. Vui lòng đợi một chút.');
-        if (!/^(\d{9}|\d{12})$/.test(form.querySelector('[name=idNumber]').value.replace(/[\s.\-]/g, ''))) return t('Số CCCD chưa hợp lệ. Vui lòng nhập 12 chữ số (hoặc 9 chữ số với chứng minh nhân dân cũ).');
+        if (!plan) return 'Đang tính khoản trả góp. Vui lòng đợi một chút.';
+        if (!/^(\d{9}|\d{12})$/.test(form.querySelector('[name=idNumber]').value.replace(/[\s.\-]/g, ''))) return 'Số CCCD chưa hợp lệ. Vui lòng nhập 12 chữ số (hoặc 9 chữ số với chứng minh nhân dân cũ).';
         const income = Number(form.querySelector('[name=monthlyIncome]').value);
-        if (!income || income < limits.minMonthlyIncome) return t('Vui lòng nhập thu nhập hằng tháng (tối thiểu {n}).', {n: money(limits.minMonthlyIncome)});
-        if (limits.maxMonthlyIncome && income > limits.maxMonthlyIncome) return t('Thu nhập hằng tháng tối đa {n}.', {n: money(limits.maxMonthlyIncome)});
-        if (!Number.isInteger(income)) return t('Thu nhập hằng tháng phải là số đồng nguyên, không có phần thập phân.');
-        if (plan.monthlyPayment > income * limits.maxPaymentPercentOfIncome / 100) return t('Khoản trả hàng tháng vượt {n}% thu nhập bạn khai. Hãy tăng khoản trả trước hoặc chọn kỳ hạn dài hơn.', {n: limits.maxPaymentPercentOfIncome});
+        if (!income || income < limits.minMonthlyIncome) return `Vui lòng nhập thu nhập hằng tháng (tối thiểu ${money(limits.minMonthlyIncome)}).`;
+        if (limits.maxMonthlyIncome && income > limits.maxMonthlyIncome) return `Thu nhập hằng tháng tối đa ${money(limits.maxMonthlyIncome)}.`;
+        if (!Number.isInteger(income)) return 'Thu nhập hằng tháng phải là số đồng nguyên, không có phần thập phân.';
+        if (plan.monthlyPayment > income * limits.maxPaymentPercentOfIncome / 100) return `Khoản trả hàng tháng vượt ${limits.maxPaymentPercentOfIncome}% thu nhập bạn khai. Hãy tăng khoản trả trước hoặc chọn kỳ hạn dài hơn.`;
         return null;
       },
       value() {
@@ -244,14 +244,14 @@ window.KineticInstallment = (() => {
       dialog.innerHTML = `<form novalidate><h2>${esc(title)}</h2>${intro ? `<p class="muted">${esc(intro)}</p>` : ''}
         ${label ? `<label>${esc(label)}<textarea name="text" rows="4" maxlength="${max || 1000}"></textarea></label>` : ''}
         <p class="support-message error" role="alert" hidden></p>
-        <p class="dialog-actions"><button type="submit" class="button compact" data-submit>${esc(submit)}</button><button type="button" class="button compact ghost" data-cancel>${esc(t('Đóng'))}</button></p></form>`;
+        <p class="dialog-actions"><button type="submit" class="button compact" data-submit>${esc(submit)}</button><button type="button" class="button compact ghost" data-cancel>${esc('Đóng')}</button></p></form>`;
       document.body.appendChild(dialog);
       const form = dialog.querySelector('form'), error = dialog.querySelector('.support-message');
       let value = null;
       form.addEventListener('submit', event => {
         event.preventDefault();
         const text = form.elements.text ? form.elements.text.value.trim() : '';
-        if (required && !text) { error.textContent = t('Vui lòng nhập nội dung.'); error.hidden = false; return; }
+        if (required && !text) { error.textContent = 'Vui lòng nhập nội dung.'; error.hidden = false; return; }
         value = text;
         dialog.close();
       });
@@ -267,29 +267,29 @@ window.KineticInstallment = (() => {
     // the length of the note is the server's to say (the rejection note shares the order's cancellation reason); without the config the form leaves it to the server
     const limits = await config().catch(() => null);
     const text = await ask({
-      title: approving ? t('Duyệt hồ sơ trả góp') : t('Từ chối hồ sơ trả góp'),
-      intro: approving ? t('Khách sẽ nhận thông báo và email, rồi trả khoản trả trước qua VNPay hoặc tại cửa hàng. {s}', {s: summary || ''}) : t('Đơn hàng sẽ bị hủy và xe được trả về kho. Khách sẽ thấy lý do. {s}', {s: summary || ''}),
-      label: approving ? t('Ghi chú cho khách (có thể để trống)') : t('Lý do từ chối (khách sẽ thấy)'),
-      required: !approving, max: limits && (approving ? limits.maxApprovalNoteLength : limits.maxRejectionNoteLength), submit: approving ? t('Duyệt') : t('Từ chối')
+      title: approving ? 'Duyệt hồ sơ trả góp' : 'Từ chối hồ sơ trả góp',
+      intro: approving ? `Khách sẽ nhận thông báo và email, rồi trả khoản trả trước qua VNPay hoặc tại cửa hàng. ${summary || ''}` : `Đơn hàng sẽ bị hủy và xe được trả về kho. Khách sẽ thấy lý do. ${summary || ''}`,
+      label: approving ? 'Ghi chú cho khách (có thể để trống)' : 'Lý do từ chối (khách sẽ thấy)',
+      required: !approving, max: limits && (approving ? limits.maxApprovalNoteLength : limits.maxRejectionNoteLength), submit: approving ? 'Duyệt' : 'Từ chối'
     });
     if (text === null) return false;
     await request(`/api/v1/manager/installments/${Number(id)}`, 'PATCH', {decision, note: text});
-    tell(approving ? t('Đã duyệt hồ sơ trả góp.') : t('Đã từ chối hồ sơ trả góp và hủy đơn hàng.'));
+    tell(approving ? 'Đã duyệt hồ sơ trả góp.' : 'Đã từ chối hồ sơ trả góp và hủy đơn hàng.');
     return true;
   }
 
   function planTable(a) {
     const row = (name, value, field) => `<tr><td>${name}</td><td${field ? ` data-field="${field}"` : ''}>${esc(value)}</td></tr>`;
     return `<div class="table-scroll"><table><tbody>
-      ${row(t('Giá trị đơn hàng'), money(a.orderTotal))}
-      ${row(t('Trả trước') + ' (' + a.downPaymentPercent + '%)', money(a.downPayment), 'down')}
-      ${row(t('Số tiền trả góp'), money(a.financed))}
-      ${row(t('Kỳ hạn'), a.termMonths + ' ' + t('tháng'))}
-      ${row(t('Lãi suất'), rate(a.annualRatePercent) + '%/' + t('năm'))}
-      ${row(t('Trả mỗi tháng'), money(a.monthlyPayment), 'monthly')}
-      ${row(t('Tổng phải trả'), money(a.totalPayable))}
-      ${a.idNumberMasked ? row(t('Số CCCD'), a.idNumberMasked) : ''}
-      ${a.monthlyIncome != null ? row(t('Thu nhập khai'), money(a.monthlyIncome)) : ''}
+      ${row('Giá trị đơn hàng', money(a.orderTotal))}
+      ${row('Trả trước' + ' (' + a.downPaymentPercent + '%)', money(a.downPayment), 'down')}
+      ${row('Số tiền trả góp', money(a.financed))}
+      ${row('Kỳ hạn', a.termMonths + ' ' + 'tháng')}
+      ${row('Lãi suất', rate(a.annualRatePercent) + '%/' + 'năm')}
+      ${row('Trả mỗi tháng', money(a.monthlyPayment), 'monthly')}
+      ${row('Tổng phải trả', money(a.totalPayable))}
+      ${a.idNumberMasked ? row('Số CCCD', a.idNumberMasked) : ''}
+      ${a.monthlyIncome != null ? row('Thu nhập khai', money(a.monthlyIncome)) : ''}
     </tbody></table></div>`;
   }
 
@@ -324,27 +324,27 @@ window.KineticInstallment = (() => {
       if (a.status === 'PENDING') {
         // the order is cancelled when the store has not decided in time: both sides are told by when
         const lapsed = a.reviewBefore && new Date(a.reviewBefore) < new Date();
-        const deadline = !a.reviewBefore ? '' : lapsed ? t('Đã quá thời hạn duyệt, đơn hàng sắp bị hủy tự động.') : t('Nếu cửa hàng chưa duyệt trước {when}, đơn hàng sẽ bị hủy tự động.', {when: when(a.reviewBefore)});
-        state = `<p>${staff ? t('Hồ sơ đang chờ duyệt.') : t('Hồ sơ đang chờ cửa hàng duyệt. Khi có kết quả bạn sẽ nhận thông báo và email.')} ${esc(deadline)}</p>`;
+        const deadline = !a.reviewBefore ? '' : lapsed ? 'Đã quá thời hạn duyệt, đơn hàng sắp bị hủy tự động.' : `Nếu cửa hàng chưa duyệt trước ${when(a.reviewBefore)}, đơn hàng sẽ bị hủy tự động.`;
+        state = `<p>${staff ? 'Hồ sơ đang chờ duyệt.' : 'Hồ sơ đang chờ cửa hàng duyệt. Khi có kết quả bạn sẽ nhận thông báo và email.'} ${esc(deadline)}</p>`;
       }
       else if (a.status === 'APPROVED') {
-        state = `<p><strong>${t('Hồ sơ đã được duyệt.')}</strong> ${a.canPay ? t('Khoản trả trước cần thanh toán trước {when}, nếu không đơn hàng sẽ bị hủy.', {when: when(a.payBefore)}) : (a.paymentStatus === 'PAID' ? t('Khoản trả trước đã được thanh toán.') : (a.payBefore ? t('Đã quá hạn thanh toán khoản trả trước, đơn hàng sắp bị hủy tự động.') : ''))}</p>`;
-      } else if (a.status === 'REJECTED') state = `<p><strong>${t('Hồ sơ bị từ chối, đơn hàng đã được hủy.')}</strong></p>`;
-      else state = `<p>${t('Hồ sơ đã đóng vì đơn hàng bị hủy.')}</p>`;
-      const noteLine = a.reviewNote ? `<p><strong>${a.status === 'REJECTED' ? t('Lý do:') : t('Ghi chú của cửa hàng:')}</strong> ${esc(a.reviewNote)}</p>` : '';
-      const who = staff && a.reviewedBy ? `<p class="muted">${t('Người xử lý:')} ${esc(a.reviewedBy)} · ${esc(when(a.reviewedAt))}</p>` : '';
+        state = `<p><strong>${'Hồ sơ đã được duyệt.'}</strong> ${a.canPay ? `Khoản trả trước cần thanh toán trước ${when(a.payBefore)}, nếu không đơn hàng sẽ bị hủy.` : (a.paymentStatus === 'PAID' ? 'Khoản trả trước đã được thanh toán.' : (a.payBefore ? 'Đã quá hạn thanh toán khoản trả trước, đơn hàng sắp bị hủy tự động.' : ''))}</p>`;
+      } else if (a.status === 'REJECTED') state = `<p><strong>${'Hồ sơ bị từ chối, đơn hàng đã được hủy.'}</strong></p>`;
+      else state = `<p>${'Hồ sơ đã đóng vì đơn hàng bị hủy.'}</p>`;
+      const noteLine = a.reviewNote ? `<p><strong>${a.status === 'REJECTED' ? 'Lý do:' : 'Ghi chú của cửa hàng:'}</strong> ${esc(a.reviewNote)}</p>` : '';
+      const who = staff && a.reviewedBy ? `<p class="muted">${'Người xử lý:'} ${esc(a.reviewedBy)} · ${esc(when(a.reviewedAt))}</p>` : '';
       let actions = '';
       if (!staff && a.canPay) {
         actions = vnpayEnabled
-          ? `<p><button type="button" class="button compact" data-pay>${t('Thanh toán khoản trả trước qua VNPay')}</button> <span class="muted">${t('hoặc trả tại cửa hàng')}</span></p>`
-          : `<p class="muted">${t('Vui lòng trả khoản trả trước tại cửa hàng.')}</p>`;
+          ? `<p><button type="button" class="button compact" data-pay>${'Thanh toán khoản trả trước qua VNPay'}</button> <span class="muted">${'hoặc trả tại cửa hàng'}</span></p>`
+          : `<p class="muted">${'Vui lòng trả khoản trả trước tại cửa hàng.'}</p>`;
       }
       if (canDecide && a.canDecide) {
-        actions = `<p class="dialog-actions"><button type="button" class="button compact" data-decide="APPROVE">${t('Duyệt')}</button><button type="button" class="button compact ghost" data-decide="REJECT">${t('Từ chối')}</button></p>`;
+        actions = `<p class="dialog-actions"><button type="button" class="button compact" data-decide="APPROVE">${'Duyệt'}</button><button type="button" class="button compact ghost" data-decide="REJECT">${'Từ chối'}</button></p>`;
       } else if (staff && !canDecide && a.status === 'PENDING') {
-        actions = `<p class="muted">${t('Tài khoản của bạn chỉ có quyền xem hồ sơ trả góp.')}</p>`;
+        actions = `<p class="muted">${'Tài khoản của bạn chỉ có quyền xem hồ sơ trả góp.'}</p>`;
       }
-      panel.innerHTML = `<h2>${t('Trả góp (mô phỏng)')} <span class="installment-status" data-status="${esc(a.status)}">${esc(statusText[a.status] || a.status)}</span></h2>${state}${noteLine}${who}${planTable(a)}${actions}<p class="muted">${SIMULATION}</p>`;
+      panel.innerHTML = `<h2>${'Trả góp (mô phỏng)'} <span class="installment-status" data-status="${esc(a.status)}">${esc(statusText[a.status] || a.status)}</span></h2>${state}${noteLine}${who}${planTable(a)}${actions}<p class="muted">${SIMULATION}</p>`;
       panel.querySelector('[data-pay]')?.addEventListener('click', async event => {
         const button = event.currentTarget;
         button.disabled = true;
@@ -379,7 +379,7 @@ window.KineticInstallment = (() => {
       // the server refuses a decision from this account, so the page offers none
       const viewOnly = document.createElement('p');
       viewOnly.className = 'muted';
-      viewOnly.textContent = t('Tài khoản của bạn chỉ có quyền xem hồ sơ trả góp.');
+      viewOnly.textContent = 'Tài khoản của bạn chỉ có quyền xem hồ sơ trả góp.';
       table.parentNode.insertBefore(viewOnly, table);
     }
     table.addEventListener('click', async event => {

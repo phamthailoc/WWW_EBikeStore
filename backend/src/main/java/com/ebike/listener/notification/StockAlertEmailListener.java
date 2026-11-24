@@ -34,7 +34,7 @@ public class StockAlertEmailListener {
                 return;
             }
             // The profile's notification switch is not checked: the customer asked for this alert on purpose.
-            emailSender.send(user.getId(), user.getEmail(), event.productName(), event.colorName(), event.productSlug(), event.language());
+            emailSender.send(user.getId(), user.getEmail(), event.productName(), event.colorName(), event.productSlug());
         });
     }
 }

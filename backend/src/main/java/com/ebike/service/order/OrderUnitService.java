@@ -1,6 +1,5 @@
 package com.ebike.service.order;
 
-import com.ebike.common.i18n.RequestLanguage;
 import com.ebike.dto.order.request.OrderUnitsRequest;
 import com.ebike.dto.order.response.OrderItemUnitResponse;
 import com.ebike.model.entity.order.Order;
@@ -63,8 +62,7 @@ public class OrderUnitService {
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
         if (!EDITABLE.contains(order.getStatus())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                RequestLanguage.text("Chỉ nhập số khung, số máy khi đơn đã sang bước đang xử lý.",
-                    "Frame and engine numbers can only be entered once the order is being processed."));
+                "Chỉ nhập số khung, số máy khi đơn đã sang bước đang xử lý.");
         }
         List<OrderUnitsRequest.Entry> entries = request == null || request.units() == null ? List.of() : request.units();
 
@@ -76,18 +74,16 @@ public class OrderUnitService {
         for (OrderUnitsRequest.Entry entry : entries) {
             OrderItem item = entry.orderItemId() == null ? null : items.get(entry.orderItemId());
             if (item == null || !OrderUnits.requiresNumbers(item)) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, RequestLanguage.text("Dòng sản phẩm không hợp lệ hoặc không cần số khung.",
-                    "The order line is not valid or needs no frame number."));
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Dòng sản phẩm không hợp lệ hoặc không cần số khung.");
             }
             String frame = clean(entry.frameNumber());
             String engine = clean(entry.engineNumber());
             if (!NUMBER.matcher(frame).matches() || !NUMBER.matcher(engine).matches()) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    RequestLanguage.text("Số khung và số máy gồm 5 đến 30 ký tự chữ, số hoặc dấu gạch ngang.",
-                    "Frame and engine numbers are 5 to 30 letters, digits or hyphens."));
+                    "Số khung và số máy gồm 5 đến 30 ký tự chữ, số hoặc dấu gạch ngang.");
             }
             if (!frames.add(frame)) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, RequestLanguage.text("Số khung " + frame + " bị nhập hai lần.", "Frame number " + frame + " is entered twice."));
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Số khung " + frame + " bị nhập hai lần.");
             }
             perItem.computeIfAbsent(item.getId(), id -> new ArrayList<>()).add(entry);
             normalized.add(new NormalizedEntry(item, frame, engine));
@@ -95,9 +91,7 @@ public class OrderUnitService {
         perItem.forEach((itemId, list) -> {
             if (list.size() > items.get(itemId).getQuantity()) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    RequestLanguage.text(
-                    "Dòng " + items.get(itemId).getProductName() + " chỉ có " + items.get(itemId).getQuantity() + " xe.",
-                    "The line " + items.get(itemId).getProductName() + " has only " + items.get(itemId).getQuantity() + " vehicle(s)."));
+                    "Dòng " + items.get(itemId).getProductName() + " chỉ có " + items.get(itemId).getQuantity() + " xe.");
             }
         });
         // A frame number belongs to one vehicle: refuse one already recorded on another order line.
@@ -106,8 +100,7 @@ public class OrderUnitService {
         for (OrderItemUnit other : unitRepository.findByFrameNumberIn(frames)) {
             if (!mine.contains(other.getId())) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    RequestLanguage.text("Số khung " + other.getFrameNumber() + " đã được ghi cho một đơn hàng khác.",
-                    "Frame number " + other.getFrameNumber() + " is already recorded on another order."));
+                    "Số khung " + other.getFrameNumber() + " đã được ghi cho một đơn hàng khác.");
             }
         }
 
@@ -159,8 +152,7 @@ public class OrderUnitService {
         if (!touchedIds.isEmpty() && (warrantyClaims.existsByUnitIdIn(touchedIds)
             || maintenanceReminders.existsByUnitIdIn(touchedIds))) {
             throw new ResponseStatusException(HttpStatus.CONFLICT,
-                RequestLanguage.text("Xe này đã có yêu cầu bảo hành hoặc mốc nhắc bảo dưỡng, không thể đổi hoặc xóa số khung của xe.",
-                    "This vehicle already has a warranty request or a service reminder, so its frame number cannot be changed or deleted."));
+                "Xe này đã có yêu cầu bảo hành hoặc mốc nhắc bảo dưỡng, không thể đổi hoặc xóa số khung của xe.");
         }
         // Delete first and flush, so a number that moved to another line is free again before it is inserted.
         if (!removed.isEmpty()) {

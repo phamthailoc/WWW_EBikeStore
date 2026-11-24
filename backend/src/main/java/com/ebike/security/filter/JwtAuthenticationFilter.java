@@ -1,6 +1,5 @@
 package com.ebike.security.filter;
 
-import com.ebike.common.i18n.RequestLanguage;
 import com.ebike.model.entity.auth.User;
 import com.ebike.repository.auth.UserRepository;
 import com.ebike.service.auth.JwtTokenProvider;
@@ -76,7 +75,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     return;
                 }
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                writeUnauthorized(request, response, "Tài khoản đã bị khóa hoặc không còn tồn tại.", "This account is disabled or no longer exists.");
+                writeUnauthorized(request, response, "Tài khoản đã bị khóa hoặc không còn tồn tại.");
                 return;
             }
 
@@ -105,7 +104,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 return;
             }
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            writeUnauthorized(request, response, "Phiên đăng nhập không hợp lệ hoặc đã hết hạn.", "Your sign-in is invalid or has expired.");
+            writeUnauthorized(request, response, "Phiên đăng nhập không hợp lệ hoặc đã hết hạn.");
             return;
         }
 
@@ -153,8 +152,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     /** The 401 of a bearer token: the body says why, in the language of the device (cookie) or Vietnamese. */
-    private static void writeUnauthorized(HttpServletRequest request, HttpServletResponse response, String vietnamese, String english) throws IOException {
+    private static void writeUnauthorized(HttpServletRequest request, HttpServletResponse response, String vietnamese) throws IOException {
         response.setContentType("application/json;charset=UTF-8");
-        response.getWriter().write("{\"message\":\"" + RequestLanguage.text(request, vietnamese, english) + "\"}");
+        response.getWriter().write("{\"message\":\"" + vietnamese + "\"}");
     }
 }

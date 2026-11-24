@@ -11,40 +11,14 @@ import org.junit.jupiter.api.Test;
 class DocumentFormatTest {
 
     @Test
-    void moneyUsesTheGroupingOfTheLanguage() {
-        assertEquals("1.234.000 ₫", DocumentFormat.money(new BigDecimal("1234000"), "vi"));
-        assertEquals("1,234,000 ₫", DocumentFormat.money(new BigDecimal("1234000"), "en"));
-        assertEquals("0 ₫", DocumentFormat.money(null, "vi"));
-        assertEquals("12.346 ₫", DocumentFormat.money(new BigDecimal("12345.50"), "vi"));
-    }
-
-    @Test
-    void anUnknownLanguageIsVietnamese() {
-        assertEquals("vi", DocumentFormat.language(null));
-        assertEquals("vi", DocumentFormat.language("fr"));
-        assertEquals("en", DocumentFormat.language("EN"));
-        assertEquals("en", DocumentFormat.language(" en-US"));
-    }
-
-    @Test
-    void datesFollowTheLanguageAndAMissingOneIsADash() {
-        LocalDateTime time = LocalDateTime.of(2026, 11, 3, 14, 5);
-        assertEquals("03/11/2026 14:05", DocumentFormat.dateTime(time, "vi"));
-        assertEquals("03 Nov 2026 14:05", DocumentFormat.dateTime(time, "en"));
-        assertEquals("03/11/2026", DocumentFormat.date(time, "vi"));
-        assertEquals("—", DocumentFormat.dateTime(null, "vi"));
-        assertEquals("—", DocumentFormat.date(null, "en"));
-    }
-
-    @Test
     void vietnameseWordsReadTheNumbersTheWayTheyAreSpoken() {
-        assertEquals("Không đồng chẵn", DocumentFormat.moneyInWords(BigDecimal.ZERO, "vi"));
-        assertEquals("Một đồng chẵn", DocumentFormat.moneyInWords(BigDecimal.ONE, "vi"));
-        assertEquals("Mười lăm đồng chẵn", DocumentFormat.moneyInWords(new BigDecimal("15"), "vi"));
-        assertEquals("Hai mươi mốt đồng chẵn", DocumentFormat.moneyInWords(new BigDecimal("21"), "vi"));
-        assertEquals("Một trăm lẻ năm đồng chẵn", DocumentFormat.moneyInWords(new BigDecimal("105"), "vi"));
-        assertEquals("Một triệu hai trăm ba mươi bốn nghìn đồng chẵn", DocumentFormat.moneyInWords(new BigDecimal("1234000"), "vi"));
-        assertEquals("Hai mươi triệu đồng chẵn", DocumentFormat.moneyInWords(new BigDecimal("20000000"), "vi"));
+        assertEquals("Không đồng chẵn", DocumentFormat.moneyInWords(BigDecimal.ZERO));
+        assertEquals("Một đồng chẵn", DocumentFormat.moneyInWords(BigDecimal.ONE));
+        assertEquals("Mười lăm đồng chẵn", DocumentFormat.moneyInWords(new BigDecimal("15")));
+        assertEquals("Hai mươi mốt đồng chẵn", DocumentFormat.moneyInWords(new BigDecimal("21")));
+        assertEquals("Một trăm lẻ năm đồng chẵn", DocumentFormat.moneyInWords(new BigDecimal("105")));
+        assertEquals("Một triệu hai trăm ba mươi bốn nghìn đồng chẵn", DocumentFormat.moneyInWords(new BigDecimal("1234000")));
+        assertEquals("Hai mươi triệu đồng chẵn", DocumentFormat.moneyInWords(new BigDecimal("20000000")));
     }
 
     @Test
@@ -56,16 +30,24 @@ class DocumentFormatTest {
     }
 
     @Test
-    void englishWordsAndTheDongSuffix() {
-        assertEquals("Zero Vietnamese dong", DocumentFormat.moneyInWords(BigDecimal.ZERO, "en"));
-        assertEquals("Twenty-one Vietnamese dong", DocumentFormat.moneyInWords(new BigDecimal("21"), "en"));
-        assertEquals("One million two hundred thirty-four thousand Vietnamese dong", DocumentFormat.moneyInWords(new BigDecimal("1234000"), "en"));
-        assertEquals("Twenty million Vietnamese dong", DocumentFormat.moneyInWords(new BigDecimal("20000000"), "en"));
+    void moneyUsesDotGroupingAndRoundsToWholeDong() {
+        assertEquals("1.234.000 ₫", DocumentFormat.money(new BigDecimal("1234000")));
+        assertEquals("0 ₫", DocumentFormat.money(null));
+        assertEquals("12.346 ₫", DocumentFormat.money(new BigDecimal("12345.50")));
+    }
+
+    @Test
+    void datesAreDayFirstAndAMissingOneIsADash() {
+        LocalDateTime time = LocalDateTime.of(2026, 11, 3, 14, 5);
+        assertEquals("03/11/2026 14:05", DocumentFormat.dateTime(time));
+        assertEquals("03/11/2026", DocumentFormat.date(time));
+        assertEquals("—", DocumentFormat.dateTime(null));
+        assertEquals("—", DocumentFormat.date(null));
     }
 
     @Test
     void aNegativeOrMissingAmountReadsAsZero() {
-        assertTrue(DocumentFormat.moneyInWords(new BigDecimal("-5"), "vi").startsWith("Không"));
-        assertTrue(DocumentFormat.moneyInWords(null, "en").startsWith("Zero"));
+        assertTrue(DocumentFormat.moneyInWords(new BigDecimal("-5")).startsWith("Không"));
+        assertTrue(DocumentFormat.moneyInWords(null).startsWith("Không"));
     }
 }

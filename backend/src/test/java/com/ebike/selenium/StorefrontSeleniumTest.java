@@ -302,7 +302,18 @@ abstract class StorefrontSeleniumTest {
             request.header("Content-Type", "application/json")
                 .method(method, HttpRequest.BodyPublishers.ofString(JSON.writeValueAsString(body)));
         }
-        HttpResponse<String> response = client.send(request.build(), HttpResponse.BodyHandlers.ofString());
+        HttpResponse<String> response = null;
+        // a read that the server cut short ("chunked transfer encoding" on a busy runner) is tried again; only a GET, which changes nothing
+        for (int attempt = 1; response == null; attempt++) {
+            try {
+                response = client.send(request.build(), HttpResponse.BodyHandlers.ofString());
+            } catch (java.io.IOException cut) {
+                if (!"GET".equals(method) || attempt >= 3) {
+                    throw cut;
+                }
+                Thread.sleep(500);
+            }
+        }
         if (response.statusCode() >= 400) {
             throw new IllegalStateException(method + " " + path + " -> " + response.statusCode() + ": " + response.body());
         }

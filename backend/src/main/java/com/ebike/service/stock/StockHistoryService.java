@@ -1,6 +1,5 @@
 package com.ebike.service.stock;
 
-import com.ebike.common.i18n.RequestLanguage;
 import com.ebike.dto.stock.StockDtos.BalanceResponse;
 import com.ebike.dto.stock.StockDtos.HistoryResponse;
 import com.ebike.dto.stock.StockDtos.MovementResponse;
@@ -39,15 +38,15 @@ public class StockHistoryService {
     @Transactional(readOnly = true)
     public HistoryResponse history(Long productId, Long variantId, String reasonsCsv, Long beforeId, Integer limit) {
         Product product = products.findById(productId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, RequestLanguage.text("Không tìm thấy xe.", "Bike not found.")));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy xe."));
         if (variantId != null && product.getVariants().stream().noneMatch(v -> variantId.equals(v.getId()))) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, RequestLanguage.text("Không tìm thấy màu này của xe.", "This colour of the bike was not found."));
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy màu này của xe.");
         }
         Set<StockMovementReason> reasons;
         try {
             reasons = StockRules.parseReasons(reasonsCsv);
         } catch (IllegalArgumentException exception) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, RequestLanguage.text("Lý do lọc không hợp lệ.", "Invalid reason filter."));
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Lý do lọc không hợp lệ.");
         }
         int size = limit == null ? DEFAULT_PAGE : Math.max(1, Math.min(limit, MAX_PAGE));
         long before = beforeId == null || beforeId <= 0 ? Long.MAX_VALUE : beforeId;

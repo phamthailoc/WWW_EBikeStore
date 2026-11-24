@@ -9,7 +9,6 @@ import com.ebike.model.entity.order.OrderStatus;
 import com.ebike.repository.auth.UserRepository;
 import com.ebike.repository.installment.InstallmentApplicationRepository;
 import com.ebike.repository.order.OrderRepository;
-import com.ebike.repository.user.UserPreferenceRepository;
 import com.ebike.service.admin.AccountErasure;
 import com.ebike.service.warranty.WarrantyRules;
 import java.time.LocalDateTime;
@@ -40,14 +39,13 @@ public class OrderDocumentService {
 
     private static final Logger log = LoggerFactory.getLogger(OrderDocumentService.class);
 
-    /** What the hand-over email carries: who gets it, in which language, and the files ({@code hasCard}: the warranty card is among them). */
-    public record DeliveryDocuments(String email, String recipientName, String orderNumber, String language, List<PdfFile> files, boolean guest, boolean hasCard) {
+    /** What the hand-over email carries: who gets it and the files ({@code hasCard}: the warranty card is among them). */
+    public record DeliveryDocuments(String email, String recipientName, String orderNumber, List<PdfFile> files, boolean guest, boolean hasCard) {
     }
 
     private final OrderRepository orders;
     private final InstallmentApplicationRepository installments;
     private final UserRepository users;
-    private final UserPreferenceRepository preferences;
     private final StoreProfile store;
     private final PdfRenderer renderer;
     private final List<Period> intervals;
@@ -57,7 +55,6 @@ public class OrderDocumentService {
         OrderRepository orders,
         InstallmentApplicationRepository installments,
         UserRepository users,
-        UserPreferenceRepository preferences,
         StoreProfile store,
         PdfRenderer renderer,
         PlatformTransactionManager transactionManager,
@@ -66,7 +63,6 @@ public class OrderDocumentService {
         this.orders = orders;
         this.installments = installments;
         this.users = users;
-        this.preferences = preferences;
         this.store = store;
         this.renderer = renderer;
         this.transactions = new TransactionTemplate(transactionManager);
@@ -81,50 +77,41 @@ public class OrderDocumentService {
     private record Draft(String template, java.util.Map<String, Object> model, String filename) {
     }
 
-    private record Pending(String email, String recipientName, String orderNumber, String language, List<Draft> drafts, boolean guest, boolean hasCard) {
+    private record Pending(String email, String recipientName, String orderNumber, List<Draft> drafts, boolean guest, boolean hasCard) {
     }
 
     /** The sales receipt of an order that is not cancelled. Before the bike is handed over it is marked "provisional". */
-    PdfFile receipt(Long orderId, Authentication authentication, String language) { // package-private: the controller always passes the page language
-        return receipt(orderId, authentication, language, language);
-    }
-
-    /** {@code language} is the one of the document, {@code pageLanguage} the one of the page asking (the texts of an error). */
-    public PdfFile receipt(Long orderId, Authentication authentication, String language, String pageLanguage) {
+    public PdfFile receipt(Long orderId, Authentication authentication) {
         Draft draft = reading(() -> {
-            Order order = readable(orderId, authentication, pageLanguage);
+            Order order = readable(orderId, authentication);
             if (order.getStatus() == OrderStatus.CANCELLED) {
-                throw conflict(pageLanguage, "error.cancelled");
+                throw conflict("error.cancelled");
             }
-            return receiptDraft(order, language);
+            return receiptDraft(order);
         });
-        return render(draft, pageLanguage);
+        return render(draft);
     }
 
     /** The warranty card of the vehicles of a delivered order, one page each; {@code unitId} narrows it to one vehicle. */
-    PdfFile warrantyCard(Long orderId, Long unitId, Authentication authentication, String language) { // package-private: see receipt
-        return warrantyCard(orderId, unitId, authentication, language, language);
-    }
-
-    public PdfFile warrantyCard(Long orderId, Long unitId, Authentication authentication, String language, String pageLanguage) {
+    public PdfFile warrantyCard(Long orderId, Long unitId, Authentication authentication) {
         Draft draft = reading(() -> {
-            Order order = readable(orderId, authentication, pageLanguage);
+            Order order = readable(orderId, authentication);
             if (order.getStatus() != OrderStatus.DELIVERED) {
-                throw conflict(pageLanguage, "error.notDelivered");
+                throw conflict("error.notDelivered");
             }
             List<OrderItemUnit> units = unitsOf(order);
             if (unitId != null) {
                 units = units.stream().filter(unit -> unitId.equals(unit.getId())).toList();
                 if (units.isEmpty()) {
-                    throw new ResponseStatusException(HttpStatus.NOT_FOUND, DocumentText.text(pageLanguage, "error.unitNotFound"));
+                    throw new ResponseStatusException(HttpStatus.NOT_FOUND, DocumentText.text("error.unitNotFound"));
                 }
             }
             if (units.isEmpty()) {
-                throw conflict(pageLanguage, "error.noNumbers");
+                throw conflict("error.noNumbers");
             }
-            return cardDraft(order, units, language, unitId == null ? null : units.get(0).getFrameNumber());
+            return cardDraft(order, units, unitId == null ? null : units.get(0).getFrameNumber());
         });
-        return render(draft, pageLanguage);
+        return render(draft);
     }
 
     /**
@@ -138,9 +125,9 @@ public class OrderDocumentService {
         }
         List<PdfFile> files = new ArrayList<>();
         for (Draft draft : pending.drafts()) {
-            files.add(render(draft, pending.language()));
+            files.add(render(draft));
         }
-        return Optional.of(new DeliveryDocuments(pending.email(), pending.recipientName(), pending.orderNumber(), pending.language(), files, pending.guest(), pending.hasCard()));
+        return Optional.of(new DeliveryDocuments(pending.email(), pending.recipientName(), pending.orderNumber(), files, pending.guest(), pending.hasCard()));
     }
 
     private Optional<Pending> pendingDelivery(Long orderId) {
@@ -156,20 +143,15 @@ public class OrderDocumentService {
         if (email == null) {
             return Optional.empty();
         }
-        // the language the order was placed in wins (the profile row always has a language, "vi" by default, even when the customer never chose one);
-        // an older order that recorded none follows the profile, and a guest order without one is Vietnamese, the shop's base language
-        String language = order.getCustomerLanguage() != null && !order.getCustomerLanguage().isBlank() || user == null
-            ? DocumentFormat.language(order.getCustomerLanguage())
-            : preferences.findByUserId(user.getId()).map(saved -> DocumentFormat.language(saved.getLanguage())).orElse("vi");
         List<Draft> drafts = new ArrayList<>();
-        drafts.add(receiptDraft(order, language));
+        drafts.add(receiptDraft(order));
         List<OrderItemUnit> units = unitsOf(order);
         boolean hasCard = !units.isEmpty();
         if (hasCard) {
-            drafts.add(cardDraft(order, units, language, null));
+            drafts.add(cardDraft(order, units, null));
         }
-        String name = DocumentModels.customerName(order, language);
-        return Optional.of(new Pending(email, "—".equals(name) ? DocumentText.text(language, "mail.guestName") : name, order.getOrderNumber(), language, drafts, user == null, hasCard));
+        String name = DocumentModels.customerName(order);
+        return Optional.of(new Pending(email, "—".equals(name) ? DocumentText.text("mail.guestName") : name, order.getOrderNumber(), drafts, user == null, hasCard));
     }
 
     private <T> T reading(java.util.function.Supplier<T> work) {
@@ -177,24 +159,24 @@ public class OrderDocumentService {
     }
 
     // the issue time is read like the times stored on the order (the JVM zone), so the dates on one page always agree with each other
-    private Draft receiptDraft(Order order, String language) {
+    private Draft receiptDraft(Order order) {
         var installment = installments.findByOrderId(order.getId()).orElse(null);
-        var model = DocumentModels.receipt(order, installment, store, language, LocalDateTime.now());
+        var model = DocumentModels.receipt(order, installment, store, LocalDateTime.now());
         return new Draft("receipt", model, "receipt-" + PdfFile.safeName(order.getOrderNumber()) + ".pdf");
     }
 
-    private Draft cardDraft(Order order, List<OrderItemUnit> units, String language, String singleFrame) {
-        var model = DocumentModels.warrantyCards(order, units, store, intervals, language, LocalDateTime.now());
+    private Draft cardDraft(Order order, List<OrderItemUnit> units, String singleFrame) {
+        var model = DocumentModels.warrantyCards(order, units, store, intervals, LocalDateTime.now());
         String name = singleFrame == null ? PdfFile.safeName(order.getOrderNumber()) : PdfFile.safeName(singleFrame);
         return new Draft("warranty-card", model, "warranty-card-" + name + ".pdf");
     }
 
-    private PdfFile render(Draft draft, String language) {
+    private PdfFile render(Draft draft) {
         try {
             return new PdfFile(draft.filename(), renderer.render(draft.template(), draft.model()));
         } catch (RuntimeException exception) {
             log.error("Could not render {} for order {}", draft.template(), draft.model().get("orderNumber"), exception);
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, DocumentText.text(language, "error.render"));
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, DocumentText.text("error.render"));
         }
     }
 
@@ -209,10 +191,10 @@ public class OrderDocumentService {
         return units;
     }
 
-    private Order readable(Long orderId, Authentication authentication, String language) {
+    private Order readable(Long orderId, Authentication authentication) {
         Order order = orderId == null ? null : orders.findForDocuments(orderId).orElse(null);
         if (order == null || !mayRead(order, authentication)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, DocumentText.text(language, "error.notFound"));
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, DocumentText.text("error.notFound"));
         }
         return order;
     }
@@ -238,7 +220,7 @@ public class OrderDocumentService {
             .orElse(false);
     }
 
-    private static ResponseStatusException conflict(String language, String key) {
-        return new ResponseStatusException(HttpStatus.CONFLICT, DocumentText.text(language, key));
+    private static ResponseStatusException conflict(String key) {
+        return new ResponseStatusException(HttpStatus.CONFLICT, DocumentText.text(key));
     }
 }

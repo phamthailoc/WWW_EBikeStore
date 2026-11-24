@@ -36,7 +36,7 @@ class PdfRendererTest {
     }
 
     private byte[] receipt(Order order, String language) {
-        return renderer.render("receipt", DocumentModels.receipt(order, null, DocumentFixtures.store(), language, NOW));
+        return renderer.render("receipt", DocumentModels.receipt(order, null, DocumentFixtures.store(), NOW));
     }
 
     @Test
@@ -58,21 +58,6 @@ class PdfRendererTest {
         assertTrue(text.contains("không phải hóa đơn điện tử"), text);
         assertTrue(text.contains("Mã số thuế: 0123456789"), text);
         assertEquals(1, pagesOf(pdf));
-    }
-
-    @Test
-    void theEnglishReceiptIsInEnglishAndNeverMixesInVietnameseLabels() throws IOException {
-        Order order = DocumentFixtures.order(2, OrderStatus.DELIVERED, 1, true);
-
-        String text = textOf(receipt(order, "en"));
-
-        assertTrue(text.contains("SALES RECEIPT"), text);
-        assertTrue(text.contains("Pick up at the showroom"), text);
-        assertTrue(text.contains("20,000,000 ₫"), text);
-        assertTrue(text.contains("Twenty million Vietnamese dong"), text);
-        assertTrue(text.contains("Paid"), text);
-        assertFalse(text.contains("PHIẾU BÁN HÀNG"), text);
-        assertFalse(text.contains("Tiền hàng"), text);
     }
 
     @Test
@@ -134,7 +119,7 @@ class PdfRendererTest {
         Order order = DocumentFixtures.order(6, OrderStatus.DELIVERED, 3, true);
         List<OrderItemUnit> units = List.copyOf(order.getItems().iterator().next().getUnits());
         Map<String, Object> model = DocumentModels.warrantyCards(order, units, DocumentFixtures.store(),
-            WarrantyRules.parseIntervals(WarrantyRules.DEFAULT_INTERVALS), "vi", NOW);
+            WarrantyRules.parseIntervals(WarrantyRules.DEFAULT_INTERVALS), NOW);
 
         byte[] pdf = renderer.render("warranty-card", model);
 
@@ -157,24 +142,10 @@ class PdfRendererTest {
         List<OrderItemUnit> units = List.copyOf(order.getItems().iterator().next().getUnits());
         String manyIntervals = String.join(",", java.util.stream.IntStream.rangeClosed(1, 40).mapToObj(month -> "P" + month + "M").toList());
         for (String language : List.of("vi", "en")) {
-            Map<String, Object> model = DocumentModels.warrantyCards(order, units, DocumentFixtures.store(), WarrantyRules.parseIntervals(manyIntervals), language, NOW);
+            Map<String, Object> model = DocumentModels.warrantyCards(order, units, DocumentFixtures.store(), WarrantyRules.parseIntervals(manyIntervals), NOW);
 
             assertEquals(2, pagesOf(renderer.render("warranty-card", model)), language);
         }
     }
 
-    @Test
-    void theEnglishWarrantyCardIsInEnglish() throws IOException {
-        Order order = DocumentFixtures.order(7, OrderStatus.DELIVERED, 1, true);
-        List<OrderItemUnit> units = List.copyOf(order.getItems().iterator().next().getUnits());
-
-        String text = textOf(renderer.render("warranty-card", DocumentModels.warrantyCards(order, units, DocumentFixtures.store(),
-            WarrantyRules.parseIntervals(WarrantyRules.DEFAULT_INTERVALS), "en", NOW)));
-
-        assertTrue(text.contains("WARRANTY CARD"), text);
-        assertTrue(text.contains("24 months"), text);
-        assertTrue(text.contains("20 Nov 2028"), text);
-        assertTrue(text.contains("6 months after hand-over"), text);
-        assertFalse(text.contains("PHIẾU BẢO HÀNH"), text);
-    }
 }

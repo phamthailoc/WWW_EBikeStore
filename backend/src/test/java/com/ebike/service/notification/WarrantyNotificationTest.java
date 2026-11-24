@@ -38,7 +38,6 @@ class WarrantyNotificationTest {
 
     private void language(String code, boolean notificationsOn) {
         UserPreference preference = new UserPreference();
-        preference.setLanguage(code);
         preference.setNotificationsEnabled(notificationsOn);
         when(preferences.findByUserId(7L)).thenReturn(Optional.of(preference));
     }
@@ -49,29 +48,11 @@ class WarrantyNotificationTest {
         return captor.getValue();
     }
 
-    @Test void englishCustomerGetsAnEnglishClaimNotice() {
-        language("en", true);
-        service.handleWarrantyClaimStatusChanged(new WarrantyClaimStatusChangedEvent(7L, "Kinetic X", "FRAME12345", "RECEIVED"));
-        Notification notification = saved();
-        assertEquals("Warranty request update", notification.getTitle());
-        assertTrue(notification.getMessage().contains("was received by the store"));
-        assertEquals("/customer/warranty", notification.getTargetUrl());
-    }
-
     @Test void customerWithoutAProfileGetsVietnamese() {
         service.handleWarrantyClaimStatusChanged(new WarrantyClaimStatusChangedEvent(7L, "Kinetic X", "FRAME12345", "DONE"));
         Notification notification = saved();
         assertEquals("Cập nhật yêu cầu bảo hành", notification.getTitle());
         assertTrue(notification.getMessage().contains("đã hoàn tất"));
-    }
-
-    @Test void englishCustomerGetsAnEnglishServiceNotice() {
-        language("en", true);
-        service.handleMaintenanceDue(new MaintenanceDueEvent(7L, "Kinetic X", "FRAME12345", "P6M"));
-        Notification notification = saved();
-        assertEquals("Service due", notification.getTitle());
-        assertTrue(notification.getMessage().contains("6 months after delivery"));
-        assertEquals("/customer/warranty", notification.getTargetUrl());
     }
 
     @Test void customerWhoSwitchedNotificationsOffGetsNone() {
@@ -83,6 +64,37 @@ class WarrantyNotificationTest {
     @Test void anErasedAccountGetsNone() {
         user.setAccountStatus("DELETED");
         service.handleWarrantyClaimStatusChanged(new WarrantyClaimStatusChangedEvent(7L, "Kinetic X", "FRAME12345", "DONE"));
+        verify(notifications, never()).save(org.mockito.ArgumentMatchers.any());
+    }
+
+    @Test void customerGetsAClaimNotice() {
+        language("vi", true);
+        service.handleWarrantyClaimStatusChanged(new WarrantyClaimStatusChangedEvent(7L, "Kinetic X", "FRAME12345", "RECEIVED"));
+        Notification notification = saved();
+        assertEquals("Cập nhật yêu cầu bảo hành", notification.getTitle());
+        assertTrue(notification.getMessage().contains("đã được cửa hàng tiếp nhận"));
+        assertEquals("/customer/warranty", notification.getTargetUrl());
+    }
+
+    @Test void customerGetsAServiceNotice() {
+        language("vi", true);
+        service.handleMaintenanceDue(new MaintenanceDueEvent(7L, "Kinetic X", "FRAME12345", "P6M"));
+        Notification notification = saved();
+        assertEquals("Đến hạn bảo dưỡng", notification.getTitle());
+        assertTrue(notification.getMessage().contains("6 tháng kể từ ngày giao"));
+        assertEquals("/customer/warranty", notification.getTargetUrl());
+    }
+
+    @Test void aLockedAccountGetsNeitherNotice() {
+        user.setAccountStatus("LOCKED");
+        service.handleWarrantyClaimStatusChanged(new WarrantyClaimStatusChangedEvent(7L, "Kinetic X", "FRAME12345", "DONE"));
+        service.handleMaintenanceDue(new MaintenanceDueEvent(7L, "Kinetic X", "FRAME12345", "P6M"));
+        verify(notifications, never()).save(org.mockito.ArgumentMatchers.any());
+    }
+
+    @Test void anAccountSwitchedOffByTheAdminGetsNeitherNotice() {
+        user.setActive(false);
+        service.handleMaintenanceDue(new MaintenanceDueEvent(7L, "Kinetic X", "FRAME12345", "P6M"));
         verify(notifications, never()).save(org.mockito.ArgumentMatchers.any());
     }
 }

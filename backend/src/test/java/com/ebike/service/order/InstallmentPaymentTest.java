@@ -82,7 +82,7 @@ class InstallmentPaymentTest {
     }
 
     private VnPayCreatePaymentRequest pay() {
-        return new VnPayCreatePaymentRequest(10L, null, "vn");
+        return new VnPayCreatePaymentRequest(10L, null);
     }
 
     // ---- VNPay ----
@@ -152,7 +152,7 @@ class InstallmentPaymentTest {
         when(orders.findLockedById(11L)).thenReturn(Optional.of(plain));
         when(payments.findByOrderId(11L)).thenReturn(Optional.empty());
         when(installments.findByOrderId(11L)).thenReturn(Optional.empty());
-        var response = vnpay.createPaymentUrl(new VnPayCreatePaymentRequest(11L, null, "vn"), "127.0.0.1", null, true);
+        var response = vnpay.createPaymentUrl(new VnPayCreatePaymentRequest(11L, null), "127.0.0.1", null, true);
         assertEquals(0, response.amount().compareTo(new BigDecimal("20000000")));
     }
 

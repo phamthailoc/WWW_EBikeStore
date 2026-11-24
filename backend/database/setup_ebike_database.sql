@@ -279,7 +279,6 @@ CREATE TABLE `user_preferences` (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     user_id BIGINT UNIQUE NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     theme VARCHAR(20) DEFAULT 'light',
-    language VARCHAR(10) DEFAULT 'en',
     notifications_enabled TINYINT(1) DEFAULT TRUE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -396,8 +395,7 @@ ALTER TABLE users ADD COLUMN account_status VARCHAR(30) NOT NULL DEFAULT 'ACTIVE
 ALTER TABLE orders ADD COLUMN promotion_id BIGINT NULL, ADD CONSTRAINT fk_orders_promotion FOREIGN KEY (promotion_id) REFERENCES promotions(id) ON DELETE SET NULL;
 ALTER TABLE orders ADD COLUMN pickup_deadline_at DATETIME NULL;
 ALTER TABLE orders ADD COLUMN delivered_at DATETIME NULL;
-ALTER TABLE orders ADD COLUMN customer_language VARCHAR(5) NULL;
-ALTER TABLE user_preferences ALTER COLUMN theme SET DEFAULT 'system', ALTER COLUMN language SET DEFAULT 'vi';
+ALTER TABLE user_preferences ALTER COLUMN theme SET DEFAULT 'system';
 
 DROP TABLE IF EXISTS `support_requests`;
 CREATE TABLE `support_requests` (

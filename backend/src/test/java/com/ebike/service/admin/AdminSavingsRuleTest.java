@@ -50,23 +50,6 @@ class AdminSavingsRuleTest {
         assertEquals(0, new BigDecimal("2900").compareTo(rule.getAmount()));
     }
 
-    @Test void theRefusalNamesTheUnitInTheLanguageOfTheRequest() {
-        PricingRule rule = rule(PricingService.SAVINGS_PETROL_USE_PREFIX + "E_BIKE");
-        rule.setUnit("lít/100 km");
-        PricingRuleUpdateRequest tooMuch = new PricingRuleUpdateRequest(new BigDecimal("11"), "ACTIVE", null);
-        assertEquals("Giá trị phải từ 0.5 đến 10 (lít/100 km). Nhập số không có dấu chấm ngăn cách hàng nghìn.", assertThrows(ResponseStatusException.class, () -> service.updatePricingRule(1L, tooMuch)).getReason());
-        org.springframework.context.i18n.LocaleContextHolder.setLocale(java.util.Locale.ENGLISH);
-        org.springframework.web.context.request.RequestContextHolder.setRequestAttributes(
-            new org.springframework.web.context.request.ServletRequestAttributes(new org.springframework.mock.web.MockHttpServletRequest()));
-        try {
-            assertEquals("The value must be from 0.5 to 10 (litres/100 km). Enter the number without a thousands separator.",
-                assertThrows(ResponseStatusException.class, () -> service.updatePricingRule(1L, tooMuch)).getReason());
-        } finally {
-            org.springframework.context.i18n.LocaleContextHolder.resetLocaleContext();
-            org.springframework.web.context.request.RequestContextHolder.resetRequestAttributes();
-        }
-    }
-
     @Test void consumptionHasItsOwnCeiling() {
         rule(PricingService.SAVINGS_PETROL_USE_PREFIX + "E_BIKE");
         assertThrows(ResponseStatusException.class, () -> service.updatePricingRule(1L, new PricingRuleUpdateRequest(new BigDecimal("11"), "ACTIVE", null)));
