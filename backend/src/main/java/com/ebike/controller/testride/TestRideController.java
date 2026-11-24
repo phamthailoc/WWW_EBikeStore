@@ -56,9 +56,10 @@ public class TestRideController {
     public ResponseEntity<List<TestRideResponse>> schedule(
         @RequestParam(required = false) String date,
         @RequestParam(required = false) Long showroomId,
-        @RequestParam(required = false) String status
+        @RequestParam(required = false) String status,
+        @RequestParam(required = false) Integer limit
     ) {
-        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(testRideService.schedule(date, showroomId, status));
+        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(testRideService.schedule(date, showroomId, status, limit));
     }
 
     @GetMapping("/api/v1/manager/test-rides/backlog")

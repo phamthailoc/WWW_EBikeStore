@@ -32,6 +32,7 @@ import org.springframework.web.server.ResponseStatusException;
 class InstallmentPlannerTest {
 
     private PricingRuleRepository rules;
+    private final java.util.Map<String, PricingRule> storedRules = new java.util.HashMap<>();
     private InstallmentApplicationRepository applications;
     private UserRepository users;
     private InstallmentPlanner planner;
@@ -40,6 +41,10 @@ class InstallmentPlannerTest {
     @BeforeEach
     void setUp() {
         rules = mock(PricingRuleRepository.class);
+        when(rules.findByCodeIn(org.mockito.ArgumentMatchers.anyCollection())).thenAnswer(invocation -> {
+            java.util.Collection<String> codes = invocation.getArgument(0);
+            return storedRules.entrySet().stream().filter(entry -> codes.contains(entry.getKey())).map(java.util.Map.Entry::getValue).toList();
+        });
         applications = mock(InstallmentApplicationRepository.class);
         users = mock(UserRepository.class);
         planner = new InstallmentPlanner(new PricingService(rules), applications, users,
@@ -55,6 +60,7 @@ class InstallmentPlannerTest {
         rule.setAmount(new BigDecimal(amount));
         rule.setStatus(status);
         rule.setEffectiveFrom(from);
+        storedRules.put(code, rule);
         when(rules.findByCode(code)).thenReturn(Optional.of(rule));
     }
 

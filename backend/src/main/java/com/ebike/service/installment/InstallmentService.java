@@ -47,6 +47,8 @@ public class InstallmentService {
 
     /** The most rows the staff queue returns, so a long backlog cannot make the page heavy; the page says when the list is full. */
     public static final int QUEUE_LIMIT = 200;
+    /** The most rows one queue request may ask for. */
+    public static final int QUEUE_MAX = 1000;
     private static final int MAX_NOTE_LENGTH = 1000;
     /** What the cancellation reason of a rejected application starts with; the order page words it in the language of the viewer. */
     public static final String REJECTED_REASON_PREFIX = "Hồ sơ trả góp bị từ chối: ";
@@ -123,14 +125,21 @@ public class InstallmentService {
     /** The queue: {@code status} is PENDING (the default), ALL, or one of the other statuses. Oldest waiting first; a closed list shows the newest first. */
     @Transactional(readOnly = true)
     public List<InstallmentApplicationResponse> queue(String status, Authentication authentication) {
+        return queue(status, authentication, null);
+    }
+
+    /** {@code limit} rows at most (default {@link #QUEUE_LIMIT}, never more than {@link #QUEUE_MAX}); the page asks for more with a "load more" button. */
+    @Transactional(readOnly = true)
+    public List<InstallmentApplicationResponse> queue(String status, Authentication authentication, Integer limit) {
+        int size = limit == null ? QUEUE_LIMIT : Math.max(1, Math.min(limit, QUEUE_MAX));
         String wanted = status == null || status.isBlank() ? InstallmentApplication.PENDING : status.trim().toUpperCase(Locale.ROOT);
         List<InstallmentApplication> rows;
         if ("ALL".equals(wanted)) {
-            rows = applications.findAllByOrderByCreatedAtDesc(PageRequest.of(0, QUEUE_LIMIT));
+            rows = applications.findAllByOrderByCreatedAtDesc(PageRequest.of(0, size));
         } else if (QUEUE_STATUSES.contains(wanted)) {
             rows = InstallmentApplication.PENDING.equals(wanted)
-                ? applications.findByStatusOrderByCreatedAtAsc(wanted, PageRequest.of(0, QUEUE_LIMIT))
-                : applications.findByStatusOrderByCreatedAtDesc(wanted, PageRequest.of(0, QUEUE_LIMIT));
+                ? applications.findByStatusOrderByCreatedAtAsc(wanted, PageRequest.of(0, size))
+                : applications.findByStatusOrderByCreatedAtDesc(wanted, PageRequest.of(0, size));
         } else {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Trạng thái không hợp lệ.");
         }

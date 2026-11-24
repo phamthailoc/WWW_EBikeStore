@@ -69,7 +69,7 @@ class SeoSecurityTest {
 
         @Bean
         SeoController seoController(ProductService service) {
-            return new SeoController(service, "https://shop.example.vn");
+            return new SeoController(service, new com.ebike.service.seo.SeoAddress("https://shop.example.vn"));
         }
     }
 

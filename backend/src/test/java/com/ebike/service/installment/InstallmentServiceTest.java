@@ -379,4 +379,17 @@ class InstallmentServiceTest {
         when(applications.countByStatus("PENDING")).thenReturn(4L);
         assertEquals(4L, service.backlog().pending());
     }
+
+    @Test
+    void theQueueSizeFollowsTheLimitButNeverPassesTheMaximum() {
+        when(applications.findByStatusOrderByCreatedAtAsc(eq("PENDING"), any())).thenReturn(List.of());
+        service.queue(null, null, 50);
+        service.queue(null, null, 99999);
+        service.queue(null, null, 0);
+        service.queue(null, null, null);
+        org.mockito.ArgumentCaptor<org.springframework.data.domain.Pageable> page = org.mockito.ArgumentCaptor.forClass(org.springframework.data.domain.Pageable.class);
+        verify(applications, org.mockito.Mockito.times(4)).findByStatusOrderByCreatedAtAsc(eq("PENDING"), page.capture());
+        assertEquals(List.of(50, InstallmentService.QUEUE_MAX, 1, InstallmentService.QUEUE_LIMIT),
+            page.getAllValues().stream().map(org.springframework.data.domain.Pageable::getPageSize).toList());
+    }
 }
