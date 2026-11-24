@@ -192,8 +192,8 @@ class SavingsCalculatorSeleniumTest extends StorefrontSeleniumTest {
         String other = slugWhere(false, false);
         assumeTrue(other != null, "the catalogue has no battery pack or accessory");
         driver.get(baseUrl + "/product/" + other);
-        wait.until(d -> Boolean.TRUE.equals(js("return performance.getEntriesByType('resource').some(e => e.name.includes('/savings'))")));
-        Thread.sleep(500);
+        // the script says it has finished by marking the box: no waiting for a guess
+        wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("#savingsBox[data-state='hidden']")));
         assertFalse(driver.findElement(BOX).isDisplayed(), "nothing to compare, so the box stays hidden");
     }
 
@@ -225,8 +225,7 @@ class SavingsCalculatorSeleniumTest extends StorefrontSeleniumTest {
     void anAccountThatMayNotViewProductsDoesNotSeeABrokenBox() throws Exception {
         breakTheSavingsRequest("Promise.resolve(new Response(JSON.stringify({message: 'Bạn không có quyền thực hiện thao tác này.'}), {status: 403, headers: {'Content-Type': 'application/json'}}))");
         driver.get(baseUrl + "/product/" + slug);
-        wait.until(d -> Boolean.TRUE.equals(js("return document.querySelector('#productPage') !== null")));
-        Thread.sleep(800);
+        wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("#savingsBox[data-state='hidden']")));
         assertFalse(driver.findElement(BOX).isDisplayed(), "a 403 hides the box instead of showing a retry that cannot help");
     }
 
