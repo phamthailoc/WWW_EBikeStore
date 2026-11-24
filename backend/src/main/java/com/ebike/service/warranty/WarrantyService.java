@@ -307,7 +307,9 @@ public class WarrantyService {
             claim.getStaffNote(),
             claim.getCreatedAt(),
             claim.getUpdatedAt(),
-            unit.getOrderItem().getOrder().getId());
+            unit.getOrderItem().getOrder().getId(),
+            unit.getOrderItem().getOrder().getOrderNumber(),
+            unit.getOrderItem().getOrder().getShipment() == null ? null : unit.getOrderItem().getOrder().getShipment().getPhoneNumber());
     }
 
     static LocalDateTime startsAt(OrderItemUnit unit) {
