@@ -53,8 +53,17 @@ Còn mở: `/api/v1/notifications` trả 200 cho cả ba vai trò không quyền
 | Thấp | Nút "Tải hóa đơn" trong khi chú thích nói đó không phải hóa đơn | 🔧 đã đổi thành "Tải phiếu bán hàng" |
 | Thấp | Thông báo tạo đơn trả góp nói "chờ xác nhận" thay vì "chờ cửa hàng duyệt hồ sơ"; thông báo "đã giao" cho đơn nhận tại cửa hàng | mở |
 
-## 5. Phần còn lại của kế hoạch
+## 5. Không chức năng (đã chạy)
+
+| Hạng mục | Kết quả |
+|---|---|
+| Chèn mã độc vào ô văn bản (yêu cầu hỗ trợ: tên, tiêu đề, nội dung; mô tả bảo hành) | ✅ lưu nguyên văn, hiện như chữ ở hàng đợi của Manager, không chạy mã, không tạo phần tử mới |
+| Điện thoại 375px, chế độ tối, các trang Manager (tổng quan, chi tiết đơn, trả góp, bảo hành, lái thử, phiếu nhập kho, báo cáo) | ✅ không tràn ngang |
+| Điện thoại 375px, chế độ tối, các trang công khai (chủ, danh sách xe, chi tiết xe, thanh toán, hỗ trợ, bảo hành) | ✅ không tràn ngang |
+| Trình duyệt | chỉ Chrome (theo yêu cầu) |
+
+## 6. Phần còn lại của kế hoạch
 
 - Duyệt tay các luồng đánh dấu 🟡 (đặc biệt 1, 2, 5, 7, 8, 10, 14).
-- Không chức năng: điện thoại, máy tính bảng, sáng và tối, dữ liệu lớn, truy cập đồng thời, giới hạn tần suất bật, chèn `<script>`.
+- Không chức năng còn lại: máy tính bảng, dữ liệu lớn, truy cập đồng thời, giới hạn tần suất bật.
 - Dịch vụ ngoài (email, VNPay, Gemini): để sau.
