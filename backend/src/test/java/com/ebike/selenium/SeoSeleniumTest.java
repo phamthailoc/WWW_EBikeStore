@@ -87,7 +87,6 @@ class SeoSeleniumTest extends StorefrontSeleniumTest {
         assertEquals(200, robots.statusCode(), "robots.txt needs no account");
         assertTrue(robots.headers().firstValue("Content-Type").orElse("").startsWith("text/plain"), robots.headers().toString());
         assertTrue(robots.body().contains("Disallow: /api/"), robots.body());
-        assertTrue(robots.body().contains("Disallow: /lang/"), robots.body());
         assertFalse(robots.body().contains("Disallow: /admin"), "private pages stay crawlable so their noindex is seen");
         assertFalse(robots.body().contains("Disallow: /product"), "products stay open");
         assertTrue(robots.body().contains("Sitemap: "), robots.body());
@@ -178,21 +177,6 @@ class SeoSeleniumTest extends StorefrontSeleniumTest {
             assertEquals("/product/" + productSlug, path, prefix + " is an alias");
             expected = expected == null ? canonical() : expected;
             assertEquals(expected, canonical());
-        }
-    }
-
-    @Test
-    void anEnglishVisitorGetsEnglishPreviewText() throws Exception {
-        try {
-            driver.get(baseUrl + "/lang/en?back=/product/" + productSlug);
-            wait.until(d -> "en".equals(js("return document.documentElement.lang")));
-            assertEquals("en_US", meta("meta[property='og:locale']"));
-            assertNull(meta("meta[property='og:locale:alternate']"), "language is a cookie on one address: no alternate to point at");
-            assertEquals("Home", jsonLd("BreadcrumbList").path("itemListElement").get(0).path("name").asText());
-            driver.get(baseUrl + "/");
-            assertTrue(meta("meta[name='description']").startsWith("KINETIC sells"), meta("meta[name='description']"));
-        } finally {
-            driver.get(baseUrl + "/lang/vi?back=/");
         }
     }
 

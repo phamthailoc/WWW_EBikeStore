@@ -497,35 +497,6 @@ class TestRideSeleniumTest extends StorefrontSeleniumTest {
             assertTrue(fillerBookingId > 0, "the cancelled booking is in the schedule");
             assertEquals(400, status(manager, "PATCH", "/api/v1/manager/test-rides/" + fillerBookingId, Map.of("status", "CONFIRMED")));
         }
-
-        // 11. the pages speak English when the device says so
-        logIn(username, PASSWORD);
-        try {
-            driver.get(baseUrl + "/lang/en?back=" + "/product/" + rideSlug());
-            assertEquals("Book a test ride", wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("bookTestRide"))).getText().trim());
-            driver.get(baseUrl + "/customer/test-rides");
-            WebElement englishRow = rowWith("Please bring your ID");
-            // the customer cancelled it themselves, so the status column says who cancelled
-            assertEquals("You cancelled", englishRow.findElement(By.cssSelector("td[data-field='status']")).getText());
-            assertTrue(driver.findElement(By.tagName("h1")).getText().contains("Test rides"), driver.findElement(By.tagName("h1")).getText());
-            openBookingDialog();
-            assertTrue(driver.findElement(DIALOG).getText().contains("Book a test ride"), driver.findElement(DIALOG).getText());
-        } finally {
-            resetLanguage();
-        }
-    }
-
-    /** Puts the customer's saved language back to Vietnamese, through the browser and, if the browser is gone, through the REST client. */
-    private void resetLanguage() {
-        try {
-            driver.get(baseUrl + "/lang/vi?back=/");
-        } catch (RuntimeException browserFailed) {
-            try {
-                call(api, "GET", "/lang/vi?back=/", null);
-            } catch (Exception ignored) {
-                // the redirect target is not JSON; the request itself already saved the language
-            }
-        }
     }
 
     /** A bookable slot of the day, other than {@code except}, with every place free (or null). */

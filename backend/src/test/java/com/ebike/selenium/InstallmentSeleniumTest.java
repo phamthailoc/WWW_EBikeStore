@@ -340,11 +340,7 @@ class InstallmentSeleniumTest extends StorefrontSeleniumTest {
             assertEquals("CONFIRMED", call(api, "GET", "/api/v1/orders/" + orderId, null).path("status").asText());
             assertFalse(applicationOf(api, orderId).path("canPay").asBoolean(), "nothing left to pay once the down payment is in");
 
-            // the pages speak English
-            driver.get(baseUrl + "/lang/en?back=/customer/orders/" + orderId);
-            wait.until(d -> d.findElement(By.id("installmentPanel")).getText().contains("Instalments (simulation)"));
         } finally {
-            driver.get(baseUrl + "/lang/vi?back=/");
             cancelQuietly(orderId);
             refundQuietly(manager, orderNumber);
         }
@@ -532,16 +528,4 @@ class InstallmentSeleniumTest extends StorefrontSeleniumTest {
         assertNotEquals("", driver.findElement(By.id("placeOrder")).getText());
     }
 
-    @Test
-    void theManagerQueueSpeaksEnglish() throws Exception {
-        managerApi();
-        logIn(System.getProperty("selenium.managerUser"), System.getProperty("selenium.managerPassword"));
-        try {
-            driver.get(baseUrl + "/lang/en?back=/manager/installments");
-            wait.until(d -> d.findElement(By.cssSelector("h1")).getText().contains("Instalment applications"));
-            wait.until(d -> d.findElement(By.id("empty")).isDisplayed() || !d.findElements(By.cssSelector("#data-table tbody tr")).isEmpty());
-        } finally {
-            driver.get(baseUrl + "/lang/vi?back=/");
-        }
-    }
 }

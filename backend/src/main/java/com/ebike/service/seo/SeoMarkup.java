@@ -31,10 +31,10 @@ public class SeoMarkup {
     private static final ObjectMapper JSON = new ObjectMapper();
 
     /**
-     * Paths crawlers are asked to stay out of: the API and the language switch, which are not pages. The private HTML pages
+     * Paths crawlers are asked to stay out of: the API, which is not a page. The private HTML pages
      * (login, cart, staff areas) stay crawlable on purpose: they carry a noindex tag, which a crawler only sees if it may fetch them.
      */
-    static final List<String> PRIVATE_PATHS = List.of("/api/", "/lang/");
+    static final List<String> PRIVATE_PATHS = List.of("/api/");
     /** Public pages that are not products. */
     static final List<String> STATIC_PATHS = List.of("/products", "/support", "/warranty");
 
@@ -295,7 +295,7 @@ public class SeoMarkup {
         return xml.append("</urlset>\n").toString();
     }
 
-    /** {@code robots.txt}: open to crawlers except the API and the language switch (private pages stay open so their noindex is seen); points at the sitemap. */
+    /** {@code robots.txt}: open to crawlers except the API (private pages stay open so their noindex is seen); points at the sitemap. */
     public String robotsTxt() {
         StringBuilder text = new StringBuilder("User-agent: *\nAllow: /\n");
         // the reviews and colours of a product page are read from here by the page itself: a crawler that renders the page must be able to load them
