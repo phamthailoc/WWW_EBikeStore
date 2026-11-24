@@ -18,7 +18,7 @@ import org.thymeleaf.spring6.SpringTemplateEngine;
 import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
 import org.thymeleaf.web.servlet.JakartaServletWebApplication;
 
-/** V19: the storefront templates render in both languages, and English never leaves the Vietnamese copy behind. */
+/** The storefront templates render in Vietnamese. */
 class I18nTemplateTest {
     private final SpringTemplateEngine engine = new SpringTemplateEngine();
 
@@ -46,16 +46,6 @@ class I18nTemplateTest {
         model.forEach(context::setVariable);
         return engine.process("store/" + template, context);
     }
-
-    @Test void loginIsEnglishWhenAsked() {
-        String page = render("login", Locale.ENGLISH, Map.of());
-        assertTrue(page.contains("lang=\"en\""), "html lang follows the locale");
-        assertTrue(page.contains("Sign in."), page);
-        assertTrue(page.contains("Email or username"));
-        assertFalse(page.contains("Tiếp tục hành trình"), "no Vietnamese sentence is left in the English login page");
-        assertTrue(page.contains("\"js.login.failed\":\"Incorrect username or password.\""), "scripts get their strings");
-    }
-
     @Test void loginStaysVietnameseByDefault() {
         String page = render("login", Locale.forLanguageTag("vi"), Map.of());
         assertTrue(page.contains("lang=\"vi\""));
@@ -63,20 +53,4 @@ class I18nTemplateTest {
         assertFalse(page.contains("Continue your journey"));
     }
 
-    @Test void signupAndSupportShellRenderInEnglish() {
-        String signup = render("signup", Locale.ENGLISH, Map.of());
-        assertTrue(signup.contains("Create your account."));
-        assertTrue(signup.contains("Already have an account?"));
-        String flow = render("flow", Locale.ENGLISH, Map.of("title", "Customer support", "api", "", "flow", "support",
-            "vnpayEnabled", false, "emailOtpRequired", false));
-        assertTrue(flow.contains("CUSTOMER SERVICE"), flow);
-        assertFalse(flow.contains("DỊCH VỤ KHÁCH HÀNG"));
-    }
-
-    @Test void catalogueAndHomeRenderInEnglish() {
-        String home = render("home", Locale.ENGLISH, Map.of("featured", List.of(), "catalogProducts", List.of(), "products", List.of(), "query", ""));
-        assertTrue(home.contains("Explore featured bikes"), home);
-        assertTrue(home.contains("Subscribe"));
-        assertFalse(home.contains("Khám phá xe nổi bật"));
-    }
 }

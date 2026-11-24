@@ -4,23 +4,20 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
 
-/** V20: a milestone such as P1M15D is read out with the right singular and plural in English. */
+/** V20: a milestone such as P1M15D is read out in months and days. */
 class MaintenanceMilestonesTest {
 
     @Test
-    void singleUnitsUseSingularAndPlural() {
-        assertEquals("1 month", MaintenanceMilestones.describe("P1M", "en"));
-        assertEquals("6 months", MaintenanceMilestones.describe("P6M", "en"));
-        assertEquals("1 day", MaintenanceMilestones.describe("P1D", "en"));
-        assertEquals("15 days", MaintenanceMilestones.describe("P15D", "en"));
-        assertEquals("6 tháng", MaintenanceMilestones.describe("P6M", "vi"));
+    void singleUnits() {
+        assertEquals("1 tháng", MaintenanceMilestones.describe("P1M"));
+        assertEquals("6 tháng", MaintenanceMilestones.describe("P6M"));
+        assertEquals("1 ngày", MaintenanceMilestones.describe("P1D"));
+        assertEquals("15 ngày", MaintenanceMilestones.describe("P15D"));
     }
 
     @Test
-    void mixedPeriodsAgreeEachPart() {
-        assertEquals("1 month 15 days", MaintenanceMilestones.describe("P1M15D", "en"));
-        assertEquals("2 months 1 day", MaintenanceMilestones.describe("P2M1D", "en"));
-        assertEquals("1 month 1 day", MaintenanceMilestones.describe("P1M1D", "en"));
-        assertEquals("1 tháng 15 ngày", MaintenanceMilestones.describe("P1M15D", "vi"));
+    void mixedPeriodsNameBothParts() {
+        assertEquals("1 tháng 15 ngày", MaintenanceMilestones.describe("P1M15D"));
+        assertEquals("2 tháng 1 ngày", MaintenanceMilestones.describe("P2M1D"));
     }
 }

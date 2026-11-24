@@ -86,14 +86,13 @@ class StockAlertDeliveryTest {
         return (StockAlertTriggeredEvent) captor.getValue();
     }
 
-    private final java.util.Map<Long, String> languages = new java.util.HashMap<>();
 
     /** The locked rows, and the join that gives their owners' account state and language. */
     private void waiting(StockAlert... rows) {
         when(alerts.lockWaitingByVariantId(11L)).thenReturn(List.of(rows));
         lenient().when(alerts.findRecipients(any())).thenReturn(java.util.Arrays.stream(rows)
             .map(row -> new StockAlertRecipient(row.getId(), row.getUser().getId(), row.getUser().getAccountStatus(),
-                row.getUser().getActive(), languages.get(row.getUser().getId())))
+                row.getUser().getActive()))
             .toList());
     }
 
@@ -104,7 +103,6 @@ class StockAlertDeliveryTest {
         StockAlertTriggeredEvent event = publishedEvent();
         assertEquals(7L, event.userId());
         assertEquals("kinetic-x", event.productSlug());
-        assertEquals("vi", event.language(), "no saved preference means Vietnamese");
         verify(alerts).markNotified(eq(Set.of(1L)), any(LocalDateTime.class));
         verify(alerts, never()).deleteByIds(any());
     }
@@ -121,13 +119,6 @@ class StockAlertDeliveryTest {
         when(alerts.lockWaitingByVariantId(11L)).thenReturn(List.of());
         delivery.deliver(variant);
         verify(cacheManager, never()).getCache(any());
-    }
-
-    @Test void restockUsesTheLanguageSavedInTheProfile() {
-        languages.put(7L, "en");
-        waiting(waitingRow(1L, user));
-        delivery.deliver(variant);
-        assertEquals("en", publishedEvent().language());
     }
 
     @Test void accountsAndLanguagesAreReadOncePerColourAndRowsMarkedWithOneStatement() {

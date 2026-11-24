@@ -135,7 +135,7 @@ class OrderDocumentsDatabaseTest {
 
         LocalDateTime now = LocalDateTime.now();
         var store = DocumentFixtures.store();
-        assertTrue(DocumentModels.receipt(order, null, store, "vi", now).containsKey("customer"));
-        assertTrue(DocumentModels.warrantyCards(order, units, store, WarrantyRules.parseIntervals(WarrantyRules.DEFAULT_INTERVALS), "vi", now).containsKey("cards"));
+        assertTrue(DocumentModels.receipt(order, null, store, now).containsKey("customer"));
+        assertTrue(DocumentModels.warrantyCards(order, units, store, WarrantyRules.parseIntervals(WarrantyRules.DEFAULT_INTERVALS), now).containsKey("cards"));
     }
 }

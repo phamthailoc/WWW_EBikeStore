@@ -58,7 +58,7 @@ class ReportWorkbookTest {
 
     @Test
     void theRevenueWorkbookHasFourSheetsWithTheFiguresOfThePage() throws IOException {
-        try (Workbook workbook = open(ReportWorkbook.revenueReport(report(12, 3), "vi", NOW))) {
+        try (Workbook workbook = open(ReportWorkbook.revenueReport(report(12, 3), NOW))) {
             assertEquals(4, workbook.getNumberOfSheets());
             assertEquals("Tổng quan", workbook.getSheetName(0));
             assertEquals("Doanh thu theo kỳ", workbook.getSheetName(1));
@@ -81,18 +81,8 @@ class ReportWorkbookTest {
     }
 
     @Test
-    void theEnglishWorkbookUsesEnglishWords() throws IOException {
-        try (Workbook workbook = open(ReportWorkbook.revenueReport(report(12, 3), "en-US", NOW))) {
-            assertEquals("Summary", workbook.getSheetName(0));
-            assertEquals("Best sellers", workbook.getSheetName(2));
-            assertEquals("Month", text(workbook.getSheetAt(0), 2, 1));
-            assertEquals("Period", text(workbook.getSheetAt(1), 0, 0));
-        }
-    }
-
-    @Test
     void aProductNameThatLooksLikeAFormulaStaysPlainText() throws IOException {
-        try (Workbook workbook = open(ReportWorkbook.revenueReport(report(12, 3), "vi", NOW))) {
+        try (Workbook workbook = open(ReportWorkbook.revenueReport(report(12, 3), NOW))) {
             Cell cell = workbook.getSheetAt(2).getRow(2).getCell(1);
             assertEquals(CellType.STRING, cell.getCellType());
             assertTrue(cell.getStringCellValue().startsWith("="));
@@ -101,7 +91,7 @@ class ReportWorkbookTest {
 
     @Test
     void moneyIsANumberSoTheManagerCanAddItUp() throws IOException {
-        try (Workbook workbook = open(ReportWorkbook.revenueReport(report(12, 3), "vi", NOW))) {
+        try (Workbook workbook = open(ReportWorkbook.revenueReport(report(12, 3), NOW))) {
             Cell revenue = workbook.getSheetAt(1).getRow(1).getCell(2);
             assertEquals(CellType.NUMERIC, revenue.getCellType());
             assertEquals("#,##0", revenue.getCellStyle().getDataFormatString());
@@ -111,7 +101,7 @@ class ReportWorkbookTest {
     @Test
     void anEmptyPeriodStillGivesAReadableFile() throws IOException {
         ManagerRevenueReportResponse empty = new ManagerRevenueReportResponse("DAY", "2026-11-24", "2026-11-24", 0, 0, BigDecimal.ZERO, List.of(), List.of(), List.of());
-        try (Workbook workbook = open(ReportWorkbook.revenueReport(new RevenueReportExportData(empty, 0, 0), "vi", NOW))) {
+        try (Workbook workbook = open(ReportWorkbook.revenueReport(new RevenueReportExportData(empty, 0, 0), NOW))) {
             Sheet summary = workbook.getSheetAt(0);
             assertEquals(0d, number(summary, 11, 1), 0d);
             assertEquals("Chưa có dữ liệu trong kỳ này.", text(workbook.getSheetAt(1), 1, 0));
@@ -132,7 +122,7 @@ class ReportWorkbookTest {
             5L, "Đỏ", true, List.of(new OrderItemUnitResponse(1L, "RLH123456789", "E1"), new OrderItemUnitResponse(2L, "RLH123456790", "E2")));
         return new OrderResponse(1L, userId, number, status, new BigDecimal("60000000"), new BigDecimal("500000"), new BigDecimal("1000000"),
             new BigDecimal("300000"), true, new BigDecimal("59800000"), "VNPAY", "PAID", notes, "khach@example.com", "CANCELLED".equals(status) ? "Đổi ý" : null,
-            null, null, null, null, null, LocalDateTime.of(2026, 11, 20, 14, 5), NOW, null, List.of(item), shipment, "vi");
+            null, null, null, null, null, LocalDateTime.of(2026, 11, 20, 14, 5), NOW, null, List.of(item), shipment);
     }
 
     private static ShipmentResponse home() {
@@ -147,7 +137,7 @@ class ReportWorkbookTest {
     @Test
     void theOrderSheetHasOneRowPerOrderWithReadableNames() throws IOException {
         List<OrderResponse> orders = List.of(order("ORD-1", 7L, "DELIVERED", home(), null), order("ORD-2", null, "CANCELLED", pickup(), "gọi trước"));
-        try (Workbook workbook = open(ReportWorkbook.orders(orders, new ReportWorkbook.OrderFilters("ORD", "DELIVERED", null, null), "vi", NOW))) {
+        try (Workbook workbook = open(ReportWorkbook.orders(orders, new ReportWorkbook.OrderFilters("ORD", "DELIVERED", null, null), NOW))) {
             Sheet sheet = workbook.getSheetAt(0);
             assertEquals("Đơn hàng", sheet.getSheetName());
             assertEquals(3, sheet.getPhysicalNumberOfRows());
@@ -175,22 +165,8 @@ class ReportWorkbookTest {
     }
 
     @Test
-    void theFiltersSheetRecordsWhatWasAsked() throws IOException {
-        try (Workbook workbook = open(ReportWorkbook.orders(List.of(order("ORD-1", 7L, "DELIVERED", home(), null)),
-            new ReportWorkbook.OrderFilters("ORD", "delivered", "PAID", 3L), "en", NOW))) {
-            Sheet info = workbook.getSheetAt(1);
-            assertEquals("Filters", info.getSheetName());
-            assertEquals("ORD", text(info, 1, 1));
-            assertEquals("Delivered", text(info, 2, 1));
-            assertEquals("Paid", text(info, 3, 1));
-            assertEquals("3", text(info, 4, 1));
-            assertEquals("1", text(info, 5, 1));
-        }
-    }
-
-    @Test
     void noFilterReadsAsAll() throws IOException {
-        try (Workbook workbook = open(ReportWorkbook.orders(List.of(), null, "vi", NOW))) {
+        try (Workbook workbook = open(ReportWorkbook.orders(List.of(), null, NOW))) {
             Sheet info = workbook.getSheetAt(1);
             assertEquals("Tất cả", text(info, 1, 1));
             assertEquals("Tất cả", text(info, 2, 1));
@@ -199,19 +175,10 @@ class ReportWorkbookTest {
     }
 
     @Test
-    void anEmptyListGivesTheHeaderAndAMessage() throws IOException {
-        try (Workbook workbook = open(ReportWorkbook.orders(List.of(), null, "en", NOW))) {
-            Sheet sheet = workbook.getSheetAt(0);
-            assertEquals("Order number", text(sheet, 0, 0));
-            assertEquals("No order matches these filters.", text(sheet, 1, 0));
-        }
-    }
-
-    @Test
     void anOrderWithoutShipmentOrItemsDoesNotBreakTheFile() throws IOException {
         OrderResponse bare = new OrderResponse(9L, null, "ORD-9", "PENDING", null, null, null, null, null, null, null, null, null, null, null,
-            null, null, null, null, null, null, null, null, null, null, null);
-        try (Workbook workbook = open(ReportWorkbook.orders(List.of(bare), null, "vi", NOW))) {
+            null, null, null, null, null, null, null, null, null, null);
+        try (Workbook workbook = open(ReportWorkbook.orders(List.of(bare), null, NOW))) {
             Sheet sheet = workbook.getSheetAt(0);
             assertEquals("ORD-9", text(sheet, 1, 0));
             assertEquals("Chờ xử lý", text(sheet, 1, 2));
@@ -224,7 +191,7 @@ class ReportWorkbookTest {
     @Test
     void aNoteThatLooksLikeAFormulaIsStoredAsTextAndAHugeNoteIsCut() throws IOException {
         String huge = "=" + "x".repeat(40_000);
-        try (Workbook workbook = open(ReportWorkbook.orders(List.of(order("ORD-1", 7L, "DELIVERED", home(), huge)), null, "vi", NOW))) {
+        try (Workbook workbook = open(ReportWorkbook.orders(List.of(order("ORD-1", 7L, "DELIVERED", home(), huge)), null, NOW))) {
             Cell cell = workbook.getSheetAt(0).getRow(1).getCell(19);
             assertEquals(CellType.STRING, cell.getCellType());
             assertTrue(cell.getStringCellValue().startsWith("="));
@@ -235,16 +202,48 @@ class ReportWorkbookTest {
     @Test
     void sheetNamesFitExcelsLimitInBothLanguages() throws IOException {
         for (String language : List.of("vi", "en")) {
-            try (Workbook workbook = open(ReportWorkbook.revenueReport(report(1, 0), language, NOW))) {
+            try (Workbook workbook = open(ReportWorkbook.revenueReport(report(1, 0), NOW))) {
                 for (int i = 0; i < workbook.getNumberOfSheets(); i++) {
                     assertTrue(workbook.getSheetName(i).length() <= 31);
                 }
             }
-            try (Workbook workbook = open(ReportWorkbook.orders(List.of(), null, language, NOW))) {
+            try (Workbook workbook = open(ReportWorkbook.orders(List.of(), null, NOW))) {
                 for (int i = 0; i < workbook.getNumberOfSheets(); i++) {
                     assertFalse(workbook.getSheetName(i).isBlank());
                 }
             }
+        }
+    }
+
+    @Test
+    void theRevenueWorkbookUsesVietnameseWords() throws IOException {
+        try (Workbook workbook = open(ReportWorkbook.revenueReport(report(12, 3), NOW))) {
+            assertEquals("Tổng quan", workbook.getSheetName(0));
+            assertEquals("Xe bán chạy", workbook.getSheetName(2));
+            assertEquals("Kỳ", text(workbook.getSheetAt(1), 0, 0));
+        }
+    }
+
+    @Test
+    void theFiltersSheetRecordsWhatWasAsked() throws IOException {
+        try (Workbook workbook = open(ReportWorkbook.orders(List.of(order("ORD-1", 7L, "DELIVERED", home(), null)),
+            new ReportWorkbook.OrderFilters("ORD", "delivered", "PAID", 3L), NOW))) {
+            Sheet info = workbook.getSheetAt(1);
+            assertEquals("Bộ lọc", info.getSheetName());
+            assertEquals("ORD", text(info, 1, 1));
+            assertEquals("Đã giao", text(info, 2, 1));
+            assertEquals("Đã thanh toán", text(info, 3, 1));
+            assertEquals("3", text(info, 4, 1));
+            assertEquals("1", text(info, 5, 1));
+        }
+    }
+
+    @Test
+    void anEmptyListGivesTheHeaderAndAMessage() throws IOException {
+        try (Workbook workbook = open(ReportWorkbook.orders(List.of(), null, NOW))) {
+            Sheet sheet = workbook.getSheetAt(0);
+            assertEquals("Mã đơn", text(sheet, 0, 0));
+            assertEquals("Không có đơn hàng nào khớp với bộ lọc này.", text(sheet, 1, 0));
         }
     }
 }

@@ -13,7 +13,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import com.ebike.common.constants.PermissionConstants;
 import com.ebike.common.exception.ApiExceptionHandler;
 import com.ebike.config.SecurityConfiguration;
-import com.ebike.config.UserLocaleResolver;
 import com.ebike.dto.testride.TestRideResponse;
 import com.ebike.repository.auth.UserRepository;
 import com.ebike.repository.user.UserPreferenceRepository;
@@ -98,11 +97,6 @@ class TestRideSecurityTest {
         @Bean
         UserPreferenceRepository preferences() {
             return mock(UserPreferenceRepository.class);
-        }
-
-        @Bean
-        UserLocaleResolver localeResolver(UserRepository users, UserPreferenceRepository preferences) {
-            return new UserLocaleResolver(users, preferences);
         }
 
         @Bean
@@ -200,22 +194,4 @@ class TestRideSecurityTest {
         assertTrue(result.getResponse().getHeader("Cache-Control").contains("no-store"));
     }
 
-    @Test void theBodiesOfTheRefusalsFollowTheDeviceLanguage() throws Exception {
-        String vi = mvc.perform(get("/api/v1/test-rides")).andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
-        assertTrue(vi.contains("Bạn cần đăng nhập."), vi);
-        String en = mvc.perform(get("/api/v1/test-rides").cookie(new Cookie("ebike_lang", "en"))).andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
-        assertTrue(en.contains("Please sign in."), en);
-        String forbidden = mvc.perform(as(get("/api/v1/test-rides"), STAFF_ROLE, PROFILE).cookie(new Cookie("ebike_lang", "en"))).andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
-        assertTrue(forbidden.contains("You do not have permission"), forbidden);
-        assertFalse(forbidden.contains("Bạn không có quyền"));
-    }
-
-    @Test void anUnreadableBodyOrABadIdAnswers400InTheRequestLanguage() throws Exception {
-        MvcResult broken = mvc.perform(as(post("/api/v1/test-rides"), CUSTOMER_ROLE, PROFILE).contentType(MediaType.APPLICATION_JSON).content("{not json")).andReturn();
-        assertEquals(400, broken.getResponse().getStatus());
-        assertTrue(broken.getResponse().getContentAsString(StandardCharsets.UTF_8).contains("không hợp lệ"));
-        MvcResult badId = mvc.perform(as(patch("/api/v1/test-rides/abc/cancel"), CUSTOMER_ROLE, PROFILE).cookie(new Cookie("ebike_lang", "en"))).andReturn();
-        assertEquals(400, badId.getResponse().getStatus());
-        assertTrue(badId.getResponse().getContentAsString(StandardCharsets.UTF_8).contains("is not valid"));
-    }
 }

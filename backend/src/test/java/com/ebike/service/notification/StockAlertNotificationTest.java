@@ -34,29 +34,15 @@ class StockAlertNotificationTest {
     }
 
     private Notification saved(String language) {
-        service.handleStockAlertTriggered(new StockAlertTriggeredEvent(7L, "Kinetic X", "White", "kinetic-x", language));
+        service.handleStockAlertTriggered(new StockAlertTriggeredEvent(7L, "Kinetic X", "White", "kinetic-x"));
         ArgumentCaptor<Notification> captor = ArgumentCaptor.forClass(Notification.class);
         verify(notifications).save(captor.capture());
         return captor.getValue();
     }
 
-    @Test void englishCustomerGetsEnglishTextAndTheBikeLink() {
-        Notification notification = saved("en");
-        assertEquals("/product/kinetic-x", notification.getTargetUrl());
-        assertEquals("Back in stock", notification.getTitle());
-        assertTrue(notification.getMessage().contains("Kinetic X"));
-    }
-
-    @Test void customerWhoSwitchedNotificationsOffStillGetsTheAlertTheyAskedFor() {
-        com.ebike.model.entity.user.UserPreference off = new com.ebike.model.entity.user.UserPreference();
-        off.setNotificationsEnabled(false);
-        when(preferences.findByUserId(7L)).thenReturn(Optional.of(off));
-        assertEquals("Back in stock", saved("en").getTitle());
-    }
-
     @Test void aSlugIsEncodedAndAMissingSlugGivesNoLink() {
-        service.handleStockAlertTriggered(new StockAlertTriggeredEvent(7L, "Kinetic X", "White", "xe điện/1", "en"));
-        service.handleStockAlertTriggered(new StockAlertTriggeredEvent(7L, "Kinetic X", "White", null, "en"));
+        service.handleStockAlertTriggered(new StockAlertTriggeredEvent(7L, "Kinetic X", "White", "xe điện/1"));
+        service.handleStockAlertTriggered(new StockAlertTriggeredEvent(7L, "Kinetic X", "White", null));
         ArgumentCaptor<Notification> captor = ArgumentCaptor.forClass(Notification.class);
         verify(notifications, org.mockito.Mockito.times(2)).save(captor.capture());
         assertEquals("/product/xe%20%C4%91i%E1%BB%87n%2F1", captor.getAllValues().get(0).getTargetUrl());
@@ -67,5 +53,18 @@ class StockAlertNotificationTest {
         Notification notification = saved("vi");
         assertEquals("Xe đã có hàng lại", notification.getTitle());
         assertEquals("/product/kinetic-x", notification.getTargetUrl());
+    }
+
+    @Test void customerWhoSwitchedNotificationsOffStillGetsTheAlertTheyAskedFor() {
+        com.ebike.model.entity.user.UserPreference off = new com.ebike.model.entity.user.UserPreference();
+        off.setNotificationsEnabled(false);
+        when(preferences.findByUserId(7L)).thenReturn(Optional.of(off));
+        assertEquals("Xe đã có hàng lại", saved("vi").getTitle());
+    }
+
+    @Test void theMessageNamesTheBikeAndTheColour() {
+        Notification notification = saved("vi");
+        assertTrue(notification.getMessage().contains("Kinetic X"), notification.getMessage());
+        assertTrue(notification.getMessage().contains("màu White"), notification.getMessage());
     }
 }

@@ -9,38 +9,20 @@ import org.junit.jupiter.api.Test;
 class WarrantyMessagesTest {
 
     @Test
-    void anythingButEnglishIsVietnamese() {
-        assertEquals("en", WarrantyMessages.normalize("en"));
-        assertEquals("en", WarrantyMessages.normalize(" EN-us "));
-        assertEquals("vi", WarrantyMessages.normalize("vi"));
-        assertEquals("vi", WarrantyMessages.normalize(null));
-        assertEquals("vi", WarrantyMessages.normalize("fr"));
+    void claimNoticeIsInVietnamese() {
+        assertEquals("Cập nhật yêu cầu bảo hành", WarrantyMessages.claimTitle());
+        assertEquals("Yêu cầu bảo hành xe Bike (số khung F1) đã được cửa hàng tiếp nhận.", WarrantyMessages.claimBody("Bike", "F1", "RECEIVED"));
+        assertTrue(WarrantyMessages.claimBody("Bike", "F1", "REJECTED").contains("không được chấp nhận"));
+        assertTrue(WarrantyMessages.claimBody("Bike", "F1", WarrantyMessages.NOTE_UPDATED).contains("ghi chú mới từ cửa hàng"));
     }
 
     @Test
-    void claimNoticeFollowsTheProfileLanguage() {
-        assertEquals("Warranty request update", WarrantyMessages.claimTitle("en"));
-        assertEquals("Cập nhật yêu cầu bảo hành", WarrantyMessages.claimTitle("vi"));
-        assertEquals("Your warranty request for Bike (frame number F1) was received by the store.",
-            WarrantyMessages.claimBody("en", "Bike", "F1", "RECEIVED"));
-        assertEquals("Yêu cầu bảo hành xe Bike (số khung F1) đã được cửa hàng tiếp nhận.",
-            WarrantyMessages.claimBody("vi", "Bike", "F1", "RECEIVED"));
-        assertTrue(WarrantyMessages.claimBody("en", "Bike", "F1", "REJECTED").contains("not accepted"));
-        assertTrue(WarrantyMessages.claimBody("en", "Bike", "F1", WarrantyMessages.NOTE_UPDATED).contains("new note from the store"));
-        assertTrue(WarrantyMessages.claimBody("vi", "Bike", "F1", WarrantyMessages.NOTE_UPDATED).contains("ghi chú mới từ cửa hàng"));
-    }
-
-    @Test
-    void maintenanceNoticeAndEmailFollowTheProfileLanguage() {
-        assertEquals("Service due", WarrantyMessages.maintenanceTitle("en"));
-        assertTrue(WarrantyMessages.maintenanceBody("en", "Bike", "F1", "P6M").contains("6 months after delivery"));
-        assertTrue(WarrantyMessages.maintenanceBody("vi", "Bike", "F1", "P6M").contains("6 tháng kể từ ngày giao"));
-        assertTrue(WarrantyMessages.maintenanceBody("en", "Bike", "F1", "P1M").contains("1 month after"));
-        assertEquals("Kinetic E-Bike: your Bike is due for service", WarrantyMessages.maintenanceEmailSubject("en", "Bike"));
-        assertEquals("Kinetic E-Bike: xe Bike đến hạn bảo dưỡng", WarrantyMessages.maintenanceEmailSubject("vi", "Bike"));
-        assertTrue(WarrantyMessages.maintenanceEmailBody("en", "Bike", "F1", "P12M", null).contains("12 months after delivery"));
-        assertTrue(WarrantyMessages.maintenanceEmailBody("vi", "Bike", "F1", "P12M", null).contains("12 tháng kể từ ngày giao"));
-        assertTrue(WarrantyMessages.maintenanceEmailBody("en", "Bike", "F1", "P12M", "https://shop.test/customer/warranty").contains("https://shop.test/customer/warranty"));
+    void maintenanceNoticeAndEmail() {
+        assertEquals("Đến hạn bảo dưỡng", WarrantyMessages.maintenanceTitle());
+        assertTrue(WarrantyMessages.maintenanceBody("Bike", "F1", "P6M").contains("6 tháng kể từ ngày giao"));
+        assertEquals("Kinetic E-Bike: xe Bike đến hạn bảo dưỡng", WarrantyMessages.maintenanceEmailSubject("Bike"));
+        assertTrue(WarrantyMessages.maintenanceEmailBody("Bike", "F1", "P12M", null).contains("12 tháng kể từ ngày giao"));
+        assertTrue(WarrantyMessages.maintenanceEmailBody("Bike", "F1", "P12M", "https://shop.test/customer/warranty").contains("https://shop.test/customer/warranty"));
         assertEquals("https://shop.test/customer/warranty", WarrantyMessages.warrantyUrl("https://shop.test/"));
         assertEquals(null, WarrantyMessages.warrantyUrl(" "));
     }

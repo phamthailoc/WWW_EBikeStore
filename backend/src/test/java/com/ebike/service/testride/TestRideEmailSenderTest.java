@@ -34,38 +34,38 @@ class TestRideEmailSenderTest {
 
     @Test
     void nothingIsSentWhenMailIsOffOrThereIsNoHostOrNoAddress() {
-        sender("smtp.example.com", false).send("an@example.com", TestRideMessages.CONFIRMED, "Bike", "Quan 1", "addr", SLOT, null, "vi");
-        sender("", true).send("an@example.com", TestRideMessages.CONFIRMED, "Bike", "Quan 1", "addr", SLOT, null, "vi");
-        sender(null, true).send("an@example.com", TestRideMessages.CONFIRMED, "Bike", "Quan 1", "addr", SLOT, null, "vi");
-        sender("smtp.example.com", true).send(" ", TestRideMessages.CONFIRMED, "Bike", "Quan 1", "addr", SLOT, null, "vi");
-        sender("smtp.example.com", true).send(null, TestRideMessages.CONFIRMED, "Bike", "Quan 1", "addr", SLOT, null, "vi");
+        sender("smtp.example.com", false).send("an@example.com", TestRideMessages.CONFIRMED, "Bike", "Quan 1", "addr", SLOT, null);
+        sender("", true).send("an@example.com", TestRideMessages.CONFIRMED, "Bike", "Quan 1", "addr", SLOT, null);
+        sender(null, true).send("an@example.com", TestRideMessages.CONFIRMED, "Bike", "Quan 1", "addr", SLOT, null);
+        sender("smtp.example.com", true).send(" ", TestRideMessages.CONFIRMED, "Bike", "Quan 1", "addr", SLOT, null);
+        sender("smtp.example.com", true).send(null, TestRideMessages.CONFIRMED, "Bike", "Quan 1", "addr", SLOT, null);
         verify(mail, never()).send(any(SimpleMailMessage.class));
     }
 
     @Test
     void kindsThatAreOnlyInAppAreNotEmailed() {
-        sender("smtp.example.com", true).send("an@example.com", TestRideMessages.NO_SHOW, "Bike", "Quan 1", "addr", SLOT, null, "vi");
-        sender("smtp.example.com", true).send("an@example.com", TestRideMessages.EXPIRED, "Bike", "Quan 1", "addr", SLOT, null, "vi");
+        sender("smtp.example.com", true).send("an@example.com", TestRideMessages.NO_SHOW, "Bike", "Quan 1", "addr", SLOT, null);
+        sender("smtp.example.com", true).send("an@example.com", TestRideMessages.EXPIRED, "Bike", "Quan 1", "addr", SLOT, null);
         verify(mail, never()).send(any(SimpleMailMessage.class));
-    }
-
-    @Test
-    void theEmailIsInTheCustomersLanguageWithTheShowroomAndTheLink() {
-        sender("smtp.example.com", true).send("an@example.com", TestRideMessages.CONFIRMED, "Kinetic X", "Quan 1", "187 Nguyen Thai Hoc", SLOT, null, "en");
-        ArgumentCaptor<SimpleMailMessage> captor = ArgumentCaptor.forClass(SimpleMailMessage.class);
-        verify(mail).send(captor.capture());
-        SimpleMailMessage message = captor.getValue();
-        assertEquals("shop@example.com", message.getFrom());
-        assertArrayEquals(new String[] {"an@example.com"}, message.getTo());
-        assertTrue(message.getSubject().contains("is confirmed"), message.getSubject());
-        assertTrue(message.getText().contains("Quan 1, 187 Nguyen Thai Hoc"), message.getText());
-        assertTrue(message.getText().contains("https://shop.example/customer/test-rides"), message.getText());
     }
 
     @Test
     void aSendFailureIsSwallowed() {
         doThrow(new MailSendException("smtp down")).when(mail).send(any(SimpleMailMessage.class));
-        sender("smtp.example.com", true).send("an@example.com", TestRideMessages.REMINDER, "Kinetic X", "Quan 1", null, SLOT, null, "vi");
+        sender("smtp.example.com", true).send("an@example.com", TestRideMessages.REMINDER, "Kinetic X", "Quan 1", null, SLOT, null);
         verify(mail).send(any(SimpleMailMessage.class));
+    }
+
+    @Test
+    void theEmailHasTheShowroomAndTheLink() {
+        sender("smtp.example.com", true).send("an@example.com", TestRideMessages.CONFIRMED, "Kinetic X", "Quan 1", "187 Nguyen Thai Hoc", SLOT, null);
+        ArgumentCaptor<SimpleMailMessage> captor = ArgumentCaptor.forClass(SimpleMailMessage.class);
+        verify(mail).send(captor.capture());
+        SimpleMailMessage message = captor.getValue();
+        assertEquals("shop@example.com", message.getFrom());
+        assertArrayEquals(new String[] {"an@example.com"}, message.getTo());
+        assertTrue(message.getSubject().contains("đã xác nhận lịch lái thử"), message.getSubject());
+        assertTrue(message.getText().contains("Quan 1, 187 Nguyen Thai Hoc"), message.getText());
+        assertTrue(message.getText().contains("https://shop.example/customer/test-rides"), message.getText());
     }
 }

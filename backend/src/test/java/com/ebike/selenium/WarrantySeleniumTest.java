@@ -258,35 +258,6 @@ class WarrantySeleniumTest extends StorefrontSeleniumTest {
     }
 
     @Test
-    void serverMessagesFollowTheLanguageOfTheRequest() throws Exception {
-        String english = body("/api/v1/warranty/lookup?frame=ZZZ-NO-SUCH-0002", "en", null);
-        assertTrue(english.contains("No vehicle with this frame number was found."), english);
-        String vietnamese = body("/api/v1/warranty/lookup?frame=ZZZ-NO-SUCH-0002", "vi", null);
-        assertTrue(vietnamese.contains("Không tìm thấy xe có số khung này."), vietnamese);
-        String tooShort = body("/api/v1/warranty/lookup?frame=AB", "en", "vi-VN");
-        assertTrue(tooShort.contains("5 to 30 letters"), tooShort);
-        // like the pages, the browser's Accept-Language is not used: nothing chosen on the device is Vietnamese, and so is a language the shop does not have
-        assertTrue(body("/api/v1/warranty/lookup?frame=AB", null, "en-US,en;q=0.9").contains("5 đến 30 ký tự"));
-        assertTrue(body("/api/v1/warranty/lookup?frame=AB", "fr", null).contains("5 đến 30 ký tự"));
-    }
-
-    @Test
-    void theLookupPageAnswersInEnglishWhenTheLanguageIsEnglish() {
-        // choosing English is saved on the signed-in account, so Vietnamese is chosen again at the end: other tests expect Vietnamese
-        try {
-            driver.get(baseUrl + "/lang/en?back=/warranty");
-            wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("warrantyLookupForm")));
-            fill("frame", "ZZZ-NO-SUCH-0003");
-            click(By.cssSelector("#warrantyLookupForm button[type=submit]"));
-            WebElement error = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("#warrantyLookupResult .notice.error")));
-            assertTrue(error.getText().contains("No vehicle with this frame number was found."), error.getText());
-            assertTrue(driver.findElement(By.id("warrantyLookupForm")).getText().contains("Look up"), "the form is in English too");
-        } finally {
-            driver.get(baseUrl + "/lang/vi?back=/warranty");
-        }
-    }
-
-    @Test
     void erasingTheAccountKeepsTheRepairHistoryButClearsTheCustomersWords() throws Exception {
         HttpClient manager = managerApi();
         Map<Long, Integer> stockBefore = stockOf(productSlug);
@@ -390,18 +361,6 @@ class WarrantySeleniumTest extends StorefrontSeleniumTest {
         order.put("paymentMethod", "PAY_LATER");
         order.put("items", List.of(item));
         return call(client, "POST", "/api/v1/orders", order).path("id").asLong();
-    }
-
-    /** The answer of an API call from a visitor who chose a language on the device (cookie, may be null) and whose browser sends an Accept-Language (may be null). */
-    private static String body(String path, String languageCookie, String acceptLanguage) throws Exception {
-        HttpRequest.Builder builder = HttpRequest.newBuilder(URI.create(baseUrl + path)).header("Accept", "application/json");
-        if (languageCookie != null) {
-            builder.header("Cookie", "ebike_lang=" + languageCookie);
-        }
-        if (acceptLanguage != null) {
-            builder.header("Accept-Language", acceptLanguage);
-        }
-        return newClient().send(builder.GET().build(), HttpResponse.BodyHandlers.ofString()).body();
     }
 
     private static int listSize(JsonNode list) {

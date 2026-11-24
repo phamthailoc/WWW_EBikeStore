@@ -1,6 +1,5 @@
 package com.ebike.service.manager.impl;
 
-import com.ebike.common.i18n.RequestLanguage;
 import com.ebike.model.entity.auth.Role;
 import com.ebike.model.entity.auth.User;
 import com.ebike.repository.auth.UserRepository;
@@ -175,61 +174,47 @@ public class ManagerServiceImpl implements ManagerService {
         // the order row first, then the payment (every cancellation and every gateway result takes them in this order), so a cancellation or the expiry job
         // running at the same moment is seen here instead of being written over
         Long orderId = paymentRepository.findOrderIdById(paymentId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, RequestLanguage.text("Không tìm thấy khoản thanh toán.", "Payment not found")));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy khoản thanh toán."));
         Order lockedOrder = orderRepository.findLockedById(orderId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, RequestLanguage.text("Không tìm thấy đơn hàng.", "Order not found")));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy đơn hàng."));
         Payment payment = paymentRepository.findById(paymentId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, RequestLanguage.text("Không tìm thấy khoản thanh toán.", "Payment not found")));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy khoản thanh toán."));
         if (lockedOrder.getStatus() == OrderStatus.CANCELLED) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, RequestLanguage.text(
-                "Đơn hàng đã bị hủy nên không xác nhận thu tiền được. Hãy tải lại danh sách.",
-                "The order was cancelled, so the payment cannot be confirmed. Please reload the list."));
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Đơn hàng đã bị hủy nên không xác nhận thu tiền được. Hãy tải lại danh sách.");
         }
 
         // V24: the down payment of an instalment order can also be taken at the store, once the application is approved
         boolean installment = payment.getPaymentMethod() == PaymentMethod.INSTALLMENT;
         if (payment.getPaymentMethod() != PaymentMethod.PAY_LATER && !installment) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, RequestLanguage.text(
-                "Chỉ xác nhận thủ công được khoản trả sau hoặc khoản trả trước của đơn trả góp.", "Only pay-later or instalment down payments can be confirmed manually."));
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chỉ xác nhận thủ công được khoản trả sau hoặc khoản trả trước của đơn trả góp.");
         }
         if (installment) {
             InstallmentApplication application = installments.findByOrderId(lockedOrder.getId()).orElse(null);
             if (application == null || !InstallmentApplication.APPROVED.equals(application.getStatus())) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, RequestLanguage.text(
-                    "Hồ sơ trả góp chưa được duyệt nên chưa thu được khoản trả trước.", "The instalment application is not approved yet, so the down payment cannot be taken."));
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Hồ sơ trả góp chưa được duyệt nên chưa thu được khoản trả trước.");
             }
             // past the deadline the order is about to be cancelled by the expiry job: taking the money now would leave it to be refunded
             if (InstallmentRules.downPaymentOverdue(application.getReviewedAt(), downPaymentHold, LocalDateTime.now())) {
-                throw new ResponseStatusException(HttpStatus.CONFLICT, RequestLanguage.text(
-                    "Đã quá hạn thanh toán khoản trả trước nên đơn hàng sắp bị hủy tự động. Không thu thêm.",
-                    "The down payment is overdue, so the order is about to be cancelled automatically. Do not take it now."));
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "Đã quá hạn thanh toán khoản trả trước nên đơn hàng sắp bị hủy tự động. Không thu thêm.");
             }
         }
         if (payment.getPaymentStatus() == PaymentStatus.PAID) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, RequestLanguage.text(
-                "Khoản thanh toán này đã được ghi nhận là đã thu.", "This payment is already marked as paid."));
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Khoản thanh toán này đã được ghi nhận là đã thu.");
         }
         if (payment.getPaymentStatus() == PaymentStatus.REFUNDED) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, RequestLanguage.text(
-                "Khoản thanh toán đã hoàn tiền nên không xác nhận lại được.", "A refunded payment cannot be confirmed again."));
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Khoản thanh toán đã hoàn tiền nên không xác nhận lại được.");
         }
         // while a card payment page may still be open the customer could pay there too, and the store would have taken the money a second time
         if (installment && payment.getPaymentStatus() == PaymentStatus.PENDING
             && VnPayUtil.attemptMayBeOpen(payment.getTransactionReference(), LocalDateTime.now(VnPayUtil.ZONE))) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, RequestLanguage.text(
-                "Khách vừa mở trang thanh toán VNPay cho khoản này. Hãy đợi tối đa 15 phút để biết kết quả rồi mới thu tại cửa hàng.",
-                "The customer opened the VNPay page for this payment a moment ago. Wait up to 15 minutes for its result before taking it at the store."));
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Khách vừa mở trang thanh toán VNPay cho khoản này. Hãy đợi tối đa 15 phút để biết kết quả rồi mới thu tại cửa hàng.");
         }
         // a down payment whose card payment failed can still be taken at the store; the failed attempt is forgotten
         boolean retryAtStore = installment && payment.getPaymentStatus() == PaymentStatus.FAILED;
         if (payment.getPaymentStatus() != PaymentStatus.PENDING && !retryAtStore) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, installment
-                ? RequestLanguage.text(
-                    "Chỉ thu được khoản trả trước đang chờ thanh toán hoặc có lần thanh toán thẻ bị lỗi.",
-                    "Only a down payment that is waiting, or whose card payment failed, can be taken.")
-                : RequestLanguage.text(
-                    "Chỉ xác nhận được khoản trả sau đang chờ thu.",
-                    "Only a pay-later payment that is waiting to be collected can be confirmed."));
+                ? "Chỉ thu được khoản trả trước đang chờ thanh toán hoặc có lần thanh toán thẻ bị lỗi."
+                : "Chỉ xác nhận được khoản trả sau đang chờ thu.");
         }
         if (retryAtStore) {
             payment.setProviderTxnId(null);
@@ -567,15 +552,11 @@ public class ManagerServiceImpl implements ManagerService {
     /** V26: the note typed with a stock edit (optional, cleaned) after the figure and the note have been checked. */
     private static String adjustmentNote(ManagerProductStockUpdateRequest request) {
         if (request.stockQuantity() > StockRules.MAX_STOCK) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, RequestLanguage.text(
-                "Tồn kho không được vượt quá " + StockRules.MAX_STOCK + " xe.",
-                "The stock cannot be more than " + StockRules.MAX_STOCK + " bikes."));
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tồn kho không được vượt quá " + StockRules.MAX_STOCK + " xe.");
         }
         String note = StockRules.clean(request.note());
         if (note != null && note.length() > StockRules.MAX_NOTE_LENGTH) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, RequestLanguage.text(
-                "Ghi chú không được vượt quá " + StockRules.MAX_NOTE_LENGTH + " ký tự.",
-                "The note cannot be longer than " + StockRules.MAX_NOTE_LENGTH + " characters."));
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ghi chú không được vượt quá " + StockRules.MAX_NOTE_LENGTH + " ký tự.");
         }
         return note;
     }
@@ -772,8 +753,7 @@ public class ManagerServiceImpl implements ManagerService {
                     shipment.getPickupShowroom().getOpeningHours(),
                     shipment.getPickupShowroom().getActive()
                 )
-            ),
-            order.getCustomerLanguage()
+            )
         );
     }
 

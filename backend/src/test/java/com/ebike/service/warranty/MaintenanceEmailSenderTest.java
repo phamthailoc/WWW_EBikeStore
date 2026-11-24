@@ -38,41 +38,30 @@ class MaintenanceEmailSenderTest {
 
     @Test
     void nothingIsSentWhenMailIsSwitchedOff() {
-        sender("smtp.example.com", false, "").send("an@example.com", "Bike", "F1", "P6M", "vi");
+        sender("smtp.example.com", false, "").send("an@example.com", "Bike", "F1", "P6M");
 
         verify(mail, never()).send(any(SimpleMailMessage.class));
     }
 
     @Test
     void nothingIsSentWithoutAnSmtpHost() {
-        sender("", true, "").send("an@example.com", "Bike", "F1", "P6M", "vi");
-        sender(null, true, "").send("an@example.com", "Bike", "F1", "P6M", "vi");
+        sender("", true, "").send("an@example.com", "Bike", "F1", "P6M");
+        sender(null, true, "").send("an@example.com", "Bike", "F1", "P6M");
 
         verify(mail, never()).send(any(SimpleMailMessage.class));
     }
 
     @Test
     void nothingIsSentWithoutAnAddress() {
-        sender("smtp.example.com", true, "").send(" ", "Bike", "F1", "P6M", "vi");
-        sender("smtp.example.com", true, "").send(null, "Bike", "F1", "P6M", "vi");
+        sender("smtp.example.com", true, "").send(" ", "Bike", "F1", "P6M");
+        sender("smtp.example.com", true, "").send(null, "Bike", "F1", "P6M");
 
         verify(mail, never()).send(any(SimpleMailMessage.class));
     }
 
     @Test
-    void theEmailLinksToTheWarrantyBookWhenThePublicAddressIsKnown() {
-        sender("smtp.example.com", true, "https://shop.example.com/").send("an@example.com", "Bike", "F1", "P6M", "en");
-
-        SimpleMailMessage message = sent();
-        assertEquals("shop@example.com", message.getFrom());
-        assertEquals("an@example.com", message.getTo()[0]);
-        assertTrue(message.getSubject().contains("due for service"));
-        assertTrue(message.getText().contains("https://shop.example.com/customer/warranty"));
-    }
-
-    @Test
     void withoutAPublicAddressTheEmailPointsToThePageByName() {
-        sender("smtp.example.com", true, "").send("an@example.com", "Bike", "F1", "P6M", "vi");
+        sender("smtp.example.com", true, "").send("an@example.com", "Bike", "F1", "P6M");
 
         SimpleMailMessage message = sent();
         assertTrue(message.getSubject().contains("đến hạn bảo dưỡng"));
@@ -84,8 +73,19 @@ class MaintenanceEmailSenderTest {
     void aMailFailureIsSwallowed() {
         doThrow(new MailSendException("down")).when(mail).send(any(SimpleMailMessage.class));
 
-        sender("smtp.example.com", true, "").send("an@example.com", "Bike", "F1", "P6M", "vi");
+        sender("smtp.example.com", true, "").send("an@example.com", "Bike", "F1", "P6M");
 
         verify(mail).send(any(SimpleMailMessage.class));
+    }
+
+    @Test
+    void theEmailLinksToTheWarrantyBookWhenThePublicAddressIsKnown() {
+        sender("smtp.example.com", true, "https://shop.example.com/").send("an@example.com", "Bike", "F1", "P6M");
+
+        SimpleMailMessage message = sent();
+        assertEquals("shop@example.com", message.getFrom());
+        assertEquals("an@example.com", message.getTo()[0]);
+        assertTrue(message.getSubject().contains("đến hạn bảo dưỡng"));
+        assertTrue(message.getText().contains("https://shop.example.com/customer/warranty"));
     }
 }

@@ -213,30 +213,6 @@ class ExcelExportSeleniumTest extends StorefrontSeleniumTest {
     }
 
     @Test
-    void theEnglishPageGivesAnEnglishFile() throws Exception {
-        Path folder = downloadFolder();
-        logInAsManager();
-        try {
-            driver.get(baseUrl + "/lang/en?back=/manager/reports");
-            wait.until(ExpectedConditions.visibilityOfElementLocated(EXPORT));
-            assertEquals("Export to Excel", driver.findElement(EXPORT).getText());
-            wait.until(d -> d.findElement(By.id("metrics")).getText().length() > 0);
-
-            clearNotice();
-            click(EXPORT);
-            Path file = savedFile(folder, "revenue-report_");
-            assertEquals("Excel file downloaded.", notice());
-            try (Workbook workbook = read(file)) {
-                assertEquals("Summary", workbook.getSheetName(0));
-                assertEquals("Best sellers", workbook.getSheetName(2));
-                assertEquals("KINETIC revenue report", cell(workbook.getSheetAt(0), 0, 0));
-            }
-        } finally {
-            driver.get(baseUrl + "/lang/vi?back=/");
-        }
-    }
-
-    @Test
     void aCustomerAndAVisitorCannotExportAndSeeNoButton() throws Exception {
         assertEquals(403, fetch(api, "/api/v1/manager/orders/export").statusCode());
         assertEquals(403, fetch(api, "/api/v1/manager/revenue-report/export").statusCode());

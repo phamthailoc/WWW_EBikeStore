@@ -25,7 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * V22: tells every customer waiting for a colour. A separate bean so that callers outside it (after-commit hooks, the
  * sweep) go through the transaction proxy. Per colour it costs a fixed number of queries however many customers wait:
- * one locking read of the waiting rows, one join for their accounts and languages, one read of which are customers,
+ * one locking read of the waiting rows, one join for their accounts, one read of which are customers,
  * and one UPDATE (plus one DELETE when needed).
  */
 @Service
@@ -81,7 +81,7 @@ public class StockAlertDelivery {
         if (waiting.isEmpty()) {
             return 0;
         }
-        // One join gives every waiting customer's account state and language; no read per customer.
+        // One join gives every waiting customer's account state; no read per customer.
         List<StockAlertRecipient> recipients = alertRepository.findRecipients(waiting.stream().map(StockAlert::getId).toList());
         Set<Long> userIds = recipients.stream().map(StockAlertRecipient::userId).collect(Collectors.toSet());
 
@@ -108,8 +108,7 @@ public class StockAlertDelivery {
                 recipient.userId(),
                 product.getName(),
                 colour,
-                product.getSlug(),
-                StockAlertMessages.normalize(recipient.language())
+                product.getSlug()
             ));
             told++;
         }

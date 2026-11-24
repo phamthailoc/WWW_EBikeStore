@@ -87,10 +87,6 @@ public class Order {
     @Column(name = "pickup_deadline_at")
     private LocalDateTime pickupDeadlineAt;
 
-    // The language of the page the order was placed from ("vi" or "en"; null on older orders): a guest has no profile, so the hand-over email and PDFs (V27) follow this.
-    @Column(name = "customer_language", length = 5)
-    private String customerLanguage;
-
     // Fixed the first time the order is saved as DELIVERED; the warranty (V20) counts from here, so it does not move with updated_at.
     @Column(name = "delivered_at")
     private LocalDateTime deliveredAt;
@@ -320,14 +316,6 @@ public class Order {
 
     public void setPickupDeadlineAt(LocalDateTime pickupDeadlineAt) {
         this.pickupDeadlineAt = pickupDeadlineAt;
-    }
-
-    public String getCustomerLanguage() {
-        return customerLanguage;
-    }
-
-    public void setCustomerLanguage(String customerLanguage) {
-        this.customerLanguage = customerLanguage;
     }
 
     public LocalDateTime getDeliveredAt() {

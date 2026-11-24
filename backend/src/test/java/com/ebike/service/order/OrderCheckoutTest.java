@@ -136,22 +136,6 @@ class OrderCheckoutTest {
         return saved.getValue();
     }
 
-    @Test void theOrderRecordsTheLanguageOfTheCheckoutPageForTheHandOverEmail() {
-        org.springframework.web.context.request.RequestContextHolder.setRequestAttributes(
-            new org.springframework.web.context.request.ServletRequestAttributes(new org.springframework.mock.web.MockHttpServletRequest()));
-        org.springframework.context.i18n.LocaleContextHolder.setLocale(java.util.Locale.ENGLISH);
-        try {
-            assertEquals("en", placeGuestOrder().getCustomerLanguage());
-        } finally {
-            org.springframework.context.i18n.LocaleContextHolder.resetLocaleContext();
-            org.springframework.web.context.request.RequestContextHolder.resetRequestAttributes();
-        }
-    }
-
-    @Test void theOrderRecordsVietnameseWhenThePageIsVietnameseOrThereIsNoRequest() {
-        assertEquals("vi", placeGuestOrder().getCustomerLanguage());
-    }
-
     @Test void aSaleIsLockedFirstThenWrittenOnTheStockLedgerWithTheOrderNumber() {
         stock(); save(); showroomIn("TP. Ho Chi Minh");
         var req=new OrderCreateRequest(null,"Khách Hàng","0901234567","checkout@example.com",null,

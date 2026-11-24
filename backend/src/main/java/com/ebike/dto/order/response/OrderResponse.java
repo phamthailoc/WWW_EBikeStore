@@ -29,8 +29,6 @@ public record OrderResponse(
     LocalDateTime updatedAt,
     LocalDateTime pickupDeadlineAt,
     List<OrderItemResponse> items,
-    ShipmentResponse shipment,
-    // V27: "vi" or "en", the language of the page the order was placed from; null on an older order. Staff print the documents in it.
-    String customerLanguage
+    ShipmentResponse shipment
 ) {
 }

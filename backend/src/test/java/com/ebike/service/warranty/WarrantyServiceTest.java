@@ -351,19 +351,6 @@ class WarrantyServiceTest {
     }
 
     @Test
-    void errorsAreEnglishForAnEnglishRequest() {
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        request.addHeader("Accept-Language", "en-US");
-        RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
-        try {
-            ResponseStatusException error = assertThrows(ResponseStatusException.class, () -> service.lookup("ab"));
-            assertEquals("A frame number has 5 to 30 letters, digits or hyphens.", error.getReason());
-        } finally {
-            RequestContextHolder.resetRequestAttributes();
-        }
-    }
-
-    @Test
     void errorsAreVietnameseByDefault() {
         ResponseStatusException error = assertThrows(ResponseStatusException.class, () -> service.lookup("ab"));
         assertEquals("Số khung gồm 5 đến 30 ký tự chữ, số hoặc dấu gạch ngang.", error.getReason());

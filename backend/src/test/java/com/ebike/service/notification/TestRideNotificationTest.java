@@ -45,7 +45,6 @@ class TestRideNotificationTest {
 
     private void profile(String language, boolean notificationsOn) {
         UserPreference preference = new UserPreference();
-        preference.setLanguage(language);
         preference.setNotificationsEnabled(notificationsOn);
         when(preferences.findByUserId(7L)).thenReturn(Optional.of(preference));
     }
@@ -56,17 +55,6 @@ class TestRideNotificationTest {
         return captor.getValue();
     }
 
-    @Test void englishCustomerGetsAnEnglishConfirmation() {
-        profile("en", true);
-        service.handleTestRideNotice(event(TestRideMessages.CONFIRMED));
-        Notification notification = saved();
-        assertEquals(NotificationType.TEST_RIDE, notification.getType());
-        assertEquals("Test ride confirmed", notification.getTitle());
-        assertTrue(notification.getMessage().contains("22/11/2026 at 09:00"), notification.getMessage());
-        assertTrue(notification.getMessage().contains("Quan 1, 187 Nguyen Thai Hoc"), notification.getMessage());
-        assertEquals("/customer/test-rides", notification.getTargetUrl());
-    }
-
     @Test void customerWithoutAProfileGetsVietnamese() {
         service.handleTestRideNotice(event(TestRideMessages.REMINDER));
         Notification notification = saved();
@@ -74,15 +62,26 @@ class TestRideNotificationTest {
         assertTrue(notification.getMessage().contains("09:00 22/11/2026"), notification.getMessage());
     }
 
-    @Test void customerWhoSwitchedNotificationsOffStillGetsNoticesOfTheirOwnBooking() {
-        profile("en", false);
-        service.handleTestRideNotice(event(TestRideMessages.CANCELLED));
-        assertEquals("Test ride cancelled", saved().getTitle());
-    }
-
     @Test void erasedAccountGetsNone() {
         user.setAccountStatus("DELETED");
         service.handleTestRideNotice(event(TestRideMessages.CANCELLED));
         verify(notifications, never()).save(org.mockito.ArgumentMatchers.any());
+    }
+
+    @Test void customerGetsAConfirmationWithTheTimeAndThePlace() {
+        profile("vi", true);
+        service.handleTestRideNotice(event(TestRideMessages.CONFIRMED));
+        Notification notification = saved();
+        assertEquals(NotificationType.TEST_RIDE, notification.getType());
+        assertEquals("Lịch lái thử đã được xác nhận", notification.getTitle());
+        assertTrue(notification.getMessage().contains("09:00 22/11/2026"), notification.getMessage());
+        assertTrue(notification.getMessage().contains("Quan 1, 187 Nguyen Thai Hoc"), notification.getMessage());
+        assertEquals("/customer/test-rides", notification.getTargetUrl());
+    }
+
+    @Test void customerWhoSwitchedNotificationsOffStillGetsNoticesOfTheirOwnBooking() {
+        profile("vi", false);
+        service.handleTestRideNotice(event(TestRideMessages.CANCELLED));
+        assertEquals("Lịch lái thử đã bị hủy", saved().getTitle());
     }
 }

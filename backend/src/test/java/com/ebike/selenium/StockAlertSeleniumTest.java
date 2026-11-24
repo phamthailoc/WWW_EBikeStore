@@ -298,46 +298,4 @@ class StockAlertSeleniumTest extends StorefrontSeleniumTest {
         }
     }
 
-    @Test
-    void alertTextsAreInEnglishForAnEnglishCustomer() throws Exception {
-        HttpClient manager = managerApi();
-        JsonNode product = call(api, "GET", "/api/v1/products/" + productSlug, null);
-        long productId = product.path("id").asLong();
-        long variantId = ownColour(product).path("id").asLong();
-        int original = ownColour(product).path("stockQuantity").asInt();
-        turnNotificationsOn();
-        forgetAlert(variantId);
-        setStock(manager, productId, variantId, 0);
-        try {
-            driver.get(baseUrl + "/lang/en?back=/product/" + productSlug);
-            wait.until(d -> "en".equals(js("return document.documentElement.lang")));
-            click(By.cssSelector(".variant-option[data-variant-id='" + variantId + "']"));
-            By notify = By.id("notifyStock");
-            wait.until(ExpectedConditions.visibilityOfElementLocated(notify));
-            assertEquals("Notify me when back in stock", driver.findElement(notify).getText());
-            click(notify);
-            wait.until(d -> alertsOrZero(variantId) == 1);
-            wait.until(d -> d.findElement(notify).getText().equals("Alert on, click to cancel"));
-            assertTrue(driver.findElement(By.id("productNotice")).getText().startsWith("Done."),
-                driver.findElement(By.id("productNotice")).getText());
-
-            driver.get(baseUrl + "/favorites");
-            WebElement row = wait.until(ExpectedConditions.visibilityOfElementLocated(
-                By.cssSelector("#stock-alerts li[data-variant-id='" + variantId + "']")));
-            assertTrue(row.getText().contains("Waiting for stock"), row.getText());
-            assertTrue(row.getText().contains("Stop alert"), row.getText());
-
-            // the notice itself is in English: /lang/en saved the language to this customer's profile
-            int before = englishNotificationsFor(productSlug);
-            setStock(manager, productId, variantId, 3);
-            wait.until(d -> englishNotificationsFor(productSlug) == before + 1);
-            driver.get(baseUrl + "/customer/notifications");
-            // the body, not the type label: both the Vietnamese and the English type label would read "Back in stock"
-            wait.until(d -> d.findElement(By.id("data-table")).getText().contains("is back in stock. You can order it now."));
-        } finally {
-            forgetAlert(variantId);
-            setStock(manager, productId, variantId, original);
-            driver.get(baseUrl + "/lang/vi");
-        }
-    }
 }

@@ -192,7 +192,7 @@ class SeoMarkupTest {
         String robots = seo.robotsTxt();
         assertTrue(robots.startsWith("User-agent: *\nAllow: /\n"));
         assertTrue(robots.contains("Allow: /api/v1/products/\n"), "the public product data the page loads for its reviews stays crawlable");
-        for (String path : List.of("/api/", "/lang/")) {
+        for (String path : List.of("/api/")) {
             assertTrue(robots.contains("Disallow: " + path + "\n"), path);
         }
         assertFalse(robots.contains("Disallow: /\n"), "the shop itself stays open");

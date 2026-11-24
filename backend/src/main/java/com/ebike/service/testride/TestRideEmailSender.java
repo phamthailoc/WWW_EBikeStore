@@ -35,16 +35,16 @@ public class TestRideEmailSender {
         this.publicBaseUrl = publicBaseUrl;
     }
 
-    /** {@code language} is the customer's saved language ("vi" or "en"); {@code kind} is a constant of TestRideMessages. */
-    public void send(String email, String kind, String productName, String showroomName, String address, LocalDateTime slotStart, String note, String language) {
+    /** {@code kind} is a constant of TestRideMessages. */
+    public void send(String email, String kind, String productName, String showroomName, String address, LocalDateTime slotStart, String note) {
         if (!mailEnabled || smtpHost == null || smtpHost.isBlank() || email == null || email.isBlank() || !TestRideMessages.sendsEmail(kind)) {
             return;
         }
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom(fromAddress);
         message.setTo(email);
-        message.setSubject(TestRideMessages.emailSubject(language, kind, productName));
-        message.setText(TestRideMessages.emailBody(language, kind, productName, showroomName, address, slotStart, note, TestRideMessages.bookingsUrl(publicBaseUrl)));
+        message.setSubject(TestRideMessages.emailSubject(kind, productName));
+        message.setText(TestRideMessages.emailBody(kind, productName, showroomName, address, slotStart, note, TestRideMessages.bookingsUrl(publicBaseUrl)));
         try {
             mailSender.send(message);
         } catch (MailException exception) {

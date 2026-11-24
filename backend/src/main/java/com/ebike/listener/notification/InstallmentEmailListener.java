@@ -37,9 +37,8 @@ public class InstallmentEmailListener {
                 return;
             }
             // Like the in-app notice, this email is about an application the customer made: the profile's notification switch does not stop it.
-            String language = userPreferenceRepository.findByUserId(user.getId()).map(saved -> saved.getLanguage()).orElse("vi");
             emailSender.send(user.getEmail(), event.kind(), event.orderId(), event.orderNumber(), event.downPayment(), event.monthlyPayment(),
-                event.termMonths(), event.payBefore(), event.note(), language);
+                event.termMonths(), event.payBefore(), event.note());
         });
     }
 }

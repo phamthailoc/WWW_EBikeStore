@@ -71,13 +71,6 @@ class ChatbotSavingsTest {
         assertTrue(debug.fallbackAnswer().contains(String.format("%,.0f VND", new java.math.BigDecimal("22000"))), debug.fallbackAnswer());
     }
 
-    @Test void englishQuestionGetsAnEnglishAnswer() {
-        LocaleContextHolder.setLocale(Locale.ENGLISH);
-        var debug = chatbot().debug(new ChatbotAskRequest("How much would I save compared to petrol?", null, null));
-        assertEquals("running_cost", debug.matchedIntent());
-        assertTrue(debug.fallbackAnswer().contains("How much does an electric bike save?"), debug.fallbackAnswer());
-    }
-
     @Test void otherWaysToAskAboutCostAreRecognised() {
         for (String question : List.of("Chi phí sạc một tháng là bao nhiêu?", "Chi phí nuôi xe điện mỗi tháng?", "Giá điện tính thế nào?",
             "Giá xăng bạn dùng so sánh là bao nhiêu?", "How much can I save in a year?", "What is the electricity cost per month?",
