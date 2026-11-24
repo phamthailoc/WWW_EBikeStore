@@ -7,7 +7,7 @@
   if (!page || !box || !page.dataset.slug) return;
   const body = box.querySelector('[data-body]');
   const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
-  const localeTag = () => document.documentElement.lang === 'en' ? 'en-GB' : 'vi-VN';
+  const localeTag = () => 'vi-VN';
   // money and plain numbers follow the page language together, so one sentence never mixes "2.900 ₫" (Vietnamese grouping) with "1.06 kWh" (English decimals)
   const money = value => new Intl.NumberFormat(localeTag(), {maximumFractionDigits: 0}).format(Number(value) || 0) + ' ₫';
   // prices and consumption come from DECIMAL columns ("1.80"): shown as 1.8 (1,8 in Vietnamese), never with trailing zeros

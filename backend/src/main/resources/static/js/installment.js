@@ -4,7 +4,7 @@ window.KineticInstallment = (() => {
   const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
   const page = document.body.dataset.page || '';
   const money = value => window.KineticCart ? window.KineticCart.money(value) : new Intl.NumberFormat('vi-VN').format(Number(value) || 0) + ' ₫';
-  const localeTag = () => document.documentElement.lang === 'en' ? 'en-GB' : 'vi-VN';
+  const localeTag = () => 'vi-VN';
   // the rate comes from a DECIMAL column ("8.00"): shown as 8 or 8.5 (8,5 in Vietnamese), never with trailing zeros
   const rate = value => new Intl.NumberFormat(localeTag(), {maximumFractionDigits: 2}).format(Number(value) || 0);
   // The server sends a moment with the shop's offset ("2026-11-20T09:00:00+07:00"). It is shown in that offset, with the offset named like the notice and the
@@ -349,7 +349,7 @@ window.KineticInstallment = (() => {
         const button = event.currentTarget;
         button.disabled = true;
         try {
-          const payment = await request('/api/v1/payments/vnpay/create', 'POST', {orderId, language: document.documentElement.lang === 'en' ? 'en' : 'vn'});
+          const payment = await request('/api/v1/payments/vnpay/create', 'POST', {orderId});
           location.href = payment.paymentUrl;
         } catch (error) {
           tell(error.message, true);

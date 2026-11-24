@@ -49,7 +49,7 @@
     const amount=result.amount==null?null:`${Number(result.amount).toLocaleString('vi-VN')} ₫`;
     const retry=!result.success&&result.valid&&result.orderId&&vnpayEnabled?`<p><button type="button" class="button compact" id="retryVnPay" data-order-id="${escape(result.orderId)}">${'Thanh toán lại qua VNPay'}</button></p>`:'';
     target.innerHTML=`<section class="commerce-card order-success"><div class="success-check" aria-hidden="true">${result.success?'✓':'!'}</div><h2>${title}</h2><p>${escape(message)}</p>${result.orderNumber?`<strong class="order-number">${escape(result.orderNumber)}</strong>`:''}<div class="order-success-details">${paymentRow('Số tiền',amount)}${paymentRow('Mã giao dịch VNPay',result.transactionNo)}${paymentRow('Ngân hàng',result.bankCode)}${paymentRow('Trạng thái thanh toán',result.paymentStatus)}</div>${retry}${links}</section>`;
-    document.querySelector('#retryVnPay')?.addEventListener('click',async e=>{const b=e.currentTarget;b.disabled=true;try{const payment=await post('/api/v1/payments/vnpay/create',{orderId:Number(b.dataset.orderId),language:'vn'});location.href=payment.paymentUrl}catch(err){b.disabled=false;tell(err.message,true)}});
+    document.querySelector('#retryVnPay')?.addEventListener('click',async e=>{const b=e.currentTarget;b.disabled=true;try{const payment=await post('/api/v1/payments/vnpay/create',{orderId:Number(b.dataset.orderId)});location.href=payment.paymentUrl}catch(err){b.disabled=false;tell(err.message,true)}});
   };
   const init=async()=>{
     if(['cart','checkout','checkout-success'].includes(flow)){await window.KineticCommerce.init(flow,target,finish,tell);return}

@@ -35,7 +35,9 @@ public class WorkspaceController {
     public String workspace(HttpServletRequest request, Model model, Authentication authentication) {
         String path = request.getRequestURI();
         String role = path.startsWith("/admin") ? "admin" : path.startsWith("/manager") ? "manager" : "customer";
-        String section = path.substring(1);
+        // an Admin opens the staff queues under /admin/... to keep the Admin menu; the page is the same one as under /manager/...
+        String canonicalPath = path.replaceFirst("^/admin/(warranty|test-rides|installments|stock-receipts)$", "/manager/$1");
+        String section = canonicalPath.substring(1);
         if (section.equals("customer/warranty") && authentication != null
             && authentication.getAuthorities().stream().noneMatch(a -> PermissionConstants.Customer.PROFILE_VIEW.equals(a.getAuthority()))) {
             // staff may open /customer pages, but the warranty book API belongs to customer accounts: send them to the queue they work in
@@ -85,7 +87,7 @@ public class WorkspaceController {
         boolean canManageStock = authentication != null
             && authentication.getAuthorities().stream().anyMatch(a -> PermissionConstants.ProductManagement.PRODUCT_MANAGE_STOCK.equals(a.getAuthority()));
         List<Link> baseLinks = switch (role) {
-            case "admin" -> List.of(new Link(m("staff.29", "Tổng quan"), "/admin"), new Link(m("staff.30", "Sản phẩm"), "/admin/products"), new Link(m("staff.31", "Kho hàng"), "/admin/inventory"), new Link(m("staff.32", "Giá & khuyến mãi"), "/admin/pricing"), new Link(m("staff.33", "Tài khoản"), "/admin/accounts"), new Link(m("staff.34", "Vai trò"), "/admin/roles"), new Link(m("staff.35", "Nhật ký"), "/admin/audit-logs"), new Link(m("staff.25", "Người dùng"), "/admin/users"), new Link(m("staff.warrantyMenu", "Bảo hành"), "/manager/warranty"), new Link(m("staff.testRideMenu", "Lái thử"), "/manager/test-rides"), new Link(m("staff.installmentMenu", "Trả góp"), "/manager/installments"));
+            case "admin" -> List.of(new Link(m("staff.29", "Tổng quan"), "/admin"), new Link(m("staff.30", "Sản phẩm"), "/admin/products"), new Link(m("staff.31", "Kho hàng"), "/admin/inventory"), new Link(m("staff.32", "Giá & khuyến mãi"), "/admin/pricing"), new Link(m("staff.33", "Tài khoản"), "/admin/accounts"), new Link(m("staff.34", "Vai trò"), "/admin/roles"), new Link(m("staff.35", "Nhật ký"), "/admin/audit-logs"), new Link(m("staff.25", "Người dùng"), "/admin/users"), new Link(m("staff.warrantyMenu", "Bảo hành"), "/admin/warranty"), new Link(m("staff.testRideMenu", "Lái thử"), "/admin/test-rides"), new Link(m("staff.installmentMenu", "Trả góp"), "/admin/installments"));
             case "manager" -> List.of(new Link(m("staff.29", "Tổng quan"), "/manager"), new Link(m("staff.36", "Đơn hàng"), "/manager/orders"), new Link(m("staff.5", "Thanh toán"), "/manager/payments"), new Link(m("staff.9", "Khách hàng"), "/manager/customers"), new Link(m("staff.37", "Hỗ trợ"), "/manager/support"), new Link(m("staff.warrantyMenu", "Bảo hành"), "/manager/warranty"), new Link(m("staff.testRideMenu", "Lái thử"), "/manager/test-rides"), new Link(m("staff.installmentMenu", "Trả góp"), "/manager/installments"), new Link(m("staff.31", "Kho hàng"), "/manager/inventory"), new Link(m("staff.30", "Sản phẩm"), "/manager/products"), new Link(m("staff.38", "Báo cáo"), "/manager/reports"));
             default -> List.of(new Link(m("menu.overview", "Tổng quan"), "/customer"), new Link(m("menu.orders", "Đơn hàng"), "/customer/orders"), new Link(m("menu.payments", "Thanh toán"), "/customer/payments"), new Link(m("menu.notifications", "Thông báo"), "/customer/notifications"), new Link(m("menu.warranty", "Bảo hành"), "/customer/warranty"), new Link(m("menu.testRide", "Lái thử"), "/customer/test-rides"), new Link(m("menu.profile", "Hồ sơ"), "/customer/profile"), new Link(m("menu.favourites", "Yêu thích"), "/favorites"));
         };
@@ -117,6 +119,7 @@ public class WorkspaceController {
         model.addAttribute("loadDocuments", "detail".equals(mode) || "warranty".equals(mode) || "manager/warranty".equals(section) || canExport);
         model.addAttribute("links", links);
         model.addAttribute("activePath", path);
+        model.addAttribute("pageKey", canonicalPath);
         model.addAttribute("vnpayEnabled", vnPayProperties.isConfigured());
         // staff with the view permission only must not be offered buttons the server will refuse (confirming a test ride needs the update permission)
         model.addAttribute("canUpdateOrders", authentication != null

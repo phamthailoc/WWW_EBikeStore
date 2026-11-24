@@ -46,6 +46,8 @@ public class SecurityConfiguration {
                 .requestMatchers("/favorites").authenticated()
                 .requestMatchers("/customer/**").hasAnyAuthority(PermissionConstants.Customer.PROFILE_VIEW, PermissionConstants.OrderManagement.ORDER_VIEW_ALL)
                 .requestMatchers("/manager/**").hasAuthority(PermissionConstants.OrderManagement.ORDER_VIEW_ALL)
+                // the staff queues under /admin/... are the /manager/... pages with the Admin menu: same permission as theirs
+                .requestMatchers("/admin/warranty", "/admin/test-rides", "/admin/installments", "/admin/stock-receipts").hasAuthority(PermissionConstants.OrderManagement.ORDER_VIEW_ALL)
                 .requestMatchers("/admin/**").hasAnyRole(ADMIN_CONSOLE_ROLES)
                 .requestMatchers(HttpMethod.POST, "/api/v1/orders/quote").permitAll()
                 // V24: the calculator is open to visitors; the answer is only arithmetic on public rates.

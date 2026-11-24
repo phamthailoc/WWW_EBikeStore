@@ -7,7 +7,7 @@ window.KineticWarranty = (() => {
   const day = iso => {
     if (!iso) return '—';
     const [y, m, d] = String(iso).slice(0, 10).split('-').map(Number);
-    return new Date(y, m - 1, d).toLocaleDateString(document.documentElement.lang === 'en' ? 'en-GB' : 'vi-VN');
+    return new Date(y, m - 1, d).toLocaleDateString('vi-VN');
   };
   const tell = (message, error) => {
     const box = document.querySelector('#notice');
