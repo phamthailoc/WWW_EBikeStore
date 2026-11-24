@@ -14,7 +14,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import com.ebike.common.constants.PermissionConstants;
 import com.ebike.common.exception.ApiExceptionHandler;
 import com.ebike.config.SecurityConfiguration;
-import com.ebike.config.UserLocaleResolver;
 import com.ebike.repository.auth.UserRepository;
 import com.ebike.repository.user.UserPreferenceRepository;
 import com.ebike.security.filter.JwtAuthenticationFilter;
@@ -97,11 +96,6 @@ class ReportExportSecurityTest {
         @Bean
         UserPreferenceRepository preferences() {
             return mock(UserPreferenceRepository.class);
-        }
-
-        @Bean
-        UserLocaleResolver localeResolver(UserRepository users, UserPreferenceRepository preferences) {
-            return new UserLocaleResolver(users, preferences);
         }
 
         @Bean

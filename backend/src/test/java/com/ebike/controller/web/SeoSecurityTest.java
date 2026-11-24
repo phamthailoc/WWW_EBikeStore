@@ -7,7 +7,6 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
 import com.ebike.config.SecurityConfiguration;
-import com.ebike.config.UserLocaleResolver;
 import com.ebike.dto.product.response.CategorySummaryDto;
 import com.ebike.dto.product.response.ProductSummaryDto;
 import com.ebike.repository.auth.UserRepository;
@@ -58,11 +57,6 @@ class SeoSecurityTest {
         @Bean
         UserPreferenceRepository preferences() {
             return mock(UserPreferenceRepository.class);
-        }
-
-        @Bean
-        UserLocaleResolver localeResolver(UserRepository users, UserPreferenceRepository preferences) {
-            return new UserLocaleResolver(users, preferences);
         }
 
         @Bean

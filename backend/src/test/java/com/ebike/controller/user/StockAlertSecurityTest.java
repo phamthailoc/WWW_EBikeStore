@@ -82,11 +82,6 @@ class StockAlertSecurityTest {
         }
 
         @Bean
-        com.ebike.config.UserLocaleResolver localeResolver() {
-            return new com.ebike.config.UserLocaleResolver(mock(com.ebike.repository.auth.UserRepository.class), mock(com.ebike.repository.user.UserPreferenceRepository.class));
-        }
-
-        @Bean
         StockAlertService stockAlertService() {
             StockAlertService service = mock(StockAlertService.class);
             org.mockito.Mockito.when(service.subscribe(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any()))

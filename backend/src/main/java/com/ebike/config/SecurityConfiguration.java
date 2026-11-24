@@ -22,11 +22,9 @@ public class SecurityConfiguration {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    private final UserLocaleResolver localeResolver;
 
-    public SecurityConfiguration(JwtAuthenticationFilter jwtAuthenticationFilter, UserLocaleResolver localeResolver) {
+    public SecurityConfiguration(JwtAuthenticationFilter jwtAuthenticationFilter) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
-        this.localeResolver = localeResolver;
     }
 
     @Bean
@@ -190,6 +188,6 @@ public class SecurityConfiguration {
         response.setStatus(status);
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
-        response.getWriter().write("{\"message\":\"" + RequestLanguage.text(request, localeResolver, vietnamese, english) + "\"}");
+        response.getWriter().write("{\"message\":\"" + vietnamese + "\"}");
     }
 }

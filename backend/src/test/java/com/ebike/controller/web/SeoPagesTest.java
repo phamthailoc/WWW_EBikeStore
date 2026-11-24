@@ -150,15 +150,6 @@ class SeoPagesTest {
     }
 
     @Test
-    void englishPagesSayEnglishLocaleAndUseTheEnglishDescriptions() throws Exception {
-        String home = content(english, "/");
-        assertTrue(home.contains("<meta property=\"og:locale\" content=\"en_US\">"));
-        assertFalse(home.contains("og:locale:alternate"), "language is a cookie on the same address: there is no alternate address to point at");
-        assertTrue(home.contains("KINETIC sells genuine electric scooters"));
-        assertTrue(content(english, "/product/kinetic-x").contains("Home"), "breadcrumb in English");
-    }
-
-    @Test
     void theHomePageIsIndexedUnlessItShowsASearch() throws Exception {
         String home = content(vietnamese, "/");
         assertTrue(home.contains("<link rel=\"canonical\" href=\"" + BASE + "/\">"));
@@ -236,7 +227,6 @@ class SeoPagesTest {
             assertTrue(html.contains("<meta property=\"og:url\" content=\"" + BASE + path + "\">"), path);
             assertTrue(html.contains("<meta property=\"og:image\" content=\"" + BASE + "/images/og-default.png\">"), path);
         }
-        assertTrue(content(english, "/support").contains("KINETIC customer support"), "English description");
     }
 
     @Test
@@ -252,6 +242,5 @@ class SeoPagesTest {
         assertTrue(second.contains("<meta property=\"og:title\" content=\"Bộ sưu tập xe – trang 2 | KINETIC\">"), second);
         assertTrue(second.contains("<title>Bộ sưu tập xe – trang 2 | KINETIC</title>"));
         assertTrue(second.contains("<meta name=\"description\" content=\"Trang 2. Toàn bộ mẫu xe"));
-        assertTrue(content(english, "/products?page=2").contains("<title>Bike collection – page 2 | KINETIC</title>"));
     }
 }
