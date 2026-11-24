@@ -20,6 +20,10 @@ CREATE TABLE IF NOT EXISTS `warranty_claims` (
     CONSTRAINT uk_warranty_claims_open_unit UNIQUE (open_unit_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- A table that existed before this script keeps its old definition (CREATE TABLE IF NOT EXISTS skips it): put the status check in place too.
+ALTER TABLE `warranty_claims` DROP CONSTRAINT IF EXISTS `chk_warranty_claims_status`;
+ALTER TABLE `warranty_claims` ADD CONSTRAINT `chk_warranty_claims_status` CHECK (status IN ('NEW', 'RECEIVED', 'REPAIRING', 'DONE', 'REJECTED'));
+
 CREATE INDEX IF NOT EXISTS `idx_warranty_claims_status` ON `warranty_claims` (status, created_at);
 CREATE INDEX IF NOT EXISTS `idx_warranty_claims_unit` ON `warranty_claims` (order_item_unit_id);
 

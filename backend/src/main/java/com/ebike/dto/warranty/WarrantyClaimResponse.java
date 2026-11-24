@@ -19,6 +19,9 @@ public record WarrantyClaimResponse(
     LocalDateTime createdAt,
     LocalDateTime updatedAt,
     // V27: the order of the vehicle, so staff can download its warranty card from the claim row
-    Long orderId
+    Long orderId,
+    // the order number and the phone number of the order, so staff can reach the customer without searching for the order
+    String orderNumber,
+    String phone
 ) {
 }
