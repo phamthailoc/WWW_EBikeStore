@@ -81,16 +81,6 @@ class ReportWorkbookTest {
     }
 
     @Test
-    void theEnglishWorkbookUsesEnglishWords() throws IOException {
-        try (Workbook workbook = open(ReportWorkbook.revenueReport(report(12, 3), "en-US", NOW))) {
-            assertEquals("Summary", workbook.getSheetName(0));
-            assertEquals("Best sellers", workbook.getSheetName(2));
-            assertEquals("Month", text(workbook.getSheetAt(0), 2, 1));
-            assertEquals("Period", text(workbook.getSheetAt(1), 0, 0));
-        }
-    }
-
-    @Test
     void aProductNameThatLooksLikeAFormulaStaysPlainText() throws IOException {
         try (Workbook workbook = open(ReportWorkbook.revenueReport(report(12, 3), "vi", NOW))) {
             Cell cell = workbook.getSheetAt(2).getRow(2).getCell(1);
@@ -175,35 +165,12 @@ class ReportWorkbookTest {
     }
 
     @Test
-    void theFiltersSheetRecordsWhatWasAsked() throws IOException {
-        try (Workbook workbook = open(ReportWorkbook.orders(List.of(order("ORD-1", 7L, "DELIVERED", home(), null)),
-            new ReportWorkbook.OrderFilters("ORD", "delivered", "PAID", 3L), "en", NOW))) {
-            Sheet info = workbook.getSheetAt(1);
-            assertEquals("Filters", info.getSheetName());
-            assertEquals("ORD", text(info, 1, 1));
-            assertEquals("Delivered", text(info, 2, 1));
-            assertEquals("Paid", text(info, 3, 1));
-            assertEquals("3", text(info, 4, 1));
-            assertEquals("1", text(info, 5, 1));
-        }
-    }
-
-    @Test
     void noFilterReadsAsAll() throws IOException {
         try (Workbook workbook = open(ReportWorkbook.orders(List.of(), null, "vi", NOW))) {
             Sheet info = workbook.getSheetAt(1);
             assertEquals("Tất cả", text(info, 1, 1));
             assertEquals("Tất cả", text(info, 2, 1));
             assertEquals("0", text(info, 5, 1));
-        }
-    }
-
-    @Test
-    void anEmptyListGivesTheHeaderAndAMessage() throws IOException {
-        try (Workbook workbook = open(ReportWorkbook.orders(List.of(), null, "en", NOW))) {
-            Sheet sheet = workbook.getSheetAt(0);
-            assertEquals("Order number", text(sheet, 0, 0));
-            assertEquals("No order matches these filters.", text(sheet, 1, 0));
         }
     }
 

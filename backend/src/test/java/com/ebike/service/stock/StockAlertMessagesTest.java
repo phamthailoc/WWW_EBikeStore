@@ -19,24 +19,6 @@ class StockAlertMessagesTest {
     }
 
     @Test
-    void notificationIsInTheCustomersLanguage() {
-        assertEquals("Back in stock", StockAlertMessages.notificationTitle("en"));
-        assertEquals("Xe đã có hàng lại", StockAlertMessages.notificationTitle("vi"));
-        assertTrue(StockAlertMessages.notificationBody("en", "Kinetic X", "White").contains("is back in stock"));
-        assertTrue(StockAlertMessages.notificationBody("vi", "Kinetic X", "Trắng").contains("đã có hàng lại"));
-    }
-
-    @Test
-    void emailNamesTheBikeAndColourInBothLanguages() {
-        for (String language : new String[] {"vi", "en"}) {
-            assertTrue(StockAlertMessages.emailSubject(language, "Kinetic X", "White").contains("Kinetic X"));
-            assertTrue(StockAlertMessages.emailBody(language, "Kinetic X", "White", null).contains("White"));
-        }
-        assertFalse(StockAlertMessages.emailBody("en", "Kinetic X", "White", null).contains("đã"));
-        assertFalse(StockAlertMessages.emailSubject("vi", "Kinetic X", "Trắng").contains("back in stock"));
-    }
-
-    @Test
     void emailLinksToTheBikePage() {
         String url = StockAlertMessages.productUrl("https://shop.example/", "kinetic-x");
         assertEquals("https://shop.example/product/kinetic-x", url);

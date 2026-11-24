@@ -49,9 +49,7 @@ public class ReportExportService {
     public ExportFile orders(Authentication authentication, String status, String paymentStatus, String search, Long showroomId, String language) {
         List<OrderResponse> orders = orderService.getOrders(authentication, null, status, paymentStatus, search, showroomId);
         if (orders.size() > ReportWorkbook.MAX_ORDER_ROWS) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, RequestLanguage.text(
-                "Có " + orders.size() + " đơn hàng, nhiều hơn mức " + ReportWorkbook.MAX_ORDER_ROWS + " đơn của một tệp Excel. Hãy lọc bớt rồi xuất lại.",
-                "There are " + orders.size() + " orders, more than the " + ReportWorkbook.MAX_ORDER_ROWS + " one Excel file can hold. Narrow the filters and export again."));
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Có " + orders.size() + " đơn hàng, nhiều hơn mức " + ReportWorkbook.MAX_ORDER_ROWS + " đơn của một tệp Excel. Hãy lọc bớt rồi xuất lại.");
         }
         LocalDateTime now = LocalDateTime.now();
         byte[] content = ReportWorkbook.orders(orders, new ReportWorkbook.OrderFilters(search, status, paymentStatus, showroomId), language, now);

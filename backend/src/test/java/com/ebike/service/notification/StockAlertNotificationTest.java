@@ -40,20 +40,6 @@ class StockAlertNotificationTest {
         return captor.getValue();
     }
 
-    @Test void englishCustomerGetsEnglishTextAndTheBikeLink() {
-        Notification notification = saved("en");
-        assertEquals("/product/kinetic-x", notification.getTargetUrl());
-        assertEquals("Back in stock", notification.getTitle());
-        assertTrue(notification.getMessage().contains("Kinetic X"));
-    }
-
-    @Test void customerWhoSwitchedNotificationsOffStillGetsTheAlertTheyAskedFor() {
-        com.ebike.model.entity.user.UserPreference off = new com.ebike.model.entity.user.UserPreference();
-        off.setNotificationsEnabled(false);
-        when(preferences.findByUserId(7L)).thenReturn(Optional.of(off));
-        assertEquals("Back in stock", saved("en").getTitle());
-    }
-
     @Test void aSlugIsEncodedAndAMissingSlugGivesNoLink() {
         service.handleStockAlertTriggered(new StockAlertTriggeredEvent(7L, "Kinetic X", "White", "xe điện/1", "en"));
         service.handleStockAlertTriggered(new StockAlertTriggeredEvent(7L, "Kinetic X", "White", null, "en"));

@@ -49,29 +49,11 @@ class WarrantyNotificationTest {
         return captor.getValue();
     }
 
-    @Test void englishCustomerGetsAnEnglishClaimNotice() {
-        language("en", true);
-        service.handleWarrantyClaimStatusChanged(new WarrantyClaimStatusChangedEvent(7L, "Kinetic X", "FRAME12345", "RECEIVED"));
-        Notification notification = saved();
-        assertEquals("Warranty request update", notification.getTitle());
-        assertTrue(notification.getMessage().contains("was received by the store"));
-        assertEquals("/customer/warranty", notification.getTargetUrl());
-    }
-
     @Test void customerWithoutAProfileGetsVietnamese() {
         service.handleWarrantyClaimStatusChanged(new WarrantyClaimStatusChangedEvent(7L, "Kinetic X", "FRAME12345", "DONE"));
         Notification notification = saved();
         assertEquals("Cập nhật yêu cầu bảo hành", notification.getTitle());
         assertTrue(notification.getMessage().contains("đã hoàn tất"));
-    }
-
-    @Test void englishCustomerGetsAnEnglishServiceNotice() {
-        language("en", true);
-        service.handleMaintenanceDue(new MaintenanceDueEvent(7L, "Kinetic X", "FRAME12345", "P6M"));
-        Notification notification = saved();
-        assertEquals("Service due", notification.getTitle());
-        assertTrue(notification.getMessage().contains("6 months after delivery"));
-        assertEquals("/customer/warranty", notification.getTargetUrl());
     }
 
     @Test void customerWhoSwitchedNotificationsOffGetsNone() {

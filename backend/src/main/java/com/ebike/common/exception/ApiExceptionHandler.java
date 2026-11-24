@@ -34,21 +34,19 @@ public class ApiExceptionHandler {
     /** A body that is not valid JSON, or a field of the wrong type (a word where a number belongs). */
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ApiErrorResponse> handleUnreadableBody(HttpMessageNotReadableException exception) {
-        return badRequest(RequestLanguage.text("Dữ liệu gửi lên không hợp lệ.", "The data sent is not valid."));
+        return badRequest("Dữ liệu gửi lên không hợp lệ.");
     }
 
     /** A query or path value of the wrong type, such as ?page=abc. */
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ApiErrorResponse> handleBadArgument(MethodArgumentTypeMismatchException exception) {
-        return badRequest(RequestLanguage.text("Giá trị của tham số \"" + exception.getName() + "\" không hợp lệ.",
-            "The value of the parameter \"" + exception.getName() + "\" is not valid."));
+        return badRequest("Giá trị của tham số \"" + exception.getName() + "\" không hợp lệ.");
     }
 
     /** A required query parameter that is missing, such as a quote without ?amount=. */
     @ExceptionHandler(MissingServletRequestParameterException.class)
     public ResponseEntity<ApiErrorResponse> handleMissingParameter(MissingServletRequestParameterException exception) {
-        return badRequest(RequestLanguage.text("Thiếu tham số \"" + exception.getParameterName() + "\".",
-            "The parameter \"" + exception.getParameterName() + "\" is missing."));
+        return badRequest("Thiếu tham số \"" + exception.getParameterName() + "\".");
     }
 
     /** A row lock that could not be had, or a deadlock the database broke: nothing was saved, so the person can simply try again. */
@@ -56,7 +54,7 @@ public class ApiExceptionHandler {
     public ResponseEntity<ApiErrorResponse> handleLockFailure(PessimisticLockingFailureException exception) {
         HttpStatus status = HttpStatus.CONFLICT;
         return ResponseEntity.status(status).body(new ApiErrorResponse(status.value(), status.getReasonPhrase(),
-            RequestLanguage.text("Dữ liệu đang được người khác xử lý cùng lúc. Vui lòng tải lại và thử lại.", "Someone else is changing the same data at this moment. Please reload and try again."),
+            "Dữ liệu đang được người khác xử lý cùng lúc. Vui lòng tải lại và thử lại.",
             OffsetDateTime.now().toString()));
     }
 

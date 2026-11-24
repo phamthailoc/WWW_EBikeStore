@@ -14,56 +14,46 @@ public final class DocumentFormat {
 
     private static final String[] VI_DIGITS = {"không", "một", "hai", "ba", "bốn", "năm", "sáu", "bảy", "tám", "chín"};
     private static final String[] VI_SCALES = {"", "nghìn", "triệu", "tỷ"};
-    private static final String[] EN_ONES = {"zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten",
-        "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen"};
-    private static final String[] EN_TENS = {"", "", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"};
-    private static final String[] EN_SCALES = {"", "thousand", "million", "billion", "trillion"};
 
     private DocumentFormat() {
     }
 
-    /** "en" or "vi": anything that does not start with "en" is Vietnamese, the shop's base language. */
-    public static String language(String language) {
-        return language != null && language.trim().toLowerCase(Locale.ROOT).startsWith("en") ? "en" : "vi";
+    /** The shop speaks Vietnamese only; kept so the document code that still passes a language keeps working until that parameter is removed. */
+    public static String language(String ignored) {
+        return "vi";
     }
 
-    /** 1.234.000 ₫ in Vietnamese, 1,234,000 ₫ in English. A missing amount reads as zero. */
+    /** 1.234.000 ₫. A missing amount reads as zero. */
     public static String money(BigDecimal amount, String language) {
-        boolean english = "en".equals(language(language));
         DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.ROOT);
-        symbols.setGroupingSeparator(english ? ',' : '.');
+        symbols.setGroupingSeparator('.');
         DecimalFormat format = new DecimalFormat("#,##0", symbols);
         BigDecimal rounded = (amount == null ? BigDecimal.ZERO : amount).setScale(0, RoundingMode.HALF_UP);
         return format.format(rounded) + " ₫";
     }
 
-    /** 23/11/2026 14:05 in Vietnamese, 23 Nov 2026 14:05 in English; a dash when there is no time. */
+    /** 23/11/2026 14:05; a dash when there is no time. */
     public static String dateTime(LocalDateTime value, String language) {
         if (value == null) {
             return "—";
         }
-        return value.format(formatter(language, "dd/MM/yyyy HH:mm", "dd MMM yyyy HH:mm"));
+        return value.format(formatter("dd/MM/yyyy HH:mm"));
     }
 
     public static String date(LocalDateTime value, String language) {
         if (value == null) {
             return "—";
         }
-        return value.format(formatter(language, "dd/MM/yyyy", "dd MMM yyyy"));
+        return value.format(formatter("dd/MM/yyyy"));
     }
 
-    private static DateTimeFormatter formatter(String language, String vietnamese, String english) {
-        return "en".equals(language(language))
-            ? DateTimeFormatter.ofPattern(english, Locale.ENGLISH)
-            : DateTimeFormatter.ofPattern(vietnamese, Locale.ROOT);
+    private static DateTimeFormatter formatter(String pattern) {
+        return DateTimeFormatter.ofPattern(pattern, Locale.ROOT);
     }
 
-    /** "Một triệu hai trăm nghìn đồng chẵn" or "One million two hundred thousand Vietnamese dong". Amounts are whole dong; a negative one reads as zero. */
+    /** "Một triệu hai trăm nghìn đồng chẵn". Amounts are whole dong; a negative one reads as zero. */
     public static String moneyInWords(BigDecimal amount, String language) {
         long value = amount == null ? 0 : Math.max(0, amount.setScale(0, RoundingMode.HALF_UP).longValue());
-        if ("en".equals(language(language))) {
-            return capitalize(englishWords(value)) + " Vietnamese dong";
-        }
         return capitalize(vietnameseWords(value)) + " đồng chẵn";
     }
 
@@ -126,48 +116,6 @@ public final class DocumentFormat {
                 digit = "lăm";
             }
             append(words, digit);
-        }
-        return words.toString();
-    }
-
-    static String englishWords(long value) {
-        if (value == 0) {
-            return EN_ONES[0];
-        }
-        ArrayDeque<String> parts = new ArrayDeque<>();
-        int scale = 0;
-        long rest = value;
-        while (rest > 0) {
-            int group = (int) (rest % 1000);
-            if (group > 0) {
-                String name = EN_SCALES[Math.min(scale, EN_SCALES.length - 1)];
-                String text = englishTriple(group);
-                parts.addFirst(name.isEmpty() ? text : text + " " + name);
-            }
-            rest /= 1000;
-            scale++;
-        }
-        StringBuilder words = new StringBuilder();
-        for (String part : parts) {
-            append(words, part);
-        }
-        return words.toString();
-    }
-
-    private static String englishTriple(int group) {
-        StringBuilder words = new StringBuilder();
-        int hundreds = group / 100;
-        int rest = group % 100;
-        if (hundreds > 0) {
-            words.append(EN_ONES[hundreds]).append(" hundred");
-        }
-        if (rest > 0) {
-            if (rest < 20) {
-                append(words, EN_ONES[rest]);
-            } else {
-                String tens = EN_TENS[rest / 10];
-                append(words, rest % 10 == 0 ? tens : tens + "-" + EN_ONES[rest % 10]);
-            }
         }
         return words.toString();
     }

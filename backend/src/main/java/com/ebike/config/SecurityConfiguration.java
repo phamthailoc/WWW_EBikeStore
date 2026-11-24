@@ -164,7 +164,7 @@ public class SecurityConfiguration {
             .exceptionHandling(exceptions -> exceptions
                 .authenticationEntryPoint((request, response, exception) -> {
                     if (request.getRequestURI().startsWith("/api/v1/")) {
-                        writeJson(request, response, HttpServletResponse.SC_UNAUTHORIZED, "Bạn cần đăng nhập.", "Please sign in.");
+                        writeJson(request, response, HttpServletResponse.SC_UNAUTHORIZED, "Bạn cần đăng nhập.");
                     } else {
                         response.sendRedirect("/login?returnTo=" + java.net.URLEncoder.encode(request.getRequestURI(), java.nio.charset.StandardCharsets.UTF_8));
                     }
@@ -172,7 +172,7 @@ public class SecurityConfiguration {
                 .accessDeniedHandler((request, response, exception) -> {
                     if (request.getRequestURI().startsWith("/api/v1/")) {
                         writeJson(request, response, HttpServletResponse.SC_FORBIDDEN,
-                            "Bạn không có quyền thực hiện thao tác này.", "You do not have permission for this action.");
+                            "Bạn không có quyền thực hiện thao tác này.");
                     } else {
                         response.sendError(HttpServletResponse.SC_FORBIDDEN);
                     }
@@ -184,7 +184,7 @@ public class SecurityConfiguration {
     }
 
     /** An API error in the language of the request: the device's choice, else the account's language, else Vietnamese (as the pages). */
-    private void writeJson(jakarta.servlet.http.HttpServletRequest request, HttpServletResponse response, int status, String vietnamese, String english) throws java.io.IOException {
+    private void writeJson(jakarta.servlet.http.HttpServletRequest request, HttpServletResponse response, int status, String vietnamese) throws java.io.IOException {
         response.setStatus(status);
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");

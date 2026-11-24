@@ -14,20 +14,16 @@ public final class MaintenanceMilestones {
     }
 
     public static String describe(String milestone, String language) {
-        boolean english = "en".equals(WarrantyMessages.normalize(language));
         try {
             Period period = Period.parse(milestone).normalized();
             long months = period.toTotalMonths();
             if (months > 0 && period.getDays() == 0) {
-                return english ? months + (months == 1 ? " month" : " months") : months + " tháng";
+                return months + " tháng";
             }
             if (months == 0 && period.getDays() > 0) {
-                return english ? period.getDays() + (period.getDays() == 1 ? " day" : " days") : period.getDays() + " ngày";
+                return (period.getDays() + " ngày");
             }
-            if (!english) {
-                return months + " tháng " + period.getDays() + " ngày";
-            }
-            return months + (months == 1 ? " month " : " months ") + period.getDays() + (period.getDays() == 1 ? " day" : " days");
+            return months + " tháng " + period.getDays() + " ngày";
         } catch (DateTimeParseException exception) {
             return milestone;
         }

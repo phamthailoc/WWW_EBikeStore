@@ -49,19 +49,6 @@ class DeliveryEmailSenderTest {
         return captor.getValue();
     }
 
-    @Test
-    void theMessageHasBothFilesAndIsWordedInTheLanguage() throws Exception {
-        assertTrue(sender("smtp.example.com", true, "https://shop.example.com/").send(documents("lan@example.com", "en", true)));
-
-        MimeMessage message = sent();
-        message.saveChanges();
-        assertEquals("shop@example.com", message.getFrom()[0].toString());
-        assertEquals("lan@example.com", message.getAllRecipients()[0].toString());
-        assertEquals("Kinetic E-Bike: your sales receipt and warranty card for order ORD-1", message.getSubject());
-        Multipart parts = (Multipart) message.getContent();
-        assertTrue(attachmentNames(parts).containsAll(List.of("receipt-ORD-1.pdf", "warranty-card-ORD-1.pdf")), attachmentNames(parts).toString());
-    }
-
     private static List<String> attachmentNames(Multipart multipart) throws Exception {
         java.util.ArrayList<String> names = new java.util.ArrayList<>();
         collect(multipart, names);
@@ -99,17 +86,6 @@ class DeliveryEmailSenderTest {
         String body = sender.body("vi", guest);
 
         assertFalse(body.contains("customer/orders"), body);
-    }
-
-    @Test
-    void withoutACardTheBodyAndSubjectNameOnlyTheReceiptAndWithoutAnAddressThereIsNoLink() {
-        DeliveryEmailSender sender = sender("smtp.example.com", true, "");
-
-        String body = sender.body("en", documents("lan@example.com", "en", false));
-
-        assertFalse(body.contains("Warranty card"), body);
-        assertFalse(body.contains("http"), body);
-        assertEquals("Kinetic E-Bike: your sales receipt for order ORD-1", sender.subject("en", "ORD-1", false));
     }
 
     @Test

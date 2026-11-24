@@ -86,7 +86,7 @@ public class StockReceiptService {
         return receipts.findDetailById(id)
             .map(StockReceiptService::toResponse)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-                RequestLanguage.text("Không tìm thấy phiếu nhập kho.", "Stock receipt not found.")));
+                "Không tìm thấy phiếu nhập kho."));
     }
 
     /** The pick list of the receipt form: every bike with its colours and what each has now. */
@@ -112,20 +112,18 @@ public class StockReceiptService {
     })
     public ReceiptResponse create(ReceiptCreateRequest request) {
         if (request == null) {
-            throw bad("Vui lòng nhập thông tin phiếu nhập.", "Please fill in the receipt.");
+            throw bad("Vui lòng nhập thông tin phiếu nhập.");
         }
         String supplier = StockRules.clean(request.supplierName());
         if (supplier == null) {
-            throw bad("Vui lòng nhập nhà cung cấp.", "Please enter the supplier.");
+            throw bad("Vui lòng nhập nhà cung cấp.");
         }
         if (supplier.length() > StockRules.MAX_SUPPLIER_LENGTH) {
-            throw bad("Tên nhà cung cấp không được vượt quá " + StockRules.MAX_SUPPLIER_LENGTH + " ký tự.",
-                "The supplier name cannot be longer than " + StockRules.MAX_SUPPLIER_LENGTH + " characters.");
+            throw bad("Tên nhà cung cấp không được vượt quá " + StockRules.MAX_SUPPLIER_LENGTH + " ký tự.");
         }
         String note = StockRules.clean(request.note());
         if (note != null && note.length() > StockRules.MAX_NOTE_LENGTH) {
-            throw bad("Ghi chú không được vượt quá " + StockRules.MAX_NOTE_LENGTH + " ký tự.",
-                "The note cannot be longer than " + StockRules.MAX_NOTE_LENGTH + " characters.");
+            throw bad("Ghi chú không được vượt quá " + StockRules.MAX_NOTE_LENGTH + " ký tự.");
         }
         List<ReceiptLineRequest> lines = request.lines() == null ? List.of() : request.lines();
         StockRules.Problem problem = StockRules.checkLines(lines.stream()
@@ -145,16 +143,15 @@ public class StockReceiptService {
             Product product = bikes.get(line.productId());
             if (product == null) {
                 product = products.findById(line.productId()).orElseThrow(() -> bad(
-                    "Dòng " + number + ": không tìm thấy xe.", "Line " + number + ": the bike was not found."));
+                    "Dòng " + number + ": không tìm thấy xe."));
                 bikes.put(product.getId(), product);
             }
             ProductVariant variant = null;
             if (line.variantId() != null) {
                 variant = product.getVariants().stream().filter(v -> line.variantId().equals(v.getId())).findFirst().orElseThrow(() -> bad(
-                    "Dòng " + number + ": màu này không thuộc xe đã chọn.", "Line " + number + ": this colour does not belong to the chosen bike."));
+                    "Dòng " + number + ": màu này không thuộc xe đã chọn."));
             } else if (product.getVariants().stream().anyMatch(v -> Boolean.TRUE.equals(v.getActive()))) {
-                throw bad("Dòng " + number + ": xe này bán theo màu, hãy chọn màu nhận.",
-                    "Line " + number + ": this bike is sold by colour, please choose the colour received.");
+                throw bad("Dòng " + number + ": xe này bán theo màu, hãy chọn màu nhận.");
             }
             resolved.add(new Resolved(product, variant, line.quantity(), number));
         }
@@ -168,8 +165,7 @@ public class StockReceiptService {
         for (Resolved line : resolved) {
             Integer current = line.variant() != null ? line.variant().getStockQuantity() : line.product().getStockQuantity();
             if (!StockRules.fitsOnShelf(current, line.quantity())) {
-                throw bad("Dòng " + line.number() + ": tồn kho sau khi nhập sẽ vượt " + StockRules.MAX_STOCK + " xe.",
-                    "Line " + line.number() + ": the stock after receiving would exceed " + StockRules.MAX_STOCK + " bikes.");
+                throw bad("Dòng " + line.number() + ": tồn kho sau khi nhập sẽ vượt " + StockRules.MAX_STOCK + " xe.");
             }
         }
         List<StockLedger.Entry> entries = new ArrayList<>();
@@ -248,20 +244,17 @@ public class StockReceiptService {
     private static ResponseStatusException problemOf(StockRules.Problem problem) {
         int line = problem.line();
         return switch (problem.kind()) {
-            case NO_LINES -> bad("Phiếu nhập cần có ít nhất một dòng.", "A receipt needs at least one line.");
-            case TOO_MANY_LINES -> bad("Một phiếu nhập có tối đa " + StockRules.MAX_LINES + " dòng.",
-                "A receipt can have at most " + StockRules.MAX_LINES + " lines.");
-            case MISSING_PRODUCT -> bad("Dòng " + line + ": vui lòng chọn xe.", "Line " + line + ": please choose a bike.");
-            case BAD_QUANTITY -> bad("Dòng " + line + ": số lượng phải là số nguyên lớn hơn 0.", "Line " + line + ": the quantity must be a whole number above 0.");
-            case QUANTITY_TOO_LARGE -> bad("Dòng " + line + ": mỗi dòng nhập tối đa " + StockRules.MAX_LINE_QUANTITY + " xe.",
-                "Line " + line + ": a line can receive at most " + StockRules.MAX_LINE_QUANTITY + " bikes.");
-            case DUPLICATE_LINE -> bad("Dòng " + line + ": màu này đã có ở dòng trên, hãy gộp số lượng vào một dòng.",
-                "Line " + line + ": this colour is already on an earlier line, please put the quantity on one line.");
+            case NO_LINES -> bad("Phiếu nhập cần có ít nhất một dòng.");
+            case TOO_MANY_LINES -> bad("Một phiếu nhập có tối đa " + StockRules.MAX_LINES + " dòng.");
+            case MISSING_PRODUCT -> bad("Dòng " + line + ": vui lòng chọn xe.");
+            case BAD_QUANTITY -> bad("Dòng " + line + ": số lượng phải là số nguyên lớn hơn 0.");
+            case QUANTITY_TOO_LARGE -> bad("Dòng " + line + ": mỗi dòng nhập tối đa " + StockRules.MAX_LINE_QUANTITY + " xe.");
+            case DUPLICATE_LINE -> bad("Dòng " + line + ": màu này đã có ở dòng trên, hãy gộp số lượng vào một dòng.");
         };
     }
 
-    private static ResponseStatusException bad(String vietnamese, String english) {
-        return new ResponseStatusException(HttpStatus.BAD_REQUEST, RequestLanguage.text(vietnamese, english));
+    private static ResponseStatusException bad(String vietnamese) {
+        return new ResponseStatusException(HttpStatus.BAD_REQUEST, vietnamese);
     }
 
     private static int orZero(Integer value) {

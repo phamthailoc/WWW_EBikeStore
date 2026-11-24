@@ -36,7 +36,7 @@ public class SavingsService {
         Product product = products.findBySlug(slug == null ? "" : slug.trim())
             .filter(found -> Boolean.TRUE.equals(found.getActive()))
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-                RequestLanguage.text("Không tìm thấy sản phẩm.", "Product not found.")));
+                "Không tìm thấy sản phẩm."));
         return forProduct(product, kmPerDay, daysPerMonth);
     }
 
@@ -51,26 +51,21 @@ public class SavingsService {
         int km = kmPerDay == null ? SavingsRules.DEFAULT_KM_PER_DAY : kmPerDay;
         int days = daysPerMonth == null ? SavingsRules.DEFAULT_DAYS_PER_MONTH : daysPerMonth;
         if (!SavingsRules.isValidKmPerDay(km)) {
-            throw bad("Số km mỗi ngày phải từ " + SavingsRules.MIN_KM_PER_DAY + " đến " + SavingsRules.MAX_KM_PER_DAY + ".",
-                "Kilometres per day must be from " + SavingsRules.MIN_KM_PER_DAY + " to " + SavingsRules.MAX_KM_PER_DAY + ".");
+            throw bad("Số km mỗi ngày phải từ " + SavingsRules.MIN_KM_PER_DAY + " đến " + SavingsRules.MAX_KM_PER_DAY + ".");
         }
         if (!SavingsRules.isValidDaysPerMonth(days)) {
-            throw bad("Số ngày đi mỗi tháng phải từ " + SavingsRules.MIN_DAYS_PER_MONTH + " đến " + SavingsRules.MAX_DAYS_PER_MONTH + ".",
-                "Days of riding per month must be from " + SavingsRules.MIN_DAYS_PER_MONTH + " to " + SavingsRules.MAX_DAYS_PER_MONTH + ".");
+            throw bad("Số ngày đi mỗi tháng phải từ " + SavingsRules.MIN_DAYS_PER_MONTH + " đến " + SavingsRules.MAX_DAYS_PER_MONTH + ".");
         }
 
         ProductSpecification specification = product.getSpecification();
         String type = specification == null || specification.getVehicleType() == null ? null : specification.getVehicleType().name();
         if (type == null || !RIDDEN.contains(type)) {
-            return unavailable(type, false, RequestLanguage.text(
-                "Sản phẩm này không phải xe nên không có phần tính tiền tiết kiệm.", "This product is not a vehicle, so it has no savings estimate."));
+            return unavailable(type, false, "Sản phẩm này không phải xe nên không có phần tính tiền tiết kiệm.");
         }
         SavingsRules.Battery battery = new SavingsRules.Battery(
             specification.getBatteryCapacityAh(), specification.getBatteryVoltageV(), specification.getMaxRangeKm());
         if (!SavingsRules.hasBatteryData(battery)) {
-            return unavailable(type, true, RequestLanguage.text(
-                "Xe này chưa có đủ thông số pin và quãng đường hợp lý nên chưa tính được. Vui lòng liên hệ cửa hàng để được tư vấn.",
-                "This bike does not list a usable battery and range yet, so the estimate cannot be made. Please contact the store for advice."));
+            return unavailable(type, true, "Xe này chưa có đủ thông số pin và quãng đường hợp lý nên chưa tính được. Vui lòng liên hệ cửa hàng để được tư vấn.");
         }
 
         SavingsRules.Prices prices = new SavingsRules.Prices(
@@ -88,7 +83,7 @@ public class SavingsService {
             null, null, null, SavingsRules.REAL_RANGE_PERCENT, SavingsRules.CHARGER_EFFICIENCY_PERCENT, SavingsRules.MAX_KM_PER_DAY, SavingsRules.MAX_DAYS_PER_MONTH);
     }
 
-    private static ResponseStatusException bad(String vietnamese, String english) {
-        return new ResponseStatusException(HttpStatus.BAD_REQUEST, RequestLanguage.text(vietnamese, english));
+    private static ResponseStatusException bad(String vietnamese) {
+        return new ResponseStatusException(HttpStatus.BAD_REQUEST, vietnamese);
     }
 }

@@ -167,17 +167,6 @@ class OrderDocumentServiceTest {
     }
 
     @Test
-    void theErrorWordsFollowTheLanguage() {
-        stored(DocumentFixtures.order(3, OrderStatus.CANCELLED, 1, false));
-
-        ResponseStatusException english = assertThrows(ResponseStatusException.class, () -> service.receipt(3L, customer("an"), "en"));
-        ResponseStatusException vietnamese = assertThrows(ResponseStatusException.class, () -> service.receipt(3L, customer("an"), "vi"));
-
-        assertEquals("A cancelled order has no sales receipt.", english.getReason());
-        assertEquals("Đơn hàng đã hủy nên không có phiếu bán hàng.", vietnamese.getReason());
-    }
-
-    @Test
     void anInstalmentPlanIsReadForTheReceipt() {
         Order order = stored(DocumentFixtures.order(8, OrderStatus.CONFIRMED, 1, false));
         order.getPayment().setPaymentMethod(com.ebike.model.entity.order.PaymentMethod.INSTALLMENT);
@@ -192,35 +181,6 @@ class OrderDocumentServiceTest {
     // ---- the hand-over email ----
 
     @Test
-    void anOrderWithoutARecordedLanguageIsEmailedInTheLanguageOfTheProfile() {
-        stored(DocumentFixtures.order(10, OrderStatus.DELIVERED, 2, true));
-        UserPreference preference = new UserPreference();
-        preference.setLanguage("en");
-        when(preferences.findByUserId(7L)).thenReturn(Optional.of(preference));
-
-        OrderDocumentService.DeliveryDocuments documents = service.forDeliveredOrder(10L).orElseThrow();
-
-        assertEquals("an@example.com", documents.email());
-        assertEquals("en", documents.language());
-        assertEquals("Nguyễn Văn An", documents.recipientName());
-        assertTrue(documents.hasCard());
-        assertEquals(java.util.List.of("receipt-ORD-20261110-00000010.pdf", "warranty-card-ORD-20261110-00000010.pdf"),
-            documents.files().stream().map(PdfFile::filename).toList());
-    }
-
-    @Test
-    void theLanguageTheOrderWasPlacedInBeatsTheProfileLanguageThatDefaultsToVietnamese() {
-        Order order = stored(DocumentFixtures.order(15, OrderStatus.DELIVERED, 1, true));
-        order.setCustomerLanguage("en");
-        // the profile row exists with its default language, and still does not win
-        UserPreference preference = new UserPreference();
-        preference.setLanguage("vi");
-        when(preferences.findByUserId(7L)).thenReturn(Optional.of(preference));
-
-        assertEquals("en", service.forDeliveredOrder(15L).orElseThrow().language());
-    }
-
-    @Test
     void aGuestOrderWithNoRecordedLanguageIsEmailedInVietnameseToTheCheckoutAddress() {
         Order order = stored(DocumentFixtures.order(11, OrderStatus.DELIVERED, 1, true));
         order.setUser(null);
@@ -230,18 +190,6 @@ class OrderDocumentServiceTest {
 
         assertEquals("khach@example.com", documents.email());
         assertEquals("vi", documents.language());
-    }
-
-    @Test
-    void aGuestOrderIsEmailedInTheLanguageOfTheCheckoutPage() {
-        Order order = stored(DocumentFixtures.order(14, OrderStatus.DELIVERED, 1, true));
-        order.setUser(null);
-        order.setCustomerEmail("guest@example.com");
-        order.setCustomerLanguage("en");
-
-        OrderDocumentService.DeliveryDocuments documents = service.forDeliveredOrder(14L).orElseThrow();
-
-        assertEquals("en", documents.language());
     }
 
     @Test

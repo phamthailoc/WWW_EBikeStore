@@ -115,15 +115,15 @@ public class WarrantyService {
     public WarrantyLookupResponse lookup(String frame) {
         String normalized = normalizeFrame(frame);
         if (!FRAME.matcher(normalized).matches()) {
-            throw bad("Số khung gồm 5 đến 30 ký tự chữ, số hoặc dấu gạch ngang.", "A frame number has 5 to 30 letters, digits or hyphens.");
+            throw bad("Số khung gồm 5 đến 30 ký tự chữ, số hoặc dấu gạch ngang.");
         }
         OrderItemUnit unit = units.findForWarrantyByFrameNumber(normalized)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, RequestLanguage.text("Không tìm thấy xe có số khung này.", "No vehicle with this frame number was found.")));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy xe có số khung này."));
         LocalDateTime now = LocalDateTime.now(clock);
         LocalDateTime starts = startsAt(unit);
         if (starts == null) {
             // not handed over yet: answer like an unknown frame, so the page cannot be used to probe frames of open orders
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, RequestLanguage.text("Không tìm thấy xe có số khung này.", "No vehicle with this frame number was found."));
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy xe có số khung này.");
         }
         Integer months = warrantyMonths(unit);
         return new WarrantyLookupResponse(
@@ -147,11 +147,11 @@ public class WarrantyService {
     public WarrantyClaimResponse createClaim(String username, Long unitId, String description) {
         requireUsername(username);
         if (unitId == null) {
-            throw bad("Vui lòng chọn xe cần bảo hành.", "Please choose the vehicle to claim for.");
+            throw bad("Vui lòng chọn xe cần bảo hành.");
         }
         String text = description == null ? "" : description.trim();
         if (text.length() < 10 || text.length() > 2000) {
-            throw bad("Mô tả lỗi cần từ 10 đến 2000 ký tự.", "Describe the problem in 10 to 2000 characters.");
+            throw bad("Mô tả lỗi cần từ 10 đến 2000 ký tự.");
         }
         // The lock is the first statement of the transaction on purpose: under REPEATABLE READ the first plain SELECT fixes the
         // snapshot, and a snapshot taken before the lock would not show a request that another transaction committed while we waited.
@@ -163,7 +163,7 @@ public class WarrantyService {
             .filter(found -> ownedBy(found, username))
             .orElseThrow(WarrantyService::unitNotFound);
         if (unit.getOrderItem().getOrder().getStatus() != OrderStatus.DELIVERED) {
-            throw bad("Xe chỉ được yêu cầu bảo hành sau khi đã giao.", "A warranty request can be made only after the vehicle was delivered.");
+            throw bad("Xe chỉ được yêu cầu bảo hành sau khi đã giao.");
         }
         if (claims.existsByUnitIdAndStatusIn(unit.getId(), OPEN)) {
             throw openRequestExists();
@@ -201,7 +201,7 @@ public class WarrantyService {
     public ClaimPage listClaims(String status, int page, int size) {
         String filter = status == null || status.isBlank() ? null : status.trim().toUpperCase(Locale.ROOT);
         if (filter != null && !ALL.equals(filter) && !FILTERS.contains(filter)) {
-            throw bad("Trạng thái không hợp lệ.", "Invalid status.");
+            throw bad("Trạng thái không hợp lệ.");
         }
         boolean openQueue = filter == null || OPEN.contains(filter);
         Sort sort = openQueue ? Sort.by(Sort.Order.asc("createdAt"), Sort.Order.asc("id")) : Sort.by(Sort.Order.desc("createdAt"), Sort.Order.desc("id"));
@@ -221,33 +221,33 @@ public class WarrantyService {
     @Transactional
     public WarrantyClaimResponse updateClaim(Long id, WarrantyClaimUpdateRequest request) {
         WarrantyClaim claim = claims.findLockedById(id)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, RequestLanguage.text("Không tìm thấy yêu cầu bảo hành.", "Warranty request not found.")));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy yêu cầu bảo hành."));
         String previous = claim.getStatus();
         String previousNote = claim.getStaffNote();
         boolean closed = WarrantyClaim.DONE.equals(previous) || WarrantyClaim.REJECTED.equals(previous);
         if (request != null && request.status() != null && !request.status().isBlank()) {
             String next = request.status().trim().toUpperCase(Locale.ROOT);
             if (!WarrantyRules.isKnownStatus(next)) {
-                throw bad("Trạng thái không hợp lệ.", "Invalid status.");
+                throw bad("Trạng thái không hợp lệ.");
             }
             if (!WarrantyRules.canMove(previous, next)) {
-                throw bad("Không thể chuyển yêu cầu từ bước hiện tại sang bước này.", "The request cannot move from its current step to this one.");
+                throw bad("Không thể chuyển yêu cầu từ bước hiện tại sang bước này.");
             }
             claim.setStatus(next);
         }
         if (request != null && request.staffNote() != null) {
             if (closed) {
-                throw bad("Yêu cầu đã đóng, không thể sửa ghi chú.", "This request is closed; its note can no longer be edited.");
+                throw bad("Yêu cầu đã đóng, không thể sửa ghi chú.");
             }
             String note = request.staffNote().trim();
             if (note.length() > 3000) {
-                throw bad("Ghi chú tối đa 3000 ký tự.", "A note can have at most 3000 characters.");
+                throw bad("Ghi chú tối đa 3000 ký tự.");
             }
             claim.setStaffNote(note.isEmpty() ? null : note);
         }
         if (WarrantyClaim.REJECTED.equals(claim.getStatus()) && !WarrantyClaim.REJECTED.equals(previous) && (claim.getStaffNote() == null || claim.getStaffNote().isBlank() || Objects.equals(previousNote, claim.getStaffNote()))) {
             // the reason must be written for the rejection: an earlier note ("please bring the bike in") would read as the reason
-            throw bad("Vui lòng ghi lý do khi từ chối yêu cầu.", "Please give a reason when rejecting a request.");
+            throw bad("Vui lòng ghi lý do khi từ chối yêu cầu.");
         }
         boolean statusChanged = !previous.equals(claim.getStatus());
         boolean changed = statusChanged || !Objects.equals(previousNote, claim.getStaffNote());
@@ -358,18 +358,18 @@ public class WarrantyService {
     }
 
     private static ResponseStatusException openRequestExists() {
-        return new ResponseStatusException(HttpStatus.CONFLICT, RequestLanguage.text("Xe này đang có một yêu cầu bảo hành chưa xử lý xong.", "This vehicle already has an open warranty request."));
+        return new ResponseStatusException(HttpStatus.CONFLICT, "Xe này đang có một yêu cầu bảo hành chưa xử lý xong.");
     }
 
     private static ResponseStatusException signInRequired() {
-        return new ResponseStatusException(HttpStatus.UNAUTHORIZED, RequestLanguage.text("Vui lòng đăng nhập để tiếp tục.", "Please sign in to continue."));
+        return new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Vui lòng đăng nhập để tiếp tục.");
     }
 
     private static ResponseStatusException unitNotFound() {
-        return new ResponseStatusException(HttpStatus.NOT_FOUND, RequestLanguage.text("Không tìm thấy xe này trong tài khoản của bạn.", "This vehicle was not found in your account."));
+        return new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy xe này trong tài khoản của bạn.");
     }
 
-    private ResponseStatusException bad(String vietnamese, String english) {
-        return new ResponseStatusException(HttpStatus.BAD_REQUEST, RequestLanguage.text(vietnamese, english));
+    private ResponseStatusException bad(String vietnamese) {
+        return new ResponseStatusException(HttpStatus.BAD_REQUEST, vietnamese);
     }
 }

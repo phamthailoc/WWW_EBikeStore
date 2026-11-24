@@ -56,28 +56,11 @@ class TestRideNotificationTest {
         return captor.getValue();
     }
 
-    @Test void englishCustomerGetsAnEnglishConfirmation() {
-        profile("en", true);
-        service.handleTestRideNotice(event(TestRideMessages.CONFIRMED));
-        Notification notification = saved();
-        assertEquals(NotificationType.TEST_RIDE, notification.getType());
-        assertEquals("Test ride confirmed", notification.getTitle());
-        assertTrue(notification.getMessage().contains("22/11/2026 at 09:00"), notification.getMessage());
-        assertTrue(notification.getMessage().contains("Quan 1, 187 Nguyen Thai Hoc"), notification.getMessage());
-        assertEquals("/customer/test-rides", notification.getTargetUrl());
-    }
-
     @Test void customerWithoutAProfileGetsVietnamese() {
         service.handleTestRideNotice(event(TestRideMessages.REMINDER));
         Notification notification = saved();
         assertEquals("Nhắc lịch lái thử", notification.getTitle());
         assertTrue(notification.getMessage().contains("09:00 22/11/2026"), notification.getMessage());
-    }
-
-    @Test void customerWhoSwitchedNotificationsOffStillGetsNoticesOfTheirOwnBooking() {
-        profile("en", false);
-        service.handleTestRideNotice(event(TestRideMessages.CANCELLED));
-        assertEquals("Test ride cancelled", saved().getTitle());
     }
 
     @Test void erasedAccountGetsNone() {

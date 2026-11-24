@@ -95,11 +95,7 @@ public class AccountErasure {
         // V24: an application waiting for the staff, or for its down payment, still holds an order's stock and someone has to answer it: the order is
         // cancelled (or the application rejected) first. Counted after the lock, so an order placed at this very moment cannot slip in.
         if (installments.countOpenOf(id) > 0) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, byOwner ? RequestLanguage.text(
-                "Bạn còn đơn mua trả góp đang chờ duyệt hoặc chờ trả trước. Hãy hủy đơn đó trong mục Đơn hàng trước khi xóa tài khoản.",
-                "You still have an instalment order waiting for a decision or for the down payment. Cancel it under Orders before deleting your account.") : RequestLanguage.text(
-                "Khách này còn hồ sơ trả góp đang mở (chờ duyệt hoặc chờ trả trước). Hãy từ chối hồ sơ hoặc hủy đơn trước khi xóa tài khoản.",
-                "This customer still has an open instalment application (waiting for a decision or for the down payment). Reject it or cancel the order before deleting the account."));
+            throw new ResponseStatusException(HttpStatus.CONFLICT, byOwner ? "Bạn còn đơn mua trả góp đang chờ duyệt hoặc chờ trả trước. Hãy hủy đơn đó trong mục Đơn hàng trước khi xóa tài khoản." : "Khách này còn hồ sơ trả góp đang mở (chờ duyệt hoặc chờ trả trước). Hãy từ chối hồ sơ hoặc hủy đơn trước khi xóa tài khoản.");
         }
         addresses.deleteAll(addresses.findByUserId(id));
         favorites.deleteAll(favorites.findByUserId(id));

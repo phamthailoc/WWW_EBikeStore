@@ -60,17 +60,6 @@ class MaintenanceEmailSenderTest {
     }
 
     @Test
-    void theEmailLinksToTheWarrantyBookWhenThePublicAddressIsKnown() {
-        sender("smtp.example.com", true, "https://shop.example.com/").send("an@example.com", "Bike", "F1", "P6M", "en");
-
-        SimpleMailMessage message = sent();
-        assertEquals("shop@example.com", message.getFrom());
-        assertEquals("an@example.com", message.getTo()[0]);
-        assertTrue(message.getSubject().contains("due for service"));
-        assertTrue(message.getText().contains("https://shop.example.com/customer/warranty"));
-    }
-
-    @Test
     void withoutAPublicAddressTheEmailPointsToThePageByName() {
         sender("smtp.example.com", true, "").send("an@example.com", "Bike", "F1", "P6M", "vi");
 

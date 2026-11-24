@@ -134,15 +134,15 @@ public class TestRideService {
     @Transactional(readOnly = true)
     public List<TestRideSlotResponse> slots(Long showroomId, String date) {
         if (showroomId == null) {
-            throw bad("Vui lòng chọn cửa hàng.", "Please choose a showroom.");
+            throw bad("Vui lòng chọn cửa hàng.");
         }
         LocalDate day = parseDate(date);
         LocalDateTime now = LocalDateTime.now(clock);
         if (day.isBefore(now.toLocalDate())) {
-            throw bad("Ngày này đã qua.", "This day has already passed.");
+            throw bad("Ngày này đã qua.");
         }
         if (day.isAfter(now.toLocalDate().plusDays(daysAhead))) {
-            throw bad("Chỉ đặt lịch trong " + daysAhead + " ngày tới.", "You can book only within the next " + daysAhead + " days.");
+            throw bad("Chỉ đặt lịch trong " + daysAhead + " ngày tới.");
         }
         Showroom showroom = showrooms.findById(showroomId).filter(found -> Boolean.TRUE.equals(found.getActive()))
             .orElseThrow(TestRideService::showroomNotFound);
@@ -171,22 +171,21 @@ public class TestRideService {
     public TestRideResponse book(String username, TestRideCreateRequest request) {
         requireUsername(username);
         if (request == null || request.productId() == null || request.showroomId() == null || request.slotStart() == null || request.slotStart().isBlank()) {
-            throw bad("Vui lòng chọn xe, cửa hàng và khung giờ.", "Please choose a bike, a showroom and a time.");
+            throw bad("Vui lòng chọn xe, cửa hàng và khung giờ.");
         }
         String phone = TestRideRules.normalizePhone(request.contactPhone());
         if (!TestRideRules.isValidPhone(phone)) {
-            throw bad("Số điện thoại chưa hợp lệ. Vui lòng nhập số bắt đầu bằng 0 và gồm 10-11 chữ số.",
-                "The phone number is not valid. Enter a number that starts with 0 and has 10 or 11 digits.");
+            throw bad("Số điện thoại chưa hợp lệ. Vui lòng nhập số bắt đầu bằng 0 và gồm 10-11 chữ số.");
         }
         String note = request.note() == null ? "" : request.note().trim();
         if (note.length() > MAX_NOTE) {
-            throw bad("Ghi chú tối đa " + MAX_NOTE + " ký tự.", "A note can have at most " + MAX_NOTE + " characters.");
+            throw bad("Ghi chú tối đa " + MAX_NOTE + " ký tự.");
         }
         LocalDateTime slot;
         try {
             slot = LocalDateTime.parse(request.slotStart().trim());
         } catch (DateTimeParseException exception) {
-            throw bad("Khung giờ không hợp lệ.", "The time is not valid.");
+            throw bad("Khung giờ không hợp lệ.");
         }
         // The showroom row is locked first and on purpose before any plain SELECT: under REPEATABLE READ the first plain SELECT fixes the
         // snapshot, and a snapshot taken before the lock would not show a booking that another transaction committed while we waited.
@@ -199,38 +198,36 @@ public class TestRideService {
         User user = users.findLockedByUsername(username).orElseThrow(TestRideService::signInRequired);
         Product product = products.findById(request.productId())
             .filter(found -> Boolean.TRUE.equals(found.getActive()))
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, RequestLanguage.text("Không tìm thấy xe này.", "This bike was not found.")));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy xe này."));
         if (product.getSpecification() == null || !TestRideRules.isRideable(product.getSpecification().getVehicleType())) {
-            throw bad("Sản phẩm này không phải xe để lái thử.", "This product is not a bike that can be test-ridden.");
+            throw bad("Sản phẩm này không phải xe để lái thử.");
         }
         LocalDateTime now = LocalDateTime.now(clock);
         if (!TestRideRules.isOnGrid(slot, TestRideRules.hoursOf(showroom.getOpeningHours(), showroom.getOpenTime(), showroom.getCloseTime()))) {
-            throw bad("Khung giờ này nằm ngoài giờ mở cửa của cửa hàng.", "This time is outside the showroom's opening hours.");
+            throw bad("Khung giờ này nằm ngoài giờ mở cửa của cửa hàng.");
         }
         if (!TestRideRules.isWithinWindow(slot, now, daysAhead)) {
-            throw bad("Chỉ đặt lịch trong " + daysAhead + " ngày tới.", "You can book only within the next " + daysAhead + " days.");
+            throw bad("Chỉ đặt lịch trong " + daysAhead + " ngày tới.");
         }
         if (slot.isBefore(now)) {
-            throw bad("Khung giờ này đã qua.", "This time has already passed.");
+            throw bad("Khung giờ này đã qua.");
         }
         if (!TestRideRules.isFarEnough(slot, now, leadMinutes)) {
-            throw bad("Vui lòng đặt trước ít nhất " + leadText(true) + ".", "Please book at least " + leadText(false) + " ahead.");
+            throw bad("Vui lòng đặt trước ít nhất " + leadText(true) + ".");
         }
         // any open ride that overlaps the hour, not only one at the very same start: showrooms may open on the half hour, so slots of two showrooms can be shifted
         if (bookings.existsByUserIdAndStatusInAndSlotStartGreaterThanAndSlotStartLessThan(
             user.getId(), TestRideRules.OPEN, slot.minus(TestRideRules.SLOT), slot.plus(TestRideRules.SLOT))) {
-            throw conflict("Bạn đã có một lịch lái thử vào giờ này.", "You already have a test ride at this time.");
+            throw conflict("Bạn đã có một lịch lái thử vào giờ này.");
         }
         if (bookings.countByUserIdAndStatusInAndSlotStartGreaterThanEqual(user.getId(), TestRideRules.OPEN, now) >= maxOpenPerCustomer) {
-            throw conflict("Bạn đang có tối đa " + maxOpenPerCustomer + " lịch lái thử chưa diễn ra. Vui lòng hủy bớt hoặc đợi sau buổi lái thử.",
-                "You already have " + maxOpenPerCustomer + " upcoming test rides, the most allowed. Cancel one or wait until after a ride.");
+            throw conflict("Bạn đang có tối đa " + maxOpenPerCustomer + " lịch lái thử chưa diễn ra. Vui lòng hủy bớt hoặc đợi sau buổi lái thử.");
         }
         if (bookings.countByUserIdAndCreatedAtGreaterThanEqual(user.getId(), now.minus(BOOKING_RATE_WINDOW)) >= MAX_BOOKINGS_PER_WINDOW) {
-            throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS, RequestLanguage.text(
-                "Bạn đặt lịch quá nhanh. Vui lòng thử lại sau ít phút.", "You are booking too fast. Please try again in a few minutes."));
+            throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS, "Bạn đặt lịch quá nhanh. Vui lòng thử lại sau ít phút.");
         }
         if (bookings.countAt(showroom.getId(), slot, TestRideRules.OPEN) >= capacity) {
-            throw conflict("Khung giờ này đã đủ chỗ. Vui lòng chọn giờ khác.", "This time is full. Please choose another one.");
+            throw conflict("Khung giờ này đã đủ chỗ. Vui lòng chọn giờ khác.");
         }
         TestRideBooking booking = new TestRideBooking();
         booking.setUser(user);
@@ -246,7 +243,7 @@ public class TestRideService {
         } catch (DataIntegrityViolationException exception) {
             if (isActiveUserSlotViolation(exception)) {
                 // the same customer, the same time, committed by a second request that slipped past the check above
-                throw conflict("Bạn đã có một lịch lái thử vào giờ này.", "You already have a test ride at this time.");
+                throw conflict("Bạn đã có một lịch lái thử vào giờ này.");
             }
             // a broken foreign key, a CHECK, a value too long: a real data error, not something the customer did; the log keeps it
             log.error("Saving a test ride booking failed on a constraint other than {}", ACTIVE_USER_SLOT_KEY, exception);
@@ -260,10 +257,10 @@ public class TestRideService {
         requireUsername(username);
         TestRideBooking booking = bookings.findLockedById(id)
             .filter(found -> found.getUser() != null && username.equals(found.getUser().getUsername()))
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, RequestLanguage.text("Không tìm thấy lịch lái thử này.", "This test ride was not found.")));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy lịch lái thử này."));
         LocalDateTime now = LocalDateTime.now(clock);
         if (!TestRideRules.canCustomerCancel(booking.getStatus(), booking.getSlotStart(), now)) {
-            throw conflict("Lịch này không thể hủy nữa.", "This test ride can no longer be cancelled.");
+            throw conflict("Lịch này không thể hủy nữa.");
         }
         if (TestRideBooking.CONFIRMED.equals(booking.getStatus())) {
             booking.setCancelledByCustomerAt(now); // the staff had agreed to it: the backlog tells them
@@ -283,7 +280,7 @@ public class TestRideService {
     public List<TestRideResponse> schedule(String date, Long showroomId, String status) {
         String filter = status == null || status.isBlank() ? null : status.trim().toUpperCase(Locale.ROOT);
         if (filter != null && !ALL.equals(filter) && !TestRideRules.isKnownStatus(filter)) {
-            throw bad("Trạng thái không hợp lệ.", "Invalid status.");
+            throw bad("Trạng thái không hợp lệ.");
         }
         boolean hasDate = date != null && !date.isBlank();
         LocalDateTime from = FAR_PAST;
@@ -322,18 +319,18 @@ public class TestRideService {
     @Transactional
     public TestRideResponse update(Long id, TestRideUpdateRequest request) {
         TestRideBooking booking = bookings.findLockedById(id)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, RequestLanguage.text("Không tìm thấy lịch lái thử.", "Test ride not found.")));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy lịch lái thử."));
         LocalDateTime now = LocalDateTime.now(clock);
         String previous = booking.getStatus();
         String previousNote = booking.getStaffNote();
         boolean closed = !TestRideRules.OPEN.contains(previous);
         if (request != null && request.staffNote() != null) {
             if (closed) {
-                throw bad("Lịch đã đóng, không thể sửa ghi chú.", "This test ride is closed; its note can no longer be edited.");
+                throw bad("Lịch đã đóng, không thể sửa ghi chú.");
             }
             String note = request.staffNote().trim();
             if (note.length() > MAX_STAFF_NOTE) {
-                throw bad("Ghi chú tối đa " + MAX_STAFF_NOTE + " ký tự.", "A note can have at most " + MAX_STAFF_NOTE + " characters.");
+                throw bad("Ghi chú tối đa " + MAX_STAFF_NOTE + " ký tự.");
             }
             booking.setStaffNote(note.isEmpty() ? null : note);
         }
@@ -341,21 +338,20 @@ public class TestRideService {
         if (request != null && request.status() != null && !request.status().isBlank()) {
             next = request.status().trim().toUpperCase(Locale.ROOT);
             if (!TestRideRules.isKnownStatus(next)) {
-                throw bad("Trạng thái không hợp lệ.", "Invalid status.");
+                throw bad("Trạng thái không hợp lệ.");
             }
             if (!TestRideRules.canMove(previous, next)) {
-                throw bad("Không thể chuyển lịch từ bước hiện tại sang bước này.", "The test ride cannot move from its current step to this one.");
+                throw bad("Không thể chuyển lịch từ bước hiện tại sang bước này.");
             }
             if (!TestRideRules.timingAllows(next, booking.getSlotStart(), now)) {
-                throw bad(timingRefusalVi(next, previous), timingRefusalEn(next, previous));
+                throw bad(timingRefusalVi(next, previous));
             }
             if (TestRideBooking.CONFIRMED.equals(next) && !isAvailable(booking)) {
-                throw bad("Cửa hàng này đã ngừng nhận lịch hoặc xe này đã ngừng bán, không thể xác nhận. Hãy hủy lịch và ghi lý do.",
-                    "This showroom no longer takes bookings or this bike is no longer sold, so the ride cannot be confirmed. Cancel it and give a reason.");
+                throw bad("Cửa hàng này đã ngừng nhận lịch hoặc xe này đã ngừng bán, không thể xác nhận. Hãy hủy lịch và ghi lý do.");
             }
             // the reason must come with this very request: an older note (written at confirmation) is not a reason for the cancellation
             if (TestRideBooking.CANCELLED.equals(next) && (request.staffNote() == null || request.staffNote().isBlank())) {
-                throw bad("Vui lòng ghi lý do khi hủy lịch.", "Please give a reason when cancelling a test ride.");
+                throw bad("Vui lòng ghi lý do khi hủy lịch.");
             }
             booking.setStatus(next);
             if (TestRideBooking.CANCELLED.equals(next)) {
@@ -406,7 +402,7 @@ public class TestRideService {
         String name = ((user.getFirstName() == null ? "" : user.getFirstName()) + " " + (user.getLastName() == null ? "" : user.getLastName())).trim();
         if (AccountErasure.DELETED.equals(user.getAccountStatus())) {
             // the erasure wrote its Vietnamese placeholder into the name: the page shows it in the language of the request instead
-            name = RequestLanguage.text("Tài khoản đã xóa", "Deleted account");
+            name = "Tài khoản đã xóa";
         }
         Showroom showroom = booking.getShowroom();
         Product product = booking.getProduct();
@@ -489,12 +485,12 @@ public class TestRideService {
 
     private LocalDate parseDate(String date) {
         if (date == null || date.isBlank()) {
-            throw bad("Vui lòng chọn ngày.", "Please choose a date.");
+            throw bad("Vui lòng chọn ngày.");
         }
         try {
             return LocalDate.parse(date.trim());
         } catch (DateTimeParseException exception) {
-            throw bad("Ngày không hợp lệ.", "The date is not valid.");
+            throw bad("Ngày không hợp lệ.");
         }
     }
 
@@ -509,18 +505,18 @@ public class TestRideService {
     }
 
     private static ResponseStatusException signInRequired() {
-        return new ResponseStatusException(HttpStatus.UNAUTHORIZED, RequestLanguage.text("Vui lòng đăng nhập để tiếp tục.", "Please sign in to continue."));
+        return new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Vui lòng đăng nhập để tiếp tục.");
     }
 
     private static ResponseStatusException showroomNotFound() {
-        return new ResponseStatusException(HttpStatus.NOT_FOUND, RequestLanguage.text("Không tìm thấy cửa hàng này.", "This showroom was not found."));
+        return new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy cửa hàng này.");
     }
 
-    private static ResponseStatusException conflict(String vietnamese, String english) {
-        return new ResponseStatusException(HttpStatus.CONFLICT, RequestLanguage.text(vietnamese, english));
+    private static ResponseStatusException conflict(String vietnamese) {
+        return new ResponseStatusException(HttpStatus.CONFLICT, vietnamese);
     }
 
-    private static ResponseStatusException bad(String vietnamese, String english) {
-        return new ResponseStatusException(HttpStatus.BAD_REQUEST, RequestLanguage.text(vietnamese, english));
+    private static ResponseStatusException bad(String vietnamese) {
+        return new ResponseStatusException(HttpStatus.BAD_REQUEST, vietnamese);
     }
 }

@@ -133,7 +133,7 @@ public class InstallmentService {
                 ? applications.findByStatusOrderByCreatedAtAsc(wanted, PageRequest.of(0, QUEUE_LIMIT))
                 : applications.findByStatusOrderByCreatedAtDesc(wanted, PageRequest.of(0, QUEUE_LIMIT));
         } else {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, RequestLanguage.text("Trạng thái không hợp lệ.", "The status is not valid."));
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Trạng thái không hợp lệ.");
         }
         return rows.stream().map(row -> toResponse(row, true)).toList();
     }
@@ -162,16 +162,16 @@ public class InstallmentService {
         String decision = request == null || request.decision() == null ? "" : request.decision().trim().toUpperCase(Locale.ROOT);
         boolean approve = "APPROVE".equals(decision);
         if (!approve && !"REJECT".equals(decision)) {
-            throw bad("Quyết định phải là APPROVE hoặc REJECT.", "The decision must be APPROVE or REJECT.");
+            throw bad("Quyết định phải là APPROVE hoặc REJECT.");
         }
         String note = request.note() == null || request.note().isBlank() ? null : request.note().trim();
         // a rejection note becomes the tail of the order's cancellation reason, which has the same limit as a whole
         int maxNote = maxNoteLength(approve);
         if (note != null && note.length() > maxNote) {
-            throw bad("Ghi chú tối đa " + maxNote + " ký tự.", "A note can have at most " + maxNote + " characters.");
+            throw bad("Ghi chú tối đa " + maxNote + " ký tự.");
         }
         if (!approve && note == null) {
-            throw bad("Vui lòng nhập lý do từ chối (khách sẽ thấy).", "Please give the reason for rejecting (the customer will see it).");
+            throw bad("Vui lòng nhập lý do từ chối (khách sẽ thấy).");
         }
         // The locks, always in this order (every cancellation of an order takes them the same way): the order row first, then the application row. So an
         // approval and a rejection pressed at once, or a cancellation of the order, wait for each other and then see what the winner did.
@@ -179,25 +179,18 @@ public class InstallmentService {
         Order order = orderRepository.findLockedById(orderId).orElseThrow(InstallmentService::notFound);
         InstallmentApplication application = applications.findLockedById(id).orElseThrow(InstallmentService::notFound);
         if (!InstallmentApplication.PENDING.equals(application.getStatus())) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, RequestLanguage.text(
-                "Hồ sơ này đã được xử lý hoặc đơn đã bị hủy. Hãy tải lại danh sách.",
-                "This application was already decided or its order was cancelled. Please reload the list."));
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Hồ sơ này đã được xử lý hoặc đơn đã bị hủy. Hãy tải lại danh sách.");
         }
         if (order.getStatus() != OrderStatus.PENDING) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, RequestLanguage.text(
-                "Đơn hàng không còn ở trạng thái chờ xác nhận nên không duyệt được hồ sơ.",
-                "The order is no longer waiting for confirmation, so the application cannot be decided."));
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Đơn hàng không còn ở trạng thái chờ xác nhận nên không duyệt được hồ sơ.");
         }
         // past the review hold the expiry job is about to cancel the order: approving now would only restart the clock of an order the store let lapse
         if (approve && reviewOverdue(application, LocalDateTime.now())) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, RequestLanguage.text(
-                "Đã quá thời hạn duyệt hồ sơ nên đơn hàng sắp bị hủy tự động. Không duyệt thêm được.",
-                "The review time has run out, so the order is about to be cancelled automatically. It can no longer be approved."));
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Đã quá thời hạn duyệt hồ sơ nên đơn hàng sắp bị hủy tự động. Không duyệt thêm được.");
         }
         // an application of an account erased before this was checked can still be rejected (that frees the order's stock), but not approved
         if (approve && AccountErasure.DELETED.equals(application.getUser().getAccountStatus())) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, RequestLanguage.text(
-                "Tài khoản của khách đã bị xóa, không duyệt được hồ sơ.", "The customer's account was deleted, so the application cannot be approved."));
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Tài khoản của khách đã bị xóa, không duyệt được hồ sơ.");
         }
 
         LocalDateTime now = LocalDateTime.now();
@@ -231,7 +224,7 @@ public class InstallmentService {
         String name = ((user.getFirstName() == null ? "" : user.getFirstName()) + " " + (user.getLastName() == null ? "" : user.getLastName())).trim();
         if (AccountErasure.DELETED.equals(user.getAccountStatus())) {
             // the erasure wrote its Vietnamese placeholder into the name: the page shows it in the language of the request instead
-            name = RequestLanguage.text("Tài khoản đã xóa", "Deleted account");
+            name = "Tài khoản đã xóa";
         }
         Payment payment = order.getPayment();
         boolean orderOpen = order.getStatus() == OrderStatus.PENDING;
@@ -271,10 +264,10 @@ public class InstallmentService {
     }
 
     private static ResponseStatusException notFound() {
-        return new ResponseStatusException(HttpStatus.NOT_FOUND, RequestLanguage.text("Không tìm thấy hồ sơ trả góp.", "The instalment application was not found."));
+        return new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy hồ sơ trả góp.");
     }
 
-    private static ResponseStatusException bad(String vietnamese, String english) {
-        return new ResponseStatusException(HttpStatus.BAD_REQUEST, RequestLanguage.text(vietnamese, english));
+    private static ResponseStatusException bad(String vietnamese) {
+        return new ResponseStatusException(HttpStatus.BAD_REQUEST, vietnamese);
     }
 }

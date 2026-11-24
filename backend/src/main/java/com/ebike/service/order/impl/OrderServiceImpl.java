@@ -309,18 +309,14 @@ public class OrderServiceImpl implements OrderService {
             // itself, and confirming earlier would take the order out of PENDING and with it the customer's way to pay)
             boolean approved = installments.findByOrderId(order.getId()).map(a -> InstallmentApplication.APPROVED.equals(a.getStatus())).orElse(false);
             if (!approved) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, RequestLanguage.text(
-                    "Hồ sơ trả góp chưa được duyệt nên chưa xác nhận được đơn hàng.", "The instalment application is not approved yet, so the order cannot be confirmed."));
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Hồ sơ trả góp chưa được duyệt nên chưa xác nhận được đơn hàng.");
             }
             if (order.getPayment().getPaymentStatus() != PaymentStatus.PAID) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, RequestLanguage.text(
-                    "Khoản trả trước chưa được thanh toán nên chưa xác nhận được đơn hàng.", "The down payment is not paid yet, so the order cannot be confirmed."));
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Khoản trả trước chưa được thanh toán nên chưa xác nhận được đơn hàng.");
             }
         }
         if (!nextStatuses(order).contains(nextStatus)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, RequestLanguage.text(
-                "Không thể chuyển đơn hàng từ " + order.getStatus() + " sang " + nextStatus + ".",
-                "Cannot change an order from " + order.getStatus() + " to " + nextStatus + "."));
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Không thể chuyển đơn hàng từ " + order.getStatus() + " sang " + nextStatus + ".");
         }
 
         LocalDateTime cancellableAt = order.getStatus() == OrderStatus.READY_FOR_PICKUP ? order.getPickupDeadlineAt() : null;
@@ -1015,8 +1011,7 @@ public class OrderServiceImpl implements OrderService {
             && authentication.getAuthorities().stream()
                 .noneMatch(authority -> authority.getAuthority().startsWith("ROLE_") && !"ROLE_CUSTOMER".equals(authority.getAuthority()));
         if (authentication != null && !customer) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, RequestLanguage.text(
-                "Chỉ tài khoản khách hàng mới mua trả góp được.", "Only customer accounts can pay by instalments."));
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Chỉ tài khoản khách hàng mới mua trả góp được.");
         }
     }
 
@@ -1032,8 +1027,7 @@ public class OrderServiceImpl implements OrderService {
         } catch (IllegalArgumentException ignored) {
             // Fall through to the checkout-specific validation message below.
         }
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, RequestLanguage.text(
-            "Phương thức thanh toán phải là PAY_LATER, VNPAY hoặc INSTALLMENT.", "Payment method must be PAY_LATER, VNPAY or INSTALLMENT."));
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Phương thức thanh toán phải là PAY_LATER, VNPAY hoặc INSTALLMENT.");
     }
 
     private boolean isBlank(String value) {

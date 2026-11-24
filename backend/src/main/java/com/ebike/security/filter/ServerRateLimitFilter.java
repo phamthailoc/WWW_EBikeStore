@@ -111,7 +111,7 @@ public class ServerRateLimitFilter extends OncePerRequestFilter {
         response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
         response.setContentType("application/json;charset=UTF-8");
         response.setHeader("Retry-After", String.valueOf(Math.max(1, retryAfterSeconds)));
-        String message = RequestLanguage.text(request, "Bạn thao tác quá nhanh. Vui lòng thử lại sau ít phút.", "You are doing that too fast. Please try again in a few minutes.");
+        String message = "Bạn thao tác quá nhanh. Vui lòng thử lại sau ít phút.";
         response.getWriter().write("{\"message\":\"" + message + "\"}");
     }
 

@@ -343,6 +343,9 @@ class OrderDocumentsSeleniumTest extends StorefrontSeleniumTest {
         driver.get(baseUrl + "/manager/orders/" + orderId);
         wait.until(ExpectedConditions.visibilityOfElementLocated(PANEL));
         assertTrue(driver.findElement(PANEL).getText().contains("Tải phiếu bảo hành"), driver.findElement(PANEL).getText());
+        for (String name : pdfNames(downloads)) { // the same file name is written again, so the earlier copy is removed first
+            Files.deleteIfExists(downloads.resolve(name));
+        }
         Set<String> before = pdfNames(downloads);
         clickDownload("/receipt");
         assertEquals("Đã tải tệp PDF.", notice());

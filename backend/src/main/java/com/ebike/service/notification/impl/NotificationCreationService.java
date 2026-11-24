@@ -152,7 +152,6 @@ public class NotificationCreationService {
         userRepository.findById(event.userId()).ifPresent(user -> {
             Optional<UserPreference> preference = userPreferenceRepository.findByUserId(user.getId());
             String language = languageOf(preference);
-            boolean english = "en".equals(InstallmentMessages.normalize(language));
             String title;
             String message;
             if (downPayment) {
@@ -160,10 +159,8 @@ public class NotificationCreationService {
                 title = InstallmentMessages.downPaymentTitle(language, paid);
                 message = InstallmentMessages.downPaymentBody(language, paid, event.orderNumber());
             } else {
-                title = paid ? (english ? "Payment successful" : "Thanh toán thành công") : (english ? "Payment failed" : "Thanh toán thất bại");
-                message = english
-                    ? "Payment for order " + event.orderNumber() + (paid ? " was successful." : " was not successful. Please try again or choose another payment method.")
-                    : "Thanh toán cho đơn hàng " + event.orderNumber() + (paid ? " đã thành công." : " chưa thành công. Vui lòng thử lại hoặc chọn hình thức khác.");
+                title = paid ? ("Thanh toán thành công") : ("Thanh toán thất bại");
+                message = ("Thanh toán cho đơn hàng " + event.orderNumber() + (paid ? " đã thành công." : " chưa thành công. Vui lòng thử lại hoặc chọn hình thức khác."));
             }
             createNotification(user, preference, paid ? NotificationType.PAYMENT_SUCCESS : NotificationType.PAYMENT_FAILED,
                 title, message, event.orderId(), event.paymentId(), "/customer/orders", true);

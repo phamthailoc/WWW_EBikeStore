@@ -92,8 +92,7 @@ public class VnPayServiceImpl implements VnPayService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can only pay your own orders");
         }
         if (order.getStatus() == OrderStatus.CANCELLED) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, com.ebike.common.i18n.RequestLanguage.text(
-                "Đơn hàng đã bị hủy nên không thanh toán được.", "Cannot pay a cancelled order."));
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Đơn hàng đã bị hủy nên không thanh toán được.");
         }
         Payment existingPayment = paymentRepository.findByOrderId(request.orderId()).orElse(null);
         // V24: an instalment order (its payment row is an INSTALLMENT one, or it has an application) is paid only after the staff approved the application,
@@ -103,16 +102,14 @@ public class VnPayServiceImpl implements VnPayService {
         boolean installmentOrder = application != null || (existingPayment != null && existingPayment.getPaymentMethod() == PaymentMethod.INSTALLMENT);
         if (installmentOrder) {
             if (application == null || !InstallmentApplication.APPROVED.equals(application.getStatus())) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, com.ebike.common.i18n.RequestLanguage.text(
-                    "Hồ sơ trả góp chưa được duyệt nên chưa thanh toán được khoản trả trước.", "The instalment application is not approved yet, so the down payment cannot be paid."));
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Hồ sơ trả góp chưa được duyệt nên chưa thanh toán được khoản trả trước.");
             }
             // a page opened with only moments of the hold left could still be paid after the expiry job cancelled the order, so it is refused, and a page
             // that outlasts the hold is closed at the end of it
             holdLeft = application.getReviewedAt() == null ? null : Duration.between(LocalDateTime.now(), application.getReviewedAt().plus(downPaymentHold));
             if (InstallmentRules.downPaymentOverdue(application.getReviewedAt(), downPaymentHold, LocalDateTime.now())
                 || (holdLeft != null && holdLeft.compareTo(MIN_HOLD_LEFT_TO_PAY) < 0)) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, com.ebike.common.i18n.RequestLanguage.text(
-                    "Đã quá hạn thanh toán khoản trả trước nên đơn hàng sắp bị hủy tự động.", "The down payment is overdue, so the order is about to be cancelled automatically."));
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Đã quá hạn thanh toán khoản trả trước nên đơn hàng sắp bị hủy tự động.");
             }
         }
 
@@ -229,9 +226,7 @@ public class VnPayServiceImpl implements VnPayService {
 
     private Payment prepareExistingPayment(Payment payment, Order order) {
         if (payment.getPaymentStatus() == PaymentStatus.PAID) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, com.ebike.common.i18n.RequestLanguage.text(
-                payment.getPaymentMethod() == PaymentMethod.INSTALLMENT ? "Khoản trả trước của đơn này đã được thanh toán." : "Đơn hàng đã được thanh toán.",
-                payment.getPaymentMethod() == PaymentMethod.INSTALLMENT ? "The down payment of this order is already paid." : "Order is already paid."));
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, payment.getPaymentMethod() == PaymentMethod.INSTALLMENT ? "Khoản trả trước của đơn này đã được thanh toán." : "Đơn hàng đã được thanh toán.");
         }
         // V24: the payment row of an instalment order is its down payment: it keeps its amount and its method, only the gateway attempt is new
         boolean installment = payment.getPaymentMethod() == PaymentMethod.INSTALLMENT;
@@ -374,8 +369,7 @@ public class VnPayServiceImpl implements VnPayService {
         if (language == null || language.isBlank()) {
             return "vn";
         }
-        String normalized = language.trim().toLowerCase(Locale.ROOT);
-        return "en".equals(normalized) ? "en" : "vn";
+        return "vn"; // the VNPay page is shown in Vietnamese
     }
 
     private Map<String, String> response(String code, String message) {

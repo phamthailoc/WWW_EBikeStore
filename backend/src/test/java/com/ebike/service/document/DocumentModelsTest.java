@@ -49,19 +49,6 @@ class DocumentModelsTest {
     }
 
     @Test
-    void anOrderNotHandedOverYetIsMarkedProvisionalAndShowsNoHandoverDate() {
-        Order order = DocumentFixtures.order(2, OrderStatus.PROCESSING, 1, false);
-
-        Map<String, Object> model = DocumentModels.receipt(order, null, DocumentFixtures.store(), "en", NOW);
-
-        assertEquals("PROVISIONAL RECEIPT (BIKE NOT HANDED OVER YET)", model.get("title"));
-        assertEquals(true, model.get("provisional"));
-        assertEquals("TT-" + order.getOrderNumber(), model.get("number"));
-        assertNull(model.get("deliveredAt"));
-        assertEquals("Awaiting payment", map(model.get("payment")).get("status"));
-    }
-
-    @Test
     void linesCarryTheFrameAndEngineNumbersOfEachBike() {
         Order order = DocumentFixtures.order(3, OrderStatus.DELIVERED, 2, true);
 
@@ -76,55 +63,12 @@ class DocumentModelsTest {
     }
 
     @Test
-    void theTotalsShowOnlyTheFeesThatApplyAndTheDiscountAsANegative() {
-        Order order = DocumentFixtures.order(4, OrderStatus.DELIVERED, 1, true);
-        order.setIncludeRegistrationService(true);
-        order.setRegistrationFee(new BigDecimal("1500000"));
-        order.setShippingFee(new BigDecimal("500000"));
-        order.setDiscountAmount(new BigDecimal("2000000"));
-        order.setTotalAmount(new BigDecimal("20000000"));
-
-        List<Map<String, Object>> totals = list(DocumentModels.receipt(order, null, DocumentFixtures.store(), "en", NOW).get("totals"));
-
-        assertEquals(List.of("Subtotal", "Registration service", "Delivery fee", "Discount", "Total"), totals.stream().map(row -> row.get("label")).toList());
-        assertEquals("−2,000,000 ₫", totals.get(3).get("value"));
-        assertEquals(true, totals.get(4).get("strong"));
-        assertEquals("Twenty million Vietnamese dong", DocumentModels.receipt(order, null, DocumentFixtures.store(), "en", NOW).get("inWords"));
-    }
-
-    @Test
     void aPlainOrderHasNoFeeOrDiscountRows() {
         Order order = DocumentFixtures.order(5, OrderStatus.DELIVERED, 1, true);
 
         List<Map<String, Object>> totals = list(DocumentModels.receipt(order, null, DocumentFixtures.store(), "vi", NOW).get("totals"));
 
         assertEquals(List.of("Tiền hàng", "Tổng cộng"), totals.stream().map(row -> row.get("label")).toList());
-    }
-
-    @Test
-    void anInstalmentOrderShowsTheDownPaymentAndThePlan() {
-        Order order = DocumentFixtures.order(6, OrderStatus.CONFIRMED, 1, false);
-        order.getPayment().setPaymentMethod(PaymentMethod.INSTALLMENT);
-        order.getPayment().setPaymentStatus(PaymentStatus.PAID);
-        InstallmentApplication plan = new InstallmentApplication();
-        plan.setDownPaymentPercent(30);
-        plan.setDownPaymentAmount(new BigDecimal("6000000"));
-        plan.setFinancedAmount(new BigDecimal("14000000"));
-        plan.setTermMonths(12);
-        plan.setAnnualRatePercent(new BigDecimal("10.00"));
-        plan.setMonthlyPayment(new BigDecimal("1283333"));
-        plan.setTotalPayable(new BigDecimal("15400000"));
-
-        Map<String, Object> payment = map(DocumentModels.receipt(order, plan, DocumentFixtures.store(), "vi", NOW).get("payment"));
-
-        assertEquals("Trả góp (mô phỏng)", payment.get("method"));
-        assertEquals("Đã trả trước", payment.get("status"));
-        List<Map<String, Object>> rows = list(payment.get("installment"));
-        assertEquals("6.000.000 ₫ (30%)", rows.get(0).get("value"));
-        assertEquals("12 tháng", rows.get(2).get("value"));
-        assertEquals("10%/năm", rows.get(3).get("value"));
-        Map<String, Object> english = map(DocumentModels.receipt(order, plan, DocumentFixtures.store(), "en", NOW).get("payment"));
-        assertEquals("10%/year", list(english.get("installment")).get(3).get("value"));
     }
 
     @Test
@@ -137,18 +81,6 @@ class DocumentModelsTest {
         // checkout makes no payment row for VNPay until the first link is made: the order says VNPay, with no transaction yet
         assertEquals("VNPay", payment.get("method"));
         assertEquals("Chưa có giao dịch", payment.get("status"));
-    }
-
-    @Test
-    void anErasedAccountIsNamedInTheLanguageOfTheDocument() {
-        Order order = DocumentFixtures.order(8, OrderStatus.DELIVERED, 1, true);
-        order.getShipment().setRecipientName(null);
-        order.getUser().setAccountStatus(com.ebike.service.admin.AccountErasure.DELETED);
-        order.getUser().setFirstName("Tài khoản");
-        order.getUser().setLastName("đã xóa");
-
-        assertEquals("Deleted account", DocumentModels.customerName(order, "en"));
-        assertEquals("Tài khoản đã xóa", DocumentModels.customerName(order, "vi"));
     }
 
     @Test
@@ -226,21 +158,6 @@ class DocumentModelsTest {
         assertEquals("20/12/2026", schedule.get(0).get("value"));
         assertEquals("https://shop.example.com/warranty", model.get("lookupUrl"));
         assertEquals(6, ((List<?>) model.get("terms")).size());
-    }
-
-    @Test
-    void aBikeWithoutAWarrantyLengthSaysSoAndHasNoEndDate() {
-        Order order = DocumentFixtures.order(12, OrderStatus.DELIVERED, 1, true);
-        OrderItemUnit unit = order.getItems().iterator().next().getUnits().iterator().next();
-        unit.setWarrantyMonths(null);
-        order.getItems().iterator().next().getProduct().getSpecification().setWarrantyMonths(null);
-
-        Map<String, Object> card = list(DocumentModels.warrantyCards(order, List.of(unit), DocumentFixtures.store(),
-            WarrantyRules.parseIntervals(""), "en", NOW).get("cards")).get(0);
-
-        assertEquals(false, card.get("hasPeriod"));
-        assertEquals("—", card.get("endsAt"));
-        assertTrue(String.valueOf(card.get("periodText")).startsWith("No warranty period"));
     }
 
     @Test

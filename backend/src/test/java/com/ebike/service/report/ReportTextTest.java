@@ -12,14 +12,6 @@ import org.junit.jupiter.api.Test;
 class ReportTextTest {
 
     @Test
-    void everyTextHasBothLanguages() {
-        for (Map.Entry<String, String[]> entry : ReportText.all().entrySet()) {
-            assertFalse(entry.getValue()[0].isBlank(), entry.getKey() + " has no Vietnamese text");
-            assertFalse(entry.getValue()[1].isBlank(), entry.getKey() + " has no English text");
-        }
-    }
-
-    @Test
     void everyStoredStatusHasAName() {
         for (OrderStatus status : OrderStatus.values()) {
             assertFalse(ReportText.code("OrderStatus", status.name(), "en").equals(status.name()), "OrderStatus." + status);
@@ -41,12 +33,4 @@ class ReportTextTest {
         assertEquals("sheet.unknown", ReportText.t("sheet.unknown", "vi"));
     }
 
-    @Test
-    void anythingButEnglishIsVietnamese() {
-        assertEquals("vi", ReportText.language(null));
-        assertEquals("vi", ReportText.language("fr"));
-        assertEquals("en", ReportText.language(" EN-gb"));
-        assertEquals("Summary", ReportText.t("sheet.summary", "en"));
-        assertEquals("Tổng quan", ReportText.t("sheet.summary", "de"));
-    }
 }

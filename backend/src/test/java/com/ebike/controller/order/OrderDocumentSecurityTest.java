@@ -186,12 +186,6 @@ class OrderDocumentSecurityTest {
         assertEquals("nosniff", result.getResponse().getHeader("X-Content-Type-Options"));
     }
 
-    @Test void theLangParameterOverridesTheLanguageAndTheUnitIdIsPassedOn() throws Exception {
-        statusOf(as(get("/api/v1/orders/5/warranty-card").param("unitId", "9").param("lang", "en"), CUSTOMER_ROLE, OWN));
-
-        verify(documents).warrantyCard(eq(5L), eq(9L), any(), eq("en"), any());
-    }
-
     @Test void aServiceRefusalReachesTheClientWithItsOwnStatus() throws Exception {
         when(documents.receipt(any(), any(), any(), any())).thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found."));
 

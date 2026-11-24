@@ -50,19 +50,6 @@ class TestRideEmailSenderTest {
     }
 
     @Test
-    void theEmailIsInTheCustomersLanguageWithTheShowroomAndTheLink() {
-        sender("smtp.example.com", true).send("an@example.com", TestRideMessages.CONFIRMED, "Kinetic X", "Quan 1", "187 Nguyen Thai Hoc", SLOT, null, "en");
-        ArgumentCaptor<SimpleMailMessage> captor = ArgumentCaptor.forClass(SimpleMailMessage.class);
-        verify(mail).send(captor.capture());
-        SimpleMailMessage message = captor.getValue();
-        assertEquals("shop@example.com", message.getFrom());
-        assertArrayEquals(new String[] {"an@example.com"}, message.getTo());
-        assertTrue(message.getSubject().contains("is confirmed"), message.getSubject());
-        assertTrue(message.getText().contains("Quan 1, 187 Nguyen Thai Hoc"), message.getText());
-        assertTrue(message.getText().contains("https://shop.example/customer/test-rides"), message.getText());
-    }
-
-    @Test
     void aSendFailureIsSwallowed() {
         doThrow(new MailSendException("smtp down")).when(mail).send(any(SimpleMailMessage.class));
         sender("smtp.example.com", true).send("an@example.com", TestRideMessages.REMINDER, "Kinetic X", "Quan 1", null, SLOT, null, "vi");

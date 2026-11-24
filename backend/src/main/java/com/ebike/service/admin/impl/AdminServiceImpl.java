@@ -122,8 +122,7 @@ public class AdminServiceImpl implements AdminService {
         }
         if (rule.getCode().startsWith(PricingService.INSTALLMENT_RATE_PREFIX) && request.amount().compareTo(new BigDecimal("60")) > 0) {
             // V24: a yearly rate above 60% is a typo (an amount in dong), and customers would be shown it
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, RequestLanguage.text(
-                "Lãi suất trả góp không được vượt 60% mỗi năm.", "The instalment rate must not exceed 60 percent a year."));
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Lãi suất trả góp không được vượt 60% mỗi năm.");
         }
 
         if (rule.getCode().startsWith(PricingService.SAVINGS_PREFIX)) {
@@ -132,14 +131,11 @@ public class AdminServiceImpl implements AdminService {
             BigDecimal floor = savingsFloor(rule.getCode());
             if (request.amount().stripTrailingZeros().scale() > 2) {
                 // the column keeps two decimals: 1.855 would be saved as 1.86 without a word
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, RequestLanguage.text(
-                    "Giá trị chỉ được có tối đa 2 chữ số thập phân.", "The value can have at most 2 decimal places."));
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Giá trị chỉ được có tối đa 2 chữ số thập phân.");
             }
             if (request.amount().compareTo(floor) < 0 || request.amount().compareTo(ceiling) > 0) {
                 // a price typed with a thousands dot (2.900) arrives as 2.9: the floor catches it instead of showing every visitor a price of 2.9 dong
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, RequestLanguage.text(
-                    "Giá trị phải từ " + floor.toPlainString() + " đến " + ceiling.toPlainString() + " (" + rule.getUnit() + "). Nhập số không có dấu chấm ngăn cách hàng nghìn.",
-                    "The value must be from " + floor.toPlainString() + " to " + ceiling.toPlainString() + " (" + englishUnit(rule.getUnit()) + "). Enter the number without a thousands separator."));
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Giá trị phải từ " + floor.toPlainString() + " đến " + ceiling.toPlainString() + " (" + rule.getUnit() + "). Nhập số không có dấu chấm ngăn cách hàng nghìn.");
             }
         }
 
@@ -553,11 +549,6 @@ public class AdminServiceImpl implements AdminService {
     }
 
     /** V33: the largest value an admin may type for a rule of the savings calculator (a typo guard, well above any real figure). */
-    /** The units are stored in Vietnamese ("VND/lít", "lít/100 km"); an English message names them in English. */
-    private static String englishUnit(String unit) {
-        return unit == null ? "" : unit.replace("lít/100 km", "litres/100 km").replace("lít", "litre");
-    }
-
     private static BigDecimal savingsFloor(String code) {
         if (PricingService.SAVINGS_ELECTRICITY_PRICE.equals(code)) {
             return new BigDecimal("500");

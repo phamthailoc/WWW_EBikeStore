@@ -61,21 +61,6 @@ class PdfRendererTest {
     }
 
     @Test
-    void theEnglishReceiptIsInEnglishAndNeverMixesInVietnameseLabels() throws IOException {
-        Order order = DocumentFixtures.order(2, OrderStatus.DELIVERED, 1, true);
-
-        String text = textOf(receipt(order, "en"));
-
-        assertTrue(text.contains("SALES RECEIPT"), text);
-        assertTrue(text.contains("Pick up at the showroom"), text);
-        assertTrue(text.contains("20,000,000 ₫"), text);
-        assertTrue(text.contains("Twenty million Vietnamese dong"), text);
-        assertTrue(text.contains("Paid"), text);
-        assertFalse(text.contains("PHIẾU BÁN HÀNG"), text);
-        assertFalse(text.contains("Tiền hàng"), text);
-    }
-
-    @Test
     void theCustomersOwnWordsAreTextNeverMarkup() throws IOException {
         Order order = DocumentFixtures.order(3, OrderStatus.DELIVERED, 1, true);
 
@@ -163,18 +148,4 @@ class PdfRendererTest {
         }
     }
 
-    @Test
-    void theEnglishWarrantyCardIsInEnglish() throws IOException {
-        Order order = DocumentFixtures.order(7, OrderStatus.DELIVERED, 1, true);
-        List<OrderItemUnit> units = List.copyOf(order.getItems().iterator().next().getUnits());
-
-        String text = textOf(renderer.render("warranty-card", DocumentModels.warrantyCards(order, units, DocumentFixtures.store(),
-            WarrantyRules.parseIntervals(WarrantyRules.DEFAULT_INTERVALS), "en", NOW)));
-
-        assertTrue(text.contains("WARRANTY CARD"), text);
-        assertTrue(text.contains("24 months"), text);
-        assertTrue(text.contains("20 Nov 2028"), text);
-        assertTrue(text.contains("6 months after hand-over"), text);
-        assertFalse(text.contains("PHIẾU BẢO HÀNH"), text);
-    }
 }
