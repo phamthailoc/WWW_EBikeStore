@@ -1,6 +1,5 @@
 package com.ebike.service.admin.impl;
 
-import com.ebike.common.i18n.RequestLanguage;
 import com.ebike.dto.admin.request.AdminAccountCreateRequest;
 import com.ebike.dto.admin.request.AdminAccountRoleUpdateRequest;
 import com.ebike.dto.admin.request.AdminAccountStatusUpdateRequest;

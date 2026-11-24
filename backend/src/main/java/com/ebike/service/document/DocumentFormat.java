@@ -18,13 +18,8 @@ public final class DocumentFormat {
     private DocumentFormat() {
     }
 
-    /** The shop speaks Vietnamese only; kept so the document code that still passes a language keeps working until that parameter is removed. */
-    public static String language(String ignored) {
-        return "vi";
-    }
-
     /** 1.234.000 ₫. A missing amount reads as zero. */
-    public static String money(BigDecimal amount, String language) {
+    public static String money(BigDecimal amount) {
         DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.ROOT);
         symbols.setGroupingSeparator('.');
         DecimalFormat format = new DecimalFormat("#,##0", symbols);
@@ -33,14 +28,14 @@ public final class DocumentFormat {
     }
 
     /** 23/11/2026 14:05; a dash when there is no time. */
-    public static String dateTime(LocalDateTime value, String language) {
+    public static String dateTime(LocalDateTime value) {
         if (value == null) {
             return "—";
         }
         return value.format(formatter("dd/MM/yyyy HH:mm"));
     }
 
-    public static String date(LocalDateTime value, String language) {
+    public static String date(LocalDateTime value) {
         if (value == null) {
             return "—";
         }
@@ -52,7 +47,7 @@ public final class DocumentFormat {
     }
 
     /** "Một triệu hai trăm nghìn đồng chẵn". Amounts are whole dong; a negative one reads as zero. */
-    public static String moneyInWords(BigDecimal amount, String language) {
+    public static String moneyInWords(BigDecimal amount) {
         long value = amount == null ? 0 : Math.max(0, amount.setScale(0, RoundingMode.HALF_UP).longValue());
         return capitalize(vietnameseWords(value)) + " đồng chẵn";
     }

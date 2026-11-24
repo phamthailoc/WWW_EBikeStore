@@ -2,7 +2,6 @@ package com.ebike.config;
 
 import com.ebike.security.filter.JwtAuthenticationFilter;
 import com.ebike.common.constants.PermissionConstants;
-import com.ebike.common.i18n.RequestLanguage;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

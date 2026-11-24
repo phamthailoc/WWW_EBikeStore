@@ -1,6 +1,5 @@
 package com.ebike.security.filter;
 
-import com.ebike.common.i18n.RequestLanguage;
 import com.ebike.model.entity.auth.User;
 import com.ebike.repository.auth.UserRepository;
 import com.ebike.service.auth.JwtTokenProvider;

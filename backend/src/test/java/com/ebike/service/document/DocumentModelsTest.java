@@ -37,7 +37,7 @@ class DocumentModelsTest {
     void aDeliveredOrderGetsTheSalesReceiptWithTheHandoverDate() {
         Order order = DocumentFixtures.order(1, OrderStatus.DELIVERED, 2, true);
 
-        Map<String, Object> model = DocumentModels.receipt(order, null, DocumentFixtures.store(), "vi", NOW);
+        Map<String, Object> model = DocumentModels.receipt(order, null, DocumentFixtures.store(), NOW);
 
         assertEquals("PHIẾU BÁN HÀNG", model.get("title"));
         assertEquals(false, model.get("provisional"));
@@ -52,7 +52,7 @@ class DocumentModelsTest {
     void linesCarryTheFrameAndEngineNumbersOfEachBike() {
         Order order = DocumentFixtures.order(3, OrderStatus.DELIVERED, 2, true);
 
-        Map<String, Object> line = list(DocumentModels.receipt(order, null, DocumentFixtures.store(), "vi", NOW).get("lines")).get(0);
+        Map<String, Object> line = list(DocumentModels.receipt(order, null, DocumentFixtures.store(), NOW).get("lines")).get(0);
 
         assertEquals("Kinetic Aero X", line.get("name"));
         assertEquals("Xanh rêu", line.get("colour"));
@@ -66,7 +66,7 @@ class DocumentModelsTest {
     void aPlainOrderHasNoFeeOrDiscountRows() {
         Order order = DocumentFixtures.order(5, OrderStatus.DELIVERED, 1, true);
 
-        List<Map<String, Object>> totals = list(DocumentModels.receipt(order, null, DocumentFixtures.store(), "vi", NOW).get("totals"));
+        List<Map<String, Object>> totals = list(DocumentModels.receipt(order, null, DocumentFixtures.store(), NOW).get("totals"));
 
         assertEquals(List.of("Tiền hàng", "Tổng cộng"), totals.stream().map(row -> row.get("label")).toList());
     }
@@ -76,7 +76,7 @@ class DocumentModelsTest {
         Order order = DocumentFixtures.order(7, OrderStatus.PENDING, 1, false);
         order.setPayment(null);
 
-        Map<String, Object> payment = map(DocumentModels.receipt(order, null, DocumentFixtures.store(), "vi", NOW).get("payment"));
+        Map<String, Object> payment = map(DocumentModels.receipt(order, null, DocumentFixtures.store(), NOW).get("payment"));
 
         // checkout makes no payment row for VNPay until the first link is made: the order says VNPay, with no transaction yet
         assertEquals("VNPay", payment.get("method"));
@@ -90,7 +90,7 @@ class DocumentModelsTest {
         order.getUser().setEmail("deleted_7@deleted.invalid");
         order.getUser().setAccountStatus(com.ebike.service.admin.AccountErasure.DELETED);
 
-        Map<String, Object> customer = map(DocumentModels.receipt(order, null, DocumentFixtures.store(), "vi", NOW).get("customer"));
+        Map<String, Object> customer = map(DocumentModels.receipt(order, null, DocumentFixtures.store(), NOW).get("customer"));
 
         assertEquals("—", customer.get("email"));
     }
@@ -99,10 +99,10 @@ class DocumentModelsTest {
     void theCustomerNameFallsBackToTheAccountThenToADash() {
         Order order = DocumentFixtures.order(8, OrderStatus.DELIVERED, 1, true);
         order.getShipment().setRecipientName("  ");
-        assertEquals("Nguyễn Văn An", DocumentModels.customerName(order, "vi"));
+        assertEquals("Nguyễn Văn An", DocumentModels.customerName(order));
 
         order.setUser(null);
-        assertEquals("—", DocumentModels.customerName(order, "vi"));
+        assertEquals("—", DocumentModels.customerName(order));
     }
 
     @Test
@@ -140,7 +140,7 @@ class DocumentModelsTest {
         List<OrderItemUnit> units = List.copyOf(order.getItems().iterator().next().getUnits());
 
         Map<String, Object> model = DocumentModels.warrantyCards(order, units, DocumentFixtures.store(),
-            WarrantyRules.parseIntervals("P1M,P6M"), "vi", NOW);
+            WarrantyRules.parseIntervals("P1M,P6M"), NOW);
 
         List<Map<String, Object>> cards = list(model.get("cards"));
         assertEquals(2, cards.size());
@@ -166,7 +166,7 @@ class DocumentModelsTest {
         StoreProfile bare = new StoreProfile("Shop", "", "", "", "", "", "");
 
         Map<String, Object> model = DocumentModels.warrantyCards(order, List.copyOf(order.getItems().iterator().next().getUnits()), bare,
-            WarrantyRules.parseIntervals(null), "vi", NOW);
+            WarrantyRules.parseIntervals(null), NOW);
 
         assertNull(model.get("lookupUrl"));
         assertEquals("Shop", map(model.get("store")).get("legalName"));

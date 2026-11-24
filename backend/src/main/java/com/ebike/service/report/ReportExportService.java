@@ -1,6 +1,5 @@
 package com.ebike.service.report;
 
-import com.ebike.common.i18n.RequestLanguage;
 import com.ebike.dto.order.response.OrderResponse;
 import com.ebike.service.admin.AuditLogService;
 import com.ebike.service.manager.ManagerService;
@@ -37,22 +36,22 @@ public class ReportExportService {
     public record ExportFile(String filename, byte[] content) {
     }
 
-    public ExportFile revenueReport(String period, String from, String to, String language) {
+    public ExportFile revenueReport(String period, String from, String to) {
         RevenueReportExportData data = managerService.getRevenueReportForExport(period, from, to);
-        byte[] content = ReportWorkbook.revenueReport(data, language, LocalDateTime.now());
+        byte[] content = ReportWorkbook.revenueReport(data, LocalDateTime.now());
         String fromDate = data.report().fromDate();
         String toDate = data.report().toDate();
         auditLog.record("xuất Excel báo cáo doanh thu", fromDate + " đến " + toDate + ", gộp theo " + data.report().periodType());
         return new ExportFile("revenue-report_" + fromDate + "_" + toDate + ".xlsx", content);
     }
 
-    public ExportFile orders(Authentication authentication, String status, String paymentStatus, String search, Long showroomId, String language) {
+    public ExportFile orders(Authentication authentication, String status, String paymentStatus, String search, Long showroomId) {
         List<OrderResponse> orders = orderService.getOrders(authentication, null, status, paymentStatus, search, showroomId);
         if (orders.size() > ReportWorkbook.MAX_ORDER_ROWS) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Có " + orders.size() + " đơn hàng, nhiều hơn mức " + ReportWorkbook.MAX_ORDER_ROWS + " đơn của một tệp Excel. Hãy lọc bớt rồi xuất lại.");
         }
         LocalDateTime now = LocalDateTime.now();
-        byte[] content = ReportWorkbook.orders(orders, new ReportWorkbook.OrderFilters(search, status, paymentStatus, showroomId), language, now);
+        byte[] content = ReportWorkbook.orders(orders, new ReportWorkbook.OrderFilters(search, status, paymentStatus, showroomId), now);
         auditLog.record("xuất Excel danh sách đơn hàng", orders.size() + " đơn");
         return new ExportFile("orders_" + now.format(STAMP) + ".xlsx", content);
     }

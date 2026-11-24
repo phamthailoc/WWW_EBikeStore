@@ -127,7 +127,7 @@ public class VnPayServiceImpl implements VnPayService {
         // the gateway shows this to the customer: an instalment order is paying its down payment only
         params.put("vnp_OrderInfo", (installmentOrder ? "Tra truoc tra gop don " : "Thanh toan don hang ") + order.getOrderNumber() + " - Kinetic E-Bike");
         params.put("vnp_OrderType", "other");
-        params.put("vnp_Locale", normalizeLocale(request.language()));
+        params.put("vnp_Locale", "vn" /* the VNPay page is shown in Vietnamese */);
         params.put("vnp_ReturnUrl", properties.getReturnUrl());
         params.put("vnp_IpAddr", clientIp);
         params.put("vnp_CreateDate", VnPayUtil.formatDate(now));
@@ -363,13 +363,6 @@ public class VnPayServiceImpl implements VnPayService {
 
     private String toVnPayAmount(BigDecimal amount) {
         return amount.multiply(VNPAY_AMOUNT_MULTIPLIER).setScale(0, RoundingMode.UNNECESSARY).toPlainString();
-    }
-
-    private String normalizeLocale(String language) {
-        if (language == null || language.isBlank()) {
-            return "vn";
-        }
-        return "vn"; // the VNPay page is shown in Vietnamese
     }
 
     private Map<String, String> response(String code, String message) {

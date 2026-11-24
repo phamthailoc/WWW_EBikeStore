@@ -1,6 +1,5 @@
 package com.ebike.service.installment;
 
-import com.ebike.common.i18n.RequestLanguage;
 import com.ebike.dto.installment.InstallmentConfigResponse;
 import com.ebike.dto.installment.InstallmentQuoteResponse;
 import com.ebike.dto.installment.InstallmentRequest;
@@ -179,7 +178,7 @@ public class InstallmentPlanner {
     }
 
     private static String money(String language, BigDecimal amount) {
-        return InstallmentMessages.money(language, amount);
+        return InstallmentMessages.money(amount);
     }
 
     private static ResponseStatusException bad(String vietnamese) {

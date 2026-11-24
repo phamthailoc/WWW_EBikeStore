@@ -154,7 +154,7 @@ public final class DocumentText {
     }
 
     /** One word or sentence in the language; an unknown key comes back as the key itself so a typo shows on the page instead of failing the whole file. */
-    public static String text(String language, String key) {
+    public static String text(String key) {
         String[] pair = TEXT.get(key);
         if (pair == null) {
             return key;
@@ -163,9 +163,9 @@ public final class DocumentText {
     }
 
     /** A sentence with {0}, {1} holes filled. */
-    public static String text(String language, String key, Object... values) {
+    public static String text(String key, Object... values) {
         // one pass over the pattern: a value that itself contains "{1}" is printed as it is, never filled in again
-        java.util.regex.Matcher holes = HOLE.matcher(text(language, key));
+        java.util.regex.Matcher holes = HOLE.matcher(text(key));
         StringBuilder result = new StringBuilder();
         while (holes.find()) {
             int index = Integer.parseInt(holes.group(1));
@@ -178,7 +178,7 @@ public final class DocumentText {
     private static final java.util.regex.Pattern HOLE = java.util.regex.Pattern.compile("\\{(\\d{1,3})}");
 
     /** Every word in one language, for the page templates ({@code t['receipt.title']}). */
-    public static Map<String, String> labels(String language) {
+    public static Map<String, String> labels() {
         Map<String, String> labels = new HashMap<>();
         TEXT.forEach((key, pair) -> labels.put(key, pair[0]));
         return labels;

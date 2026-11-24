@@ -11,7 +11,7 @@
     const button = document.querySelector('#notifyStock');
     if (!button) return;
     if (!button.dataset.label) button.dataset.label = button.textContent.trim();
-    button.textContent = waiting.has(item.variantId) ? t('Đã đăng ký báo hàng · bấm để hủy') : button.dataset.label;
+    button.textContent = waiting.has(item.variantId) ? 'Đã đăng ký báo hàng · bấm để hủy' : button.dataset.label;
   };
   const gallery = document.querySelector('#productGallery');
   const item = {id:Number(root.dataset.id), name:root.dataset.name, price:Number(root.dataset.price), slug:root.dataset.slug, image:baseImage, quantity:1, stock:Number(root.dataset.stock)};
@@ -32,7 +32,7 @@
     document.querySelector('#quantityPlus').disabled=item.quantity >= max;
     const notify=document.querySelector('#notifyStock');
     if(notify){notify.hidden=!(item.variantId&&item.stock<1);notifyLabel();}
-    document.querySelector('#stockHint').textContent=max ? `${t('Còn')} ${item.stock} ${t('xe · Tối đa')} ${max} ${t('xe mỗi đơn')}` : t('Màu xe này đã hết hàng');
+    document.querySelector('#stockHint').textContent=max ? `${'Còn'} ${item.stock} ${'xe · Tối đa'} ${max} ${'xe mỗi đơn'}` : 'Màu xe này đã hết hàng';
   }
   function pickVariant(button) {
     document.querySelectorAll('.variant-option').forEach(node => {node.classList.remove('selected'); node.setAttribute('aria-pressed','false');});
@@ -45,14 +45,14 @@
     function showPhoto(index){
       const image=document.querySelector('#productImage');
       image.src=cart.safeImage(photos[index]);
-      image.alt=`${item.name} - ${item.colorName} ${t('- Ảnh')} ${index+1}`;
-      document.querySelector('#photoCaption').textContent=`${item.colorName} ${t('· Ảnh')} ${index+1}/${photos.length}`;
+      image.alt=`${item.name} - ${item.colorName} ${'- Ảnh'} ${index+1}`;
+      document.querySelector('#photoCaption').textContent=`${item.colorName} ${'· Ảnh'} ${index+1}/${photos.length}`;
       gallery.querySelectorAll('button').forEach((node,i)=>{node.classList.toggle('selected',i===index);node.setAttribute('aria-pressed',String(i===index));});
     }
     gallery.replaceChildren();
     photos.forEach((photo,index)=>{
       const thumbnail=document.createElement('button');thumbnail.type='button';
-      thumbnail.setAttribute('aria-label',`${t('Xem ảnh')} ${index+1} ${t('màu')} ${item.colorName}`);
+      thumbnail.setAttribute('aria-label',`${'Xem ảnh'} ${index+1} ${'màu'} ${item.colorName}`);
       const image=document.createElement('img');image.src=cart.safeImage(photo);image.alt='';thumbnail.append(image);
       thumbnail.onclick=()=>showPhoto(index);gallery.append(thumbnail);
     });
@@ -68,14 +68,14 @@
   const selected=document.querySelector('.variant-option.selected');
   if(selected) pickVariant(selected); else {
     updateQuantity(1);document.querySelector('#addToCart').disabled=true;document.querySelector('#buyNow').disabled=true;
-    document.querySelector('#stockHint').textContent=t('Màu xe và hình ảnh đang được cập nhật.');
+    document.querySelector('#stockHint').textContent='Màu xe và hình ảnh đang được cập nhật.';
   }
   document.querySelector('#quantityMinus').onclick=()=>updateQuantity(item.quantity-1);
   document.querySelector('#quantityPlus').onclick=()=>updateQuantity(item.quantity+1);
   quantity.addEventListener('change',()=>updateQuantity(quantity.value));
   document.querySelector('#addToCart').onclick=()=>{
     updateQuantity(quantity.value);
-    try{cart.add(item); message(`${t('Đã thêm')} ${tBikes(item.quantity)} ${item.name}${item.colorName ? ' · '+item.colorName : ''} ${t('vào giỏ hàng.')}`);}catch(error){message(error.message,true);}
+    try{cart.add(item); message(`${'Đã thêm'} ${item.quantity} xe ${item.name}${item.colorName ? ' · '+item.colorName : ''} ${'vào giỏ hàng.'}`);}catch(error){message(error.message,true);}
   };
   document.querySelector('#buyNow').onclick=()=>{
     updateQuantity(quantity.value);
@@ -84,7 +84,7 @@
     location.href='/checkout?buyNow=1';
   };
   document.querySelector('#addFavorite').onclick=async()=>{
-    try{await cart.request('/api/v1/favorites',{productId:item.id});message(t('Đã thêm xe vào danh sách yêu thích.'));}
+    try{await cart.request('/api/v1/favorites',{productId:item.id});message('Đã thêm xe vào danh sách yêu thích.');}
     catch(error){if(error.status===401){location.href='/login?returnTo='+encodeURIComponent(location.pathname);return;}message(error.message,true);}
   };
   const notifyButton=document.querySelector('#notifyStock');
@@ -97,12 +97,12 @@
       if(waiting.has(variantId)){
         const response=await fetch(`/api/v1/stock-alerts/${variantId}`,{method:'DELETE',credentials:'same-origin'});
         if(response.status===401){if(!auto)goToLogin(variantId);return;}
-        if(response.status===403){message(t('Chỉ tài khoản khách hàng mới đăng ký báo hàng được. Hãy đăng nhập bằng tài khoản khách hàng.'),true);return;}
+        if(response.status===403){message('Chỉ tài khoản khách hàng mới đăng ký báo hàng được. Hãy đăng nhập bằng tài khoản khách hàng.',true);return;}
         if(!response.ok&&response.status!==204){
           const body=await response.json().catch(()=>null);
           throw Error(body?.message||'Không hủy được đăng ký báo hàng. Vui lòng thử lại.');
         }
-        waiting.delete(variantId);message(t('Đã hủy đăng ký báo hàng.'));
+        waiting.delete(variantId);message('Đã hủy đăng ký báo hàng.');
       }else{
         const saved=await cart.request('/api/v1/stock-alerts',{variantId});
         if(saved&&(saved.notifiedAt||saved.stockQuantity>0)){
@@ -113,18 +113,18 @@
             root.dataset.stock=String(Math.max(Number(root.dataset.stock),saved.stockQuantity));
             pickVariant(option);
           }
-          message(saved.stockQuantity>0?t('Màu xe này đang còn hàng, bạn có thể đặt mua ngay.'):t('Màu xe này vừa có hàng lại nhưng đã hết ngay. Bạn có thể bấm lại để đăng ký báo hàng.'));
+          message(saved.stockQuantity>0?'Màu xe này đang còn hàng, bạn có thể đặt mua ngay.':'Màu xe này vừa có hàng lại nhưng đã hết ngay. Bạn có thể bấm lại để đăng ký báo hàng.');
           return;
         }
-        waiting.add(variantId);message(t('Đã đăng ký. Chúng tôi sẽ báo khi màu này có hàng lại.'));
+        waiting.add(variantId);message('Đã đăng ký. Chúng tôi sẽ báo khi màu này có hàng lại.');
       }
       notifyLabel();
     }
     catch(error){
       if(error.status===401){if(!auto)goToLogin(variantId);return;}
       // 403: a staff account (Manager, Admin...) is signed in; only customers can ask to be told.
-      if(error.status===403){message(t('Chỉ tài khoản khách hàng mới đăng ký báo hàng được. Hãy đăng nhập bằng tài khoản khách hàng.'),true);}
-      else message(t(error.message),true);
+      if(error.status===403){message('Chỉ tài khoản khách hàng mới đăng ký báo hàng được. Hãy đăng nhập bằng tài khoản khách hàng.',true);}
+      else message((error.message),true);
     }
     finally{notifyButton.disabled=false;}
   };
@@ -135,11 +135,11 @@
     if(!wanted)return;
     try{history.replaceState(null,'',location.pathname);}catch{}
     const option=document.querySelector(`.variant-option[data-variant-id="${wanted}"]`);
-    if(!option){message(t('Không tìm thấy màu xe này.'),true);return;}
+    if(!option){message('Không tìm thấy màu xe này.',true);return;}
     pickVariant(option);
-    if(!notifyButton){message(t('Chỉ tài khoản khách hàng mới đăng ký báo hàng được. Hãy đăng nhập bằng tài khoản khách hàng.'),true);return;}
+    if(!notifyButton){message('Chỉ tài khoản khách hàng mới đăng ký báo hàng được. Hãy đăng nhập bằng tài khoản khách hàng.',true);return;}
     if(!isCustomer)return; // still a guest: nothing was asked for
-    if(notifyButton.hidden){message(t('Màu xe này đang còn hàng, bạn có thể đặt mua ngay.'));return;}
+    if(notifyButton.hidden){message('Màu xe này đang còn hàng, bạn có thể đặt mua ngay.');return;}
     if(!waiting.has(wanted))sendNotify(true);
   };
   if(notifyButton)notifyButton.onclick=()=>sendNotify(false);

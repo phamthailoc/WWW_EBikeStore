@@ -26,9 +26,6 @@ public class UserPreference {
     @Column(length = 20, nullable = false)
     private String theme = "system";
 
-    @Column(length = 10, nullable = false)
-    private String language = "vi";
-
     @Column(name = "notifications_enabled", nullable = false)
     private Boolean notificationsEnabled = true;
 
@@ -54,14 +51,6 @@ public class UserPreference {
 
     public void setTheme(String theme) {
         this.theme = theme;
-    }
-
-    public String getLanguage() {
-        return language;
-    }
-
-    public void setLanguage(String language) {
-        this.language = language;
     }
 
     public Boolean getNotificationsEnabled() {

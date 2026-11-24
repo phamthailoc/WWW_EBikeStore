@@ -29,7 +29,7 @@ public interface UserProfileService {
     ) {
     }
 
-    record UserPreferenceRequest(String theme, String language, Boolean notificationsEnabled) {
+    record UserPreferenceRequest(String theme, Boolean notificationsEnabled) {
     }
 
     record UserBasicResponse(
@@ -55,6 +55,6 @@ public interface UserProfileService {
     ) {
     }
 
-    record UserPreferenceResponse(Long userId, String theme, String language, Boolean notificationsEnabled) {
+    record UserPreferenceResponse(Long userId, String theme, Boolean notificationsEnabled) {
     }
 }

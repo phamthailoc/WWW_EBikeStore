@@ -1,6 +1,5 @@
 package com.ebike.service.admin;
 
-import com.ebike.common.i18n.RequestLanguage;
 import com.ebike.model.entity.auth.User;
 import com.ebike.repository.auth.UserRepository;
 import com.ebike.repository.installment.InstallmentApplicationRepository;

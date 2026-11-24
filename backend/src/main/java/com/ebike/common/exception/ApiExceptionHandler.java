@@ -1,6 +1,5 @@
 package com.ebike.common.exception;
 
-import com.ebike.common.i18n.RequestLanguage;
 import java.time.OffsetDateTime;
 import org.springframework.dao.PessimisticLockingFailureException;
 import org.springframework.http.HttpStatus;

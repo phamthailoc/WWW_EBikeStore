@@ -1,6 +1,5 @@
 package com.ebike.service.testride;
 
-import com.ebike.common.i18n.RequestLanguage;
 import com.ebike.dto.testride.TestRideBacklogResponse;
 import com.ebike.dto.testride.TestRideCreateRequest;
 import com.ebike.dto.testride.TestRideResponse;

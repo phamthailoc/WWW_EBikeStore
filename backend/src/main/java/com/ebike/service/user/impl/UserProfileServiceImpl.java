@@ -160,7 +160,7 @@ public class UserProfileServiceImpl implements UserProfileService {
         validateUser(userId);
         UserPreference preference = userPreferenceRepository.findByUserId(userId).orElse(null);
         return preference == null
-            ? new UserPreferenceResponse(userId, "system", "vi", true)
+            ? new UserPreferenceResponse(userId, "system", true)
             : toPreferenceResponse(preference);
     }
 
@@ -270,7 +270,6 @@ public class UserProfileServiceImpl implements UserProfileService {
         return new UserPreferenceResponse(
             preference.getUser().getId(),
             preference.getTheme(),
-            preference.getLanguage(),
             preference.getNotificationsEnabled()
         );
     }

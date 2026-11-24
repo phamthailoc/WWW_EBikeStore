@@ -140,8 +140,8 @@ class OrderDocumentSecurityTest {
 
     @BeforeEach void setup() {
         reset(users, preferences, documents, resender);
-        when(documents.receipt(any(), any(), any(), any())).thenReturn(new PdfFile("receipt-ORD-1.pdf", "%PDF-1.7 test".getBytes()));
-        when(documents.warrantyCard(any(), any(), any(), any(), any())).thenReturn(new PdfFile("warranty-card-ORD-1.pdf", "%PDF-1.7 test".getBytes()));
+        when(documents.receipt(any(), any())).thenReturn(new PdfFile("receipt-ORD-1.pdf", "%PDF-1.7 test".getBytes()));
+        when(documents.warrantyCard(any(), any(), any())).thenReturn(new PdfFile("warranty-card-ORD-1.pdf", "%PDF-1.7 test".getBytes()));
         mvc = MockMvcBuilders.webAppContextSetup(context)
             .addFilters(context.getBean("springSecurityFilterChain", Filter.class))
             .build();
@@ -187,7 +187,7 @@ class OrderDocumentSecurityTest {
     }
 
     @Test void aServiceRefusalReachesTheClientWithItsOwnStatus() throws Exception {
-        when(documents.receipt(any(), any(), any(), any())).thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found."));
+        when(documents.receipt(any(), any())).thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found."));
 
         assertEquals(404, statusOf(as(get("/api/v1/orders/5/receipt"), CUSTOMER_ROLE, OWN)));
     }
@@ -195,17 +195,17 @@ class OrderDocumentSecurityTest {
     private static final String UPDATE = PermissionConstants.OrderManagement.ORDER_UPDATE_STATUS;
 
     @Test void onlyStaffWhoMayUpdateAnOrderCanSendTheEmailAgain() throws Exception {
-        when(resender.resend(eq(5L), any())).thenReturn("an@example.com");
+        when(resender.resend(eq(5L))).thenReturn("an@example.com");
 
         assertEquals(401, statusOf(post("/api/v1/orders/5/documents/email")));
         assertEquals(403, statusOf(as(post("/api/v1/orders/5/documents/email"), CUSTOMER_ROLE, OWN)));
         assertEquals(403, statusOf(as(post("/api/v1/orders/5/documents/email"), STAFF_ROLE, VIEW_ALL)));
         assertEquals(200, statusOf(as(post("/api/v1/orders/5/documents/email"), STAFF_ROLE, VIEW_ALL, UPDATE)));
-        verify(resender).resend(eq(5L), any());
+        verify(resender).resend(eq(5L));
     }
 
     @Test void aRefusalOfTheResendReachesTheStaffMemberWithItsStatus() throws Exception {
-        when(resender.resend(eq(5L), any())).thenThrow(new ResponseStatusException(HttpStatus.BAD_GATEWAY, "mail server"));
+        when(resender.resend(eq(5L))).thenThrow(new ResponseStatusException(HttpStatus.BAD_GATEWAY, "mail server"));
 
         assertEquals(502, statusOf(as(post("/api/v1/orders/5/documents/email"), STAFF_ROLE, VIEW_ALL, UPDATE)));
     }

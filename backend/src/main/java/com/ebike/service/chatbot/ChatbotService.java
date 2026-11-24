@@ -47,7 +47,7 @@ public class ChatbotService {
     private final PricingService pricingService;
     private final SavingsService savingsService;
     // FAQ entries (Vietnamese only); see faq-data/faq.csv
-    private final Map<String, List<FaqEntry>> faqByLanguage = new java.util.HashMap<>();
+    private List<FaqEntry> faqEntries = List.of();
     /** The chat id comes from the browser, so cap how many conversations are remembered and how long an id may be. */
     private static final int MAX_REMEMBERED_CHATS = 2000;
     private static final int MAX_CHAT_ID_LENGTH = 64;
@@ -954,11 +954,11 @@ public class ChatbotService {
     }
 
     private void loadFaqEntries() {
-        faqByLanguage.put("vi", readFaq("faq-data/faq.csv"));
+        faqEntries = readFaq("faq-data/faq.csv");
     }
 
     private List<FaqEntry> faqFor() {
-        return faqByLanguage.get("vi");
+        return faqEntries;
     }
 
     private List<FaqEntry> readFaq(String resource) {

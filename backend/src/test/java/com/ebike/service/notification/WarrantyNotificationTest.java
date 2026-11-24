@@ -38,7 +38,6 @@ class WarrantyNotificationTest {
 
     private void language(String code, boolean notificationsOn) {
         UserPreference preference = new UserPreference();
-        preference.setLanguage(code);
         preference.setNotificationsEnabled(notificationsOn);
         when(preferences.findByUserId(7L)).thenReturn(Optional.of(preference));
     }

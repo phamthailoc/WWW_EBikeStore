@@ -101,8 +101,8 @@ public class NotificationCreationService {
         userRepository.findById(event.userId()).ifPresent(user -> createNotification(
             user,
             NotificationType.STOCK_ALERT,
-            StockAlertMessages.notificationTitle(event.language()),
-            StockAlertMessages.notificationBody(event.language(), event.productName(), event.colorName()),
+            StockAlertMessages.notificationTitle(),
+            StockAlertMessages.notificationBody(event.productName(), event.colorName()),
             null,
             null,
             StockAlertMessages.notificationPath(event.productSlug()),
@@ -115,12 +115,11 @@ public class NotificationCreationService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void handleWarrantyClaimStatusChanged(WarrantyClaimStatusChangedEvent event) {
         userRepository.findById(event.userId()).filter(NotificationCreationService::isLive).ifPresent(user -> {
-            // the profile is read once: it gives the language of the words and the opt-out of the notification
+            // the profile is read once: it gives the opt-out of the notification
             Optional<UserPreference> preference = userPreferenceRepository.findByUserId(user.getId());
-            String language = languageOf(preference);
             createNotification(user, preference, NotificationType.WARRANTY_CLAIM,
-                WarrantyMessages.claimTitle(language),
-                WarrantyMessages.claimBody(language, event.productName(), event.frameNumber(), event.status()),
+                WarrantyMessages.claimTitle(),
+                WarrantyMessages.claimBody(event.productName(), event.frameNumber(), event.status()),
                 null, null, "/customer/warranty", true);
         });
     }
@@ -131,10 +130,9 @@ public class NotificationCreationService {
     public void handleMaintenanceDue(MaintenanceDueEvent event) {
         userRepository.findById(event.userId()).filter(NotificationCreationService::isLive).ifPresent(user -> {
             Optional<UserPreference> preference = userPreferenceRepository.findByUserId(user.getId());
-            String language = languageOf(preference);
             createNotification(user, preference, NotificationType.MAINTENANCE_DUE,
-                WarrantyMessages.maintenanceTitle(language),
-                WarrantyMessages.maintenanceBody(language, event.productName(), event.frameNumber(), event.milestone()),
+                WarrantyMessages.maintenanceTitle(),
+                WarrantyMessages.maintenanceBody(event.productName(), event.frameNumber(), event.milestone()),
                 null, null, "/customer/warranty", true);
         });
     }
@@ -151,13 +149,12 @@ public class NotificationCreationService {
         boolean downPayment = com.ebike.model.entity.order.PaymentMethod.INSTALLMENT.name().equals(event.paymentMethod());
         userRepository.findById(event.userId()).ifPresent(user -> {
             Optional<UserPreference> preference = userPreferenceRepository.findByUserId(user.getId());
-            String language = languageOf(preference);
             String title;
             String message;
             if (downPayment) {
                 // the down payment cannot be swapped for another method, so the failure notice does not suggest one
-                title = InstallmentMessages.downPaymentTitle(language, paid);
-                message = InstallmentMessages.downPaymentBody(language, paid, event.orderNumber());
+                title = InstallmentMessages.downPaymentTitle(paid);
+                message = InstallmentMessages.downPaymentBody(paid, event.orderNumber());
             } else {
                 title = paid ? ("Thanh toán thành công") : ("Thanh toán thất bại");
                 message = ("Thanh toán cho đơn hàng " + event.orderNumber() + (paid ? " đã thành công." : " chưa thành công. Vui lòng thử lại hoặc chọn hình thức khác."));
@@ -250,10 +247,9 @@ public class NotificationCreationService {
     public void handleTestRideNotice(TestRideNoticeEvent event) {
         userRepository.findById(event.userId()).ifPresent(user -> {
             Optional<UserPreference> preference = userPreferenceRepository.findByUserId(user.getId());
-            String language = languageOf(preference);
             createNotification(user, preference, NotificationType.TEST_RIDE,
-                TestRideMessages.title(language, event.kind()),
-                TestRideMessages.body(language, event.kind(), event.productName(), TestRideMessages.place(event.showroomName(), event.showroomAddress()), event.slotStart(), event.note()),
+                TestRideMessages.title(event.kind()),
+                TestRideMessages.body(event.kind(), event.productName(), TestRideMessages.place(event.showroomName(), event.showroomAddress()), event.slotStart(), event.note()),
                 null, null, "/customer/test-rides", false);
         });
     }
@@ -266,18 +262,12 @@ public class NotificationCreationService {
     public void handleInstallmentNotice(InstallmentNoticeEvent event) {
         userRepository.findById(event.userId()).ifPresent(user -> {
             Optional<UserPreference> preference = userPreferenceRepository.findByUserId(user.getId());
-            String language = languageOf(preference);
             createNotification(user, preference, NotificationType.INSTALLMENT,
-                InstallmentMessages.title(language, event.kind()),
-                InstallmentMessages.body(language, event.kind(), event.orderNumber(), event.downPayment(), event.monthlyPayment(),
+                InstallmentMessages.title(event.kind()),
+                InstallmentMessages.body(event.kind(), event.orderNumber(), event.downPayment(), event.monthlyPayment(),
                     event.termMonths(), event.payBefore(), event.note()),
                 event.orderId(), null, "/customer/orders/" + event.orderId(), false);
         });
-    }
-
-    /** The language saved in the customer's profile ("vi" when there is none), for the words of a notice they did not ask for in a page. */
-    private String languageOf(Optional<UserPreference> preference) {
-        return preference.map(UserPreference::getLanguage).orElse("vi");
     }
 
     private String formatOrderStatus(String status) {

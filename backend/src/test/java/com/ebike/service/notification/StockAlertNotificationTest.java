@@ -34,15 +34,15 @@ class StockAlertNotificationTest {
     }
 
     private Notification saved(String language) {
-        service.handleStockAlertTriggered(new StockAlertTriggeredEvent(7L, "Kinetic X", "White", "kinetic-x", language));
+        service.handleStockAlertTriggered(new StockAlertTriggeredEvent(7L, "Kinetic X", "White", "kinetic-x"));
         ArgumentCaptor<Notification> captor = ArgumentCaptor.forClass(Notification.class);
         verify(notifications).save(captor.capture());
         return captor.getValue();
     }
 
     @Test void aSlugIsEncodedAndAMissingSlugGivesNoLink() {
-        service.handleStockAlertTriggered(new StockAlertTriggeredEvent(7L, "Kinetic X", "White", "xe điện/1", "en"));
-        service.handleStockAlertTriggered(new StockAlertTriggeredEvent(7L, "Kinetic X", "White", null, "en"));
+        service.handleStockAlertTriggered(new StockAlertTriggeredEvent(7L, "Kinetic X", "White", "xe điện/1"));
+        service.handleStockAlertTriggered(new StockAlertTriggeredEvent(7L, "Kinetic X", "White", null));
         ArgumentCaptor<Notification> captor = ArgumentCaptor.forClass(Notification.class);
         verify(notifications, org.mockito.Mockito.times(2)).save(captor.capture());
         assertEquals("/product/xe%20%C4%91i%E1%BB%87n%2F1", captor.getAllValues().get(0).getTargetUrl());

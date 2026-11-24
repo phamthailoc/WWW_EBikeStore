@@ -51,14 +51,13 @@ public class DeliveryEmailSender {
         if (!canSend() || documents == null || documents.email() == null || documents.email().isBlank()) {
             return false;
         }
-        String language = documents.language();
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, StandardCharsets.UTF_8.name());
             helper.setFrom(fromAddress);
             helper.setTo(documents.email().trim());
-            helper.setSubject(subject(language, documents.orderNumber(), documents.hasCard()));
-            helper.setText(body(language, documents), false);
+            helper.setSubject(subject(documents.orderNumber(), documents.hasCard()));
+            helper.setText(body(documents), false);
             for (PdfFile file : documents.files()) {
                 helper.addAttachment(file.filename(), new ByteArrayResource(file.content()), "application/pdf");
             }
@@ -70,25 +69,25 @@ public class DeliveryEmailSender {
         }
     }
 
-    String subject(String language, String orderNumber, boolean hasCard) {
-        return DocumentText.text(language, hasCard ? "mail.subject" : "mail.subjectReceiptOnly", store.getName(), orderNumber);
+    String subject(String orderNumber, boolean hasCard) {
+        return DocumentText.text(hasCard ? "mail.subject" : "mail.subjectReceiptOnly", store.getName(), orderNumber);
     }
 
-    String body(String language, OrderDocumentService.DeliveryDocuments documents) {
+    String body(OrderDocumentService.DeliveryDocuments documents) {
         StringBuilder text = new StringBuilder();
-        text.append(DocumentText.text(language, "mail.greeting", documents.recipientName())).append("\n\n");
-        text.append(DocumentText.text(language, "mail.body", documents.orderNumber(), store.getName())).append("\n\n");
-        text.append(DocumentText.text(language, "mail.attached")).append('\n');
-        text.append(DocumentText.text(language, "mail.receipt")).append('\n');
+        text.append(DocumentText.text("mail.greeting", documents.recipientName())).append("\n\n");
+        text.append(DocumentText.text("mail.body", documents.orderNumber(), store.getName())).append("\n\n");
+        text.append(DocumentText.text("mail.attached")).append('\n');
+        text.append(DocumentText.text("mail.receipt")).append('\n');
         if (documents.hasCard()) {
-            text.append(DocumentText.text(language, "mail.card")).append('\n');
+            text.append(DocumentText.text("mail.card")).append('\n');
         }
-        text.append('\n').append(DocumentText.text(language, "mail.notInvoice")).append("\n\n");
+        text.append('\n').append(DocumentText.text("mail.notInvoice")).append("\n\n");
         if (!documents.guest() && !publicBaseUrl.isEmpty()) {
             String base = publicBaseUrl.endsWith("/") ? publicBaseUrl.substring(0, publicBaseUrl.length() - 1) : publicBaseUrl;
-            text.append(DocumentText.text(language, "mail.signIn", base + "/customer/orders")).append("\n\n");
+            text.append(DocumentText.text("mail.signIn", base + "/customer/orders")).append("\n\n");
         }
-        text.append(DocumentText.text(language, "mail.reason", store.getName())).append('\n');
+        text.append(DocumentText.text("mail.reason", store.getName())).append('\n');
         return text.toString();
     }
 }

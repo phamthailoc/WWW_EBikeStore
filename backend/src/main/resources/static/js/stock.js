@@ -9,7 +9,7 @@ window.KineticStock = (() => {
    * Resolves when the dialog is closed.
    */
   // Same thresholds as the product table: none left, or 3 and fewer.
-  const tag = n => n <= 0 ? [t('Hết hàng'), 'out'] : n <= 3 ? [t('Sắp hết'), 'low'] : [t('Còn hàng'), 'ok'];
+  const tag = n => n <= 0 ? ['Hết hàng', 'out'] : n <= 3 ? ['Sắp hết', 'low'] : ['Còn hàng', 'ok'];
   const tagHtml = n => { const [text, kind] = tag(n); return `<span class="stock-tag ${kind}" data-tag>${text}</span>`; };
 
   function open(product, save, say) {
@@ -20,18 +20,18 @@ window.KineticStock = (() => {
       let total = colours.reduce((sum, v) => sum + (v.stockQuantity || 0), 0);
       dialog.innerHTML = `
         <form method="dialog">
-          <h2>${t('Tồn kho theo màu')}</h2>
-          <p class="muted">${esc(product.name)} · ${t('tổng')} <strong data-total>${total}</strong> ${t('xe')}</p>
+          <h2>${'Tồn kho theo màu'}</h2>
+          <p class="muted">${esc(product.name)} · ${'tổng'} <strong data-total>${total}</strong> ${'xe'}</p>
           <table class="stock-table"><tbody>
             ${colours.map(v => `<tr data-variant="${v.id}">
               <td><span class="swatch" style="background:${esc(v.colorHex || '#ccc')}"></span> ${esc(v.colorName || v.variantName)}</td>
-              <td><input type="number" min="0" step="1" value="${v.stockQuantity || 0}" aria-label="${t('Tồn kho')} ${esc(v.colorName || v.variantName)}"></td>
+              <td><input type="number" min="0" step="1" value="${v.stockQuantity || 0}" aria-label="${'Tồn kho'} ${esc(v.colorName || v.variantName)}"></td>
               <td data-tag-cell>${tagHtml(v.stockQuantity || 0)}</td>
-              <td><button type="button" class="table-action" data-save>${t('Lưu')}</button></td></tr>`).join('')}
+              <td><button type="button" class="table-action" data-save>${'Lưu'}</button></td></tr>`).join('')}
           </tbody></table>
-          <label class="stock-note">${t('Lý do thay đổi (không bắt buộc)')}<input type="text" maxlength="500" data-note placeholder="${t('Ví dụ: kiểm kê kho, xe trưng bày, hàng lỗi')}"></label>
-          <p class="muted stock-hint">${t('Hàng mới về hãy tạo phiếu nhập kho để có sổ đối soát. Sửa số ở đây dùng cho kiểm kê hoặc sửa nhầm.')}</p>
-          <p class="dialog-actions"><button type="button" class="button compact ghost" data-history>${t('Lịch sử tồn kho')}</button><button class="button compact" value="close">${t('Đóng')}</button></p>
+          <label class="stock-note">${'Lý do thay đổi (không bắt buộc)'}<input type="text" maxlength="500" data-note placeholder="${'Ví dụ: kiểm kê kho, xe trưng bày, hàng lỗi'}"></label>
+          <p class="muted stock-hint">${'Hàng mới về hãy tạo phiếu nhập kho để có sổ đối soát. Sửa số ở đây dùng cho kiểm kê hoặc sửa nhầm.'}</p>
+          <p class="dialog-actions"><button type="button" class="button compact ghost" data-history>${'Lịch sử tồn kho'}</button><button class="button compact" value="close">${'Đóng'}</button></p>
         </form>`;
       document.body.appendChild(dialog);
 
@@ -46,7 +46,7 @@ window.KineticStock = (() => {
         const input = row.querySelector('input');
         const quantity = Number(input.value);
         if (!Number.isInteger(quantity) || quantity < 0) {
-          say(t('Số lượng tồn kho phải là số nguyên không âm.'), true);
+          say('Số lượng tồn kho phải là số nguyên không âm.', true);
           return;
         }
         const noteInput = dialog.querySelector('[data-note]');
@@ -57,7 +57,7 @@ window.KineticStock = (() => {
           total = summary && summary.stockQuantity != null ? summary.stockQuantity : total;
           dialog.querySelector('[data-total]').textContent = total;
           noteInput.value = '';
-          say(t('Đã cập nhật tồn kho.'));
+          say('Đã cập nhật tồn kho.');
         } catch (error) {
           say(error.message, true);
         } finally {
@@ -74,18 +74,18 @@ window.KineticStock = (() => {
 
   // ---- V26: the history of a bike's stock -------------------------------------------------
   const reasonText = {
-    RECEIPT: t('Nhập kho'), SALE: t('Bán hàng'), CANCEL_RESTORE: t('Hoàn kho do hủy đơn'), ADJUSTMENT: t('Điều chỉnh'), OPENING: t('Tồn đầu kỳ')
+    RECEIPT: 'Nhập kho', SALE: 'Bán hàng', CANCEL_RESTORE: 'Hoàn kho do hủy đơn', ADJUSTMENT: 'Điều chỉnh', OPENING: 'Tồn đầu kỳ'
   };
   const localeTag = () => document.documentElement.lang === 'en' ? 'en-GB' : 'vi-VN';
   const whenText = iso => { const d = new Date(iso); return isNaN(d) ? '—' : d.toLocaleString(localeTag()); };
 
   async function fetchJson(url) {
     const response = await fetch(url, {credentials: 'same-origin', headers: {Accept: 'application/json'}});
-    if (response.status === 401) { location.href = '/login?returnTo=' + encodeURIComponent(location.pathname); throw new Error(t('Vui lòng đăng nhập để tiếp tục.')); }
+    if (response.status === 401) { location.href = '/login?returnTo=' + encodeURIComponent(location.pathname); throw new Error('Vui lòng đăng nhập để tiếp tục.'); }
     if (!response.ok) {
       let message = '';
       try { const body = await response.json(); message = body && body.message ? String(body.message) : ''; } catch (ignored) { /* not JSON */ }
-      throw new Error(response.status === 403 ? t('Bạn không có quyền xem lịch sử tồn kho.') : (message || t('Không tải được lịch sử tồn kho.')));
+      throw new Error(response.status === 403 ? 'Bạn không có quyền xem lịch sử tồn kho.' : (message || 'Không tải được lịch sử tồn kho.'));
     }
     return response.json();
   }
@@ -96,19 +96,19 @@ window.KineticStock = (() => {
       const dialog = document.createElement('dialog');
       dialog.className = 'stock-dialog stock-history-dialog';
       dialog.innerHTML = `
-        <h2>${t('Lịch sử tồn kho')}</h2>
-        <p class="muted">${esc(product.name || '')} · ${t('tồn hiện tại')} <strong data-stock>—</strong> ${t('xe')}</p>
+        <h2>${'Lịch sử tồn kho'}</h2>
+        <p class="muted">${esc(product.name || '')} · ${'tồn hiện tại'} <strong data-stock>—</strong> ${'xe'}</p>
         <div class="dialog-error" data-error hidden></div>
-        <div class="table-scroll"><table class="stock-table stock-balances" data-balances hidden><thead><tr><th>${t('Màu')}</th><th>${t('Tồn kho')}</th><th>${t('Tổng các dòng sổ')}</th><th></th></tr></thead><tbody></tbody></table></div>
-        <p class="muted" data-mismatch hidden>${t('Một số màu có tồn kho khác tổng các dòng sổ: đã có thay đổi ngoài sổ (ví dụ sửa trực tiếp trong cơ sở dữ liệu hoặc nhập danh mục).')}</p>
+        <div class="table-scroll"><table class="stock-table stock-balances" data-balances hidden><thead><tr><th>${'Màu'}</th><th>${'Tồn kho'}</th><th>${'Tổng các dòng sổ'}</th><th></th></tr></thead><tbody></tbody></table></div>
+        <p class="muted" data-mismatch hidden>${'Một số màu có tồn kho khác tổng các dòng sổ: đã có thay đổi ngoài sổ (ví dụ sửa trực tiếp trong cơ sở dữ liệu hoặc nhập danh mục).'}</p>
         <div class="filter-bar stock-history-filters">
-          <label>${t('Màu')}<select data-colour><option value="">${t('Tất cả màu')}</option></select></label>
-          <label>${t('Lý do')}<select data-reason><option value="">${t('Mọi lý do')}</option>${Object.entries(reasonText).map(([key, text]) => `<option value="${key}">${esc(text)}</option>`).join('')}</select></label>
+          <label>${'Màu'}<select data-colour><option value="">${'Tất cả màu'}</option></select></label>
+          <label>${'Lý do'}<select data-reason><option value="">${'Mọi lý do'}</option>${Object.entries(reasonText).map(([key, text]) => `<option value="${key}">${esc(text)}</option>`).join('')}</select></label>
         </div>
-        <p class="muted" data-loading>${t('Đang tải…')}</p>
-        <p class="muted" data-empty hidden>${t('Chưa có biến động tồn kho nào.')}</p>
-        <div class="table-scroll"><table class="stock-table stock-lines" data-lines hidden><thead><tr><th>${t('Thời gian')}</th><th>${t('Màu')}</th><th>${t('Lý do')}</th><th>${t('Thay đổi')}</th><th>${t('Tồn sau')}</th><th>${t('Người làm')}</th><th>${t('Ghi chú')}</th></tr></thead><tbody></tbody></table></div>
-        <p class="dialog-actions"><button type="button" class="button compact ghost" data-more hidden>${t('Xem thêm')}</button><button type="button" class="button compact" data-close>${t('Đóng')}</button></p>`;
+        <p class="muted" data-loading>${'Đang tải…'}</p>
+        <p class="muted" data-empty hidden>${'Chưa có biến động tồn kho nào.'}</p>
+        <div class="table-scroll"><table class="stock-table stock-lines" data-lines hidden><thead><tr><th>${'Thời gian'}</th><th>${'Màu'}</th><th>${'Lý do'}</th><th>${'Thay đổi'}</th><th>${'Tồn sau'}</th><th>${'Người làm'}</th><th>${'Ghi chú'}</th></tr></thead><tbody></tbody></table></div>
+        <p class="dialog-actions"><button type="button" class="button compact ghost" data-more hidden>${'Xem thêm'}</button><button type="button" class="button compact" data-close>${'Đóng'}</button></p>`;
       document.body.appendChild(dialog);
 
       const $ = selector => dialog.querySelector(selector);
@@ -152,12 +152,12 @@ window.KineticStock = (() => {
           if (mine !== seq) return;
           $('[data-stock]').textContent = data.stockQuantity;
           if (data.balances && data.balances.length) {
-            $('[data-balances] tbody').innerHTML = data.balances.map(b => `<tr><td>${b.colorName ? esc(b.colorName) : esc(data.productName)}${b.active ? '' : ` <small class="muted">(${t('ngừng bán')})</small>`}</td><td>${b.stock}</td><td>${b.ledgerTotal}</td><td>${b.matches ? `<span class="stock-tag ok">${t('Khớp')}</span>` : `<span class="stock-tag low">${t('Lệch')} ${b.stock - b.ledgerTotal > 0 ? '+' : ''}${b.stock - b.ledgerTotal}</span>`}</td></tr>`).join('');
+            $('[data-balances] tbody').innerHTML = data.balances.map(b => `<tr><td>${b.colorName ? esc(b.colorName) : esc(data.productName)}${b.active ? '' : ` <small class="muted">(${'ngừng bán'})</small>`}</td><td>${b.stock}</td><td>${b.ledgerTotal}</td><td>${b.matches ? `<span class="stock-tag ok">${'Khớp'}</span>` : `<span class="stock-tag low">${'Lệch'} ${b.stock - b.ledgerTotal > 0 ? '+' : ''}${b.stock - b.ledgerTotal}</span>`}</td></tr>`).join('');
             $('[data-balances]').hidden = false;
             $('[data-mismatch]').hidden = data.balances.every(b => b.matches);
             if (!coloursFilled) {
               const withColour = data.balances.filter(b => b.variantId != null);
-              $('[data-colour]').innerHTML = `<option value="">${t('Tất cả màu')}</option>` + withColour.map(b => `<option value="${b.variantId}">${esc(b.colorName)}</option>`).join('');
+              $('[data-colour]').innerHTML = `<option value="">${'Tất cả màu'}</option>` + withColour.map(b => `<option value="${b.variantId}">${esc(b.colorName)}</option>`).join('');
               $('[data-colour]').closest('label').hidden = withColour.length === 0;
               coloursFilled = true;
             }
@@ -167,7 +167,7 @@ window.KineticStock = (() => {
           const shown = $('[data-lines] tbody').children.length;
           $('[data-lines]').hidden = shown === 0;
           $('[data-empty]').hidden = shown !== 0;
-          $('[data-empty]').textContent = $('[data-colour]').value || $('[data-reason]').value ? t('Không có dòng nào khớp bộ lọc.') : t('Chưa có biến động tồn kho nào.');
+          $('[data-empty]').textContent = $('[data-colour]').value || $('[data-reason]').value ? 'Không có dòng nào khớp bộ lọc.' : 'Chưa có biến động tồn kho nào.';
           beforeId = items.length ? items[items.length - 1].id : beforeId;
           $('[data-more]').hidden = !data.hasMore;
         } catch (error) {

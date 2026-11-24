@@ -14,23 +14,23 @@ class ReportTextTest {
     @Test
     void everyStoredStatusHasAName() {
         for (OrderStatus status : OrderStatus.values()) {
-            assertFalse(ReportText.code("OrderStatus", status.name(), "en").equals(status.name()), "OrderStatus." + status);
-            assertFalse(ReportText.code("OrderStatus", status.name(), "vi").equals(status.name()), "OrderStatus." + status);
+            assertFalse(ReportText.code("OrderStatus", status.name()).equals(status.name()), "OrderStatus." + status);
+            assertFalse(ReportText.code("OrderStatus", status.name()).equals(status.name()), "OrderStatus." + status);
         }
         for (PaymentStatus status : PaymentStatus.values()) {
-            assertFalse(ReportText.code("PaymentStatus", status.name(), "en").equals(status.name()), "PaymentStatus." + status);
+            assertFalse(ReportText.code("PaymentStatus", status.name()).equals(status.name()), "PaymentStatus." + status);
         }
         for (PaymentMethod method : PaymentMethod.values()) {
-            assertFalse(ReportText.code("PaymentMethod", method.name(), "en").equals(method.name()) && !method.name().equals("VNPAY"), "PaymentMethod." + method);
+            assertFalse(ReportText.code("PaymentMethod", method.name()).equals(method.name()) && !method.name().equals("VNPAY"), "PaymentMethod." + method);
         }
     }
 
     @Test
     void aMissingValueIsADashAndAnUnknownCodeIsShownAsItIs() {
-        assertEquals("—", ReportText.code("OrderStatus", null, "vi"));
-        assertEquals("—", ReportText.code("OrderStatus", " ", "en"));
-        assertEquals("ARCHIVED", ReportText.code("OrderStatus", "ARCHIVED", "vi"));
-        assertEquals("sheet.unknown", ReportText.t("sheet.unknown", "vi"));
+        assertEquals("—", ReportText.code("OrderStatus", null));
+        assertEquals("—", ReportText.code("OrderStatus", " "));
+        assertEquals("ARCHIVED", ReportText.code("OrderStatus", "ARCHIVED"));
+        assertEquals("sheet.unknown", ReportText.t("sheet.unknown"));
     }
 
 }

@@ -136,10 +136,6 @@ class OrderCheckoutTest {
         return saved.getValue();
     }
 
-    @Test void theOrderRecordsVietnameseWhenThePageIsVietnameseOrThereIsNoRequest() {
-        assertEquals("vi", placeGuestOrder().getCustomerLanguage());
-    }
-
     @Test void aSaleIsLockedFirstThenWrittenOnTheStockLedgerWithTheOrderNumber() {
         stock(); save(); showroomIn("TP. Ho Chi Minh");
         var req=new OrderCreateRequest(null,"Khách Hàng","0901234567","checkout@example.com",null,

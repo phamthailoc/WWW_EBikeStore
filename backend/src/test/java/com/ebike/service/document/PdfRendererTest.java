@@ -36,7 +36,7 @@ class PdfRendererTest {
     }
 
     private byte[] receipt(Order order, String language) {
-        return renderer.render("receipt", DocumentModels.receipt(order, null, DocumentFixtures.store(), language, NOW));
+        return renderer.render("receipt", DocumentModels.receipt(order, null, DocumentFixtures.store(), NOW));
     }
 
     @Test
@@ -119,7 +119,7 @@ class PdfRendererTest {
         Order order = DocumentFixtures.order(6, OrderStatus.DELIVERED, 3, true);
         List<OrderItemUnit> units = List.copyOf(order.getItems().iterator().next().getUnits());
         Map<String, Object> model = DocumentModels.warrantyCards(order, units, DocumentFixtures.store(),
-            WarrantyRules.parseIntervals(WarrantyRules.DEFAULT_INTERVALS), "vi", NOW);
+            WarrantyRules.parseIntervals(WarrantyRules.DEFAULT_INTERVALS), NOW);
 
         byte[] pdf = renderer.render("warranty-card", model);
 
@@ -142,7 +142,7 @@ class PdfRendererTest {
         List<OrderItemUnit> units = List.copyOf(order.getItems().iterator().next().getUnits());
         String manyIntervals = String.join(",", java.util.stream.IntStream.rangeClosed(1, 40).mapToObj(month -> "P" + month + "M").toList());
         for (String language : List.of("vi", "en")) {
-            Map<String, Object> model = DocumentModels.warrantyCards(order, units, DocumentFixtures.store(), WarrantyRules.parseIntervals(manyIntervals), language, NOW);
+            Map<String, Object> model = DocumentModels.warrantyCards(order, units, DocumentFixtures.store(), WarrantyRules.parseIntervals(manyIntervals), NOW);
 
             assertEquals(2, pagesOf(renderer.render("warranty-card", model)), language);
         }

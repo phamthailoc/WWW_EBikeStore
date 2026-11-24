@@ -54,7 +54,7 @@ public class PdfRenderer {
 
     /** The finished page as text, before it becomes a PDF (a test can read it without opening a PDF). */
     public String page(String template, Map<String, Object> model) {
-        Context context = new Context(Locale.forLanguageTag(String.valueOf(model.getOrDefault("lang", "vi"))));
+        Context context = new Context(Locale.forLanguageTag("vi"));
         context.setVariables(model);
         return engine.process(template, context);
     }

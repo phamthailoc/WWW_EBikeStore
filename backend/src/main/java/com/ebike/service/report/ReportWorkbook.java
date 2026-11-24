@@ -55,32 +55,31 @@ public final class ReportWorkbook {
 
     // ------------------------------------------------------------------ revenue report
 
-    public static byte[] revenueReport(RevenueReportExportData data, String language, LocalDateTime generatedAt) {
-        String lang = ReportText.language(language);
+    public static byte[] revenueReport(RevenueReportExportData data, LocalDateTime generatedAt) {
         ManagerRevenueReportResponse report = data.report();
         try (Workbook workbook = new XSSFWorkbook()) {
             Styles styles = new Styles(workbook);
 
-            Sheet summary = workbook.createSheet(t("sheet.summary", lang));
+            Sheet summary = workbook.createSheet(t("sheet.summary"));
             int row = 0;
             Cell title = summary.createRow(row++).createCell(0);
-            title.setCellValue(t("summary.title", lang));
+            title.setCellValue(t("summary.title"));
             title.setCellStyle(styles.title);
             row++;
-            row = labelled(summary, row, t("summary.groupBy", lang), code("period", report.periodType(), lang), styles);
-            row = labelled(summary, row, t("summary.from", lang), report.fromDate(), styles);
-            row = labelled(summary, row, t("summary.to", lang), report.toDate(), styles);
-            row = labelledDateTime(summary, row, t("summary.generatedAt", lang), generatedAt, styles);
+            row = labelled(summary, row, t("summary.groupBy"), code("period", report.periodType()), styles);
+            row = labelled(summary, row, t("summary.from"), report.fromDate(), styles);
+            row = labelled(summary, row, t("summary.to"), report.toDate(), styles);
+            row = labelledDateTime(summary, row, t("summary.generatedAt"), generatedAt, styles);
             row++;
-            row = labelledNumber(summary, row, t("summary.placedOrders", lang), data.placedOrders(), styles.integer, styles);
-            row = labelledNumber(summary, row, t("summary.totalOrders", lang), report.totalOrders(), styles.integer, styles);
-            row = labelledNumber(summary, row, t("summary.successfulOrders", lang), report.successfulOrders(), styles.integer, styles);
-            row = labelledNumber(summary, row, t("summary.cancelledOrders", lang), data.cancelledOrders(), styles.integer, styles);
-            row = labelledNumber(summary, row, t("summary.cancellationRate", lang), data.cancellationRate(), styles.percent, styles);
-            row = labelledNumber(summary, row, t("summary.totalRevenue", lang), money(report.totalRevenue()), styles.money, styles);
+            row = labelledNumber(summary, row, t("summary.placedOrders"), data.placedOrders(), styles.integer, styles);
+            row = labelledNumber(summary, row, t("summary.totalOrders"), report.totalOrders(), styles.integer, styles);
+            row = labelledNumber(summary, row, t("summary.successfulOrders"), report.successfulOrders(), styles.integer, styles);
+            row = labelledNumber(summary, row, t("summary.cancelledOrders"), data.cancelledOrders(), styles.integer, styles);
+            row = labelledNumber(summary, row, t("summary.cancellationRate"), data.cancellationRate(), styles.percent, styles);
+            row = labelledNumber(summary, row, t("summary.totalRevenue"), money(report.totalRevenue()), styles.money, styles);
             row++;
             Cell note = summary.createRow(row).createCell(0);
-            note.setCellValue(t("summary.note", lang));
+            note.setCellValue(t("summary.note"));
             note.setCellStyle(styles.note);
             summary.addMergedRegion(new org.apache.poi.ss.util.CellRangeAddress(row, row, 0, 3));
             summary.getRow(row).setHeightInPoints(48);
@@ -89,8 +88,8 @@ public final class ReportWorkbook {
             summary.setColumnWidth(2, width(14));
             summary.setColumnWidth(3, width(14));
 
-            Sheet breakdown = workbook.createSheet(t("sheet.breakdown", lang));
-            header(breakdown, styles, t("col.period", lang), t("col.orderCount", lang), t("col.revenue", lang));
+            Sheet breakdown = workbook.createSheet(t("sheet.breakdown"));
+            header(breakdown, styles, t("col.period"), t("col.orderCount"), t("col.revenue"));
             int r = 1;
             long orderSum = 0;
             BigDecimal revenueSum = BigDecimal.ZERO;
@@ -104,10 +103,10 @@ public final class ReportWorkbook {
                 revenueSum = revenueSum.add(point.revenue() == null ? BigDecimal.ZERO : point.revenue());
             }
             if (points.isEmpty()) {
-                r = emptyLine(breakdown, r, t("empty.rows", lang), 3, styles);
+                r = emptyLine(breakdown, r, t("empty.rows"), 3, styles);
             } else {
                 Row total = breakdown.createRow(r);
-                text(total, 0, t("row.total", lang), styles.totalLabel);
+                text(total, 0, t("row.total"), styles.totalLabel);
                 number(total, 1, orderSum, styles.totalInteger);
                 number(total, 2, money(revenueSum), styles.totalMoney);
             }
@@ -116,8 +115,8 @@ public final class ReportWorkbook {
             breakdown.setColumnWidth(2, width(20));
             breakdown.createFreezePane(0, 1);
 
-            productSheet(workbook.createSheet(t("sheet.top", lang)), report.topProducts(), lang, styles);
-            productSheet(workbook.createSheet(t("sheet.slow", lang)), report.slowProducts(), lang, styles);
+            productSheet(workbook.createSheet(t("sheet.top")), report.topProducts(), styles);
+            productSheet(workbook.createSheet(t("sheet.slow")), report.slowProducts(), styles);
 
             return toBytes(workbook);
         } catch (IOException exception) {
@@ -125,8 +124,8 @@ public final class ReportWorkbook {
         }
     }
 
-    private static void productSheet(Sheet sheet, List<ManagerTopProductResponse> products, String lang, Styles styles) {
-        header(sheet, styles, t("col.rank", lang), t("col.product", lang), t("col.quantity", lang), t("col.revenue", lang));
+    private static void productSheet(Sheet sheet, List<ManagerTopProductResponse> products, Styles styles) {
+        header(sheet, styles, t("col.rank"), t("col.product"), t("col.quantity"), t("col.revenue"));
         int r = 1;
         int rank = 1;
         if (products != null) {
@@ -139,7 +138,7 @@ public final class ReportWorkbook {
             }
         }
         if (r == 1) {
-            emptyLine(sheet, r, t("empty.rows", lang), 4, styles);
+            emptyLine(sheet, r, t("empty.rows"), 4, styles);
         }
         sheet.setColumnWidth(0, width(8));
         sheet.setColumnWidth(1, width(40));
@@ -150,16 +149,15 @@ public final class ReportWorkbook {
 
     // ------------------------------------------------------------------ order list
 
-    public static byte[] orders(List<OrderResponse> orders, OrderFilters filters, String language, LocalDateTime generatedAt) {
-        String lang = ReportText.language(language);
+    public static byte[] orders(List<OrderResponse> orders, OrderFilters filters, LocalDateTime generatedAt) {
         try (Workbook workbook = new XSSFWorkbook()) {
             Styles styles = new Styles(workbook);
-            Sheet sheet = workbook.createSheet(t("sheet.orders", lang));
+            Sheet sheet = workbook.createSheet(t("sheet.orders"));
             String[] titles = {
-                t("order.number", lang), t("order.createdAt", lang), t("order.status", lang), t("order.customerType", lang), t("order.recipient", lang),
-                t("order.email", lang), t("order.phone", lang), t("order.handover", lang), t("order.place", lang), t("order.items", lang),
-                t("order.frames", lang), t("order.subtotal", lang), t("order.shipping", lang), t("order.registration", lang), t("order.discount", lang),
-                t("order.total", lang), t("order.method", lang), t("order.paymentStatus", lang), t("order.cancelReason", lang), t("order.notes", lang)
+                t("order.number"), t("order.createdAt"), t("order.status"), t("order.customerType"), t("order.recipient"),
+                t("order.email"), t("order.phone"), t("order.handover"), t("order.place"), t("order.items"),
+                t("order.frames"), t("order.subtotal"), t("order.shipping"), t("order.registration"), t("order.discount"),
+                t("order.total"), t("order.method"), t("order.paymentStatus"), t("order.cancelReason"), t("order.notes")
             };
             header(sheet, styles, titles);
             int r = 1;
@@ -170,12 +168,12 @@ public final class ReportWorkbook {
                 int c = 0;
                 text(line, c++, order.orderNumber(), styles.cell);
                 dateTime(line, c++, order.createdAt(), styles);
-                text(line, c++, code("OrderStatus", order.status(), lang), styles.cell);
-                text(line, c++, order.userId() == null ? t("order.customerGuest", lang) : t("order.customerAccount", lang), styles.cell);
+                text(line, c++, code("OrderStatus", order.status()), styles.cell);
+                text(line, c++, order.userId() == null ? t("order.customerGuest") : t("order.customerAccount"), styles.cell);
                 text(line, c++, shipment == null ? null : shipment.recipientName(), styles.cell);
                 text(line, c++, firstNonBlank(order.customerEmail(), shipment == null ? null : shipment.recipientEmail()), styles.cell);
                 text(line, c++, shipment == null ? null : shipment.phoneNumber(), styles.cell);
-                text(line, c++, shipment == null ? "—" : pickup ? t("order.pickup", lang) : t("order.delivery", lang), styles.cell);
+                text(line, c++, shipment == null ? "—" : pickup ? t("order.pickup") : t("order.delivery"), styles.cell);
                 text(line, c++, place(shipment, pickup), styles.wrap);
                 text(line, c++, items(order.items()), styles.wrap);
                 text(line, c++, frameNumbers(order.items()), styles.wrap);
@@ -184,13 +182,13 @@ public final class ReportWorkbook {
                 number(line, c++, money(order.registrationFee()), styles.money);
                 number(line, c++, money(order.discountAmount()), styles.money);
                 number(line, c++, money(order.totalAmount()), styles.money);
-                text(line, c++, code("PaymentMethod", order.paymentMethod(), lang), styles.cell);
-                text(line, c++, code("PaymentStatus", order.paymentStatus(), lang), styles.cell);
+                text(line, c++, code("PaymentMethod", order.paymentMethod()), styles.cell);
+                text(line, c++, code("PaymentStatus", order.paymentStatus()), styles.cell);
                 text(line, c++, order.cancellationReason(), styles.wrap);
                 text(line, c, order.notes(), styles.wrap);
             }
             if (orders.isEmpty()) {
-                emptyLine(sheet, r, t("order.none", lang), titles.length, styles);
+                emptyLine(sheet, r, t("order.none"), titles.length, styles);
             }
             int[] widths = {18, 17, 16, 15, 22, 28, 15, 18, 36, 40, 26, 15, 15, 15, 15, 16, 18, 18, 28, 30};
             for (int i = 0; i < widths.length; i++) {
@@ -201,15 +199,15 @@ public final class ReportWorkbook {
                 sheet.setAutoFilter(new org.apache.poi.ss.util.CellRangeAddress(0, orders.size(), 0, titles.length - 1));
             }
 
-            Sheet info = workbook.createSheet(t("sheet.filters", lang));
-            header(info, styles, t("filter.name", lang), t("filter.value", lang));
+            Sheet info = workbook.createSheet(t("sheet.filters"));
+            header(info, styles, t("filter.name"), t("filter.value"));
             Map<String, String> rows = new LinkedHashMap<>();
             OrderFilters applied = filters == null ? new OrderFilters(null, null, null, null) : filters;
-            rows.put(t("filter.search", lang), blankToAll(applied.search(), lang));
-            rows.put(t("filter.status", lang), applied.status() == null || applied.status().isBlank() ? t("filter.all", lang) : code("OrderStatus", applied.status().trim().toUpperCase(java.util.Locale.ROOT), lang));
-            rows.put(t("filter.paymentStatus", lang), applied.paymentStatus() == null || applied.paymentStatus().isBlank() ? t("filter.all", lang) : code("PaymentStatus", applied.paymentStatus().trim().toUpperCase(java.util.Locale.ROOT), lang));
-            rows.put(t("filter.showroom", lang), applied.showroomId() == null ? t("filter.all", lang) : String.valueOf(applied.showroomId()));
-            rows.put(t("filter.rows", lang), String.valueOf(orders.size()));
+            rows.put(t("filter.search"), blankToAll(applied.search()));
+            rows.put(t("filter.status"), applied.status() == null || applied.status().isBlank() ? t("filter.all") : code("OrderStatus", applied.status().trim().toUpperCase(java.util.Locale.ROOT)));
+            rows.put(t("filter.paymentStatus"), applied.paymentStatus() == null || applied.paymentStatus().isBlank() ? t("filter.all") : code("PaymentStatus", applied.paymentStatus().trim().toUpperCase(java.util.Locale.ROOT)));
+            rows.put(t("filter.showroom"), applied.showroomId() == null ? t("filter.all") : String.valueOf(applied.showroomId()));
+            rows.put(t("filter.rows"), String.valueOf(orders.size()));
             int ir = 1;
             for (Map.Entry<String, String> entry : rows.entrySet()) {
                 Row line = info.createRow(ir++);
@@ -217,7 +215,7 @@ public final class ReportWorkbook {
                 text(line, 1, entry.getValue(), styles.cell);
             }
             Row stamp = info.createRow(ir);
-            text(stamp, 0, t("filter.generatedAt", lang), styles.cell);
+            text(stamp, 0, t("filter.generatedAt"), styles.cell);
             dateTime(stamp, 1, generatedAt, styles);
             info.setColumnWidth(0, width(26));
             info.setColumnWidth(1, width(30));
@@ -272,8 +270,8 @@ public final class ReportWorkbook {
         return frames.isEmpty() ? null : String.join("\n", frames);
     }
 
-    private static String blankToAll(String value, String lang) {
-        return value == null || value.isBlank() ? t("filter.all", lang) : value.trim();
+    private static String blankToAll(String value) {
+        return value == null || value.isBlank() ? t("filter.all") : value.trim();
     }
 
     private static String firstNonBlank(String first, String second) {

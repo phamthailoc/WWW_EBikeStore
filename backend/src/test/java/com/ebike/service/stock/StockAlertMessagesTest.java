@@ -10,20 +10,11 @@ import org.junit.jupiter.api.Test;
 class StockAlertMessagesTest {
 
     @Test
-    void anythingButEnglishIsVietnamese() {
-        assertEquals("vi", StockAlertMessages.normalize(null));
-        assertEquals("vi", StockAlertMessages.normalize("vi"));
-        assertEquals("vi", StockAlertMessages.normalize("fr"));
-        assertEquals("en", StockAlertMessages.normalize("en"));
-        assertEquals("en", StockAlertMessages.normalize(" EN-us "));
-    }
-
-    @Test
     void emailLinksToTheBikePage() {
         String url = StockAlertMessages.productUrl("https://shop.example/", "kinetic-x");
         assertEquals("https://shop.example/product/kinetic-x", url);
         for (String language : new String[] {"vi", "en"}) {
-            assertTrue(StockAlertMessages.emailBody(language, "Kinetic X", "White", url).contains(url));
+            assertTrue(StockAlertMessages.emailBody("Kinetic X", "White", url).contains(url));
         }
         assertEquals(null, StockAlertMessages.productUrl("", "kinetic-x"));
     }
@@ -41,9 +32,9 @@ class StockAlertMessagesTest {
     @Test
     void missingColourNeverPrintsNull() {
         for (String language : new String[] {"vi", "en"}) {
-            assertFalse(StockAlertMessages.emailBody(language, "Kinetic X", null, null).contains("null"));
-            assertFalse(StockAlertMessages.emailSubject(language, "Kinetic X", " ").contains("()"));
-            assertFalse(StockAlertMessages.notificationBody(language, "Kinetic X", null).contains("null"));
+            assertFalse(StockAlertMessages.emailBody("Kinetic X", null, null).contains("null"));
+            assertFalse(StockAlertMessages.emailSubject("Kinetic X", " ").contains("()"));
+            assertFalse(StockAlertMessages.notificationBody("Kinetic X", null).contains("null"));
         }
     }
 }

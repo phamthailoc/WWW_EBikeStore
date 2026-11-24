@@ -1,6 +1,5 @@
 package com.ebike.service.stock;
 
-import com.ebike.common.i18n.RequestLanguage;
 import com.ebike.config.CacheNames;
 import com.ebike.dto.stock.StockDtos.OptionColour;
 import com.ebike.dto.stock.StockDtos.OptionProduct;

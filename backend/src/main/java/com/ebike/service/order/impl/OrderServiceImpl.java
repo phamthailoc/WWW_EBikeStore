@@ -1,6 +1,5 @@
 package com.ebike.service.order.impl;
 
-import com.ebike.common.i18n.RequestLanguage;
 import com.ebike.model.entity.auth.User;
 import com.ebike.repository.auth.UserRepository;
 import com.ebike.dto.order.request.GuestOrderLinkRequest;
@@ -227,7 +226,6 @@ public class OrderServiceImpl implements OrderService {
         }
         order.setNotes(normalizeOptional(request.notes()));
         order.setCustomerEmail(normalizeEmail(request.customerEmail()));
-        order.setCustomerLanguage(com.ebike.common.i18n.RequestLanguage.current());
 
         Showroom showroom = isHomeDelivery(request) ? null : showroomRepository.findById(request.pickupShowroomId())
             .filter(candidate -> Boolean.TRUE.equals(candidate.getActive()))
@@ -1221,8 +1219,7 @@ public class OrderServiceImpl implements OrderService {
                     shipment.getPickupShowroom().getOpeningHours(),
                     shipment.getPickupShowroom().getActive()
                 )
-            ),
-            order.getCustomerLanguage()
+            )
         );
     }
 }

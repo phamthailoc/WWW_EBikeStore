@@ -1,7 +1,6 @@
 package com.ebike.service.installment;
 
 import com.ebike.common.constants.PermissionConstants;
-import com.ebike.common.i18n.RequestLanguage;
 import com.ebike.dto.installment.InstallmentApplicationResponse;
 import com.ebike.dto.installment.InstallmentBacklogResponse;
 import com.ebike.dto.installment.InstallmentDecisionRequest;

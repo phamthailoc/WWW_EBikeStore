@@ -43,10 +43,8 @@ class OrderDocumentServiceTest {
         orders = mock(OrderRepository.class);
         installments = mock(InstallmentApplicationRepository.class);
         users = mock(UserRepository.class);
-        preferences = mock(UserPreferenceRepository.class);
         when(installments.findByOrderId(org.mockito.ArgumentMatchers.any())).thenReturn(Optional.empty());
-        when(preferences.findByUserId(org.mockito.ArgumentMatchers.any())).thenReturn(Optional.empty());
-        service = new OrderDocumentService(orders, installments, users, preferences, DocumentFixtures.store(), new PdfRenderer(), mock(org.springframework.transaction.PlatformTransactionManager.class),
+        service = new OrderDocumentService(orders, installments, users, DocumentFixtures.store(), new PdfRenderer(), mock(org.springframework.transaction.PlatformTransactionManager.class),
             WarrantyRules.DEFAULT_INTERVALS);
         User owner = DocumentFixtures.user(7, "an");
         when(users.findByUsername("an")).thenReturn(Optional.of(owner));
@@ -83,7 +81,7 @@ class OrderDocumentServiceTest {
     void theOwnerDownloadsTheReceiptOfTheirOrder() throws IOException {
         stored(DocumentFixtures.order(1, OrderStatus.DELIVERED, 1, true));
 
-        PdfFile file = service.receipt(1L, customer("an"), "vi");
+        PdfFile file = service.receipt(1L, customer("an"));
 
         assertEquals("receipt-ORD-20261110-00000001.pdf", file.filename());
         assertEquals(1, pages(file));
@@ -93,9 +91,9 @@ class OrderDocumentServiceTest {
     void anotherCustomerGetsTheSameNotFoundAsAMissingOrder() {
         stored(DocumentFixtures.order(1, OrderStatus.DELIVERED, 1, true));
 
-        assertStatus(HttpStatus.NOT_FOUND, () -> service.receipt(1L, customer("binh"), "vi"));
-        assertStatus(HttpStatus.NOT_FOUND, () -> service.receipt(99L, customer("an"), "vi"));
-        assertStatus(HttpStatus.NOT_FOUND, () -> service.warrantyCard(1L, null, customer("binh"), "vi"));
+        assertStatus(HttpStatus.NOT_FOUND, () -> service.receipt(1L, customer("binh")));
+        assertStatus(HttpStatus.NOT_FOUND, () -> service.receipt(99L, customer("an")));
+        assertStatus(HttpStatus.NOT_FOUND, () -> service.warrantyCard(1L, null, customer("binh")));
     }
 
     @Test
@@ -104,16 +102,16 @@ class OrderDocumentServiceTest {
         when(users.findByUsername("ghost")).thenReturn(Optional.empty());
         when(users.findByEmail("ghost")).thenReturn(Optional.empty());
 
-        assertStatus(HttpStatus.NOT_FOUND, () -> service.receipt(1L, null, "vi"));
-        assertStatus(HttpStatus.NOT_FOUND, () -> service.receipt(1L, customer("ghost"), "vi"));
-        assertStatus(HttpStatus.NOT_FOUND, () -> service.receipt(null, customer("an"), "vi"));
+        assertStatus(HttpStatus.NOT_FOUND, () -> service.receipt(1L, null));
+        assertStatus(HttpStatus.NOT_FOUND, () -> service.receipt(1L, customer("ghost")));
+        assertStatus(HttpStatus.NOT_FOUND, () -> service.receipt(null, customer("an")));
     }
 
     @Test
     void anErrorIsWordedInTheLanguageOfThePageNotOfTheDocument() {
-        ResponseStatusException error = assertThrows(ResponseStatusException.class, () -> service.receipt(99L, customer("an"), "en", "vi"));
+        ResponseStatusException error = assertThrows(ResponseStatusException.class, () -> service.receipt(99L, customer("an")));
 
-        assertEquals(DocumentText.text("vi", "error.notFound"), error.getReason());
+        assertEquals(DocumentText.text("error.notFound"), error.getReason());
     }
 
     @Test
@@ -121,8 +119,8 @@ class OrderDocumentServiceTest {
         Order guest = stored(DocumentFixtures.order(2, OrderStatus.DELIVERED, 1, true));
         guest.setUser(null);
 
-        assertEquals("receipt-ORD-20261110-00000002.pdf", service.receipt(2L, staff(), "vi").filename());
-        assertStatus(HttpStatus.NOT_FOUND, () -> service.receipt(2L, customer("an"), "vi"));
+        assertEquals("receipt-ORD-20261110-00000002.pdf", service.receipt(2L, staff()).filename());
+        assertStatus(HttpStatus.NOT_FOUND, () -> service.receipt(2L, customer("an")));
     }
 
     @Test
@@ -131,7 +129,7 @@ class OrderDocumentServiceTest {
         when(users.findByUsername("an@example.com")).thenReturn(Optional.empty());
         when(users.findByEmail("an@example.com")).thenReturn(Optional.of(DocumentFixtures.user(7, "an")));
 
-        assertEquals("receipt-ORD-20261110-00000001.pdf", service.receipt(1L, customer("an@example.com"), "vi").filename());
+        assertEquals("receipt-ORD-20261110-00000001.pdf", service.receipt(1L, customer("an@example.com")).filename());
     }
 
     @Test
@@ -139,8 +137,8 @@ class OrderDocumentServiceTest {
         stored(DocumentFixtures.order(3, OrderStatus.CANCELLED, 1, false));
         stored(DocumentFixtures.order(4, OrderStatus.PENDING, 1, false));
 
-        assertStatus(HttpStatus.CONFLICT, () -> service.receipt(3L, customer("an"), "vi"));
-        assertEquals("receipt-ORD-20261110-00000004.pdf", service.receipt(4L, customer("an"), "vi").filename());
+        assertStatus(HttpStatus.CONFLICT, () -> service.receipt(3L, customer("an")));
+        assertEquals("receipt-ORD-20261110-00000004.pdf", service.receipt(4L, customer("an")).filename());
     }
 
     @Test
@@ -148,22 +146,22 @@ class OrderDocumentServiceTest {
         stored(DocumentFixtures.order(5, OrderStatus.SHIPPED, 1, true));
         stored(DocumentFixtures.order(6, OrderStatus.DELIVERED, 1, false));
 
-        assertStatus(HttpStatus.CONFLICT, () -> service.warrantyCard(5L, null, customer("an"), "vi"));
-        assertStatus(HttpStatus.CONFLICT, () -> service.warrantyCard(6L, null, customer("an"), "vi"));
+        assertStatus(HttpStatus.CONFLICT, () -> service.warrantyCard(5L, null, customer("an")));
+        assertStatus(HttpStatus.CONFLICT, () -> service.warrantyCard(6L, null, customer("an")));
     }
 
     @Test
     void theCardHasOnePagePerBikeOrJustTheChosenOne() throws IOException {
         stored(DocumentFixtures.order(7, OrderStatus.DELIVERED, 3, true));
 
-        PdfFile all = service.warrantyCard(7L, null, customer("an"), "vi");
-        PdfFile one = service.warrantyCard(7L, 502L, customer("an"), "en");
+        PdfFile all = service.warrantyCard(7L, null, customer("an"));
+        PdfFile one = service.warrantyCard(7L, 502L, customer("an"));
 
         assertEquals(3, pages(all));
         assertEquals("warranty-card-ORD-20261110-00000007.pdf", all.filename());
         assertEquals(1, pages(one));
         assertEquals("warranty-card-RLEBK00002.pdf", one.filename());
-        assertStatus(HttpStatus.NOT_FOUND, () -> service.warrantyCard(7L, 999L, customer("an"), "vi"));
+        assertStatus(HttpStatus.NOT_FOUND, () -> service.warrantyCard(7L, 999L, customer("an")));
     }
 
     @Test
@@ -175,7 +173,7 @@ class OrderDocumentServiceTest {
         plan.setTermMonths(12);
         when(installments.findByOrderId(8L)).thenReturn(Optional.of(plan));
 
-        assertEquals("receipt-ORD-20261110-00000008.pdf", service.receipt(8L, customer("an"), "vi").filename());
+        assertEquals("receipt-ORD-20261110-00000008.pdf", service.receipt(8L, customer("an")).filename());
     }
 
     // ---- the hand-over email ----
@@ -189,7 +187,6 @@ class OrderDocumentServiceTest {
         OrderDocumentService.DeliveryDocuments documents = service.forDeliveredOrder(11L).orElseThrow();
 
         assertEquals("khach@example.com", documents.email());
-        assertEquals("vi", documents.language());
     }
 
     @Test

@@ -25,10 +25,10 @@ window.KineticDocuments = (() => {
     const response = await fetch(url, {credentials: 'same-origin', headers: {Accept: settings.accept || 'application/pdf, application/json'}});
     if (response.status === 401) {
       location.href = '/login?returnTo=' + encodeURIComponent(location.pathname);
-      throw Error(t('Vui lòng đăng nhập để tiếp tục.'));
+      throw Error('Vui lòng đăng nhập để tiếp tục.');
     }
-    if (response.status === 403) throw Error(await errorMessage(response, t('Bạn không có quyền thực hiện thao tác này.')));
-    if (!response.ok) throw Error(await errorMessage(response, settings.failure || t('Không tải được tệp PDF. Vui lòng thử lại.')));
+    if (response.status === 403) throw Error(await errorMessage(response, 'Bạn không có quyền thực hiện thao tác này.'));
+    if (!response.ok) throw Error(await errorMessage(response, settings.failure || 'Không tải được tệp PDF. Vui lòng thử lại.'));
     const blob = await response.blob();
     const match = /filename="?([^";]+)"?/i.exec(response.headers.get('Content-Disposition') || '');
     const href = URL.createObjectURL(blob);
@@ -55,10 +55,10 @@ window.KineticDocuments = (() => {
     button.dataset.busy = '1';
     const label = button.textContent;
     button.disabled = true;
-    button.textContent = t('Đang tạo PDF…');
+    button.textContent = 'Đang tạo PDF…';
     try {
       await download(withLanguage(button), button.dataset.docName);
-      tell(t('Đã tải tệp PDF.'));
+      tell('Đã tải tệp PDF.');
     } catch (error) {
       tell(error.message, true);
     } finally {

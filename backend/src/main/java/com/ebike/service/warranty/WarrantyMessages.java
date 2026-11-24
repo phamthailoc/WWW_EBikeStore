@@ -15,21 +15,17 @@ public final class WarrantyMessages {
     private WarrantyMessages() {
     }
 
-    public static String normalize(String language) {
-        return language != null && language.trim().toLowerCase(Locale.ROOT).startsWith("en") ? "en" : "vi";
-    }
-
     // ---- notification (in-app) ----
 
-    public static String claimTitle(String language) {
+    public static String claimTitle() {
         return "Cập nhật yêu cầu bảo hành";
     }
 
-    public static String claimBody(String language, String productName, String frameNumber, String status) {
-        return "Yêu cầu bảo hành xe " + productName + " (số khung " + frameNumber + ") " + claimStatus(language, status) + ".";
+    public static String claimBody(String productName, String frameNumber, String status) {
+        return "Yêu cầu bảo hành xe " + productName + " (số khung " + frameNumber + ") " + claimStatus(status) + ".";
     }
 
-    static String claimStatus(String language, String status) {
+    static String claimStatus(String status) {
         if (NOTE_UPDATED.equals(status)) {
             return "có ghi chú mới từ cửa hàng, xem trong sổ bảo hành";
         }
@@ -48,13 +44,13 @@ public final class WarrantyMessages {
         return ("đã chuyển sang trạng thái ") + status;
     }
 
-    public static String maintenanceTitle(String language) {
+    public static String maintenanceTitle() {
         return "Đến hạn bảo dưỡng";
     }
 
-    public static String maintenanceBody(String language, String productName, String frameNumber, String milestone) {
+    public static String maintenanceBody(String productName, String frameNumber, String milestone) {
         return "Xe " + productName + " (số khung " + frameNumber + ") đã đến mốc bảo dưỡng định kỳ ("
-            + MaintenanceMilestones.describe(milestone, language) + " kể từ ngày giao). Vui lòng mang xe đến cửa hàng.";
+            + MaintenanceMilestones.describe(milestone) + " kể từ ngày giao). Vui lòng mang xe đến cửa hàng.";
     }
 
     // ---- email ----
@@ -68,21 +64,18 @@ public final class WarrantyMessages {
         return (base.endsWith("/") ? base.substring(0, base.length() - 1) : base) + "/customer/warranty";
     }
 
-    public static String maintenanceEmailSubject(String language, String productName) {
+    public static String maintenanceEmailSubject(String productName) {
         return "Kinetic E-Bike: xe " + productName + " đến hạn bảo dưỡng";
     }
 
     /** {@code warrantyUrl} is the absolute link to the customer's warranty book; it is left out of the text when blank. */
-    public static String maintenanceEmailBody(String language, String productName, String frameNumber, String milestone, String warrantyUrl) {
+    public static String maintenanceEmailBody(String productName, String frameNumber, String milestone, String warrantyUrl) {
         String where = warrantyUrl == null || warrantyUrl.isBlank() ? null : warrantyUrl.trim();
         return "Xe " + productName + " (số khung " + frameNumber + ") đã đến mốc bảo dưỡng định kỳ, "
-            + MaintenanceMilestones.describe(milestone, language) + " kể từ ngày giao.\n\n"
+            + MaintenanceMilestones.describe(milestone) + " kể từ ngày giao.\n\n"
             + "Vui lòng mang xe đến cửa hàng Kinetic để được kiểm tra. "
             + (where != null ? "Sổ bảo hành của bạn: " + where : "Xem sổ bảo hành của bạn tại trang Bảo hành trong tài khoản.") + "\n\n"
             + "Bạn nhận email này vì đã mua xe tại Kinetic và đang bật nhận thông báo.\n";
     }
 
-    private static boolean isEnglish(String language) {
-        return "en".equals(normalize(language));
-    }
 }

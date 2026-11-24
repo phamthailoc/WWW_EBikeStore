@@ -35,24 +35,24 @@ class StockAlertEmailListenerTest {
     }
 
     private StockAlertTriggeredEvent event(String language) {
-        return new StockAlertTriggeredEvent(7L, "Kinetic X", "White", "kinetic-x", language);
+        return new StockAlertTriggeredEvent(7L, "Kinetic X", "White", "kinetic-x");
     }
 
     @Test void activeCustomerGetsTheEmailInTheEventLanguage() {
         listener.onStockAlertTriggered(event("en"));
-        verify(sender).send(7L, "an@example.test", "Kinetic X", "White", "kinetic-x", "en");
+        verify(sender).send(7L, "an@example.test", "Kinetic X", "White", "kinetic-x");
     }
 
     @Test void erasedAccountGetsNothing() {
         user.setAccountStatus("DELETED");
         listener.onStockAlertTriggered(event("vi"));
-        verify(sender, never()).send(any(), any(), any(), any(), any(), any());
+        verify(sender, never()).send(any(), any(), any(), any(), any());
     }
 
     @Test void accountDisabledByAnAdminGetsNothing() {
         user.setActive(false);
         listener.onStockAlertTriggered(event("vi"));
-        verify(sender, never()).send(any(), any(), any(), any(), any(), any());
+        verify(sender, never()).send(any(), any(), any(), any(), any());
     }
 
     @Test void customerWhoSwitchedNotificationsOffStillGetsTheAlertTheyAskedFor() {
@@ -60,6 +60,6 @@ class StockAlertEmailListenerTest {
         off.setNotificationsEnabled(false);
         when(preferences.findByUserId(7L)).thenReturn(Optional.of(off));
         listener.onStockAlertTriggered(event("vi"));
-        verify(sender).send(7L, "an@example.test", "Kinetic X", "White", "kinetic-x", "vi");
+        verify(sender).send(7L, "an@example.test", "Kinetic X", "White", "kinetic-x");
     }
 }

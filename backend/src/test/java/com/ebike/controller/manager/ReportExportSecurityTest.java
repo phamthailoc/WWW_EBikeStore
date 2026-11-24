@@ -127,8 +127,8 @@ class ReportExportSecurityTest {
     @BeforeEach void setup() {
         reset(users, preferences, exports);
         byte[] bytes = "PK test".getBytes();
-        when(exports.revenueReport(any(), any(), any(), any())).thenReturn(new ReportExportService.ExportFile("revenue-report_2026-11-01_2026-11-24.xlsx", bytes));
-        when(exports.orders(any(), any(), any(), any(), any(), any())).thenReturn(new ReportExportService.ExportFile("orders_20261124-0930.xlsx", bytes));
+        when(exports.revenueReport(any(), any(), any())).thenReturn(new ReportExportService.ExportFile("revenue-report_2026-11-01_2026-11-24.xlsx", bytes));
+        when(exports.orders(any(), any(), any(), any(), any())).thenReturn(new ReportExportService.ExportFile("orders_20261124-0930.xlsx", bytes));
         mvc = MockMvcBuilders.webAppContextSetup(context)
             .addFilters(context.getBean("springSecurityFilterChain", Filter.class))
             .build();
@@ -180,14 +180,14 @@ class ReportExportSecurityTest {
     @Test void theFiltersAndTheLanguageReachTheService() throws Exception {
         statusOf(as(get("/api/v1/manager/orders/export").param("status", "DELIVERED").param("paymentStatus", "PAID")
             .param("search", "an").param("showroomId", "3").param("lang", "en"), ROLE, VIEW_ALL));
-        verify(exports).orders(any(), eq("DELIVERED"), eq("PAID"), eq("an"), eq(3L), eq("en"));
+        verify(exports).orders(any(), eq("DELIVERED"), eq("PAID"), eq("an"), eq(3L));
 
         statusOf(as(get("/api/v1/manager/revenue-report/export").param("period", "month").param("from", "2026-01-01").param("to", "2026-11-24"), ROLE, VIEW_ALL, REPORT));
-        verify(exports).revenueReport(eq("month"), eq("2026-01-01"), eq("2026-11-24"), any());
+        verify(exports).revenueReport(eq("month"), eq("2026-01-01"), eq("2026-11-24"));
     }
 
     @Test void aServiceRefusalReachesTheClientWithItsOwnStatus() throws Exception {
-        when(exports.revenueReport(any(), any(), any(), any())).thenThrow(new ResponseStatusException(HttpStatus.BAD_REQUEST, "from date must be on or before to date"));
+        when(exports.revenueReport(any(), any(), any())).thenThrow(new ResponseStatusException(HttpStatus.BAD_REQUEST, "from date must be on or before to date"));
 
         assertEquals(400, statusOf(as(get("/api/v1/manager/revenue-report/export").param("from", "2026-12-01"), ROLE, VIEW_ALL, REPORT)));
     }

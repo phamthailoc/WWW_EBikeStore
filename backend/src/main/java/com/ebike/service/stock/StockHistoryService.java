@@ -1,6 +1,5 @@
 package com.ebike.service.stock;
 
-import com.ebike.common.i18n.RequestLanguage;
 import com.ebike.dto.stock.StockDtos.BalanceResponse;
 import com.ebike.dto.stock.StockDtos.HistoryResponse;
 import com.ebike.dto.stock.StockDtos.MovementResponse;

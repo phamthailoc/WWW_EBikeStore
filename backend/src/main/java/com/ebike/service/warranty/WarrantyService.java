@@ -1,6 +1,5 @@
 package com.ebike.service.warranty;
 
-import com.ebike.common.i18n.RequestLanguage;
 import com.ebike.dto.warranty.WarrantyClaimResponse;
 import com.ebike.dto.warranty.WarrantyClaimUpdateRequest;
 import com.ebike.dto.warranty.WarrantyLookupResponse;

@@ -1,7 +1,5 @@
 package com.ebike.controller.order;
 
-import com.ebike.common.i18n.RequestLanguage;
-import com.ebike.service.document.DocumentFormat;
 import com.ebike.service.document.OrderDocumentService;
 import com.ebike.service.document.PdfFile;
 import org.springframework.http.CacheControl;
@@ -31,22 +29,17 @@ public class OrderDocumentController {
     }
 
     @GetMapping("/receipt")
-    public ResponseEntity<byte[]> receipt(@PathVariable Long id, @RequestParam(required = false) String lang, Authentication authentication) {
-        return pdf(documents.receipt(id, authentication, language(lang), RequestLanguage.current()));
+    public ResponseEntity<byte[]> receipt(@PathVariable Long id, Authentication authentication) {
+        return pdf(documents.receipt(id, authentication));
     }
 
     @GetMapping("/warranty-card")
     public ResponseEntity<byte[]> warrantyCard(
         @PathVariable Long id,
         @RequestParam(required = false) Long unitId,
-        @RequestParam(required = false) String lang,
         Authentication authentication
     ) {
-        return pdf(documents.warrantyCard(id, unitId, authentication, language(lang), RequestLanguage.current()));
-    }
-
-    private static String language(String requested) {
-        return requested == null || requested.isBlank() ? RequestLanguage.current() : DocumentFormat.language(requested);
+        return pdf(documents.warrantyCard(id, unitId, authentication));
     }
 
     private static ResponseEntity<byte[]> pdf(PdfFile file) {

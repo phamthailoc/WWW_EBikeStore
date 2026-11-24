@@ -39,8 +39,7 @@ public class MaintenanceEmailListener {
             var preference = userPreferenceRepository.findByUserId(user.getId());
             boolean optedOut = preference.map(saved -> Boolean.FALSE.equals(saved.getNotificationsEnabled())).orElse(false);
             if (!optedOut) {
-                String language = preference.map(saved -> saved.getLanguage()).orElse("vi");
-                emailSender.send(user.getEmail(), event.productName(), event.frameNumber(), event.milestone(), language);
+                emailSender.send(user.getEmail(), event.productName(), event.frameNumber(), event.milestone());
             }
         });
     }

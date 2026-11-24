@@ -18,17 +18,8 @@ class InstallmentMessagesTest {
     private static final OffsetDateTime DEADLINE = OffsetDateTime.of(2026, 11, 25, 9, 30, 0, 0, ZoneOffset.ofHours(7));
 
     @Test
-    void anythingButEnglishIsVietnamese() {
-        assertEquals("en", InstallmentMessages.normalize("en"));
-        assertEquals("en", InstallmentMessages.normalize(" EN-GB "));
-        assertEquals("vi", InstallmentMessages.normalize("vi"));
-        assertEquals("vi", InstallmentMessages.normalize(null));
-        assertEquals("vi", InstallmentMessages.normalize("fr"));
-    }
-
-    @Test
     void anApprovalWithoutADeadlineLeavesTheDeadlineSentenceOut() {
-        String en = InstallmentMessages.body("en", InstallmentMessages.APPROVED, "ORD-10", DOWN, MONTHLY, 6, null, null);
+        String en = InstallmentMessages.body(InstallmentMessages.APPROVED, "ORD-10", DOWN, MONTHLY, 6, null, null);
         assertFalse(en.contains("Please pay it before"));
     }
 

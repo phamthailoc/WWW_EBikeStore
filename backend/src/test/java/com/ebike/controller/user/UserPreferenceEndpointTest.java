@@ -21,7 +21,7 @@ class UserPreferenceEndpointTest {
     @Test
     void preferencesCanBeReadWithAGet() throws Exception {
         UserProfileService service = mock(UserProfileService.class);
-        when(service.getPreferences(eq(9L), any())).thenReturn(new UserPreferenceResponse(9L, "light", "vi", false));
+        when(service.getPreferences(eq(9L), any())).thenReturn(new UserPreferenceResponse(9L, "light", false));
         MockMvc mvc = MockMvcBuilders.standaloneSetup(new UserController(service)).build();
 
         mvc.perform(get("/api/v1/users/9/preferences"))

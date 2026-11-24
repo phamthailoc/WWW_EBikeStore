@@ -1,6 +1,5 @@
 package com.ebike.service.order;
 
-import com.ebike.common.i18n.RequestLanguage;
 import com.ebike.dto.order.request.OrderUnitsRequest;
 import com.ebike.dto.order.response.OrderItemUnitResponse;
 import com.ebike.model.entity.order.Order;

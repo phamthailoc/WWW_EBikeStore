@@ -19,15 +19,6 @@ class TestRideMessagesTest {
         TestRideMessages.NOTE_UPDATED);
 
     @Test
-    void anythingButEnglishIsVietnamese() {
-        assertEquals("en", TestRideMessages.normalize("en"));
-        assertEquals("en", TestRideMessages.normalize(" EN-GB "));
-        assertEquals("vi", TestRideMessages.normalize("vi"));
-        assertEquals("vi", TestRideMessages.normalize(null));
-        assertEquals("vi", TestRideMessages.normalize("fr"));
-    }
-
-    @Test
     void onlyConfirmationsStoreCancellationsAndRemindersAreEmailed() {
         assertTrue(TestRideMessages.sendsEmail(TestRideMessages.CONFIRMED));
         assertTrue(TestRideMessages.sendsEmail(TestRideMessages.CANCELLED));

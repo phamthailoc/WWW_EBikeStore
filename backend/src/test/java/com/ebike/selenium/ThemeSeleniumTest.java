@@ -38,10 +38,9 @@ class ThemeSeleniumTest extends StorefrontSeleniumTest {
     private static final By TOGGLE = By.cssSelector(".top .theme-toggle");
 
     @Test
-    void newAccountsFollowTheDeviceAndSpeakVietnamese() throws Exception {
+    void newAccountsFollowTheDevice() throws Exception {
         JsonNode preferences = preferences();
         assertEquals("system", preferences.path("theme").asText());
-        assertEquals("vi", preferences.path("language").asText());
         assertThrows(IllegalStateException.class,
             () -> call(api, "PUT", "/api/v1/users/" + userId() + "/preferences", Map.of("theme", "blue")),
             "only system, light or dark are accepted");

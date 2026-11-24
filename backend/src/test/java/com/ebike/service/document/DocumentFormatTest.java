@@ -12,13 +12,13 @@ class DocumentFormatTest {
 
     @Test
     void vietnameseWordsReadTheNumbersTheWayTheyAreSpoken() {
-        assertEquals("Không đồng chẵn", DocumentFormat.moneyInWords(BigDecimal.ZERO, "vi"));
-        assertEquals("Một đồng chẵn", DocumentFormat.moneyInWords(BigDecimal.ONE, "vi"));
-        assertEquals("Mười lăm đồng chẵn", DocumentFormat.moneyInWords(new BigDecimal("15"), "vi"));
-        assertEquals("Hai mươi mốt đồng chẵn", DocumentFormat.moneyInWords(new BigDecimal("21"), "vi"));
-        assertEquals("Một trăm lẻ năm đồng chẵn", DocumentFormat.moneyInWords(new BigDecimal("105"), "vi"));
-        assertEquals("Một triệu hai trăm ba mươi bốn nghìn đồng chẵn", DocumentFormat.moneyInWords(new BigDecimal("1234000"), "vi"));
-        assertEquals("Hai mươi triệu đồng chẵn", DocumentFormat.moneyInWords(new BigDecimal("20000000"), "vi"));
+        assertEquals("Không đồng chẵn", DocumentFormat.moneyInWords(BigDecimal.ZERO));
+        assertEquals("Một đồng chẵn", DocumentFormat.moneyInWords(BigDecimal.ONE));
+        assertEquals("Mười lăm đồng chẵn", DocumentFormat.moneyInWords(new BigDecimal("15")));
+        assertEquals("Hai mươi mốt đồng chẵn", DocumentFormat.moneyInWords(new BigDecimal("21")));
+        assertEquals("Một trăm lẻ năm đồng chẵn", DocumentFormat.moneyInWords(new BigDecimal("105")));
+        assertEquals("Một triệu hai trăm ba mươi bốn nghìn đồng chẵn", DocumentFormat.moneyInWords(new BigDecimal("1234000")));
+        assertEquals("Hai mươi triệu đồng chẵn", DocumentFormat.moneyInWords(new BigDecimal("20000000")));
     }
 
     @Test

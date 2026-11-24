@@ -67,7 +67,7 @@ class SeoPagesTest {
         return MockMvcBuilders
             .standaloneSetup(new StorefrontController(products, 14, CLOCK), new SeoController(products, publicBaseUrl),
                 new WorkspaceController(mock(com.ebike.config.order.VnPayProperties.class), messages))
-            .setControllerAdvice(new SeoModelAdvice(publicBaseUrl), new I18nModelAdvice())
+            .setControllerAdvice(new SeoModelAdvice(publicBaseUrl))
             .setViewResolvers(views)
             .setLocaleResolver(new FixedLocaleResolver(Locale.forLanguageTag(language)))
             .build();

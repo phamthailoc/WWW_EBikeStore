@@ -20,52 +20,40 @@ public final class InstallmentMessages {
 
     // the time is shown with its offset ("GMT+7"): the server may run in another zone than the shop, and a deadline must not be read 7 hours off
     private static final DateTimeFormatter VI = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy (O)", Locale.ENGLISH);
-    private static final DateTimeFormatter EN = DateTimeFormatter.ofPattern("dd/MM/yyyy 'at' HH:mm (O)", Locale.ENGLISH);
 
     private InstallmentMessages() {
     }
 
-    public static String normalize(String language) {
-        return language != null && language.trim().toLowerCase(Locale.ROOT).startsWith("en") ? "en" : "vi";
-    }
-
-    private static boolean isEnglish(String language) {
-        return "en".equals(normalize(language));
-    }
-
     /** "12.345.678 ₫" in Vietnamese, "12,345,678 VND" in English. */
-    public static String money(String language, BigDecimal amount) {
-        boolean english = isEnglish(language);
+    public static String money(BigDecimal amount) {
         NumberFormat format = NumberFormat.getIntegerInstance(Locale.forLanguageTag("vi-VN"));
         String digits = format.format(amount == null ? BigDecimal.ZERO : amount);
         return digits + " ₫";
     }
 
     /** A moment with its offset, in the shop's zone: "09:30 25/11/2026 (GMT+7)" or "25/11/2026 at 09:30 (GMT+7)". */
-    public static String when(String language, OffsetDateTime time) {
+    public static String when(OffsetDateTime time) {
         return time.format(VI);
     }
 
     // ---- notification (in-app) ----
 
-    public static String title(String language, String kind) {
-        boolean english = isEnglish(language);
+    public static String title(String kind) {
         return APPROVED.equals(kind)
             ? ("Hồ sơ trả góp đã được duyệt")
             : ("Hồ sơ trả góp bị từ chối");
     }
 
     /** {@code payBefore} and {@code note} are left out of the text when null or blank. */
-    public static String body(String language, String kind, String orderNumber, BigDecimal downPayment, BigDecimal monthlyPayment,
+    public static String body(String kind, String orderNumber, BigDecimal downPayment, BigDecimal monthlyPayment,
                               int termMonths, OffsetDateTime payBefore, String note) {
-        boolean english = isEnglish(language);
         String reason = note == null || note.isBlank() ? "" : (" Lý do: ") + note.trim();
         if (APPROVED.equals(kind)) {
-            String deadline = payBefore == null ? "" : (" Vui lòng thanh toán trước ") + when(language, payBefore)
+            String deadline = payBefore == null ? "" : (" Vui lòng thanh toán trước ") + when(payBefore)
                 + (", sau thời hạn đơn sẽ bị hủy.");
-            String plan = (" Sau đó bạn trả " + money(language, monthlyPayment) + " mỗi tháng trong " + termMonths + " tháng (mô phỏng, chưa kết nối công ty tài chính).");
+            String plan = (" Sau đó bạn trả " + money(monthlyPayment) + " mỗi tháng trong " + termMonths + " tháng (mô phỏng, chưa kết nối công ty tài chính).");
             String note2 = note == null || note.isBlank() ? "" : (" Ghi chú của cửa hàng: ") + note.trim();
-            return ("Hồ sơ trả góp của đơn " + orderNumber + " đã được duyệt. Khoản trả trước là " + money(language, downPayment)
+            return ("Hồ sơ trả góp của đơn " + orderNumber + " đã được duyệt. Khoản trả trước là " + money(downPayment)
                     + ", thanh toán qua VNPay ở trang đơn hàng hoặc tại cửa hàng." + deadline + plan + note2);
         }
         return "Hồ sơ trả góp của đơn " + orderNumber + " bị từ chối." + reason
@@ -74,15 +62,13 @@ public final class InstallmentMessages {
 
     // ---- the payment of the down payment (in-app notification) ----
 
-    public static String downPaymentTitle(String language, boolean paid) {
-        boolean english = isEnglish(language);
+    public static String downPaymentTitle(boolean paid) {
         return paid
             ? ("Đã nhận khoản trả trước")
             : ("Thanh toán khoản trả trước thất bại");
     }
 
-    public static String downPaymentBody(String language, boolean paid, String orderNumber) {
-        boolean english = isEnglish(language);
+    public static String downPaymentBody(boolean paid, String orderNumber) {
         if (paid) {
             return "Khoản trả trước của đơn " + orderNumber + " đã được thanh toán. Cửa hàng sẽ xử lý đơn hàng của bạn.";
         }
@@ -100,20 +86,18 @@ public final class InstallmentMessages {
         return (base.endsWith("/") ? base.substring(0, base.length() - 1) : base) + "/customer/orders/" + orderId;
     }
 
-    public static String emailSubject(String language, String kind, String orderNumber) {
-        boolean english = isEnglish(language);
+    public static String emailSubject(String kind, String orderNumber) {
         return APPROVED.equals(kind)
             ? ("Kinetic E-Bike: hồ sơ trả góp đơn " + orderNumber + " đã được duyệt")
             : ("Kinetic E-Bike: hồ sơ trả góp đơn " + orderNumber + " bị từ chối");
     }
 
     /** {@code orderUrl} is left out of the text when blank. */
-    public static String emailBody(String language, String kind, String orderNumber, BigDecimal downPayment, BigDecimal monthlyPayment,
+    public static String emailBody(String kind, String orderNumber, BigDecimal downPayment, BigDecimal monthlyPayment,
                                    int termMonths, OffsetDateTime payBefore, String note, String orderUrl) {
-        boolean english = isEnglish(language);
         StringBuilder text = new StringBuilder();
         text.append("Xin chào,\n\n");
-        text.append(body(language, kind, orderNumber, downPayment, monthlyPayment, termMonths, payBefore, note)).append("\n\n");
+        text.append(body(kind, orderNumber, downPayment, monthlyPayment, termMonths, payBefore, note)).append("\n\n");
         if (orderUrl != null && !orderUrl.isBlank()) {
             text.append("Đơn hàng của bạn: ").append(orderUrl.trim()).append("\n\n");
         }

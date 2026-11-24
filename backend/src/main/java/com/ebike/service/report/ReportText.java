@@ -107,12 +107,7 @@ public final class ReportText {
     private ReportText() {
     }
 
-    /** "en" or "vi": anything that does not start with "en" is Vietnamese. */
-    public static String language(String language) {
-        return language != null && language.trim().toLowerCase(Locale.ROOT).startsWith("en") ? "en" : "vi";
-    }
-
-    public static String t(String key, String language) {
+    public static String t(String key) {
         String[] pair = TEXT.get(key);
         if (pair == null) {
             return key;
@@ -121,7 +116,7 @@ public final class ReportText {
     }
 
     /** The name of a stored code such as an order status; an unknown code is shown as it is, a missing one as a dash. */
-    public static String code(String type, String value, String language) {
+    public static String code(String type, String value) {
         if (value == null || value.isBlank()) {
             return "—";
         }

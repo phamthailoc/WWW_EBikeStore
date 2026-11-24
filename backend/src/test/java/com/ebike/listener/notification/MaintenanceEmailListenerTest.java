@@ -45,7 +45,6 @@ class MaintenanceEmailListenerTest {
 
     private static UserPreference preference(String language, boolean notifications) {
         UserPreference preference = new UserPreference();
-        preference.setLanguage(language);
         preference.setNotificationsEnabled(notifications);
         return preference;
     }
@@ -54,7 +53,7 @@ class MaintenanceEmailListenerTest {
     void anAccountWithoutAPreferenceRowGetsTheEmailInVietnamese() {
         listener.onMaintenanceDue(event());
 
-        verify(sender).send("an@example.com", "Test bike", "FRAME1", "P6M", "vi");
+        verify(sender).send("an@example.com", "Test bike", "FRAME1", "P6M");
     }
 
     @Test
@@ -63,7 +62,7 @@ class MaintenanceEmailListenerTest {
 
         listener.onMaintenanceDue(event());
 
-        verify(sender).send("an@example.com", "Test bike", "FRAME1", "P6M", "en");
+        verify(sender).send("an@example.com", "Test bike", "FRAME1", "P6M");
     }
 
     @Test
@@ -72,7 +71,7 @@ class MaintenanceEmailListenerTest {
 
         listener.onMaintenanceDue(event());
 
-        verify(sender, never()).send(anyString(), anyString(), anyString(), anyString(), anyString());
+        verify(sender, never()).send(anyString(), anyString(), anyString(), anyString());
     }
 
     @Test
@@ -81,7 +80,7 @@ class MaintenanceEmailListenerTest {
 
         listener.onMaintenanceDue(event());
 
-        verify(sender, never()).send(anyString(), anyString(), anyString(), anyString(), anyString());
+        verify(sender, never()).send(anyString(), anyString(), anyString(), anyString());
     }
 
     @Test
@@ -90,6 +89,6 @@ class MaintenanceEmailListenerTest {
 
         listener.onMaintenanceDue(event());
 
-        verify(sender, never()).send(anyString(), anyString(), anyString(), anyString(), anyString());
+        verify(sender, never()).send(anyString(), anyString(), anyString(), anyString());
     }
 }

@@ -1,6 +1,5 @@
 package com.ebike.service.manager.impl;
 
-import com.ebike.common.i18n.RequestLanguage;
 import com.ebike.model.entity.auth.Role;
 import com.ebike.model.entity.auth.User;
 import com.ebike.repository.auth.UserRepository;
@@ -754,8 +753,7 @@ public class ManagerServiceImpl implements ManagerService {
                     shipment.getPickupShowroom().getOpeningHours(),
                     shipment.getPickupShowroom().getActive()
                 )
-            ),
-            order.getCustomerLanguage()
+            )
         );
     }
 

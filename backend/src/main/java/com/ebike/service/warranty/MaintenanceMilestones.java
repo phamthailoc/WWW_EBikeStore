@@ -10,10 +10,6 @@ public final class MaintenanceMilestones {
     }
 
     public static String describe(String milestone) {
-        return describe(milestone, "vi");
-    }
-
-    public static String describe(String milestone, String language) {
         try {
             Period period = Period.parse(milestone).normalized();
             long months = period.toTotalMonths();

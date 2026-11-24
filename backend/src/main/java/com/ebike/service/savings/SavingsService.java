@@ -1,6 +1,5 @@
 package com.ebike.service.savings;
 
-import com.ebike.common.i18n.RequestLanguage;
 import com.ebike.dto.savings.SavingsResponse;
 import com.ebike.model.entity.product.Product;
 import com.ebike.model.entity.product.ProductSpecification;

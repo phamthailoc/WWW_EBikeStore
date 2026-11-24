@@ -45,16 +45,7 @@ class TestRideEmailListenerTest {
     @Test
     void aCustomerWithNoSavedProfileGetsTheVietnameseEmail() {
         listener.onTestRideNotice(event(TestRideMessages.CONFIRMED));
-        verify(sender).send("an@example.test", TestRideMessages.CONFIRMED, "Kinetic X", "Quan 1", "187 Nguyen Thai Hoc", SLOT, "note", "vi");
-    }
-
-    @Test
-    void theSavedLanguageDecides() {
-        UserPreference english = new UserPreference();
-        english.setLanguage("en");
-        when(preferences.findByUserId(7L)).thenReturn(Optional.of(english));
-        listener.onTestRideNotice(event(TestRideMessages.REMINDER));
-        verify(sender).send("an@example.test", TestRideMessages.REMINDER, "Kinetic X", "Quan 1", "187 Nguyen Thai Hoc", SLOT, "note", "en");
+        verify(sender).send("an@example.test", TestRideMessages.CONFIRMED, "Kinetic X", "Quan 1", "187 Nguyen Thai Hoc", SLOT, "note");
     }
 
     @Test
@@ -63,20 +54,20 @@ class TestRideEmailListenerTest {
         off.setNotificationsEnabled(false);
         when(preferences.findByUserId(7L)).thenReturn(Optional.of(off));
         listener.onTestRideNotice(event(TestRideMessages.CONFIRMED));
-        verify(sender).send("an@example.test", TestRideMessages.CONFIRMED, "Kinetic X", "Quan 1", "187 Nguyen Thai Hoc", SLOT, "note", "vi");
+        verify(sender).send("an@example.test", TestRideMessages.CONFIRMED, "Kinetic X", "Quan 1", "187 Nguyen Thai Hoc", SLOT, "note");
     }
 
     @Test
     void anErasedAccountGetsNothing() {
         user.setAccountStatus("DELETED");
         listener.onTestRideNotice(event(TestRideMessages.CONFIRMED));
-        verify(sender, never()).send(any(), any(), any(), any(), any(), any(), any(), any());
+        verify(sender, never()).send(any(), any(), any(), any(), any(), any(), any());
     }
 
     @Test
     void kindsThatAreOnlyInAppNeverReachTheSender() {
         listener.onTestRideNotice(event(TestRideMessages.NO_SHOW));
         listener.onTestRideNotice(event(TestRideMessages.EXPIRED));
-        verify(sender, never()).send(any(), any(), any(), any(), any(), any(), any(), any());
+        verify(sender, never()).send(any(), any(), any(), any(), any(), any(), any());
     }
 }

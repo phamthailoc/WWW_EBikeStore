@@ -45,7 +45,6 @@ class TestRideNotificationTest {
 
     private void profile(String language, boolean notificationsOn) {
         UserPreference preference = new UserPreference();
-        preference.setLanguage(language);
         preference.setNotificationsEnabled(notificationsOn);
         when(preferences.findByUserId(7L)).thenReturn(Optional.of(preference));
     }

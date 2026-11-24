@@ -23,24 +23,18 @@ public final class TestRideMessages {
     public static final String NOTE_UPDATED = "NOTE_UPDATED";
 
     private static final DateTimeFormatter VI = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy", Locale.ROOT);
-    private static final DateTimeFormatter EN = DateTimeFormatter.ofPattern("dd/MM/yyyy 'at' HH:mm", Locale.ENGLISH);
 
     private TestRideMessages() {
     }
 
-    public static String normalize(String language) {
-        return language != null && language.trim().toLowerCase(Locale.ROOT).startsWith("en") ? "en" : "vi";
-    }
-
     /** The slot as one phrase: "09:00 22/11/2026" in Vietnamese, "22/11/2026 at 09:00" in English. */
-    public static String when(String language, LocalDateTime slotStart) {
+    public static String when(LocalDateTime slotStart) {
         return slotStart.format(VI);
     }
 
     // ---- notification (in-app) ----
 
-    public static String title(String language, String kind) {
-        boolean english = isEnglish(language);
+    public static String title(String kind) {
         return switch (kind) {
             case CONFIRMED -> "Lịch lái thử đã được xác nhận";
             case CANCELLED -> "Lịch lái thử đã bị hủy";
@@ -57,9 +51,8 @@ public final class TestRideMessages {
     }
 
     /** {@code place} is the showroom as {@link #place(String, String)} writes it, so the customer reads where to go and not only a name. */
-    public static String body(String language, String kind, String productName, String place, LocalDateTime slotStart, String note) {
-        boolean english = isEnglish(language);
-        String bike = productName + " - " + place + ", " + when(language, slotStart);
+    public static String body(String kind, String productName, String place, LocalDateTime slotStart, String note) {
+        String bike = productName + " - " + place + ", " + when(slotStart);
         String reason = note == null || note.isBlank() ? "" : (" Ghi chú của cửa hàng: ") + note.trim();
         return switch (kind) {
             case CONFIRMED -> "Lịch lái thử của bạn đã được xác nhận: " + bike + ". Vui lòng mang theo giấy tờ tùy thân." + reason;
@@ -87,8 +80,7 @@ public final class TestRideMessages {
         return CONFIRMED.equals(kind) || CANCELLED.equals(kind) || REMINDER.equals(kind);
     }
 
-    public static String emailSubject(String language, String kind, String productName) {
-        boolean english = isEnglish(language);
+    public static String emailSubject(String kind, String productName) {
         return switch (kind) {
             case CONFIRMED -> "Kinetic E-Bike: đã xác nhận lịch lái thử " + productName;
             case CANCELLED -> "Kinetic E-Bike: lịch lái thử " + productName + " đã bị hủy";
@@ -97,13 +89,12 @@ public final class TestRideMessages {
     }
 
     /** {@code address} and {@code bookingsUrl} are left out of the text when blank. */
-    public static String emailBody(String language, String kind, String productName, String showroomName, String address,
+    public static String emailBody(String kind, String productName, String showroomName, String address,
                                    LocalDateTime slotStart, String note, String bookingsUrl) {
-        boolean english = isEnglish(language);
         String where = place(showroomName, address);
         String link = bookingsUrl == null || bookingsUrl.isBlank() ? null : bookingsUrl.trim();
         StringBuilder text = new StringBuilder();
-        text.append(body(language, kind, productName, where, slotStart, note)).append("\n\n");
+        text.append(body(kind, productName, where, slotStart, note)).append("\n\n");
         if (link != null) {
             text.append("Lịch lái thử của bạn: ").append(link).append("\n\n");
         }
@@ -111,7 +102,4 @@ public final class TestRideMessages {
         return text.toString();
     }
 
-    private static boolean isEnglish(String language) {
-        return "en".equals(normalize(language));
-    }
 }
