@@ -17,7 +17,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableMethodSecurity
 public class SecurityConfiguration {
 
-    private static final String[] ADMIN_CONSOLE_ROLES = {"ADMIN", "OPERATOR", "SUPPORT", "MAINTENANCE"};
+    // only ADMIN opens the admin console: OPERATOR, SUPPORT and MAINTENANCE have no permissions, and the console shows every account, the audit log and the prices
+    private static final String[] ADMIN_CONSOLE_ROLES = {"ADMIN"};
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
