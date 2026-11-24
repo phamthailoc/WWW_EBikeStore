@@ -55,4 +55,17 @@ class TestRideEmailSenderTest {
         sender("smtp.example.com", true).send("an@example.com", TestRideMessages.REMINDER, "Kinetic X", "Quan 1", null, SLOT, null);
         verify(mail).send(any(SimpleMailMessage.class));
     }
+
+    @Test
+    void theEmailHasTheShowroomAndTheLink() {
+        sender("smtp.example.com", true).send("an@example.com", TestRideMessages.CONFIRMED, "Kinetic X", "Quan 1", "187 Nguyen Thai Hoc", SLOT, null);
+        ArgumentCaptor<SimpleMailMessage> captor = ArgumentCaptor.forClass(SimpleMailMessage.class);
+        verify(mail).send(captor.capture());
+        SimpleMailMessage message = captor.getValue();
+        assertEquals("shop@example.com", message.getFrom());
+        assertArrayEquals(new String[] {"an@example.com"}, message.getTo());
+        assertTrue(message.getSubject().contains("đã xác nhận lịch lái thử"), message.getSubject());
+        assertTrue(message.getText().contains("Quan 1, 187 Nguyen Thai Hoc"), message.getText());
+        assertTrue(message.getText().contains("https://shop.example/customer/test-rides"), message.getText());
+    }
 }

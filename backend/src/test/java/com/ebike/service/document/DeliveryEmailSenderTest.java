@@ -36,7 +36,7 @@ class DeliveryEmailSenderTest {
         return new DeliveryEmailSender(mail, DocumentFixtures.store(), "shop@example.com", host, enabled, baseUrl);
     }
 
-    private static OrderDocumentService.DeliveryDocuments documents(String email, String language, boolean card) {
+    private static OrderDocumentService.DeliveryDocuments documents(String email, boolean card) {
         List<PdfFile> files = card
             ? List.of(new PdfFile("receipt-ORD-1.pdf", new byte[] {1, 2, 3}), new PdfFile("warranty-card-ORD-1.pdf", new byte[] {4, 5}))
             : List.of(new PdfFile("receipt-ORD-1.pdf", new byte[] {1, 2, 3}));
@@ -70,7 +70,7 @@ class DeliveryEmailSenderTest {
     void theBodyIsVietnameseByDefaultAndLinksToTheOrdersWhenTheAddressIsKnown() {
         DeliveryEmailSender sender = sender("smtp.example.com", true, "https://shop.example.com/");
 
-        String body = sender.body(documents("lan@example.com", "vi", true));
+        String body = sender.body(documents("lan@example.com", true));
 
         assertTrue(body.startsWith("Xin chào Lan,"), body);
         assertTrue(body.contains("Phiếu bảo hành cho từng xe"), body);
@@ -90,11 +90,11 @@ class DeliveryEmailSenderTest {
 
     @Test
     void nothingIsSentWhenMailIsOffTheHostIsMissingOrThereIsNoAddress() {
-        assertFalse(sender("smtp.example.com", false, "").send(documents("lan@example.com", "vi", true)));
-        assertFalse(sender("", true, "").send(documents("lan@example.com", "vi", true)));
-        assertFalse(sender(null, true, "").send(documents("lan@example.com", "vi", true)));
-        assertFalse(sender("smtp.example.com", true, "").send(documents(" ", "vi", true)));
-        assertFalse(sender("smtp.example.com", true, "").send(documents(null, "vi", true)));
+        assertFalse(sender("smtp.example.com", false, "").send(documents("lan@example.com", true)));
+        assertFalse(sender("", true, "").send(documents("lan@example.com", true)));
+        assertFalse(sender(null, true, "").send(documents("lan@example.com", true)));
+        assertFalse(sender("smtp.example.com", true, "").send(documents(" ", true)));
+        assertFalse(sender("smtp.example.com", true, "").send(documents(null, true)));
         assertFalse(sender("smtp.example.com", true, "").send(null));
 
         verify(mail, never()).send(any(MimeMessage.class));
@@ -104,6 +104,27 @@ class DeliveryEmailSenderTest {
     void aSendFailureIsSwallowed() throws IOException {
         doThrow(new MailSendException("down")).when(mail).send(any(MimeMessage.class));
 
-        assertFalse(sender("smtp.example.com", true, "").send(documents("lan@example.com", "vi", true)));
+        assertFalse(sender("smtp.example.com", true, "").send(documents("lan@example.com", true)));
+    }
+
+    @Test
+    void theMessageHasBothFilesAndIsWordedInVietnamese() throws Exception {
+        assertTrue(sender("smtp.example.com", true, "https://shop.example.com/").send(documents("lan@example.com", true)));
+        MimeMessage message = sent();
+        message.saveChanges();
+        assertEquals("shop@example.com", message.getFrom()[0].toString());
+        assertEquals("lan@example.com", message.getAllRecipients()[0].toString());
+        assertTrue(message.getSubject().endsWith("phiếu bán hàng và phiếu bảo hành cho đơn ORD-1"), message.getSubject());
+        Multipart parts = (Multipart) message.getContent();
+        assertTrue(attachmentNames(parts).containsAll(List.of("receipt-ORD-1.pdf", "warranty-card-ORD-1.pdf")), attachmentNames(parts).toString());
+    }
+
+    @Test
+    void withoutACardTheBodyAndSubjectNameOnlyTheReceiptAndWithoutAnAddressThereIsNoLink() {
+        DeliveryEmailSender sender = sender("smtp.example.com", true, "");
+        String body = sender.body(documents("lan@example.com", false));
+        assertFalse(body.contains("Phiếu bảo hành cho từng xe"), body);
+        assertFalse(body.contains("http"), body);
+        assertTrue(sender.subject("ORD-1", false).endsWith("phiếu bán hàng cho đơn ORD-1"), sender.subject("ORD-1", false));
     }
 }

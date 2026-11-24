@@ -49,6 +49,72 @@ class DocumentModelsTest {
     }
 
     @Test
+    void anOrderNotHandedOverYetIsMarkedProvisionalAndShowsNoHandoverDate() {
+        Order order = DocumentFixtures.order(2, OrderStatus.PROCESSING, 1, false);
+
+        Map<String, Object> model = DocumentModels.receipt(order, null, DocumentFixtures.store(), NOW);
+
+        assertEquals("PHIẾU TẠM TÍNH (XE CHƯA BÀN GIAO)", model.get("title"));
+        assertEquals(true, model.get("provisional"));
+        assertEquals("TT-" + order.getOrderNumber(), model.get("number"));
+        assertNull(model.get("deliveredAt"));
+        assertEquals("Chờ thanh toán", map(model.get("payment")).get("status"));
+    }
+
+    @Test
+    void theTotalsShowOnlyTheFeesThatApplyAndTheDiscountAsANegative() {
+        Order order = DocumentFixtures.order(4, OrderStatus.DELIVERED, 1, true);
+        order.setIncludeRegistrationService(true);
+        order.setRegistrationFee(new BigDecimal("1500000"));
+        order.setShippingFee(new BigDecimal("500000"));
+        order.setDiscountAmount(new BigDecimal("2000000"));
+        order.setTotalAmount(new BigDecimal("20000000"));
+
+        Map<String, Object> model = DocumentModels.receipt(order, null, DocumentFixtures.store(), NOW);
+        List<Map<String, Object>> totals = list(model.get("totals"));
+
+        assertEquals(List.of("Tiền hàng", "Dịch vụ đăng ký xe", "Phí giao hàng", "Giảm giá", "Tổng cộng"), totals.stream().map(row -> row.get("label")).toList());
+        assertEquals("−2.000.000 ₫", totals.get(3).get("value"));
+        assertEquals(true, totals.get(4).get("strong"));
+        assertEquals("Hai mươi triệu đồng chẵn", model.get("inWords"));
+    }
+
+    @Test
+    void anInstalmentOrderShowsTheDownPaymentAndThePlan() {
+        Order order = DocumentFixtures.order(6, OrderStatus.CONFIRMED, 1, false);
+        order.getPayment().setPaymentMethod(com.ebike.model.entity.order.PaymentMethod.INSTALLMENT);
+        order.getPayment().setPaymentStatus(com.ebike.model.entity.order.PaymentStatus.PAID);
+        com.ebike.model.entity.installment.InstallmentApplication plan = new com.ebike.model.entity.installment.InstallmentApplication();
+        plan.setDownPaymentPercent(30);
+        plan.setDownPaymentAmount(new BigDecimal("6000000"));
+        plan.setFinancedAmount(new BigDecimal("14000000"));
+        plan.setTermMonths(12);
+        plan.setAnnualRatePercent(new BigDecimal("10.00"));
+        plan.setMonthlyPayment(new BigDecimal("1283333"));
+        plan.setTotalPayable(new BigDecimal("15400000"));
+
+        Map<String, Object> payment = map(DocumentModels.receipt(order, plan, DocumentFixtures.store(), NOW).get("payment"));
+
+        assertEquals("Trả góp (mô phỏng)", payment.get("method"));
+        assertEquals("Đã trả trước", payment.get("status"));
+        List<Map<String, Object>> rows = list(payment.get("installment"));
+        assertEquals("6.000.000 ₫ (30%)", rows.get(0).get("value"));
+        assertEquals("12 tháng", rows.get(2).get("value"));
+        assertEquals("10%/năm", rows.get(3).get("value"));
+    }
+
+    @Test
+    void anErasedAccountIsNamedAsSuchOnTheDocument() {
+        Order order = DocumentFixtures.order(8, OrderStatus.DELIVERED, 1, true);
+        order.getShipment().setRecipientName(null);
+        order.getUser().setAccountStatus(com.ebike.service.admin.AccountErasure.DELETED);
+        order.getUser().setFirstName("Tài khoản");
+        order.getUser().setLastName("đã xóa");
+
+        assertEquals("Tài khoản đã xóa", DocumentModels.customerName(order));
+    }
+
+    @Test
     void linesCarryTheFrameAndEngineNumbersOfEachBike() {
         Order order = DocumentFixtures.order(3, OrderStatus.DELIVERED, 2, true);
 

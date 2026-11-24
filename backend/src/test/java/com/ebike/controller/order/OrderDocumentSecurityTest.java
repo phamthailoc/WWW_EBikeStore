@@ -209,4 +209,10 @@ class OrderDocumentSecurityTest {
 
         assertEquals(502, statusOf(as(post("/api/v1/orders/5/documents/email"), STAFF_ROLE, VIEW_ALL, UPDATE)));
     }
+
+    @Test void theUnitIdIsPassedOn() throws Exception {
+        statusOf(as(get("/api/v1/orders/5/warranty-card").param("unitId", "9"), CUSTOMER_ROLE, OWN));
+
+        verify(documents).warrantyCard(eq(5L), eq(9L), any());
+    }
 }

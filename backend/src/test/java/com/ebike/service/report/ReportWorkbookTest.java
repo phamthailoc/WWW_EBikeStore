@@ -214,4 +214,36 @@ class ReportWorkbookTest {
             }
         }
     }
+
+    @Test
+    void theRevenueWorkbookUsesVietnameseWords() throws IOException {
+        try (Workbook workbook = open(ReportWorkbook.revenueReport(report(12, 3), NOW))) {
+            assertEquals("Tổng quan", workbook.getSheetName(0));
+            assertEquals("Xe bán chạy", workbook.getSheetName(2));
+            assertEquals("Kỳ", text(workbook.getSheetAt(1), 0, 0));
+        }
+    }
+
+    @Test
+    void theFiltersSheetRecordsWhatWasAsked() throws IOException {
+        try (Workbook workbook = open(ReportWorkbook.orders(List.of(order("ORD-1", 7L, "DELIVERED", home(), null)),
+            new ReportWorkbook.OrderFilters("ORD", "delivered", "PAID", 3L), NOW))) {
+            Sheet info = workbook.getSheetAt(1);
+            assertEquals("Bộ lọc", info.getSheetName());
+            assertEquals("ORD", text(info, 1, 1));
+            assertEquals("Đã giao", text(info, 2, 1));
+            assertEquals("Đã thanh toán", text(info, 3, 1));
+            assertEquals("3", text(info, 4, 1));
+            assertEquals("1", text(info, 5, 1));
+        }
+    }
+
+    @Test
+    void anEmptyListGivesTheHeaderAndAMessage() throws IOException {
+        try (Workbook workbook = open(ReportWorkbook.orders(List.of(), null, NOW))) {
+            Sheet sheet = workbook.getSheetAt(0);
+            assertEquals("Mã đơn", text(sheet, 0, 0));
+            assertEquals("Không có đơn hàng nào khớp với bộ lọc này.", text(sheet, 1, 0));
+        }
+    }
 }

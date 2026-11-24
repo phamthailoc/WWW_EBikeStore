@@ -37,4 +37,13 @@ class StockAlertMessagesTest {
             assertFalse(StockAlertMessages.notificationBody("Kinetic X", null).contains("null"));
         }
     }
+
+    @Test
+    void theNotificationAndTheEmailAreInVietnamese() {
+        assertEquals("Xe đã có hàng lại", StockAlertMessages.notificationTitle());
+        String body = StockAlertMessages.notificationBody("Kinetic X", "Trắng");
+        assertTrue(body.contains("Kinetic X") && body.contains("màu Trắng") && body.contains("đã có hàng lại"), body);
+        assertTrue(StockAlertMessages.emailSubject("Kinetic X", "Trắng").contains("Kinetic X"));
+        assertTrue(StockAlertMessages.emailBody("Kinetic X", "Trắng", "https://shop.example/product/kinetic-x").contains("https://shop.example/product/kinetic-x"));
+    }
 }

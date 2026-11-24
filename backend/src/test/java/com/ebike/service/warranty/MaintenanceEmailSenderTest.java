@@ -77,4 +77,15 @@ class MaintenanceEmailSenderTest {
 
         verify(mail).send(any(SimpleMailMessage.class));
     }
+
+    @Test
+    void theEmailLinksToTheWarrantyBookWhenThePublicAddressIsKnown() {
+        sender("smtp.example.com", true, "https://shop.example.com/").send("an@example.com", "Bike", "F1", "P6M");
+
+        SimpleMailMessage message = sent();
+        assertEquals("shop@example.com", message.getFrom());
+        assertEquals("an@example.com", message.getTo()[0]);
+        assertTrue(message.getSubject().contains("đến hạn bảo dưỡng"));
+        assertTrue(message.getText().contains("https://shop.example.com/customer/warranty"));
+    }
 }

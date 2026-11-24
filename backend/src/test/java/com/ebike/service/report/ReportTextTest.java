@@ -33,4 +33,16 @@ class ReportTextTest {
         assertEquals("sheet.unknown", ReportText.t("sheet.unknown"));
     }
 
+    @Test
+    void everyTextIsFilledIn() {
+        for (Map.Entry<String, String[]> entry : ReportText.all().entrySet()) {
+            assertFalse(entry.getValue()[0].isBlank(), entry.getKey() + " has no text");
+        }
+    }
+
+    @Test
+    void sheetNamesAreInVietnamese() {
+        assertEquals("Tổng quan", ReportText.t("sheet.summary"));
+        assertEquals("Bộ lọc", ReportText.t("sheet.filters"));
+    }
 }

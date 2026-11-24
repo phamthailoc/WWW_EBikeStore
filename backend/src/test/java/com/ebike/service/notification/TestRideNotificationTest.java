@@ -67,4 +67,21 @@ class TestRideNotificationTest {
         service.handleTestRideNotice(event(TestRideMessages.CANCELLED));
         verify(notifications, never()).save(org.mockito.ArgumentMatchers.any());
     }
+
+    @Test void customerGetsAConfirmationWithTheTimeAndThePlace() {
+        profile("vi", true);
+        service.handleTestRideNotice(event(TestRideMessages.CONFIRMED));
+        Notification notification = saved();
+        assertEquals(NotificationType.TEST_RIDE, notification.getType());
+        assertEquals("Lịch lái thử đã được xác nhận", notification.getTitle());
+        assertTrue(notification.getMessage().contains("09:00 22/11/2026"), notification.getMessage());
+        assertTrue(notification.getMessage().contains("Quan 1, 187 Nguyen Thai Hoc"), notification.getMessage());
+        assertEquals("/customer/test-rides", notification.getTargetUrl());
+    }
+
+    @Test void customerWhoSwitchedNotificationsOffStillGetsNoticesOfTheirOwnBooking() {
+        profile("vi", false);
+        service.handleTestRideNotice(event(TestRideMessages.CANCELLED));
+        assertEquals("Lịch lái thử đã bị hủy", saved().getTitle());
+    }
 }

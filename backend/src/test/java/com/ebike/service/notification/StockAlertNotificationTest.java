@@ -54,4 +54,17 @@ class StockAlertNotificationTest {
         assertEquals("Xe đã có hàng lại", notification.getTitle());
         assertEquals("/product/kinetic-x", notification.getTargetUrl());
     }
+
+    @Test void customerWhoSwitchedNotificationsOffStillGetsTheAlertTheyAskedFor() {
+        com.ebike.model.entity.user.UserPreference off = new com.ebike.model.entity.user.UserPreference();
+        off.setNotificationsEnabled(false);
+        when(preferences.findByUserId(7L)).thenReturn(Optional.of(off));
+        assertEquals("Xe đã có hàng lại", saved("vi").getTitle());
+    }
+
+    @Test void theMessageNamesTheBikeAndTheColour() {
+        Notification notification = saved("vi");
+        assertTrue(notification.getMessage().contains("Kinetic X"), notification.getMessage());
+        assertTrue(notification.getMessage().contains("màu White"), notification.getMessage());
+    }
 }

@@ -29,4 +29,25 @@ class DocumentFormatTest {
         assertEquals("một nghìn tỷ", DocumentFormat.vietnameseWords(1_000_000_000_000L));
     }
 
+    @Test
+    void moneyUsesDotGroupingAndRoundsToWholeDong() {
+        assertEquals("1.234.000 ₫", DocumentFormat.money(new BigDecimal("1234000")));
+        assertEquals("0 ₫", DocumentFormat.money(null));
+        assertEquals("12.346 ₫", DocumentFormat.money(new BigDecimal("12345.50")));
+    }
+
+    @Test
+    void datesAreDayFirstAndAMissingOneIsADash() {
+        LocalDateTime time = LocalDateTime.of(2026, 11, 3, 14, 5);
+        assertEquals("03/11/2026 14:05", DocumentFormat.dateTime(time));
+        assertEquals("03/11/2026", DocumentFormat.date(time));
+        assertEquals("—", DocumentFormat.dateTime(null));
+        assertEquals("—", DocumentFormat.date(null));
+    }
+
+    @Test
+    void aNegativeOrMissingAmountReadsAsZero() {
+        assertTrue(DocumentFormat.moneyInWords(new BigDecimal("-5")).startsWith("Không"));
+        assertTrue(DocumentFormat.moneyInWords(null).startsWith("Không"));
+    }
 }

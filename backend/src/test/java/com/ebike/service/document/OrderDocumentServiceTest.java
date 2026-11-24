@@ -214,4 +214,38 @@ class OrderDocumentServiceTest {
         assertFalse(service.forDeliveredOrder(15L).isPresent());
         assertFalse(service.forDeliveredOrder(404L).isPresent());
     }
+
+    @Test
+    void theErrorWordsAreVietnamese() {
+        stored(DocumentFixtures.order(3, OrderStatus.CANCELLED, 1, false));
+
+        ResponseStatusException error = assertThrows(ResponseStatusException.class, () -> service.receipt(3L, customer("an")));
+
+        assertEquals("Đơn hàng đã hủy nên không có phiếu bán hàng.", error.getReason());
+    }
+
+    @Test
+    void aDeliveredOrderIsEmailedToTheAccountWithBothFiles() {
+        stored(DocumentFixtures.order(10, OrderStatus.DELIVERED, 2, true));
+
+        OrderDocumentService.DeliveryDocuments documents = service.forDeliveredOrder(10L).orElseThrow();
+
+        assertEquals("an@example.com", documents.email());
+        assertEquals("Nguyễn Văn An", documents.recipientName());
+        assertTrue(documents.hasCard());
+        assertEquals(java.util.List.of("receipt-ORD-20261110-00000010.pdf", "warranty-card-ORD-20261110-00000010.pdf"),
+            documents.files().stream().map(PdfFile::filename).toList());
+    }
+
+    @Test
+    void aGuestOrderIsEmailedToTheCheckoutAddress() {
+        Order order = stored(DocumentFixtures.order(11, OrderStatus.DELIVERED, 1, true));
+        order.setUser(null);
+        order.setCustomerEmail("khach@example.com");
+
+        OrderDocumentService.DeliveryDocuments documents = service.forDeliveredOrder(11L).orElseThrow();
+
+        assertEquals("khach@example.com", documents.email());
+        assertTrue(documents.guest());
+    }
 }
