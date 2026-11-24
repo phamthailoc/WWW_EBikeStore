@@ -108,7 +108,7 @@ public class InstallmentService {
                 return null;
             }
         }
-        return toResponse(application, staff);
+        return toResponse(application, staff, !staff || canDecide(authentication));
     }
 
     /** The customer's own applications that still wait for the staff or for the down payment, so the list of orders can say which ones need attention. */
@@ -118,12 +118,12 @@ public class InstallmentService {
         if (current == null) {
             return List.of();
         }
-        return applications.findOpenOf(current.getId()).stream().map(row -> toResponse(row, false)).toList();
+        return applications.findOpenOf(current.getId()).stream().map(row -> toResponse(row, false, true)).toList();
     }
 
     /** The queue: {@code status} is PENDING (the default), ALL, or one of the other statuses. Oldest waiting first; a closed list shows the newest first. */
     @Transactional(readOnly = true)
-    public List<InstallmentApplicationResponse> queue(String status) {
+    public List<InstallmentApplicationResponse> queue(String status, Authentication authentication) {
         String wanted = status == null || status.isBlank() ? InstallmentApplication.PENDING : status.trim().toUpperCase(Locale.ROOT);
         List<InstallmentApplication> rows;
         if ("ALL".equals(wanted)) {
@@ -135,7 +135,8 @@ public class InstallmentService {
         } else {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, RequestLanguage.text("Trạng thái không hợp lệ.", "The status is not valid."));
         }
-        return rows.stream().map(row -> toResponse(row, true)).toList();
+        boolean seesFinance = canDecide(authentication);
+        return rows.stream().map(row -> toResponse(row, true, seesFinance)).toList();
     }
 
     /**
@@ -218,14 +219,15 @@ public class InstallmentService {
             approve ? InstallmentMessages.APPROVED : InstallmentMessages.REJECTED,
             application.getDownPaymentAmount(), application.getMonthlyPayment(), application.getTermMonths(),
             approve ? inShopZone(now.plus(downPaymentHold)) : null, note));
-        return toResponse(application, true);
+        return toResponse(application, true, true);
     }
 
     private boolean reviewOverdue(InstallmentApplication a, LocalDateTime now) {
         return a.getCreatedAt() != null && now.isAfter(a.getCreatedAt().plus(reviewHold));
     }
 
-    private InstallmentApplicationResponse toResponse(InstallmentApplication a, boolean forStaff) {
+    /** {@code seesFinance}: the declared income and the last digits of the ID number go only to a member of the staff who may decide the application, not to every account that may look at the queue. */
+    private InstallmentApplicationResponse toResponse(InstallmentApplication a, boolean forStaff, boolean seesFinance) {
         Order order = a.getOrder();
         User user = a.getUser();
         String name = ((user.getFirstName() == null ? "" : user.getFirstName()) + " " + (user.getLastName() == null ? "" : user.getLastName())).trim();
@@ -247,7 +249,7 @@ public class InstallmentService {
             : ((reviewer.getFirstName() == null ? "" : reviewer.getFirstName()) + " " + (reviewer.getLastName() == null ? "" : reviewer.getLastName())).trim();
         return new InstallmentApplicationResponse(
             a.getId(), order.getId(), order.getOrderNumber(), order.getStatus().name(), name, vehicles,
-            a.getIdNumberMasked(), a.getMonthlyIncome(), a.getOrderTotal(), a.getDownPaymentPercent(), a.getDownPaymentAmount(),
+            seesFinance ? a.getIdNumberMasked() : null, seesFinance ? a.getMonthlyIncome() : null, a.getOrderTotal(), a.getDownPaymentPercent(), a.getDownPaymentAmount(),
             a.getFinancedAmount(), a.getTermMonths(), a.getAnnualRatePercent(), a.getMonthlyPayment(), a.getTotalPayable(),
             a.getStatus(), a.getReviewNote(), reviewerName, inShopZone(a.getReviewedAt()), inShopZone(a.getCreatedAt()),
             payment == null ? null : payment.getPaymentStatus().name(),
@@ -263,6 +265,11 @@ public class InstallmentService {
             return null;
         }
         return users.findByUsername(authentication.getName()).or(() -> users.findByEmail(authentication.getName())).orElse(null);
+    }
+
+    private static boolean canDecide(Authentication authentication) {
+        return authentication != null && authentication.getAuthorities().stream()
+            .anyMatch(authority -> PermissionConstants.OrderManagement.ORDER_UPDATE_STATUS.equals(authority.getAuthority()));
     }
 
     private static boolean isBackOffice(Authentication authentication) {

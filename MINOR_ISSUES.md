@@ -138,3 +138,8 @@ Chạy toàn bộ Selenium trên app local (135 test), unit test (932), `TestRid
 - **Chatbot, lỗi thật:** hỏi "Xe đầu tiên giá bao nhiêu?" sau khi chatbot gợi ý xe thì trả lời một câu FAQ chung (khi có FAQ khớp từ "giá"), không nói giá các xe vừa gợi ý. Cách tái hiện: hỏi "Gợi ý xe điện đi học giá dưới 20 triệu", rồi hỏi tiếp câu trên. Đã sửa: câu hỏi giá nối tiếp ưu tiên các xe vừa gợi ý (`ChatbotService.buildRuleBasedResponse`, `analyze`).
 - **Selenium click bị che (StockAlert, TestRide ở khung điện thoại):** nút bị thanh đầu trang hoặc nút khác che trong khoảnh khắc sau khi cuộn. Đã sửa ở `StorefrontSeleniumTest.click` bằng cách cuộn lại và thử tối đa 4 lần.
 - **Xóa tài khoản:** một quy tắc chung (giữ bản ghi của cửa hàng, ẩn danh thông tin cá nhân): ghi chú nhân viên của lịch lái thử được giữ, yêu cầu bảo hành đang mở tự đóng (REJECTED kèm ghi chú). Đóng các mục "cần quyết" V20/V23 liên quan.
+
+## Đã xử lý thêm (lô 2, 2026-11-24)
+- V24: thu nhập khai và 4 số cuối CCCD chỉ trả cho nhân viên có quyền quyết định (`order:update-status`); lời báo giới hạn 200 hồ sơ của hàng đợi trả góp nói đúng việc (hồ sơ chờ lâu nhất).
+- **Chấp nhận, ghi lại:** thông báo trạng thái đơn (kể cả đơn trả góp tự hủy) hiện chỉ có tiếng Việt và không nêu lý do, như mọi thông báo đơn hàng khác của dự án; cần một đợt làm song ngữ cho toàn bộ thông báo đơn hàng.
+- **Để lại:** phân trang hàng đợi trả góp/lái thử, tách truy vấn lái thử theo showroom, cache cấu hình trả góp, N truy vấn khi hủy đơn trả góp hàng loạt, tách bean SEO, bỏ `Thread.sleep` trong vài test Selenium V33.
