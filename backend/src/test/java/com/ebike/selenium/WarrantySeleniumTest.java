@@ -322,7 +322,7 @@ class WarrantySeleniumTest extends StorefrontSeleniumTest {
             }
             assertTrue(kept != null, "the request stays for the shop's records");
             assertEquals(AccountErasure.ERASED_DESCRIPTION, kept.path("description").asText(), "the customer's own words are gone");
-            assertEquals("Selenium: ghi chú của cửa hàng", kept.path("staffNote").asText(), "the shop's own note stays");
+            assertTrue(kept.path("staffNote").asText().startsWith("Selenium: ghi chú của cửa hàng"), "the shop's own note stays (a note about the closing may follow it)");
             assertFalse(kept.toString().contains(email), "the erased account's email is no longer on the request: " + kept);
             assertEquals(frame, call(newClient(), "GET", "/api/v1/warranty/lookup?frame=" + frame, null).path("frameNumber").asText());
         } finally {

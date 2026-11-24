@@ -132,3 +132,9 @@ Các điểm review thấy nhưng chưa sửa, gom lại để dọn một lư�
 **Cần chủ sản phẩm quyết:** giữ ghi chú nhân viên của lịch lái thử đã đóng khi khách xóa tài khoản (V23, như V20) hay xóa; ảnh bảo hành khi có S3 và yêu cầu của tài khoản đã xóa (V20); nhắc bảo dưỡng "tối đa một lần" (V20).
 
 **Chưa làm (việc lớn, cần PR riêng):** phân trang hàng đợi trả góp và danh sách lái thử; truy vấn lái thử có/không showroomId; thông báo song ngữ và email khi đơn trả góp tự hủy; ẩn thu nhập/CCCD với nhân viên chỉ xem; deadlock khi tự hủy đơn trả góp hàng loạt; cache cấu hình trả góp; tách bean SeoAddress; các test Selenium còn dùng sleep.
+
+## Kiểm thử toàn bộ (2026-11-24)
+Chạy toàn bộ Selenium trên app local (135 test), unit test (932), `TestRideDatabaseTest` với DB thật.
+- **Chatbot, lỗi thật:** hỏi "Xe đầu tiên giá bao nhiêu?" sau khi chatbot gợi ý xe thì trả lời một câu FAQ chung (khi có FAQ khớp từ "giá"), không nói giá các xe vừa gợi ý. Cách tái hiện: hỏi "Gợi ý xe điện đi học giá dưới 20 triệu", rồi hỏi tiếp câu trên. Đã sửa: câu hỏi giá nối tiếp ưu tiên các xe vừa gợi ý (`ChatbotService.buildRuleBasedResponse`, `analyze`).
+- **Selenium click bị che (StockAlert, TestRide ở khung điện thoại):** nút bị thanh đầu trang hoặc nút khác che trong khoảnh khắc sau khi cuộn. Đã sửa ở `StorefrontSeleniumTest.click` bằng cách cuộn lại và thử tối đa 4 lần.
+- **Xóa tài khoản:** một quy tắc chung (giữ bản ghi của cửa hàng, ẩn danh thông tin cá nhân): ghi chú nhân viên của lịch lái thử được giữ, yêu cầu bảo hành đang mở tự đóng (REJECTED kèm ghi chú). Đóng các mục "cần quyết" V20/V23 liên quan.

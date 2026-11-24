@@ -136,8 +136,11 @@ public class ChatbotService {
             .map(this::withCurrentFees)
             .orElse(null);
         List<ChatbotRecommendationDto> recommendations = findProductRecommendations(normalizedMessage);
-        if (recommendations.isEmpty() && isFollowUpPriceQuestion(normalizedMessage)) {
-            recommendations = recentRecommendationsByChatId.getOrDefault(chatId, List.of());
+        // A follow-up that points at the bikes just suggested ("xe đầu tiên giá bao nhiêu?") is about those bikes, even when a loose word of it also scores some other bike
+        List<ChatbotRecommendationDto> remembered = recentRecommendationsByChatId.getOrDefault(chatId, List.of());
+        if (isFollowUpPriceQuestion(normalizedMessage) && !remembered.isEmpty()
+            && (recommendations.isEmpty() || findMentionedProduct(normalizedMessage) == null)) {
+            recommendations = remembered;
         }
         Product mentionedProduct = findMentionedProduct(normalizedMessage);
         String showroomContext = buildShowroomContext(normalizedMessage);
@@ -200,6 +203,11 @@ public class ChatbotService {
                 "product_detail",
                 recommendations.isEmpty() ? List.of(toRecommendation(mentionedProduct, tr("khớp với mẫu xe bạn hỏi", "matches the bike you asked about"))) : recommendations
             );
+        }
+
+        if (priceQuestion && !recommendations.isEmpty()) {
+            // "Xe đầu tiên giá bao nhiêu?" asks about the bikes just shown: say their prices, not a general FAQ that happens to mention prices
+            return new ChatbotResponse(buildRecommendationAnswer(recommendations), "product_recommendation", recommendations);
         }
 
         if (faqMatch != null && !recommendations.isEmpty()) {

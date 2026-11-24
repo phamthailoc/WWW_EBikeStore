@@ -284,6 +284,7 @@ class TestRideDatabaseTest {
         for (long id : List.of(requested, confirmed, done)) {
             assertEquals("", jdbc.queryForObject("select contact_phone from test_ride_bookings where id = ?", String.class, id));
             assertNull(jdbc.queryForObject("select customer_note from test_ride_bookings where id = ?", String.class, id));
+            assertEquals("shop words", jdbc.queryForObject("select staff_note from test_ride_bookings where id = ?", String.class, id), "the shop's own note stays");
         }
         assertEquals("CONFIRMED", statusOf(untouched));
         assertEquals("0901234567", jdbc.queryForObject("select contact_phone from test_ride_bookings where id = ?", String.class, untouched));
