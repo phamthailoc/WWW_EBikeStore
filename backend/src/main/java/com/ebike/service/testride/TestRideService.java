@@ -138,12 +138,15 @@ public class TestRideService {
         }
         LocalDate day = parseDate(date);
         LocalDateTime now = LocalDateTime.now(clock);
-        if (day.isBefore(now.toLocalDate()) || day.isAfter(now.toLocalDate().plusDays(daysAhead))) {
+        if (day.isBefore(now.toLocalDate())) {
+            throw bad("Ngày này đã qua.", "This day has already passed.");
+        }
+        if (day.isAfter(now.toLocalDate().plusDays(daysAhead))) {
             throw bad("Chỉ đặt lịch trong " + daysAhead + " ngày tới.", "You can book only within the next " + daysAhead + " days.");
         }
         Showroom showroom = showrooms.findById(showroomId).filter(found -> Boolean.TRUE.equals(found.getActive()))
             .orElseThrow(TestRideService::showroomNotFound);
-        TestRideRules.Hours hours = TestRideRules.parseOpeningHours(showroom.getOpeningHours());
+        TestRideRules.Hours hours = TestRideRules.hoursOf(showroom.getOpeningHours(), showroom.getOpenTime(), showroom.getCloseTime());
         Map<LocalDateTime, Long> taken = new HashMap<>();
         for (Object[] row : bookings.countBySlot(showroomId, day.atStartOfDay(), day.plusDays(1).atStartOfDay(), TestRideRules.OPEN)) {
             taken.put(asDateTime(row[0]), ((Number) row[1]).longValue());
@@ -201,7 +204,7 @@ public class TestRideService {
             throw bad("Sản phẩm này không phải xe để lái thử.", "This product is not a bike that can be test-ridden.");
         }
         LocalDateTime now = LocalDateTime.now(clock);
-        if (!TestRideRules.isOnGrid(slot, TestRideRules.parseOpeningHours(showroom.getOpeningHours()))) {
+        if (!TestRideRules.isOnGrid(slot, TestRideRules.hoursOf(showroom.getOpeningHours(), showroom.getOpenTime(), showroom.getCloseTime()))) {
             throw bad("Khung giờ này nằm ngoài giờ mở cửa của cửa hàng.", "This time is outside the showroom's opening hours.");
         }
         if (!TestRideRules.isWithinWindow(slot, now, daysAhead)) {

@@ -206,7 +206,8 @@ public class VnPayServiceImpl implements VnPayService {
             payment == null ? null : payment.getId(),
             order == null ? null : order.getId(),
             order == null ? null : order.getOrderNumber(),
-            payment == null ? null : payment.getPaymentStatus().name()
+            payment == null ? null : payment.getPaymentStatus().name(),
+            payment == null || payment.getPaymentMethod() == null ? null : payment.getPaymentMethod().name()
         );
     }
 

@@ -51,10 +51,10 @@ public interface OrderItemUnitRepository extends JpaRepository<OrderItemUnit, Lo
     /**
      * One page of the ids of delivered vehicles of a live account, after {@code afterId}, whose hand-over is not older than {@code since}
      * (a vehicle past its last milestone has nothing left to remind, so it is not read again every day); the reminder job walks them page by page.
-     * An erased account is skipped: it gets no notification or email anyway.
+     * An erased or locked account is skipped: it gets no reminder.
      */
     @Query("select u.id from OrderItemUnit u join u.orderItem i join i.order o left join o.shipment s join o.user usr "
-        + "where o.status = com.ebike.model.entity.order.OrderStatus.DELIVERED and usr.accountStatus <> 'DELETED' and u.id > :afterId "
+        + "where o.status = com.ebike.model.entity.order.OrderStatus.DELIVERED and usr.accountStatus = 'ACTIVE' and usr.active = true and u.id > :afterId "
         + "and coalesce(s.deliveredAt, o.deliveredAt, o.updatedAt) >= :since order by u.id")
     List<Long> findDeliveredUnitIdsAfter(@Param("afterId") Long afterId, @Param("since") LocalDateTime since, Pageable pageable);
 

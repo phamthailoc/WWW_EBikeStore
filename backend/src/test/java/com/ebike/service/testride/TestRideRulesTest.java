@@ -309,6 +309,8 @@ class TestRideRulesTest {
         assertEquals("0901234567", TestRideRules.normalizePhone(" 0901 234.567 "));
         assertEquals("0901234567", TestRideRules.normalizePhone("0901-234-567"));
         assertEquals("0901234567", TestRideRules.normalizePhone("+84 901 234 567"));
+        assertEquals("0901234567", TestRideRules.normalizePhone("0084 90 123 4567"));
+        assertEquals("0901234567", TestRideRules.normalizePhone("0084901234567"));
         assertEquals("0901234567", TestRideRules.normalizePhone("84901234567"));
         assertEquals("0901234567", TestRideRules.normalizePhone("+84 (0) 901 234 567"));
         assertEquals("02839201234", TestRideRules.normalizePhone("+842839201234"));
@@ -407,5 +409,16 @@ class TestRideRulesTest {
         assertFalse(TestRideRules.reminderDue("CONFIRMED", NOW.plusHours(3), NOW.minusHours(1), NOW, 24), "sent already");
         assertFalse(TestRideRules.reminderDue("REQUESTED", NOW.plusHours(3), null, NOW, 24), "not confirmed");
         assertFalse(TestRideRules.reminderDue("CANCELLED", NOW.plusHours(3), null, NOW, 24));
+    }
+
+    @Test
+    void theTwoTimeColumnsDecideTheHoursAndTheTextOnlyGivesDaysOff() {
+        // the columns win over a text the parser could not read
+        assertEquals(new TestRideRules.Hours(LocalTime.of(9, 0), LocalTime.of(18, 0)), TestRideRules.hoursOf("by appointment", LocalTime.of(9, 0), LocalTime.of(18, 0)));
+        // the text still gives the days off
+        assertEquals(java.util.Set.of(java.time.DayOfWeek.SUNDAY), TestRideRules.hoursOf("CN nghỉ", LocalTime.of(9, 0), LocalTime.of(18, 0)).closedDays());
+        // one column missing, or open not before close: the text is read as before
+        assertEquals(TestRideRules.parseOpeningHours("08:00 - 12:00"), TestRideRules.hoursOf("08:00 - 12:00", LocalTime.of(9, 0), null));
+        assertEquals(TestRideRules.parseOpeningHours("08:00 - 12:00"), TestRideRules.hoursOf("08:00 - 12:00", LocalTime.of(18, 0), LocalTime.of(9, 0)));
     }
 }

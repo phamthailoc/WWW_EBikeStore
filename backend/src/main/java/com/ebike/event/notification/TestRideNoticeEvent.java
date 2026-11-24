@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 
 /**
  * V23: something happened to a test-ride booking that the customer should be told: {@code kind} is one of the constants of
- * TestRideMessages (CONFIRMED, CANCELLED by the store, NO_SHOW, EXPIRED, REMINDER).
+ * TestRideMessages (CONFIRMED, CANCELLED by the store, NO_SHOW, EXPIRED, REMINDER, NOTE_UPDATED).
  */
 public record TestRideNoticeEvent(
     Long userId,

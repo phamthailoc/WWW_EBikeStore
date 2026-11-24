@@ -54,6 +54,7 @@ public class ChatbotService {
     private static final int MAX_CHAT_ID_LENGTH = 64;
     private final Map<String, List<ChatbotRecommendationDto>> recentRecommendationsByChatId = new ConcurrentHashMap<>();
 
+    /** For tests that build the service by hand: it makes its own calculator. */
     public ChatbotService(
         ProductRepository productRepository,
         ShowroomRepository showroomRepository,
@@ -61,12 +62,24 @@ public class ChatbotService {
         PdfKnowledgeBaseService pdfKnowledgeBaseService,
         PricingService pricingService
     ) {
+        this(productRepository, showroomRepository, geminiChatClient, pdfKnowledgeBaseService, pricingService, new SavingsService(productRepository, pricingService));
+    }
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public ChatbotService(
+        ProductRepository productRepository,
+        ShowroomRepository showroomRepository,
+        GeminiChatClient geminiChatClient,
+        PdfKnowledgeBaseService pdfKnowledgeBaseService,
+        PricingService pricingService,
+        SavingsService savingsService
+    ) {
         this.productRepository = productRepository;
         this.showroomRepository = showroomRepository;
         this.geminiChatClient = geminiChatClient;
         this.pdfKnowledgeBaseService = pdfKnowledgeBaseService;
         this.pricingService = pricingService;
-        this.savingsService = new SavingsService(productRepository, pricingService);
+        this.savingsService = savingsService; // the Spring bean, so its proxy and transactions apply
         loadFaqEntries();
     }
 

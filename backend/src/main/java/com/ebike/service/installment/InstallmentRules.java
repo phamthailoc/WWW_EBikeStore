@@ -100,8 +100,18 @@ public final class InstallmentRules {
         if (!digits.matches("\\d+")) {
             return null;
         }
+        if (digits.chars().distinct().count() == 1) {
+            return null; // 000000000000, 111111111111...: not a number anyone holds
+        }
         for (int length : ID_LENGTHS) {
             if (digits.length() == length) {
+                // a 12-digit citizen card starts with the code of a province (001-096)
+                if (length == 12) {
+                    int province = Integer.parseInt(digits.substring(0, 3));
+                    if (province < 1 || province > 96) {
+                        return null;
+                    }
+                }
                 return digits;
             }
         }

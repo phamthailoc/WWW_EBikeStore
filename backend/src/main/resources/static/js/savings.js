@@ -106,7 +106,7 @@
   function showFailure(error) {
     if (isGone(error)) { box.hidden = true; return; } // the bike was hidden or removed, or this account may not read products: nothing a retry could fix
     body.innerHTML = `<p class="installment-problem" role="alert">${esc(error.message)}</p><p><button type="button" class="button compact ghost" data-retry>${t('Thử lại')}</button></p>`;
-    body.querySelector('[data-retry]').addEventListener('click', start);
+    body.querySelector('[data-retry]').addEventListener('click', event => { event.currentTarget.disabled = true; start(); }); // one try at a time
     box.hidden = false;
   }
 

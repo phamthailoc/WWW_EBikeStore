@@ -186,11 +186,23 @@ window.KineticInstallment = (() => {
     const identify = async () => {
       if (identified) return;
       identified = true;
+      let unreachable = false;
       try {
         const response = await fetch('/api/v1/auth/profile', {credentials: 'same-origin', headers: {Accept: 'application/json'}});
         // a customer account only: an account that also has a staff role may not apply for credit
-        customer = response.ok ? (roles => roles.length > 0 && roles.every(role => /CUSTOMER/.test(role)))((await response.json()).roles || []) : false;
-      } catch (ignored) { customer = false; }
+        if (response.ok) {
+          customer = (roles => roles.length > 0 && roles.every(role => role === 'CUSTOMER' || role === 'ROLE_CUSTOMER'))((await response.json()).roles || []);
+        } else if (response.status === 401 || response.status === 403) {
+          customer = false;
+        } else { unreachable = true; }
+      } catch (ignored) { unreachable = true; }
+      if (unreachable) {
+        // a network error or a 5xx says nothing about the account: offer another try instead of asking the customer to sign in
+        identified = false;
+        holder.innerHTML = `<p class="installment-problem" role="alert">${t('Chưa kiểm tra được tài khoản của bạn. Vui lòng thử lại.')} <button type="button" class="installment-retry">${t('Thử lại')}</button></p>`;
+        holder.querySelector('.installment-retry').addEventListener('click', () => identify());
+        return;
+      }
       if (customer) { await build(); if (total) sim && sim.refresh(); return; }
       // a visitor or a staff account: the application belongs to a customer account, so say so and offer the way in
       const returnTo = encodeURIComponent(location.pathname + location.search);
@@ -211,6 +223,8 @@ window.KineticInstallment = (() => {
         if (!/^(\d{9}|\d{12})$/.test(form.querySelector('[name=idNumber]').value.replace(/[\s.\-]/g, ''))) return t('Số CCCD chưa hợp lệ. Vui lòng nhập 12 chữ số (hoặc 9 chữ số với chứng minh nhân dân cũ).');
         const income = Number(form.querySelector('[name=monthlyIncome]').value);
         if (!income || income < limits.minMonthlyIncome) return t('Vui lòng nhập thu nhập hằng tháng (tối thiểu {n}).', {n: money(limits.minMonthlyIncome)});
+        if (limits.maxMonthlyIncome && income > limits.maxMonthlyIncome) return t('Thu nhập hằng tháng tối đa {n}.', {n: money(limits.maxMonthlyIncome)});
+        if (!Number.isInteger(income)) return t('Thu nhập hằng tháng phải là số đồng nguyên, không có phần thập phân.');
         if (plan.monthlyPayment > income * limits.maxPaymentPercentOfIncome / 100) return t('Khoản trả hàng tháng vượt {n}% thu nhập bạn khai. Hãy tăng khoản trả trước hoặc chọn kỳ hạn dài hơn.', {n: limits.maxPaymentPercentOfIncome});
         return null;
       },

@@ -139,7 +139,7 @@ public class WarrantyService {
     @Transactional(readOnly = true)
     public List<WarrantyClaimResponse> claimsOf(String username) {
         requireUsername(username);
-        return claims.findByUserUsernameOrderByCreatedAtDesc(username).stream().map(this::toClaimResponse).toList();
+        return claims.findByUserUsernameOrderByCreatedAtDescIdDesc(username).stream().map(this::toClaimResponse).toList();
     }
 
     /** A customer asks for warranty service on one of their delivered vehicles. After the warranty ended the request is still taken, marked as a paid repair. */
@@ -180,6 +180,10 @@ public class WarrantyService {
             return toClaimResponse(claims.save(claim));
         } catch (DataIntegrityViolationException exception) {
             // the database allows one open request per vehicle (uk_warranty_claims_open_unit): a second one that slipped past the check above
+            String detail = String.valueOf(exception.getMostSpecificCause().getMessage());
+            if (!detail.contains("uk_warranty_claims_open_unit") && !detail.contains("open_unit_id")) {
+                throw exception; // any other constraint is a real fault, not a duplicate request
+            }
             throw openRequestExists();
         }
     }
@@ -241,7 +245,8 @@ public class WarrantyService {
             }
             claim.setStaffNote(note.isEmpty() ? null : note);
         }
-        if (WarrantyClaim.REJECTED.equals(claim.getStatus()) && !WarrantyClaim.REJECTED.equals(previous) && (claim.getStaffNote() == null || claim.getStaffNote().isBlank())) {
+        if (WarrantyClaim.REJECTED.equals(claim.getStatus()) && !WarrantyClaim.REJECTED.equals(previous) && (claim.getStaffNote() == null || claim.getStaffNote().isBlank() || Objects.equals(previousNote, claim.getStaffNote()))) {
+            // the reason must be written for the rejection: an earlier note ("please bring the bike in") would read as the reason
             throw bad("Vui lòng ghi lý do khi từ chối yêu cầu.", "Please give a reason when rejecting a request.");
         }
         boolean statusChanged = !previous.equals(claim.getStatus());
@@ -252,7 +257,7 @@ public class WarrantyService {
                 ? ": " + previous + " → " + saved.getStatus()
                 : ": cập nhật ghi chú (" + saved.getStatus() + ")"));
         }
-        if (changed) {
+        if (changed && (statusChanged || saved.getStaffNote() != null)) {
             // the note is what the customer reads in the warranty book, so a new note is told too (as the pseudo status NOTE when the step did not move)
             OrderItemUnit unit = saved.getUnit();
             NotificationEventBridge.publish(new WarrantyClaimStatusChangedEvent(

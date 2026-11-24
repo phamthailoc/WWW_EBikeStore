@@ -85,7 +85,7 @@ public class OrderDocumentService {
     }
 
     /** The sales receipt of an order that is not cancelled. Before the bike is handed over it is marked "provisional". */
-    public PdfFile receipt(Long orderId, Authentication authentication, String language) {
+    PdfFile receipt(Long orderId, Authentication authentication, String language) { // package-private: the controller always passes the page language
         return receipt(orderId, authentication, language, language);
     }
 
@@ -102,7 +102,7 @@ public class OrderDocumentService {
     }
 
     /** The warranty card of the vehicles of a delivered order, one page each; {@code unitId} narrows it to one vehicle. */
-    public PdfFile warrantyCard(Long orderId, Long unitId, Authentication authentication, String language) {
+    PdfFile warrantyCard(Long orderId, Long unitId, Authentication authentication, String language) { // package-private: see receipt
         return warrantyCard(orderId, unitId, authentication, language, language);
     }
 

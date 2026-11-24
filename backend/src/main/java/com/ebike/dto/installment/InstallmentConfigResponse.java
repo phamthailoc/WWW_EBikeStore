@@ -9,6 +9,7 @@ public record InstallmentConfigResponse(
     int maxDownPaymentPercent,
     List<InstallmentTermResponse> terms,
     BigDecimal minMonthlyIncome,
+    BigDecimal maxMonthlyIncome,
     int maxPaymentPercentOfIncome,
     int maxOpenApplications,
     int maxApprovalNoteLength,

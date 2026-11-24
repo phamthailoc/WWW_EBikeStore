@@ -186,6 +186,8 @@ CREATE TABLE `showrooms` (
     address LONGTEXT NOT NULL,
     phone VARCHAR(30),
     opening_hours VARCHAR(255),
+    open_time TIME NULL,
+    close_time TIME NULL,
     is_active TINYINT(1) NOT NULL DEFAULT TRUE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -1171,12 +1173,12 @@ INSERT INTO product_images(product_id,variant_id,image_url,alt_text,sort_order,i
 INSERT INTO product_images(product_id,variant_id,image_url,alt_text,sort_order,is_primary,storage_provider,status) SELECT p.id,v.id,'/images/catalog/kinetic-r1/source-03.png','DIBAO R1 - Đen',40,0,'LOCAL','ACTIVE' FROM products p LEFT JOIN product_variants v ON v.sku='kinetic-r1-verified-c03' WHERE p.slug='kinetic-r1';
 INSERT INTO product_images(product_id,variant_id,image_url,alt_text,sort_order,is_primary,storage_provider,status) SELECT p.id,v.id,'/images/catalog/kinetic-r1/source-04.png','DIBAO R1 - Xanh đậm',60,0,'LOCAL','ACTIVE' FROM products p LEFT JOIN product_variants v ON v.sku='kinetic-r1-verified-c04' WHERE p.slug='kinetic-r1';
 INSERT INTO product_images(product_id,variant_id,image_url,alt_text,sort_order,is_primary,storage_provider,status) SELECT p.id,v.id,'/images/catalog/kinetic-r1/source-05.png','DIBAO R1 - Xanh đậm',61,0,'LOCAL','ACTIVE' FROM products p LEFT JOIN product_variants v ON v.sku='kinetic-r1-verified-c04' WHERE p.slug='kinetic-r1';
-INSERT INTO showrooms(name,district,address,phone,opening_hours,is_active) VALUES ('KINETIC Quan 1 - Nguyen Thai Hoc','Quan 1','187 Nguyen Thai Hoc, Phuong Pham Ngu Lao, Quan 1, TP. Ho Chi Minh','028 3920 1234','08:00 - 21:00',1);
-INSERT INTO showrooms(name,district,address,phone,opening_hours,is_active) VALUES ('KINETIC Quan 3 - Cach Mang Thang 8','Quan 3','420 Cach Mang Thang 8, Phuong 11, Quan 3, TP. Ho Chi Minh','028 3931 5678','08:00 - 21:00',1);
-INSERT INTO showrooms(name,district,address,phone,opening_hours,is_active) VALUES ('KINETIC Quan 7 - Nguyen Thi Thap','Quan 7','1021 Nguyen Thi Thap, Phuong Tan Phu, Quan 7, TP. Ho Chi Minh','028 3776 8899','08:00 - 21:00',1);
-INSERT INTO showrooms(name,district,address,phone,opening_hours,is_active) VALUES ('KINETIC Go Vap - Quang Trung','Go Vap','588 Quang Trung, Phuong 11, Go Vap, TP. Ho Chi Minh','028 3589 4567','08:00 - 21:00',1);
-INSERT INTO showrooms(name,district,address,phone,opening_hours,is_active) VALUES ('KINETIC Thu Duc - Vo Van Ngan','Thu Duc','216 Vo Van Ngan, Phuong Binh Tho, Thu Duc, TP. Ho Chi Minh','028 3722 7788','08:00 - 21:00',1);
-INSERT INTO showrooms(name,district,address,phone,opening_hours,is_active) VALUES ('KINETIC Tan Binh - Cong Hoa','Tan Binh','45 Cong Hoa, Phuong 4, Tan Binh, TP. Ho Chi Minh','028 3811 2233','08:00 - 21:00',1);
+INSERT INTO showrooms(name,district,address,phone,opening_hours,open_time,close_time,is_active) VALUES ('KINETIC Quan 1 - Nguyen Thai Hoc','Quan 1','187 Nguyen Thai Hoc, Phuong Pham Ngu Lao, Quan 1, TP. Ho Chi Minh','028 3920 1234','08:00 - 21:00','08:00:00','21:00:00',1);
+INSERT INTO showrooms(name,district,address,phone,opening_hours,open_time,close_time,is_active) VALUES ('KINETIC Quan 3 - Cach Mang Thang 8','Quan 3','420 Cach Mang Thang 8, Phuong 11, Quan 3, TP. Ho Chi Minh','028 3931 5678','08:00 - 21:00','08:00:00','21:00:00',1);
+INSERT INTO showrooms(name,district,address,phone,opening_hours,open_time,close_time,is_active) VALUES ('KINETIC Quan 7 - Nguyen Thi Thap','Quan 7','1021 Nguyen Thi Thap, Phuong Tan Phu, Quan 7, TP. Ho Chi Minh','028 3776 8899','08:00 - 21:00','08:00:00','21:00:00',1);
+INSERT INTO showrooms(name,district,address,phone,opening_hours,open_time,close_time,is_active) VALUES ('KINETIC Go Vap - Quang Trung','Go Vap','588 Quang Trung, Phuong 11, Go Vap, TP. Ho Chi Minh','028 3589 4567','08:00 - 21:00','08:00:00','21:00:00',1);
+INSERT INTO showrooms(name,district,address,phone,opening_hours,open_time,close_time,is_active) VALUES ('KINETIC Thu Duc - Vo Van Ngan','Thu Duc','216 Vo Van Ngan, Phuong Binh Tho, Thu Duc, TP. Ho Chi Minh','028 3722 7788','08:00 - 21:00','08:00:00','21:00:00',1);
+INSERT INTO showrooms(name,district,address,phone,opening_hours,open_time,close_time,is_active) VALUES ('KINETIC Tan Binh - Cong Hoa','Tan Binh','45 Cong Hoa, Phuong 4, Tan Binh, TP. Ho Chi Minh','028 3811 2233','08:00 - 21:00','08:00:00','21:00:00',1);
 
 INSERT INTO pricing_rules(code,name,description,amount,unit,status,effective_from) VALUES
 ('REGISTRATION_SERVICE','Phí hỗ trợ đăng ký biển số tại cửa hàng','Nhân viên hỗ trợ chủ xe tự kê khai trên VNeID khi nhận xe tại cửa hàng. Không gồm lệ phí nộp Nhà nước.',500000,'VND/xe','ACTIVE',NOW()),

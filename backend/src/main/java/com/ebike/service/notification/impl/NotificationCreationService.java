@@ -114,7 +114,7 @@ public class NotificationCreationService {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void handleWarrantyClaimStatusChanged(WarrantyClaimStatusChangedEvent event) {
-        userRepository.findById(event.userId()).ifPresent(user -> {
+        userRepository.findById(event.userId()).filter(NotificationCreationService::isLive).ifPresent(user -> {
             // the profile is read once: it gives the language of the words and the opt-out of the notification
             Optional<UserPreference> preference = userPreferenceRepository.findByUserId(user.getId());
             String language = languageOf(preference);
@@ -129,7 +129,7 @@ public class NotificationCreationService {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void handleMaintenanceDue(MaintenanceDueEvent event) {
-        userRepository.findById(event.userId()).ifPresent(user -> {
+        userRepository.findById(event.userId()).filter(NotificationCreationService::isLive).ifPresent(user -> {
             Optional<UserPreference> preference = userPreferenceRepository.findByUserId(user.getId());
             String language = languageOf(preference);
             createNotification(user, preference, NotificationType.MAINTENANCE_DUE,
@@ -138,6 +138,11 @@ public class NotificationCreationService {
                 null, null, "/customer/warranty", true);
         });
     }
+    /** A locked or erased account gets no maintenance reminder or warranty notice. */
+    private static boolean isLive(com.ebike.model.entity.auth.User user) {
+        return "ACTIVE".equals(user.getAccountStatus()) && !Boolean.FALSE.equals(user.getActive());
+    }
+
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @Transactional(propagation = Propagation.REQUIRES_NEW)

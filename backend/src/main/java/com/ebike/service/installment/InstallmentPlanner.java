@@ -72,7 +72,7 @@ public class InstallmentPlanner {
     public InstallmentConfigResponse config() {
         return new InstallmentConfigResponse(
             InstallmentRules.MIN_DOWN_PERCENT, InstallmentRules.MAX_DOWN_PERCENT, terms(),
-            limits.minIncome(),
+            limits.minIncome(), limits.maxIncome(),
             limits.maxPaymentShareOfIncome().movePointRight(2).intValue(), limits.maxOpenPerCustomer(),
             InstallmentService.maxNoteLength(true), InstallmentService.maxNoteLength(false));
     }
@@ -120,6 +120,10 @@ public class InstallmentPlanner {
                 "The ID number is not valid. Please enter 12 digits (or 9 digits for an old identity card).");
         }
         BigDecimal income = request.monthlyIncome();
+        // an income with cents or more decimals would be rounded without a word by the column: ask for whole dong
+        if (income != null && income.stripTrailingZeros().scale() > 0) {
+            throw bad("Thu nhập hằng tháng phải là số đồng nguyên, không có phần thập phân.", "The monthly income must be a whole number of dong, without decimals.");
+        }
         if (!InstallmentRules.incomeInRange(income, limits)) {
             throw bad("Thu nhập hằng tháng phải từ " + money("vi", limits.minIncome()) + " đến " + money("vi", limits.maxIncome()) + ".",
                 "The monthly income must be between " + money("en", limits.minIncome()) + " and " + money("en", limits.maxIncome()) + ".");

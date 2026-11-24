@@ -94,7 +94,11 @@ public class SeoMarkup {
         if (clean.length() <= DESCRIPTION_LIMIT) {
             return clean;
         }
-        String cut = clean.substring(0, DESCRIPTION_LIMIT - 1);
+        int end = DESCRIPTION_LIMIT - 1;
+        if (Character.isHighSurrogate(clean.charAt(end - 1))) {
+            end--; // never cut a pair (an emoji) in half
+        }
+        String cut = clean.substring(0, end);
         int space = cut.lastIndexOf(' ');
         if (space > DESCRIPTION_LIMIT / 2) {
             cut = cut.substring(0, space);
@@ -183,11 +187,13 @@ public class SeoMarkup {
             BigDecimal low = effectivePrice(product);
             BigDecimal high = low;
             java.util.Set<String> distinct = new java.util.LinkedHashSet<>();
+            int offers = 0;
             if (product.variants() != null) {
                 for (ProductVariantDto variant : product.variants()) {
                     BigDecimal price = variant == null ? null : variantPrice(product, variant);
                     if (price != null) {
                         distinct.add(priceText(price));
+                        offers++;
                         low = low == null || price.compareTo(low) < 0 ? price : low;
                         high = high == null || price.compareTo(high) > 0 ? price : high;
                     }
@@ -198,7 +204,7 @@ public class SeoMarkup {
                 offer.put("@type", "AggregateOffer");
                 offer.put("lowPrice", priceText(low));
                 offer.put("highPrice", priceText(high));
-                offer.put("offerCount", distinct.size());
+                offer.put("offerCount", offers);
             } else {
                 offer.put("@type", "Offer");
                 offer.put("price", priceText(effectivePrice(product)));

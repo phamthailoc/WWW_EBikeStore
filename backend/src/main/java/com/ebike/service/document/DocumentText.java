@@ -30,7 +30,6 @@ public final class DocumentText {
         add("receipt.deliveredAt", "Ngày bàn giao", "Handed over");
         add("receipt.status", "Trạng thái đơn", "Order status");
         add("receipt.issuedAt", "Ngày lập phiếu", "Issued");
-        add("receipt.seller", "Đơn vị bán hàng", "Seller");
         add("receipt.taxCode", "Mã số thuế", "Tax code");
         add("receipt.address", "Địa chỉ", "Address");
         add("receipt.phone", "Điện thoại", "Phone");
@@ -61,7 +60,6 @@ public final class DocumentText {
         add("receipt.paidAt", "Đã thanh toán lúc", "Paid at");
         add("receipt.reference", "Mã giao dịch", "Transaction reference");
         add("receipt.noPayment", "Chưa có giao dịch", "No transaction yet");
-        add("receipt.installment", "Trả góp (mô phỏng)", "Instalment (simulated)");
         add("receipt.instDown", "Trả trước", "Down payment");
         add("receipt.instFinanced", "Số tiền trả góp", "Financed amount");
         add("receipt.instTerm", "Kỳ hạn", "Term");

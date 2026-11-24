@@ -194,7 +194,7 @@ class WarrantySeleniumTest extends StorefrontSeleniumTest {
             assertTrue(assertThrows(IllegalStateException.class, () -> call(api, "POST", "/api/v1/warranty/claims",
                 Map.of("unitId", unitId, "description", "ngắn"))).getMessage().contains("400"), "a description that is too short is refused by the server too");
         } finally {
-            // the throwaway customer is erased again, so test runs do not pile up accounts
+            // the throwaway customer is marked deleted again (the user row stays, as AccountErasure keeps it)
             call(other, "DELETE", "/api/v1/auth/account", Map.of("password", PASSWORD, "confirmEmail", otherName + "@example.com"));
         }
 
@@ -392,7 +392,6 @@ class WarrantySeleniumTest extends StorefrontSeleniumTest {
         return call(client, "POST", "/api/v1/orders", order).path("id").asLong();
     }
 
-    /** The raw answer of a GET with the given Accept-Language, error or not. */
     /** The answer of an API call from a visitor who chose a language on the device (cookie, may be null) and whose browser sends an Accept-Language (may be null). */
     private static String body(String path, String languageCookie, String acceptLanguage) throws Exception {
         HttpRequest.Builder builder = HttpRequest.newBuilder(URI.create(baseUrl + path)).header("Accept", "application/json");

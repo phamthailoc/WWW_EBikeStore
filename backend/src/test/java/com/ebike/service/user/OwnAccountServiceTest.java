@@ -3,6 +3,7 @@ package com.ebike.service.user;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -57,7 +58,7 @@ class OwnAccountServiceTest {
     private void refused(DeleteOwnAccountRequest request, int status) {
         var ex = assertThrows(ResponseStatusException.class, () -> service.deleteOwnAccount(auth, request));
         assertEquals(status, ex.getStatusCode().value());
-        verify(erasure, never()).erase(any());
+        verify(erasure, never()).erase(any(), anyBoolean());
         verify(users, never()).save(any());
     }
 
@@ -84,7 +85,7 @@ class OwnAccountServiceTest {
 
     @Test void withEverythingRightTheAccountIsErasedAndLoggedByNumber() {
         service.deleteOwnAccount(auth, new DeleteOwnAccountRequest("dung", " KHACH@example.com "));
-        verify(erasure).erase(customer);
+        verify(erasure).erase(customer, true);
         verify(users).save(customer);
         verify(auditLog).recordBy("tài khoản #7", "khách tự xóa tài khoản", "tài khoản #7");
     }

@@ -69,8 +69,8 @@ public final class TestRideMessages {
                 ? "The store had to cancel your test ride: " + bike + "." + reason + " You can book another time."
                 : "Cửa hàng phải hủy lịch lái thử của bạn: " + bike + "." + reason + " Bạn có thể đặt lại khung giờ khác.";
             case NO_SHOW -> english
-                ? "You did not come to your test ride: " + bike + ". You can book another time."
-                : "Bạn đã không đến buổi lái thử: " + bike + ". Bạn có thể đặt lại khung giờ khác.";
+                ? "You did not come to your test ride: " + bike + "." + reason + " You can book another time."
+                : "Bạn đã không đến buổi lái thử: " + bike + "." + reason + " Bạn có thể đặt lại khung giờ khác.";
             case EXPIRED -> english
                 ? "Your test ride request was not confirmed in time and has been closed: " + bike + ". You can book another time."
                 : "Yêu cầu lái thử chưa được xác nhận kịp và đã được đóng: " + bike + ". Bạn có thể đặt lại khung giờ khác.";
