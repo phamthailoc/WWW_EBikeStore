@@ -1,6 +1,8 @@
 package com.ebike.service.auth.impl;
 
 import com.ebike.dto.auth.response.AuthResponse;
+import com.ebike.event.notification.UserRegisteredEvent;
+import com.ebike.listener.notification.NotificationEventBridge;
 import com.ebike.dto.auth.request.ChangePasswordRequest;
 import com.ebike.dto.auth.request.LoginRequest;
 import com.ebike.dto.auth.request.RegisterRequest;
@@ -31,6 +33,8 @@ import org.springframework.web.server.ResponseStatusException;
 public class AuthenticationServiceImpl implements AuthenticationService {
 
     private static final String DEFAULT_CUSTOMER_ROLE = "CUSTOMER";
+    private static final java.util.regex.Pattern EMAIL_PATTERN =
+        java.util.regex.Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}$", java.util.regex.Pattern.CASE_INSENSITIVE);
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
@@ -95,6 +99,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         // Guest orders with this email are NOT attached here: the email is unverified at sign-up.
         // Customers attach them later via POST /api/v1/orders/guest-orders/link after an OTP check.
         User savedUser = userRepository.save(user);
+        // the welcome email goes out after the commit, from the mail pool; a failure there never undoes the sign-up
+        NotificationEventBridge.publish(new UserRegisteredEvent(savedUser.getId()));
         return toAuthResponse(savedUser);
     }
 
@@ -211,6 +217,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         }
         if (request.password().trim().length() < 6) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mật khẩu phải có ít nhất 6 ký tự.");
+        }
+        // the welcome email goes to this address, so it must at least look like one (checkout applies the same rule)
+        if (!EMAIL_PATTERN.matcher(request.email().trim()).matches()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email không hợp lệ.");
         }
     }
 
