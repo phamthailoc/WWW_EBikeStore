@@ -76,6 +76,22 @@ public class NotificationCreationService {
         ));
     }
 
+    // Staff changed a line of the order while it was waiting for confirmation: say what changed and what the order now costs.
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void handleOrderItemQuantityChanged(com.ebike.event.notification.OrderItemQuantityChangedEvent event) {
+        userRepository.findById(event.userId()).ifPresent(user -> createNotification(
+            user,
+            NotificationType.ORDER_STATUS,
+            "Đổi số lượng trong đơn hàng",
+            "Cửa hàng đã đổi số lượng " + event.productName() + " trong đơn hàng " + event.orderNumber() + " từ " + event.quantityBefore()
+                + " thành " + event.quantityAfter() + ". Tổng tiền mới: "
+                + com.ebike.service.installment.InstallmentMessages.money(event.totalAmount()) + ".",
+            event.orderId(),
+            event.paymentId()
+        ));
+    }
+
     // The store moved the day it keeps the bike; the customer asked for it, and this lets them confirm it is right.
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @Transactional(propagation = Propagation.REQUIRES_NEW)

@@ -91,6 +91,39 @@ class OrderItemQuantityTest {
         assertEquals(0, order.getTotalAmount().compareTo(payment.getAmount()));
     }
 
+    @Test void theCustomerWithAnAccountIsToldAboutTheChange() {
+        var publisher = org.mockito.Mockito.mock(org.springframework.context.ApplicationEventPublisher.class);
+        new com.ebike.listener.notification.NotificationEventBridge().setApplicationEventPublisher(publisher);
+        try {
+            com.ebike.model.entity.auth.User customer = new com.ebike.model.entity.auth.User();
+            customer.setId(7L);
+            order.setUser(customer);
+            service.updateItemQuantity(10L, 100L, 3, null);
+            verify(publisher).publishEvent(org.mockito.ArgumentMatchers.argThat((Object e) -> e instanceof com.ebike.event.notification.OrderItemQuantityChangedEvent ev
+                && ev.userId() == 7L && ev.quantityBefore() == 2 && ev.quantityAfter() == 3));
+            order.setUser(null);
+            org.mockito.Mockito.clearInvocations(publisher);
+            service.updateItemQuantity(10L, 100L, 2, null);
+            verify(publisher, never()).publishEvent(any(Object.class));
+        } finally {
+            new com.ebike.listener.notification.NotificationEventBridge().setApplicationEventPublisher(null);
+        }
+    }
+
+    @Test void feesStayInWholeDong() {
+        item.setQuantity(3);
+        item.setLineTotal(new BigDecimal("30000000"));
+        order.setSubtotal(new BigDecimal("30000000"));
+        order.setShippingFee(new BigDecimal("1000000"));
+        service.updateItemQuantity(10L, 100L, 2, null);
+        assertEquals(0, new BigDecimal("666668").compareTo(order.getShippingFee()));
+        // the rate (333,334, rounded up) is fixed once; going back and forth never drifts after that
+        service.updateItemQuantity(10L, 100L, 3, null);
+        assertEquals(0, new BigDecimal("1000002").compareTo(order.getShippingFee()));
+        service.updateItemQuantity(10L, 100L, 2, null);
+        assertEquals(0, new BigDecimal("666668").compareTo(order.getShippingFee()));
+    }
+
     @Test void loweringTheQuantityGivesStockBack() {
         service.updateItemQuantity(10L, 100L, 1, null);
         assertEquals(11, product.getStockQuantity());
