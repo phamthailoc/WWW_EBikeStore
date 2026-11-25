@@ -68,6 +68,7 @@ public class WorkspaceController {
             case "manager/warranty" -> { title = m("staff.warranty", "Yêu cầu bảo hành"); api = "/api/v1/manager/warranty-claims"; description = m("staff.warrantyDesc", "Xử lý yêu cầu bảo hành khách gửi từ sổ bảo hành."); }
             case "manager/test-rides" -> { title = m("staff.testRides", "Lịch lái thử"); api = "/api/v1/manager/test-rides"; description = m("staff.testRidesDesc", "Xác nhận và theo dõi lịch lái thử khách đặt."); }
             case "manager/stock-receipts" -> { title = m("staff.stockReceipts", "Phiếu nhập kho"); api = ""; description = m("staff.stockReceiptsDesc", "Ghi nhận hàng nhập về từ nhà cung cấp; mỗi phiếu cộng tồn kho và ghi vào lịch sử."); mode = "stockreceipt"; }
+            case "admin/catalog" -> { title = m("staff.catalog", "Danh mục sản phẩm"); api = ""; description = m("staff.catalogDesc", "Thêm, sửa, xóa xe và loại sản phẩm; tồn kho vẫn đi theo phiếu nhập kho và đơn hàng."); mode = "catalog"; }
             case "manager/installments" -> { title = m("staff.installments", "Hồ sơ trả góp"); api = "/api/v1/manager/installments"; description = m("staff.installmentsDesc", "Duyệt hoặc từ chối hồ sơ trả góp mô phỏng khách gửi khi đặt hàng."); mode = "installment"; }
             case "manager/customers" -> { title = m("staff.9", "Khách hàng"); api = "/api/v1/manager/customers"; description = m("staff.10", "Danh sách khách hàng và lịch sử mua."); }
             case "manager/inventory", "manager/products", "admin/inventory", "admin/products" -> { title = m("staff.11", "Kho sản phẩm"); api = "/api/v1/products"; description = m("staff.12", "Theo dõi tồn kho và tình trạng xe."); mode = "inventory"; }
@@ -101,6 +102,16 @@ public class WorkspaceController {
                 }
             }
             links.add(stockAt + 1, new Link(m("staff.stockReceiptsMenu", "Nhập kho"), "/manager/stock-receipts"));
+        }
+        // the catalogue (add, edit, delete bikes and categories) is the admin's back-end page; it sits right after the product list
+        if (role.equals("admin")) {
+            int productsAt = -1;
+            for (int i = 0; i < links.size(); i++) {
+                if (links.get(i).href().equals("/admin/products")) {
+                    productsAt = i;
+                }
+            }
+            links.add(productsAt + 1, new Link(m("staff.catalogMenu", "Danh mục xe"), "/admin/catalog"));
         }
         model.addAttribute("canManageStock", canManageStock);
         // V28: the "Export to Excel" button of the order list and of the revenue report, only for staff the export endpoint will serve (the report needs its own permission)

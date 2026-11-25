@@ -22,6 +22,7 @@
 <script th:if="${mode == 'testride' or pageKey == '/manager/test-rides'}" th:src="@{/js/testride.js(v=20261124-walk)}"></script>
 <script th:if="${mode == 'installment' or mode == 'detail'}" th:src="@{/js/installment.js(v=20261124-walk)}"></script>
 <script th:if="${mode == 'inventory'}" th:src="@{/js/stock.js(v=20261124-walk)}"></script>
+<script th:if="${mode == 'catalog'}" th:src="@{/js/catalog.js(v=20261125-catalog)}"></script>
 <script th:if="${mode == 'stockreceipt'}" th:src="@{/js/stockreceipts.js(v=20261124-walk)}"></script>
 <script th:if="${mode == 'inventory'}" th:src="@{/js/images.js(v=20261124-walk)}"></script>
 <script th:if="${loadDocuments}" th:src="@{/js/documents.js(v=20261124-walk)}"></script>
