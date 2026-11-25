@@ -26,7 +26,7 @@ class AdminSavingsRuleTest {
     @BeforeEach void setup() {
         service = new AdminServiceImpl(pricingRules, mock(com.ebike.repository.admin.PromotionRepository.class), mock(com.ebike.repository.admin.AdminAuditLogRepository.class),
             mock(com.ebike.repository.auth.UserRepository.class), mock(com.ebike.repository.auth.RoleRepository.class), mock(org.springframework.security.crypto.password.PasswordEncoder.class),
-            mock(com.ebike.repository.order.OrderRepository.class), mock(com.ebike.service.admin.AccountErasure.class), mock(com.ebike.service.admin.AuditLogService.class));
+            mock(com.ebike.repository.order.OrderRepository.class), mock(com.ebike.repository.auth.AuthenticationLogRepository.class), mock(com.ebike.repository.testride.TestRideBookingRepository.class), mock(com.ebike.service.product.ProductReviewService.class), mock(com.ebike.service.admin.AuditLogService.class));
     }
 
     private PricingRule rule(String code) {

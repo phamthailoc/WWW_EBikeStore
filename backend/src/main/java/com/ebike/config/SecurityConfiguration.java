@@ -91,6 +91,7 @@ public class SecurityConfiguration {
                 .requestMatchers(HttpMethod.POST, "/api/v1/orders/guest-orders/link").hasAuthority(PermissionConstants.Customer.ORDER_VIEW_OWN)
                 .requestMatchers(HttpMethod.POST, "/api/v1/orders/*/cancellation-request").hasAuthority(PermissionConstants.Customer.ORDER_CANCEL_OWN)
                 .requestMatchers(HttpMethod.PATCH, "/api/v1/orders/*/status").hasAuthority(PermissionConstants.OrderManagement.ORDER_UPDATE_STATUS)
+                .requestMatchers(HttpMethod.PATCH, "/api/v1/orders/*/items/*").hasAuthority(PermissionConstants.OrderManagement.ORDER_UPDATE_STATUS)
                 // V27: sending the hand-over email again messages a customer, so it needs the write permission
                 .requestMatchers(HttpMethod.POST, "/api/v1/orders/*/documents/email").hasAuthority(PermissionConstants.OrderManagement.ORDER_UPDATE_STATUS)
                 // V24: an application is read by its own customer or by the staff (the service checks which); only the staff decide.
@@ -139,6 +140,8 @@ public class SecurityConfiguration {
                 .requestMatchers(HttpMethod.POST, "/api/v1/admin/promotions").hasAnyRole(ADMIN_CONSOLE_ROLES)
                 .requestMatchers(HttpMethod.PATCH, "/api/v1/admin/promotions/*").hasAnyRole(ADMIN_CONSOLE_ROLES)
                 // Creating, re-roling, locking and erasing accounts is for ADMIN only; the other console roles may view.
+                .requestMatchers(HttpMethod.GET, "/api/v1/admin/accounts/*").hasAnyRole(ADMIN_CONSOLE_ROLES)
+                .requestMatchers(HttpMethod.PUT, "/api/v1/admin/accounts/*").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.POST, "/api/v1/admin/accounts").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PATCH, "/api/v1/admin/accounts/*/role").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PATCH, "/api/v1/admin/accounts/*/status").hasRole("ADMIN")

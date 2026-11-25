@@ -13,6 +13,17 @@ import org.springframework.security.core.Authentication;
 
 public interface OrderService {
 
+    /** The newest {@code limit} orders that match (all of them when limit is null). */
+    List<OrderResponse> getOrders(
+        Authentication authentication,
+        Long userId,
+        String status,
+        String paymentStatus,
+        String search,
+        Long showroomId,
+        Integer limit
+    );
+
     List<OrderResponse> getOrders(
         Authentication authentication,
         Long userId,
@@ -31,6 +42,9 @@ public interface OrderService {
     OrderResponse updateOrderStatus(Long id, OrderStatusUpdateRequest request, Authentication authentication);
 
     OrderResponse requestCancellation(Long id, OrderCancellationRequest request, Authentication authentication);
+
+    /** Staff change the quantity of one line of an order that is still waiting for confirmation; stock and totals follow. */
+    OrderResponse updateItemQuantity(Long orderId, Long itemId, Integer quantity, Authentication authentication);
 
     /** Attaches guest orders placed with the signed-in customer's email, once that email is proven by OTP. */
     GuestOrderLinkResponse linkGuestOrders(GuestOrderLinkRequest request, Authentication authentication);

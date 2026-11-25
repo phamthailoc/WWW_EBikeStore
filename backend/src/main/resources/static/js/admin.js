@@ -123,11 +123,34 @@
     });
   }
 
+  const dateText = iso => (iso ? new Date(iso).toLocaleString('vi-VN') : '-');
+
+  async function accountDetail(id) {
+    const a = await api('/api/v1/admin/accounts/' + id);
+    const fullName = [a.firstName, a.lastName].filter(Boolean).join(' ');
+    const info = [
+      ['Tên đăng nhập', a.username], ['Vai trò', (a.roles || []).join(', ')], ['Trạng thái', a.status],
+      ['Ngày tạo', dateText(a.createdAt)], ['Số đơn hàng', a.orderCount]
+    ].map(([k, v]) => `<span class="fact"><span class="muted">${esc(k)}:</span> ${esc(v)}</span>`).join('');
+    formDialog({
+      title: 'Thông tin tài khoản',
+      intro: `<span class="account-facts">${info}</span>${a.canDelete ? '' : 'Tài khoản đã có đơn hàng nên không xóa được, chỉ vô hiệu hóa.'}`,
+      fields: field('Họ và tên', `<input name="name" required maxlength="120" value="${esc(fullName)}">`)
+        + field('Email', `<input name="email" type="email" required maxlength="150" value="${esc(a.email)}">`),
+      submitLabel: 'Lưu thay đổi',
+      submit: async form => {
+        await api('/api/v1/admin/accounts/' + id, 'PUT', {name: form.name.value.trim(), email: form.email.value.trim()});
+        tell('Đã lưu thông tin tài khoản.');
+        reload();
+      }
+    });
+  }
+
   // Erasing an account cannot be undone, so the admin has to type its email before the button works.
   function deleteAccount(id, email) {
     formDialog({
       title: 'Xóa tài khoản',
-      intro: 'Chỉ làm khi khách yêu cầu xóa. Họ tên, địa chỉ đã lưu, yêu thích, thông báo và <b>đánh giá</b> của tài khoản này sẽ bị xóa; tài khoản không đăng nhập được nữa và <b>không khôi phục được</b>. Đơn hàng cũ vẫn được giữ. Nếu chỉ muốn chặn tài khoản, hãy chọn Vô hiệu hóa.',
+      intro: 'Chỉ xóa được tài khoản <b>chưa có đơn hàng</b>. Tài khoản, địa chỉ, yêu thích, thông báo và đánh giá của nó bị xóa hẳn và <b>không khôi phục được</b>. Tài khoản đã có đơn hàng thì hãy chọn Vô hiệu hóa.',
       fields: `<label>${`Gõ đúng email ${`<b>${esc(email)}</b>`} để xác nhận`}<input name="confirmEmail" autocomplete="off" required></label>`,
       submitLabel: 'Xóa vĩnh viễn',
       submit: async form => {
@@ -193,6 +216,7 @@
   // ---- wiring -------------------------------------------------------------------------
   const handlers = {
     'role': id => changeRole(id),
+    'account-detail': id => accountDetail(id),
     'delete-account': (id, button) => deleteAccount(id, button.dataset.email),
     'promotion': id => editPromotion(id)
   };

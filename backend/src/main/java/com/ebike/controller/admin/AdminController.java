@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -74,8 +75,21 @@ public class AdminController {
     }
 
     @GetMapping("/accounts")
-    public List<AdminAccountResponse> getAccounts(@RequestParam(required = false) String type) {
-        return adminService.getAccounts(type);
+    public List<AdminAccountResponse> getAccounts(@RequestParam(required = false) String type, @RequestParam(required = false) String q) {
+        return adminService.getAccounts(type, q);
+    }
+
+    @GetMapping("/accounts/{id}")
+    public com.ebike.dto.admin.response.AdminAccountDetail getAccountDetail(@PathVariable Long id) {
+        return adminService.getAccountDetail(id);
+    }
+
+    @PutMapping("/accounts/{id}")
+    public com.ebike.dto.admin.response.AdminAccountDetail updateAccount(
+        @PathVariable Long id,
+        @RequestBody com.ebike.dto.admin.request.AdminAccountUpdateRequest request
+    ) {
+        return adminService.updateAccount(id, request);
     }
 
     @PostMapping("/accounts")

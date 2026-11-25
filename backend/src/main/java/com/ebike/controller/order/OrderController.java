@@ -41,9 +41,10 @@ public class OrderController {
         @RequestParam(required = false) String status,
         @RequestParam(required = false) String paymentStatus,
         @RequestParam(required = false) String search,
-        @RequestParam(required = false) Long showroomId
+        @RequestParam(required = false) Long showroomId,
+        @RequestParam(required = false) Integer limit
     ) {
-        return orderService.getOrders(authentication, userId, status, paymentStatus, search, showroomId);
+        return orderService.getOrders(authentication, userId, status, paymentStatus, search, showroomId, limit);
     }
 
     @GetMapping("/{id}")
@@ -60,6 +61,13 @@ public class OrderController {
     @ResponseStatus(HttpStatus.CREATED)
     public OrderResponse createOrder(@RequestBody OrderCreateRequest request, Authentication authentication) {
         return orderService.createOrder(request, authentication);
+    }
+
+    @PatchMapping("/{id}/items/{itemId}")
+    @PreAuthorize("hasAuthority('" + PermissionConstants.OrderManagement.ORDER_UPDATE_STATUS + "')")
+    public OrderResponse updateItemQuantity(@PathVariable Long id, @PathVariable Long itemId,
+                                            @RequestBody com.ebike.dto.order.request.OrderItemQuantityRequest request, Authentication authentication) {
+        return orderService.updateItemQuantity(id, itemId, request == null ? null : request.quantity(), authentication);
     }
 
     @PatchMapping("/{id}/status")

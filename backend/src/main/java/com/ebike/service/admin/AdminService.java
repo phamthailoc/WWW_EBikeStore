@@ -30,6 +30,13 @@ public interface AdminService {
 
     List<AdminAccountResponse> getAccounts(String type);
 
+    /** The list with a search over name, username and email. */
+    List<AdminAccountResponse> getAccounts(String type, String search);
+
+    com.ebike.dto.admin.response.AdminAccountDetail getAccountDetail(Long id);
+
+    com.ebike.dto.admin.response.AdminAccountDetail updateAccount(Long id, com.ebike.dto.admin.request.AdminAccountUpdateRequest request);
+
     AdminAccountResponse createAccount(AdminAccountCreateRequest request);
 
     AdminAccountResponse updateAccountRole(Long id, AdminAccountRoleUpdateRequest request);

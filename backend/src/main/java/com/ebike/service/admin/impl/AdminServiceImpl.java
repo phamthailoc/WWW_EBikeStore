@@ -59,7 +59,10 @@ public class AdminServiceImpl implements AdminService {
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final OrderRepository orderRepository;
-    private final AccountErasure accountErasure;
+    private final com.ebike.repository.auth.AuthenticationLogRepository authenticationLogRepository;
+    private final com.ebike.repository.testride.TestRideBookingRepository testRides;
+    private final com.ebike.service.product.ProductReviewService reviews;
+    private static final java.util.regex.Pattern ACCOUNT_EMAIL_PATTERN = java.util.regex.Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}$", java.util.regex.Pattern.CASE_INSENSITIVE);
     private final AuditLogService auditLog;
 
     public AdminServiceImpl(
@@ -70,7 +73,9 @@ public class AdminServiceImpl implements AdminService {
         RoleRepository roleRepository,
         PasswordEncoder passwordEncoder,
         OrderRepository orderRepository,
-        AccountErasure accountErasure,
+        com.ebike.repository.auth.AuthenticationLogRepository authenticationLogRepository,
+        com.ebike.repository.testride.TestRideBookingRepository testRides,
+        com.ebike.service.product.ProductReviewService reviews,
         AuditLogService auditLog
     ) {
         this.pricingRuleRepository = pricingRuleRepository;
@@ -80,7 +85,9 @@ public class AdminServiceImpl implements AdminService {
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
         this.orderRepository = orderRepository;
-        this.accountErasure = accountErasure;
+        this.authenticationLogRepository = authenticationLogRepository;
+        this.testRides = testRides;
+        this.reviews = reviews;
         this.auditLog = auditLog;
     }
 
@@ -225,13 +232,24 @@ public class AdminServiceImpl implements AdminService {
     @Override
     @Transactional(readOnly = true)
     public List<AdminAccountResponse> getAccounts(String type) {
+        return getAccounts(type, null);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<AdminAccountResponse> getAccounts(String type, String search) {
         String normalizedType = normalizeNullable(type);
+        String needle = search == null || search.isBlank() ? null : search.trim().toLowerCase(Locale.ROOT);
 
         // Accounts the customer asked to delete (DELETED) are hidden: only an anonymised shell remains for the orders.
         return userRepository.findAll().stream()
             .filter(user -> !AccountErasure.DELETED.equals(user.getAccountStatus()))
             .map(this::toAccountResponse)
             .filter(account -> normalizedType == null || normalizedType.equals(account.accountType()))
+            .filter(account -> needle == null
+                || (account.name() != null && account.name().toLowerCase(Locale.ROOT).contains(needle))
+                || (account.username() != null && account.username().toLowerCase(Locale.ROOT).contains(needle))
+                || (account.email() != null && account.email().toLowerCase(Locale.ROOT).contains(needle)))
             .sorted(Comparator.comparing(AdminAccountResponse::createdAt).reversed())
             .toList();
     }
@@ -309,6 +327,55 @@ public class AdminServiceImpl implements AdminService {
         return toAccountResponse(saved);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public com.ebike.dto.admin.response.AdminAccountDetail getAccountDetail(Long id) {
+        User user = userRepository.findById(id)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy tài khoản."));
+        assertNotDeleted(user);
+        return toAccountDetail(user);
+    }
+
+    @Override
+    @Transactional
+    public com.ebike.dto.admin.response.AdminAccountDetail updateAccount(Long id, com.ebike.dto.admin.request.AdminAccountUpdateRequest request) {
+        User user = userRepository.findById(id)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy tài khoản."));
+        assertNotDeleted(user);
+        String name = normalizeRequired(request == null ? null : request.name(), "Tên");
+        String[] nameParts = name.split("\\s+", 2);
+        if (nameParts[0].length() > 100 || (nameParts.length > 1 && nameParts[1].length() > 100)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Họ và tên đệm/tên mỗi phần tối đa 100 ký tự.");
+        }
+        String email = normalizeRequired(request.email(), "Email").toLowerCase(Locale.ROOT);
+        if (email.length() > 150 || !ACCOUNT_EMAIL_PATTERN.matcher(email).matches()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email không hợp lệ.");
+        }
+        if (!email.equalsIgnoreCase(user.getEmail()) && userRepository.existsByEmail(email)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Email đã được sử dụng.");
+        }
+        applyName(user, name);
+        user.setEmail(email);
+        User saved;
+        try {
+            saved = userRepository.saveAndFlush(user);
+        } catch (org.springframework.dao.DataIntegrityViolationException exception) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Email đã được sử dụng.");
+        }
+        writeAudit("sửa thông tin tài khoản", saved.getEmail());
+        return toAccountDetail(saved);
+    }
+
+    private com.ebike.dto.admin.response.AdminAccountDetail toAccountDetail(User user) {
+        AdminAccountResponse row = toAccountResponse(user);
+        long orders = orderRepository.countByUserId(user.getId());
+        return new com.ebike.dto.admin.response.AdminAccountDetail(
+            user.getId(), user.getFirstName(), user.getLastName(), user.getUsername(), user.getEmail(),
+            row.accountType(), row.status(), user.getVerified(), row.roles(), user.getCreatedAt(), user.getUpdatedAt(),
+            orders, orders == 0
+        );
+    }
+
     // READ_COMMITTED: see OwnAccountService.deleteOwnAccount (the erasure's count of open applications must see what is committed once it holds the lock)
     @Override
     @Transactional(isolation = org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
@@ -328,11 +395,28 @@ public class AdminServiceImpl implements AdminService {
         if (confirmEmail == null || !confirmEmail.trim().equalsIgnoreCase(user.getEmail())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email xác nhận không khớp với tài khoản cần xóa.");
         }
-        // Orders and payments are the shop's accounting record, so the account is anonymised, not removed.
-        accountErasure.erase(user);
-        userRepository.save(user);
-        // The audit entry must not keep the personal data that was just erased.
-        writeAudit("xóa tài khoản (ẩn danh hóa)", "tài khoản #" + id);
+        // Orders and payments are the shop's accounting record: an account that has placed orders is not deleted (disable it instead).
+        if (orderRepository.existsByUserId(id)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                "Tài khoản này đã có đơn hàng nên không thể xóa. Hãy vô hiệu hóa tài khoản.");
+        }
+        // A booked test ride must not vanish from the showroom's schedule with the account: the customer cancels it, or the admin disables the account.
+        if (testRides.existsByUserIdAndStatusIn(id, java.util.List.of("REQUESTED", "CONFIRMED"))) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                "Tài khoản này còn lịch lái thử chưa kết thúc nên không thể xóa. Hãy vô hiệu hóa tài khoản.");
+        }
+        try {
+            // the reviews go with the account; the ratings shown on the products are recounted without them
+            reviews.removeReviewsOf(id);
+            authenticationLogRepository.deleteByUserId(id);
+            userRepository.delete(user);
+            userRepository.flush();
+        } catch (org.springframework.dao.DataIntegrityViolationException exception) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                "Tài khoản này còn dữ liệu liên quan nên không thể xóa. Hãy vô hiệu hóa tài khoản.");
+        }
+        // The audit entry must not keep the personal data that was just deleted.
+        writeAudit("xóa tài khoản", "tài khoản #" + id);
     }
 
     private void assertNotDeleted(User user) {

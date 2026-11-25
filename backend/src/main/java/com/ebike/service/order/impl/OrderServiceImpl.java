@@ -156,6 +156,20 @@ public class OrderServiceImpl implements OrderService {
         String search,
         Long showroomId
     ) {
+        return getOrders(authentication, userId, status, paymentStatus, search, showroomId, null);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<OrderResponse> getOrders(
+        Authentication authentication,
+        Long userId,
+        String status,
+        String paymentStatus,
+        String search,
+        Long showroomId,
+        Integer limit
+    ) {
         User currentUser = getAuthenticatedUser(authentication);
         Long effectiveUserId = isBackOffice(authentication) ? userId : currentUser.getId();
 
@@ -169,6 +183,7 @@ public class OrderServiceImpl implements OrderService {
             .filter(order -> matchesSearch(order, search))
             .filter(order -> matchesShowroom(order, showroomId))
             .sorted(Comparator.comparing(Order::getCreatedAt).reversed())
+            .limit(limit == null || limit < 1 ? Long.MAX_VALUE : Math.min(limit, 2000))
             .map(this::toResponse)
             .toList();
     }
@@ -449,6 +464,116 @@ public class OrderServiceImpl implements OrderService {
     /** An order with no payment row yet, or paid by VNPay, is waiting for an online payment. */
     private static boolean isOnline(PaymentMethod method) {
         return method == null || method == PaymentMethod.VNPAY;
+    }
+
+    /**
+     * Staff change the quantity of one line while the order is still waiting for confirmation and is paid on hand-over (an online or instalment
+     * order has a payment or a plan that this would put out of step). The unit price stays as it was when the order was placed; stock, the ledger, the
+     * subtotal, the delivery and registration fees (at the order's own rate), the discount and the payment amount follow.
+     */
+    @Override
+    @Transactional
+    @CacheEvict(cacheNames = {
+        com.ebike.config.CacheNames.PRODUCT_LIST_CACHE,
+        com.ebike.config.CacheNames.PRODUCT_DETAIL_CACHE
+    }, allEntries = true)
+    public OrderResponse updateItemQuantity(Long orderId, Long itemId, Integer quantity, Authentication authentication) {
+        if (quantity == null || quantity < 1 || quantity > MAX_ITEM_QUANTITY) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Số lượng mỗi xe phải từ 1 đến " + MAX_ITEM_QUANTITY + ".");
+        }
+        // the order row is locked first (as in a status change), so a cancel, a confirm or a second edit cannot run between the checks and the save
+        Order order = orderRepository.findLockedById(orderId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy đơn hàng."));
+        if (order.getStatus() != OrderStatus.PENDING) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chỉ sửa được số lượng khi đơn đang chờ xác nhận.");
+        }
+        Payment payment = order.getPayment();
+        if (payment == null || payment.getPaymentMethod() != PaymentMethod.PAY_LATER || payment.getPaymentStatus() != PaymentStatus.PENDING) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Đơn thanh toán online hoặc trả góp không sửa được số lượng.");
+        }
+        if (order.getCancellationRequestedAt() != null && order.getCancellationReviewedAt() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Đơn đang có yêu cầu hủy chưa xử lý nên không sửa được số lượng.");
+        }
+        OrderItem item = order.getItems().stream().filter(line -> itemId.equals(line.getId())).findFirst()
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy mặt hàng trong đơn."));
+        if (!item.getUnits().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Xe này đã có số khung và số máy nên không sửa được số lượng.");
+        }
+        int before = item.getQuantity();
+        int delta = quantity - before;
+        if (delta == 0) {
+            return toResponse(order);
+        }
+
+        Product product = item.getProduct();
+        ProductVariant variant = item.getProductVariant();
+        stockLedger.lock(product == null ? List.of() : List.of(product), variant == null ? List.of() : List.of(variant));
+        if (delta > 0) {
+            if (product == null || !Boolean.TRUE.equals(product.getActive()) || (variant != null && !Boolean.TRUE.equals(variant.getActive()))) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Xe này không còn bán nên không tăng được số lượng.");
+            }
+            if (product != null && defaultStock(product.getStockQuantity()) < delta) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Không đủ hàng trong kho: " + item.getProductName());
+            }
+            if (variant != null && defaultStock(variant.getStockQuantity()) < delta) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Màu xe đã chọn không đủ hàng trong kho: " + variant.getColorName());
+            }
+        }
+        if (product != null) {
+            product.setStockQuantity(defaultStock(product.getStockQuantity()) - delta);
+        }
+        boolean backInStock = false;
+        if (variant != null) {
+            Integer variantBefore = variant.getStockQuantity();
+            variant.setStockQuantity(defaultStock(variantBefore) - delta);
+            backInStock = delta < 0 && StockAlertRules.isRestock(variantBefore, variant.getStockQuantity());
+        }
+        if (product != null) {
+            stockLedger.record(List.of(StockLedger.Entry.of(product, variant, -delta, StockMovementReason.ADJUSTMENT, null)),
+                order.getId(), order.getOrderNumber(), null, getAuthenticatedUserOrNull(authentication));
+        }
+
+        // the fees that depend on the number of bikes keep the rate the order was placed at
+        int registrableBefore = registrableBikes(order, null, 0);
+        BigDecimal registrationPerBike = order.getRegistrationFee() != null && order.getRegistrationFee().signum() > 0 && registrableBefore > 0
+            ? order.getRegistrationFee().divide(BigDecimal.valueOf(registrableBefore), 2, RoundingMode.HALF_UP)
+            : ZERO;
+        int bikesBefore = order.getItems().stream().mapToInt(OrderItem::getQuantity).sum();
+        BigDecimal shippingPerBike = order.getShippingFee() != null && order.getShippingFee().signum() > 0 && bikesBefore > 0
+            ? order.getShippingFee().divide(BigDecimal.valueOf(bikesBefore), 2, RoundingMode.HALF_UP)
+            : ZERO;
+
+        item.setQuantity(quantity);
+        item.setLineTotal(item.getUnitPrice().multiply(BigDecimal.valueOf(quantity)));
+        BigDecimal subtotal = order.getItems().stream().map(OrderItem::getLineTotal).reduce(ZERO, BigDecimal::add);
+        order.setSubtotal(subtotal);
+        int bikesAfter = order.getItems().stream().mapToInt(OrderItem::getQuantity).sum();
+        order.setShippingFee(shippingPerBike.multiply(BigDecimal.valueOf(bikesAfter)));
+        if (Boolean.TRUE.equals(order.getIncludeRegistrationService())) {
+            order.setRegistrationFee(registrationPerBike.multiply(BigDecimal.valueOf(registrableBikes(order, null, 0))));
+        }
+        if (order.getPromotion() != null) {
+            order.setDiscountAmount(calculatePromoDiscount(order.getPromotion(), subtotal));
+        }
+        order.setTotalAmount(calculateTotalAmount(subtotal, order.getShippingFee(), order.getDiscountAmount(), order.getRegistrationFee()));
+        payment.setAmount(order.getTotalAmount());
+        Order saved = orderRepository.save(order);
+        if (backInStock) {
+            stockAlerts.notifyRestocked(variant);
+        }
+        auditLog.record("sửa số lượng đơn hàng", order.getOrderNumber() + ": " + item.getProductName() + " " + before + " → " + quantity);
+        return toResponse(saved);
+    }
+
+    /** Bikes of the order that need a plate (accessories and batteries do not); the product is read from the line, not looked up as an active one. */
+    private int registrableBikes(Order order, OrderItem ignored, int unused) {
+        int bikes = 0;
+        for (OrderItem line : order.getItems()) {
+            if (line.getProduct() != null && VehicleRegistration.requiresRegistration(line.getProduct().getSpecification())) {
+                bikes += line.getQuantity();
+            }
+        }
+        return bikes;
     }
 
     @Override
