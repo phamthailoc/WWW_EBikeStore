@@ -16,13 +16,11 @@ CREATE TABLE IF NOT EXISTS `warranty_claims` (
     open_unit_id BIGINT AS (IF(status IN ('NEW', 'RECEIVED', 'REPAIRING'), order_item_unit_id, NULL)) VIRTUAL,
     CONSTRAINT fk_warranty_claims_unit FOREIGN KEY (order_item_unit_id) REFERENCES order_item_units(id) ON DELETE RESTRICT,
     CONSTRAINT fk_warranty_claims_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    CONSTRAINT chk_warranty_claims_status CHECK (status IN ('NEW', 'RECEIVED', 'REPAIRING', 'DONE', 'REJECTED')),
     CONSTRAINT uk_warranty_claims_open_unit UNIQUE (open_unit_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- A table that existed before this script keeps its old definition (CREATE TABLE IF NOT EXISTS skips it): put the status check in place too.
+-- A table that existed before this script may still carry the old status CHECK: drop it (the status is validated by the application).
 ALTER TABLE `warranty_claims` DROP CONSTRAINT IF EXISTS `chk_warranty_claims_status`;
-ALTER TABLE `warranty_claims` ADD CONSTRAINT `chk_warranty_claims_status` CHECK (status IN ('NEW', 'RECEIVED', 'REPAIRING', 'DONE', 'REJECTED'));
 
 CREATE INDEX IF NOT EXISTS `idx_warranty_claims_status` ON `warranty_claims` (status, created_at);
 CREATE INDEX IF NOT EXISTS `idx_warranty_claims_unit` ON `warranty_claims` (order_item_unit_id);

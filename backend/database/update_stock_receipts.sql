@@ -20,8 +20,7 @@ CREATE TABLE IF NOT EXISTS `stock_receipt_lines` (
     color_name VARCHAR(100) NULL,
     CONSTRAINT fk_stock_receipt_lines_receipt FOREIGN KEY (receipt_id) REFERENCES stock_receipts(id) ON DELETE CASCADE,
     CONSTRAINT fk_stock_receipt_lines_product FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
-    CONSTRAINT fk_stock_receipt_lines_variant FOREIGN KEY (variant_id) REFERENCES product_variants(id) ON DELETE CASCADE,
-    CONSTRAINT chk_stock_receipt_lines_quantity CHECK (quantity > 0)
+    CONSTRAINT fk_stock_receipt_lines_variant FOREIGN KEY (variant_id) REFERENCES product_variants(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 CREATE INDEX IF NOT EXISTS `idx_stock_receipt_lines_receipt` ON `stock_receipt_lines` (receipt_id);
 CREATE TABLE IF NOT EXISTS `stock_movements` (
@@ -41,9 +40,7 @@ CREATE TABLE IF NOT EXISTS `stock_movements` (
     CONSTRAINT fk_stock_movements_variant FOREIGN KEY (variant_id) REFERENCES product_variants(id) ON DELETE CASCADE,
     CONSTRAINT fk_stock_movements_order FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE SET NULL,
     CONSTRAINT fk_stock_movements_receipt FOREIGN KEY (receipt_id) REFERENCES stock_receipts(id) ON DELETE SET NULL,
-    CONSTRAINT fk_stock_movements_actor FOREIGN KEY (actor_user_id) REFERENCES users(id) ON DELETE SET NULL,
-    CONSTRAINT chk_stock_movements_reason CHECK (reason IN ('RECEIPT', 'SALE', 'CANCEL_RESTORE', 'ADJUSTMENT', 'OPENING')),
-    CONSTRAINT chk_stock_movements_change CHECK (quantity_change <> 0)
+    CONSTRAINT fk_stock_movements_actor FOREIGN KEY (actor_user_id) REFERENCES users(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 CREATE INDEX IF NOT EXISTS `idx_stock_movements_product` ON `stock_movements` (product_id, id);
 CREATE INDEX IF NOT EXISTS `idx_stock_movements_variant` ON `stock_movements` (variant_id, id);
