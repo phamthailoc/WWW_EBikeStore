@@ -5,7 +5,7 @@ window.KineticWarranty = (() => {
   const statusText = {NEW: 'Mới gửi', RECEIVED: 'Đã tiếp nhận', REPAIRING: 'Đang sửa', DONE: 'Đã hoàn tất', REJECTED: 'Bị từ chối'};
   const coverageText = {ACTIVE: 'Còn bảo hành', EXPIRED: 'Hết bảo hành', UNKNOWN: 'Chưa có thời hạn bảo hành', NOT_STARTED: 'Chưa bàn giao'};
   const day = iso => {
-    if (!iso) return '—';
+    if (!iso) return '-';
     const [y, m, d] = String(iso).slice(0, 10).split('-').map(Number);
     return new Date(y, m - 1, d).toLocaleDateString('vi-VN');
   };
@@ -89,7 +89,7 @@ window.KineticWarranty = (() => {
       return;
     }
     const head = ['Xe', 'Số khung', 'Mô tả sự cố', 'Trạng thái', 'Ghi chú của cửa hàng', 'Ngày gửi'].map(name => `<th>${name}</th>`).join('');
-    const body = rows.map(row => `<tr data-claim="${row.id}"><td>${esc(row.productName)}${row.colorName ? ' · ' + esc(row.colorName) : ''}</td><td>${esc(row.frameNumber)}</td><td>${esc(row.description)}</td><td data-field="claimStatus" data-status="${esc(row.status)}">${esc(statusText[row.status] || row.status)}${row.outOfWarranty ? ` <small>(${'ngoài bảo hành, có tính phí'})</small>` : ''}</td><td data-field="staffNote">${esc(row.staffNote || '—')}</td><td>${esc(day(row.createdAt))}</td></tr>`).join('');
+    const body = rows.map(row => `<tr data-claim="${row.id}"><td>${esc(row.productName)}${row.colorName ? ' · ' + esc(row.colorName) : ''}</td><td>${esc(row.frameNumber)}</td><td>${esc(row.description)}</td><td data-field="claimStatus" data-status="${esc(row.status)}">${esc(statusText[row.status] || row.status)}${row.outOfWarranty ? ` <small>(${'ngoài bảo hành, có tính phí'})</small>` : ''}</td><td data-field="staffNote">${esc(row.staffNote || '-')}</td><td>${esc(day(row.createdAt))}</td></tr>`).join('');
     panel.innerHTML = `<h2>${'Yêu cầu bảo hành đã gửi'}</h2><div class="table-scroll"><table><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>`;
   }
 
@@ -154,7 +154,7 @@ window.KineticWarranty = (() => {
   function renderLookup(target, finish) {
     finish();
     document.querySelector('#data-table')?.remove();
-    target.innerHTML = `<section class="support-section"><p class="eyebrow">KINETIC / ${'BẢO HÀNH'}</p><h2>${'Tra cứu bảo hành theo số khung'}</h2>
+    target.innerHTML = `<section class="support-section"><p class="eyebrow">Bảo hành</p><h2>${'Tra cứu bảo hành theo số khung'}</h2>
       <p class="muted">${'Nhập số khung in trên xe hoặc phiếu bảo hành. Kết quả chỉ gồm tên xe và hạn bảo hành, không có thông tin chủ xe.'}</p>
       <form class="support-form" id="warrantyLookupForm" novalidate>
         <label class="wide">${'Số khung'}<input name="frame" required maxlength="40" autocomplete="off" placeholder="RLHPC1234MK000001"></label>
@@ -174,7 +174,7 @@ window.KineticWarranty = (() => {
         const line = (name, value) => `<p><span>${name}</span><strong>${value}</strong></p>`;
         result.innerHTML = `<article class="commerce-card warranty-card" data-coverage="${esc(data.coverage)}"><h3 data-field="productName">${esc(data.productName)}${data.colorName ? ' · ' + esc(data.colorName) : ''}</h3>
           ${line('Số khung', `<span data-field="frameNumber">${esc(data.frameNumber)}</span>`)}
-          ${line('Thời hạn bảo hành', data.warrantyMonths ? (data.warrantyMonths === 1 ? '1 tháng' : `${data.warrantyMonths} tháng`) : '—')}
+          ${line('Thời hạn bảo hành', data.warrantyMonths ? (data.warrantyMonths === 1 ? '1 tháng' : `${data.warrantyMonths} tháng`) : '-')}
           ${line('Bắt đầu từ', `<span data-field="warrantyStartsAt">${esc(day(data.warrantyStartsAt))}</span>`)}
           ${line('Bảo hành đến', `<span data-field="warrantyEndsAt" data-iso="${esc(data.warrantyEndsAt || '')}">${esc(day(data.warrantyEndsAt))}</span>`)}
           ${line('Tình trạng', `<span data-field="coverage">${esc(coverageText[data.coverage] || data.coverage)}</span>`)}</article>`;

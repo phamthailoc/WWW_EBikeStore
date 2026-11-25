@@ -31,8 +31,8 @@ window.KineticSupport = (() => {
 
   function render(target, showrooms, faq) {
     target.innerHTML = `
-      <section class="support-section"><p class="eyebrow">${'KINETIC / CÂU HỎI THƯỜNG GẶP'}</p><h2>${'Câu hỏi thường gặp'}</h2>${faqHtml(faq)}</section>
-      <section class="support-section"><p class="eyebrow">${'KINETIC / LIÊN HỆ'}</p><h2>${'Gửi yêu cầu hỗ trợ'}</h2>
+      <section class="support-section"><p class="eyebrow">${'Câu hỏi thường gặp'}</p><h2>${'Câu hỏi thường gặp'}</h2>${faqHtml(faq)}</section>
+      <section class="support-section"><p class="eyebrow">${'Liên hệ'}</p><h2>${'Gửi yêu cầu hỗ trợ'}</h2>
         <p class="muted">${'Không tìm thấy câu trả lời? Gửi câu hỏi hoặc phản ánh, cửa hàng sẽ trả lời qua email.'}</p>
         <form class="support-form" id="supportForm" novalidate>
           <label>${'Họ và tên'} <b>*</b><input name="customerName" required maxlength="100" autocomplete="name"></label>
@@ -44,8 +44,8 @@ window.KineticSupport = (() => {
           <p class="wide"><button class="button compact" type="submit">${'Gửi yêu cầu'}</button></p>
         </form>
       </section>
-      <section class="support-section"><p class="eyebrow">KINETIC / SHOWROOM</p><h2>${'Cửa hàng của chúng tôi'}</h2>
-        ${showrooms.length ? `<div class="flow-cards">${showrooms.map(s => `<article class="flow-card"><p class="eyebrow">KINETIC / SHOWROOM</p><h3>${esc(s.name)}</h3><p>${esc(s.address || '')}${s.district ? ` · ${esc(s.district)}` : ''}</p><p>${esc(s.phone || '')}</p></article>`).join('')}</div>` : '<p class="empty">' + 'Chưa có cửa hàng nhận xe.' + '</p>'}
+      <section class="support-section"><p class="eyebrow">Showroom</p><h2>${'Cửa hàng của chúng tôi'}</h2>
+        ${showrooms.length ? `<div class="flow-cards">${showrooms.map(s => `<article class="flow-card"><p class="eyebrow">Showroom</p><h3>${esc(s.name)}</h3><p>${esc(s.address || '')}${s.district ? ` · ${esc(s.district)}` : ''}</p><p>${esc(s.phone || '')}</p></article>`).join('')}</div>` : '<p class="empty">' + 'Chưa có cửa hàng nhận xe.' + '</p>'}
       </section>`;
 
     const form = target.querySelector('#supportForm');

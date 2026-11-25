@@ -129,7 +129,7 @@
         await load();
       }
     } catch (failure) {
-      alert(failure.message);
+      const note = document.createElement('p'); note.className = 'review-error'; note.setAttribute('role', 'alert'); note.textContent = failure.message; formArea.prepend(note); setTimeout(() => note.remove(), 6000);
     }
   });
 
