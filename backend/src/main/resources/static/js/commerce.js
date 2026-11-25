@@ -11,6 +11,7 @@
   const normalizeSearch=value=>value.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').toLowerCase();
 
   async function renderCart(target,finish,tell){
+    await C.ready;
     let items=C.read();
     finish();
     if(!items.length){target.innerHTML=empty();return;}
@@ -51,7 +52,7 @@
   async function renderCheckout(target,finish,tell){
     const buyNow=new URLSearchParams(location.search).get('buyNow')==='1';
     let items;
-    try{items=buyNow?JSON.parse(sessionStorage.getItem('kinetic_buy_now')||'[]'):C.read();}catch{items=[];}
+    try{await C.ready;items=buyNow?JSON.parse(sessionStorage.getItem('kinetic_buy_now')||'[]'):C.read();}catch{items=[];}
     if(!Array.isArray(items)||!items.length){finish();target.innerHTML=empty();return;}
     target.innerHTML='<p class="loading">' + 'Đang chuẩn bị đơn hàng...' + '</p>';finish();
     const [refreshed,showrooms,provinces]=await Promise.all([C.refresh(items),request('/api/v1/showrooms'),request('/data/vietnam-provinces.json')]);
@@ -186,9 +187,9 @@
       submitting=true;submit.disabled=true;
       try{
         if(!await updateQuote())return;
-        const order=await request('/api/v1/orders',{customerName:form.elements.customerName.value.trim(),phoneNumber:form.elements.phoneNumber.value.trim(),customerEmail:form.elements.customerEmail.value.trim(),emailVerificationSessionId:verification?verification.id:null,deliveryMethod:form.elements.deliveryMethod.value,province:home?form.elements.province.value:null,pickupShowroomId:home?null:selectedStore,detailedAddress:home?form.elements.detailedAddress.value.trim():null,paymentMethod:form.elements.paymentMethod.value,discountCode:form.elements.discountCode.value.trim()||null,includeRegistrationService:form.elements.includeRegistrationService.checked,notes:form.elements.notes.value.trim(),items:items.map(i=>({productId:i.id,quantity:i.quantity,productVariantId:i.variantId||null})),installment:form.elements.paymentMethod.value==='INSTALLMENT'&&installment?installment.value():null});
+        const order=await request('/api/v1/orders',{customerName:form.elements.customerName.value.trim(),phoneNumber:form.elements.phoneNumber.value.trim(),customerEmail:form.elements.customerEmail.value.trim(),emailVerificationSessionId:verification?verification.id:null,deliveryMethod:form.elements.deliveryMethod.value,province:home?form.elements.province.value:null,pickupShowroomId:home?null:selectedStore,detailedAddress:home?form.elements.detailedAddress.value.trim():null,paymentMethod:form.elements.paymentMethod.value,discountCode:form.elements.discountCode.value.trim()||null,includeRegistrationService:form.elements.includeRegistrationService.checked,notes:form.elements.notes.value.trim(),items:items.map(i=>({productId:i.id,quantity:i.quantity,productVariantId:i.variantId||null})),installment:form.elements.paymentMethod.value==='INSTALLMENT'&&installment?installment.value():null},'POST',buyNow?undefined:{'X-Cart-Checkout':'1'});
         if(buyNow)sessionStorage.removeItem('kinetic_buy_now');
-        else C.write(C.read().flatMap(item=>{const purchased=items.find(i=>key(i)===key(item));return purchased?(item.quantity>purchased.quantity?[{...item,quantity:item.quantity-purchased.quantity}]:[]):[item];}));
+        else C.reload().catch(()=>{}); // the server has already taken the bought quantities out of the cart
         if(form.elements.paymentMethod.value==='VNPAY'){
           const pending={...order,checkoutPaymentMethod:'VNPAY'};
           localStorage.setItem('kinetic_last_order',JSON.stringify(pending));

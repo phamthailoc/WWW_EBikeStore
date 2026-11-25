@@ -4,7 +4,6 @@
   const get=async url=>{const r=await fetch(url,{credentials:'same-origin',headers:{Accept:'application/json'}});if(r.status===401){location.href='/login?returnTo='+encodeURIComponent(location.pathname);throw Error('Vui lòng đăng nhập để tiếp tục.')}if(!r.ok){const e=Error(await r.text());e.status=r.status;throw e}return r.status===204?null:r.json()};
   const post=async(url,data,method='POST')=>{const r=await fetch(url,{method,credentials:'same-origin',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify(data)});if(r.status===401){location.href='/login';throw Error('Vui lòng đăng nhập để tiếp tục.')}if(!r.ok)throw Error(await r.text());return r.status===204?null:r.json()};
   const tell=(s,error=false)=>{notice.textContent=s;notice.hidden=false;notice.classList.toggle('error',error)};
-  const cart=()=>{try{return JSON.parse(localStorage.getItem('kinetic_cart')||'[]')}catch{return[]}};
   const finish=()=>{document.querySelector('#loading').hidden=true};
   // V22: colours the customer asked to be told about when they are back in stock, listed under the favourites.
   // The server's error body is JSON ({"detail":...} or {"message":...}); show its text, not the raw body.

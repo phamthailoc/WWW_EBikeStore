@@ -27,6 +27,7 @@ public class ServerRateLimitFilter extends OncePerRequestFilter {
     private final AntPathMatcher pathMatcher = new AntPathMatcher();
     private final Map<String, TokenBucket> buckets = new ConcurrentHashMap<>();
     private final List<RateLimitRule> rules = List.of(
+        new RateLimitRule("cart-write", HttpMethod.PUT.name(), "/api/v1/cart", 120, Duration.ofMinutes(1)),
         new RateLimitRule("auth-login", HttpMethod.POST.name(), "/api/v1/auth/login", 5, Duration.ofMinutes(1)),
         new RateLimitRule("email-otp-send", HttpMethod.POST.name(), "/api/v1/orders/email-verification/send", 3, Duration.ofMinutes(5)),
         new RateLimitRule("chatbot-ask", HttpMethod.POST.name(), "/api/v1/chatbot/ask", 20, Duration.ofMinutes(1)),

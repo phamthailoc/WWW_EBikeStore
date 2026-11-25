@@ -75,9 +75,9 @@
   document.querySelector('#quantityMinus').onclick=()=>updateQuantity(item.quantity-1);
   document.querySelector('#quantityPlus').onclick=()=>updateQuantity(item.quantity+1);
   quantity.addEventListener('change',()=>updateQuantity(quantity.value));
-  document.querySelector('#addToCart').onclick=()=>{
+  document.querySelector('#addToCart').onclick=async()=>{
     updateQuantity(quantity.value);
-    try{cart.add(item); message(`${'Đã thêm'} ${item.quantity} xe ${item.name}${item.colorName ? ' · '+item.colorName : ''} ${'vào giỏ hàng.'}`);}catch(error){message(error.message,true);}
+    try{await cart.add(item); message(`${'Đã thêm'} ${item.quantity} xe ${item.name}${item.colorName ? ' · '+item.colorName : ''} ${'vào giỏ hàng.'}`);}catch(error){message(error.message,true);}
   };
   document.querySelector('#buyNow').onclick=()=>{
     updateQuantity(quantity.value);
