@@ -46,4 +46,14 @@ class CartControllerTest {
         assertEquals(400, assertThrows(ResponseStatusException.class, () -> controller.replace(put(""))).getStatusCode().value());
         assertEquals(400, assertThrows(ResponseStatusException.class, () -> controller.replace(put("null"))).getStatusCode().value());
     }
+
+    @Test void exactlyEightKilobytesIsAcceptedAndOneMoreByteIsNot() throws Exception {
+        String head = "[{\"id\":1,\"quantity\":1,\"slug\":\"";
+        String tail = "\"}]";
+        String exact = head + "x".repeat(8192 - head.length() - tail.length()) + tail;
+        assertEquals(8192, exact.getBytes(StandardCharsets.UTF_8).length);
+        controller.replace(put(exact));
+        var ex = assertThrows(ResponseStatusException.class, () -> controller.replace(put(exact + " ")));
+        assertEquals(413, ex.getStatusCode().value());
+    }
 }

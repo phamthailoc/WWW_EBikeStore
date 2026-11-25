@@ -91,6 +91,25 @@ class OrderItemQuantityTest {
         assertEquals(0, order.getTotalAmount().compareTo(payment.getAmount()));
     }
 
+    @Test void theCustomerWithAnAccountIsToldAboutTheChange() {
+        var publisher = org.mockito.Mockito.mock(org.springframework.context.ApplicationEventPublisher.class);
+        new com.ebike.listener.notification.NotificationEventBridge().setApplicationEventPublisher(publisher);
+        try {
+            com.ebike.model.entity.auth.User customer = new com.ebike.model.entity.auth.User();
+            customer.setId(7L);
+            order.setUser(customer);
+            service.updateItemQuantity(10L, 100L, 3, null);
+            verify(publisher).publishEvent(org.mockito.ArgumentMatchers.argThat((Object e) -> e instanceof com.ebike.event.notification.OrderItemQuantityChangedEvent ev
+                && ev.userId() == 7L && ev.quantityBefore() == 2 && ev.quantityAfter() == 3));
+            order.setUser(null);
+            org.mockito.Mockito.clearInvocations(publisher);
+            service.updateItemQuantity(10L, 100L, 2, null);
+            verify(publisher, never()).publishEvent(any(Object.class));
+        } finally {
+            new com.ebike.listener.notification.NotificationEventBridge().setApplicationEventPublisher(null);
+        }
+    }
+
     @Test void feesStayInWholeDong() {
         item.setQuantity(3);
         item.setLineTotal(new BigDecimal("30000000"));
