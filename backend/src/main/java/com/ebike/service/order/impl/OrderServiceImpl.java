@@ -529,12 +529,13 @@ public class OrderServiceImpl implements OrderService {
             backInStock = delta < 0 && StockAlertRules.isRestock(variantBefore, variant.getStockQuantity());
         }
         if (product != null) {
-            stockLedger.record(List.of(StockLedger.Entry.of(product, variant, -delta, StockMovementReason.ADJUSTMENT, null)),
+            stockLedger.record(List.of(StockLedger.Entry.of(product, variant, -delta, delta > 0 ? StockMovementReason.SALE : StockMovementReason.CANCEL_RESTORE, null)),
                 order.getId(), order.getOrderNumber(), null, getAuthenticatedUserOrNull(authentication));
         }
 
         // the fees that depend on the number of bikes keep the rate the order was placed at
         int registrableBefore = registrableBikes(order, null, 0);
+        boolean keepRegistrationFee = order.getRegistrationFee() != null && order.getRegistrationFee().signum() > 0 && registrableBefore == 0;
         BigDecimal registrationPerBike = order.getRegistrationFee() != null && order.getRegistrationFee().signum() > 0 && registrableBefore > 0
             ? order.getRegistrationFee().divide(BigDecimal.valueOf(registrableBefore), 2, RoundingMode.HALF_UP)
             : ZERO;
@@ -543,17 +544,23 @@ public class OrderServiceImpl implements OrderService {
             ? order.getShippingFee().divide(BigDecimal.valueOf(bikesBefore), 2, RoundingMode.HALF_UP)
             : ZERO;
 
+        BigDecimal subtotalBefore = defaultValue(order.getSubtotal());
         item.setQuantity(quantity);
         item.setLineTotal(item.getUnitPrice().multiply(BigDecimal.valueOf(quantity)));
         BigDecimal subtotal = order.getItems().stream().map(OrderItem::getLineTotal).reduce(ZERO, BigDecimal::add);
         order.setSubtotal(subtotal);
         int bikesAfter = order.getItems().stream().mapToInt(OrderItem::getQuantity).sum();
         order.setShippingFee(shippingPerBike.multiply(BigDecimal.valueOf(bikesAfter)));
-        if (Boolean.TRUE.equals(order.getIncludeRegistrationService())) {
+        if (Boolean.TRUE.equals(order.getIncludeRegistrationService()) && !keepRegistrationFee) {
             order.setRegistrationFee(registrationPerBike.multiply(BigDecimal.valueOf(registrableBikes(order, null, 0))));
         }
         if (order.getPromotion() != null) {
-            order.setDiscountAmount(calculatePromoDiscount(order.getPromotion(), subtotal));
+            // the terms the order was placed with: a percentage keeps its share of the subtotal, a fixed amount stays (never more than the subtotal)
+            BigDecimal given = defaultValue(order.getDiscountAmount());
+            BigDecimal discount = "PERCENTAGE".equals(order.getPromotion().getDiscountType()) && subtotalBefore.signum() > 0
+                ? given.multiply(subtotal).divide(subtotalBefore, 0, RoundingMode.HALF_UP)
+                : given;
+            order.setDiscountAmount(discount.min(subtotal));
         }
         order.setTotalAmount(calculateTotalAmount(subtotal, order.getShippingFee(), order.getDiscountAmount(), order.getRegistrationFee()));
         payment.setAmount(order.getTotalAmount());

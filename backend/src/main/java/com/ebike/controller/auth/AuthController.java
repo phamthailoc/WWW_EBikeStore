@@ -78,13 +78,22 @@ public class AuthController {
             httpServletRequest.getHeader("User-Agent")
         );
         attachAuthCookie(httpServletResponse, authResponse.token());
+        // a new session id after signing in; the cart of the visitor goes with the session
+        if (httpServletRequest.getSession(false) != null) {
+            httpServletRequest.changeSessionId();
+        }
         return ResponseEntity.ok(authResponse);
     }
 
     @PostMapping("/logout")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void logout(HttpServletResponse httpServletResponse) {
+    public void logout(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) {
         clearAuthCookie(httpServletResponse);
+        // the next person on a shared computer must not find this visitor's cart
+        jakarta.servlet.http.HttpSession session = httpServletRequest.getSession(false);
+        if (session != null) {
+            session.invalidate();
+        }
     }
 
     @GetMapping("/profile")
