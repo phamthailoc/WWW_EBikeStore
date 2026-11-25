@@ -1,5 +1,7 @@
 # Database files
 
+To start from nothing, `setup_ebike_database.sql` is the only file to run: it creates every table and the whole seed (bikes, showrooms, rules, the admin and manager accounts and the two Selenium accounts), with no CHECK constraints. The `update_*.sql` files are only for a database that already exists.
+
 The application currently uses MariaDB. The canonical import file is `setup_ebike_database.sql` in this folder. Import it into HeidiSQL to create and seed `ebike_db`.
 
 `setup_ebike_database.sql` is edited by hand and is the only definition of a fresh database. A schema or seed change goes in two places: this file, and a new `update_*.sql` (safe to run more than once) for databases that already exist. The reviewed electric catalog and image/color provenance are documented in `catalog/README.md`.

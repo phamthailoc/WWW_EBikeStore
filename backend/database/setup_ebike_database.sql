@@ -574,6 +574,11 @@ INSERT INTO users(username,email,password_hash,first_name,last_name,is_active,is
 ('manager.user','manager.user@example.com','$2a$10$tRiY3ac6Bnx5EHBkjP5ek.ofn3urim7dE36HV4uY3MpPWPficRNoy','Store','Manager',1,1,NOW()),
 ('admin.user','admin.user@example.com','$2a$10$jLEp29fpNpvnAQDGZppNJeZpILS2AQXQiJunqbwJhjI3cBpDaF5Ba','System','Admin',1,1,NOW());
 INSERT INTO user_roles(user_id,role_id) SELECT u.id,r.id FROM users u JOIN roles r ON r.name=IF(u.username='admin.user','ADMIN','MANAGER') WHERE u.username IN ('admin.user','manager.user');
+-- Accounts for the Selenium tests (passwords SeleniumManager@123 and SeleniumAdmin@123). Delete these two rows on a production database.
+INSERT INTO users(username,email,password_hash,first_name,last_name,is_active,is_verified,email_verified_at) VALUES
+('selenium.manager','selenium.manager@example.com','$2a$10$KRSDkvImc1VhXqvDK6iWl.HmRX7A0J6jVidmJPOuNgx2904wiDzlG','Selenium','manager',1,1,NOW()),
+('selenium.admin','selenium.admin@example.com','$2a$10$Fkr3vid9MITHFTwM2P7GDeX2GQv4desp4mAtko5c.WRRhwvMZ.AP2','Selenium','admin',1,1,NOW());
+INSERT INTO user_roles(user_id,role_id) SELECT u.id,r.id FROM users u JOIN roles r ON r.name=IF(u.username='selenium.admin','ADMIN','MANAGER') WHERE u.username IN ('selenium.admin','selenium.manager');
 INSERT INTO permissions(code,name,module_name,action_name,description) VALUES
 ('product:view','View products','PRODUCT','VIEW','View product catalog and details'),
 ('product:search','Search products','PRODUCT','SEARCH','Search and filter product catalog'),
