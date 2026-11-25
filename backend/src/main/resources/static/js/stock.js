@@ -77,7 +77,7 @@ window.KineticStock = (() => {
     RECEIPT: 'Nhập kho', SALE: 'Bán hàng', CANCEL_RESTORE: 'Hoàn kho do hủy đơn', ADJUSTMENT: 'Điều chỉnh', OPENING: 'Tồn đầu kỳ'
   };
   const localeTag = () => 'vi-VN';
-  const whenText = iso => { const d = new Date(iso); return isNaN(d) ? '—' : d.toLocaleString(localeTag()); };
+  const whenText = iso => { const d = new Date(iso); return isNaN(d) ? '-' : d.toLocaleString(localeTag()); };
 
   async function fetchJson(url) {
     const response = await fetch(url, {credentials: 'same-origin', headers: {Accept: 'application/json'}});
@@ -97,7 +97,7 @@ window.KineticStock = (() => {
       dialog.className = 'stock-dialog stock-history-dialog';
       dialog.innerHTML = `
         <h2>${'Lịch sử tồn kho'}</h2>
-        <p class="muted">${esc(product.name || '')} · ${'tồn hiện tại'} <strong data-stock>—</strong> ${'xe'}</p>
+        <p class="muted">${esc(product.name || '')} · ${'tồn hiện tại'} <strong data-stock>-</strong> ${'xe'}</p>
         <div class="dialog-error" data-error hidden></div>
         <div class="table-scroll"><table class="stock-table stock-balances" data-balances hidden><thead><tr><th>${'Màu'}</th><th>${'Tồn kho'}</th><th>${'Tổng các dòng sổ'}</th><th></th></tr></thead><tbody></tbody></table></div>
         <p class="muted" data-mismatch hidden>${'Một số màu có tồn kho khác tổng các dòng sổ: đã có thay đổi ngoài sổ (ví dụ sửa trực tiếp trong cơ sở dữ liệu hoặc nhập danh mục).'}</p>
@@ -130,12 +130,12 @@ window.KineticStock = (() => {
       };
       const rowHtml = line => `<tr>
         <td>${esc(whenText(line.createdAt))}</td>
-        <td>${line.colorName ? esc(line.colorName) : '—'}</td>
+        <td>${line.colorName ? esc(line.colorName) : '-'}</td>
         <td>${reasonCell(line)}</td>
         <td class="stock-change ${line.change > 0 ? 'pos' : 'neg'}">${line.change > 0 ? '+' : ''}${line.change}</td>
         <td>${line.balanceAfter}</td>
-        <td>${line.actorName ? esc(line.actorName) : '—'}</td>
-        <td>${line.note ? `<span class="clamped-text" title="${esc(line.note)}">${esc(line.note)}</span>` : '—'}</td></tr>`;
+        <td>${line.actorName ? esc(line.actorName) : '-'}</td>
+        <td>${line.note ? `<span class="clamped-text" title="${esc(line.note)}">${esc(line.note)}</span>` : '-'}</td></tr>`;
 
       async function load(reset) {
         const mine = ++seq;

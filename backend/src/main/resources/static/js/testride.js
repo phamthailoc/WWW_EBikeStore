@@ -184,7 +184,7 @@ window.KineticTestRide = (() => {
       select.disabled = false;
       loadSlots();
     } catch (err) {
-      form.elements.showroom.innerHTML = `<option value="">—</option>`;
+      form.elements.showroom.innerHTML = `<option value="">-</option>`;
       fail(err.message);
     }
   }

@@ -11,7 +11,7 @@ window.KineticInstallment = (() => {
   // email do, so a browser in another zone reads the same clock time as the email for the same deadline.
   const when = iso => {
     const d = new Date(iso);
-    if (isNaN(d)) return '—';
+    if (isNaN(d)) return '-';
     const format = {day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'};
     const match = /([+-])(\d{2}):?(\d{2})$/.exec(String(iso));
     const minutes = /Z$/.test(String(iso)) ? 0 : match ? (match[1] === '-' ? -1 : 1) * (Number(match[2]) * 60 + Number(match[3])) : null;

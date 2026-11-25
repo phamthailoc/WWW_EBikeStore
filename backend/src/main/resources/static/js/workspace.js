@@ -48,7 +48,7 @@
     if (key === 'description' && value === '' && page === '/manager/warranty') return '(đã xóa)';
     const when = warrantyDate(value,key);
     if (when) return when;
-    if (value == null) return '—';
+    if (value == null) return '-';
     // any other date-time the API sends (account created, audit log, price in effect, support request) reads as a date and a time, not as ISO text
     if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(value)) { const stamp = new Date(value); if (!isNaN(stamp)) return stamp.toLocaleString(localeTag()); }
     const dictionary = isRidePage && key === 'status' ? rideStatusText : isInstallPage && key === 'status' ? installStatusText : valueText[key];
@@ -195,7 +195,7 @@
     const list=Array.isArray(rows)?rows:[]; loading.hidden=true; empty.hidden=!!list.length; table.hidden=true;
     if(!list.length)return;
     const panel=document.querySelector('#data-panel'); panel.classList.add('favorite-panel');
-    panel.innerHTML=`<div class="favorite-grid">${list.map(p=>{const image=p.images?.[0]||'/images/hero-fallback.svg';return `<article class="favorite-card"><a href="/product/${encodeURIComponent(p.slug)}"><img src="${escape(image)}" alt="${escape(p.name)}"><p class="eyebrow">${escape(p.category?.name||'KINETIC SELECT')}</p><h2>${escape(p.name)}</h2><p class="favorite-price">${escape(new Intl.NumberFormat('vi-VN').format(p.discountPrice||p.price))} ₫</p></a><div class="product-action"><a class="button compact ghost" href="/product/${encodeURIComponent(p.slug)}">${'Xem chi tiết'}</a><button class="table-action" data-action="remove-favorite" data-id="${p.id}">${'Bỏ yêu thích'}</button></div></article>`}).join('')}</div>`;
+    panel.innerHTML=`<div class="favorite-grid">${list.map(p=>{const image=p.images?.[0]||'/images/hero-fallback.svg';return `<article class="favorite-card"><a href="/product/${encodeURIComponent(p.slug)}"><img src="${escape(image)}" alt="${escape(p.name)}"><p class="eyebrow">${escape(p.category?.name||'KINETIC')}</p><h2>${escape(p.name)}</h2><p class="favorite-price">${escape(new Intl.NumberFormat('vi-VN').format(p.discountPrice||p.price))} ₫</p></a><div class="product-action"><a class="button compact ghost" href="/product/${encodeURIComponent(p.slug)}">${'Xem chi tiết'}</a><button class="table-action" data-action="remove-favorite" data-id="${p.id}">${'Bỏ yêu thích'}</button></div></article>`}).join('')}</div>`;
   };
   const renderPromotions=rows=>{promotions=Array.isArray(rows)?rows:[];const panel=document.querySelector('#promo-panel');if(!panel)return;panel.hidden=false;const tbl=document.querySelector('#promo-table');if(!promotions.length){tbl.querySelector('tbody').innerHTML='<tr><td>' + 'Chưa có chương trình.' + '</td></tr>';return}const keys=Object.keys(promotions[0]);tbl.querySelector('thead').innerHTML=`<tr>${keys.map(k=>`<th>${escape(label(k))}</th>`).join('')}<th>${'Thao tác'}</th></tr>`;tbl.querySelector('tbody').innerHTML=promotions.map(p=>`<tr>${keys.map(k=>`<td>${escape(human(p[k],k))}</td>`).join('')}<td><button class="table-action" data-action="promotion" data-id="${p.id}">${'Sửa ưu đãi'}</button></td></tr>`).join('')};
   const renderMetrics=data=>{if(!data||typeof data!=='object')return;const entries=Object.entries(data).filter(([k,v])=>typeof v==='number'&&!/id$/i.test(k));metrics.innerHTML=entries.map(([k,v])=>`<article class="metric"><small>${escape(label(k))}</small><b>${escape(human(v,k))}</b></article>`).join('')};
@@ -203,7 +203,7 @@
   const renderRevenueChart=points=>{
     let panel=document.querySelector('#report-chart');
     if(!panel){panel=document.createElement('section');panel.id='report-chart';panel.className='data-panel report-chart';document.querySelector('#data-panel').before(panel)}
-    if(!points.length||points.every(p=>!Number(p.revenue))){panel.innerHTML='<p class="eyebrow">KINETIC / ' + 'DOANH THU' + '</p><h2>' + 'Biểu đồ doanh thu' + '</h2><p>' + 'Chưa có doanh thu trong khoảng thời gian này.' + '</p>';return}
+    if(!points.length||points.every(p=>!Number(p.revenue))){panel.innerHTML='<p class="eyebrow">Doanh thu</p><h2>' + 'Biểu đồ doanh thu' + '</h2><p>' + 'Chưa có doanh thu trong khoảng thời gian này.' + '</p>';return}
     const W=720,H=260,left=64,bottom=44,top=16,right=12,plotW=W-left-right,plotH=H-top-bottom;
     const max=Math.max(...points.map(p=>Number(p.revenue)||0));
     const step=Math.pow(10,Math.floor(Math.log10(max)));const niceMax=Math.ceil(max/step)*step;
@@ -214,10 +214,10 @@
       const every=Math.ceil(points.length/12);
       return `<g><rect x="${x}" y="${y}" width="${barW}" height="${Math.max(h,0)}" rx="3"><title>${escape(p.label)}: ${escape(human(v,'revenue'))} (${p.orderCount} ${'đơn)'}</title></rect>${i%every===0?`<text x="${x+barW/2}" y="${H-bottom+18}" text-anchor="middle">${escape(String(p.label).slice(0,10))}</text>`:''}</g>`}).join('');
     const total=points.reduce((sum,p)=>sum+(Number(p.revenue)||0),0);
-    panel.innerHTML=`<p class="eyebrow">KINETIC / ${'DOANH THU'}</p><h2>${'Biểu đồ doanh thu'}</h2><svg viewBox="0 0 ${W} ${H}" class="revenue-chart" role="img" aria-label="${'Biểu đồ cột doanh thu theo kỳ, tổng'} ${escape(human(total,'revenue'))}">${grid}${bars}</svg>`;
+    panel.innerHTML=`<p class="eyebrow">Doanh thu</p><h2>${'Biểu đồ doanh thu'}</h2><svg viewBox="0 0 ${W} ${H}" class="revenue-chart" role="img" aria-label="${'Biểu đồ cột doanh thu theo kỳ, tổng'} ${escape(human(total,'revenue'))}">${grid}${bars}</svg>`;
   };
   const reportList=rows=>rows.length?`<ol class="report-list">${rows.map(r=>`<li><span><b>${escape(r.productName||'Sản phẩm')}</b><small>${escape(human(r.quantitySold,'quantitySold'))} ${'xe đã bán'}</small></span><strong>${escape(human(r.revenue,'revenue'))}</strong></li>`).join('')}</ol>`:'<p class="empty">' + 'Chưa có dữ liệu trong kỳ này.' + '</p>';
-  const renderProfile=data=>{profile.hidden=false;const fields=['firstName','lastName','email','phone','phoneNumber'];profile.innerHTML=`<form id="profileForm"><p class="eyebrow">${'THÔNG TIN TÀI KHOẢN'}</p><div class="profile-grid">${fields.filter(f=>f in(data||{})).map(f=>`<label>${escape(label(f))}<input name="${f}" value="${escape(data[f]||'')}"></label>`).join('')}</div><p><button class="button compact">${'Lưu hồ sơ'}</button></p></form>`;profile.querySelector('form').addEventListener('submit',async e=>{e.preventDefault();try{await send('/api/v1/auth/profile','PUT',Object.fromEntries(new FormData(e.currentTarget)));tell('Hồ sơ đã được cập nhật.')}catch(err){tell(err.message,true)}})};
+  const renderProfile=data=>{profile.hidden=false;const fields=['firstName','lastName','email','phone','phoneNumber'];profile.innerHTML=`<form id="profileForm"><p class="eyebrow">${'Thông tin tài khoản'}</p><div class="profile-grid">${fields.filter(f=>f in(data||{})).map(f=>`<label>${escape(label(f))}<input name="${f}" value="${escape(data[f]||'')}"></label>`).join('')}</div><p><button class="button compact">${'Lưu hồ sơ'}</button></p></form>`;profile.querySelector('form').addEventListener('submit',async e=>{e.preventDefault();try{await send('/api/v1/auth/profile','PUT',Object.fromEntries(new FormData(e.currentTarget)));tell('Hồ sơ đã được cập nhật.')}catch(err){tell(err.message,true)}})};
   // ---- order detail page -------------------------------------------------------------
   // Mirrors OrderServiceImpl.STATUS_TRANSITIONS: the steps staff may take from each status.
   // After PROCESSING, store-pickup orders wait in READY_FOR_PICKUP; home deliveries go through SHIPPED.
@@ -235,7 +235,7 @@
   const stepText=(status,order)=>status==='DELIVERED'&&isPickup(order)?'Đã nhận':orderStatusText[status];
   const shipmentStatusText={PENDING:'Chưa chuẩn bị',PREPARING:'Đang chuẩn bị',SHIPPED:'Đã bàn giao vận chuyển',IN_TRANSIT:'Đang vận chuyển',DELIVERED:'Đã giao',RETURNED:'Hoàn trả'};
   const money=value=>new Intl.NumberFormat('vi-VN').format(value??0)+' ₫';
-  const when=value=>value?new Date(value).toLocaleString('vi-VN'):'—';
+  const when=value=>value?new Date(value).toLocaleString('vi-VN'):'-';
   const detailPanel=(id,html)=>{
     let panel=document.querySelector('#'+id);
     if(!panel){panel=document.createElement('section');panel.id=id;panel.className='data-panel';panel.style.marginTop='20px';document.querySelector('.work-main').appendChild(panel);}
@@ -259,7 +259,7 @@
     const items=order.items||[];
     if(!items.length){removePanel('orderItems');return}
     const unitsOf=item=>(item.units||[]).map(u=>`<small class="unit-numbers">${'Số khung'} ${escape(u.frameNumber)} ${'· Số máy'} ${escape(u.engineNumber)}</small>`).join('');
-    const rows=items.map(item=>`<tr><td>${escape(item.productName||'—')}${unitsOf(item)}</td><td>${escape(item.colorName||'—')}</td><td>${escape(item.quantity??0)}</td><td>${escape(money(item.unitPrice))}</td><td>${escape(money(item.lineTotal))}</td></tr>`).join('');
+    const rows=items.map(item=>`<tr><td>${escape(item.productName||'-')}${unitsOf(item)}</td><td>${escape(item.colorName||'-')}</td><td>${escape(item.quantity??0)}</td><td>${escape(money(item.unitPrice))}</td><td>${escape(money(item.lineTotal))}</td></tr>`).join('');
     detailPanel('orderItems',`<h2>${'Xe trong đơn hàng'}</h2><div class="table-scroll"><table><thead><tr><th>${'Xe'}</th><th>${'Màu'}</th><th>${'Số lượng'}</th><th>${'Đơn giá'}</th><th>${'Thành tiền'}</th></tr></thead><tbody>${rows}</tbody></table></div>`);
   };
   const renderPricing=order=>{
@@ -269,7 +269,7 @@
     if(Number(order.shippingFee)>0)lines.push(line('Phí giao hàng',money(order.shippingFee)));
     if(Number(order.discountAmount)>0)lines.push(line('Giảm giá','−'+money(order.discountAmount)));
     lines.push(line('<strong>' + 'Tổng cộng' + '</strong>',money(order.totalAmount)));
-    const payment=`${valueText.paymentMethod[order.paymentMethod]||order.paymentMethod||'—'} · ${downPaymentPaid(order.paymentMethod,order.paymentStatus)||order.paymentStatus||'Chưa có giao dịch'}`;
+    const payment=`${valueText.paymentMethod[order.paymentMethod]||order.paymentMethod||'-'} · ${downPaymentPaid(order.paymentMethod,order.paymentStatus)||order.paymentStatus||'Chưa có giao dịch'}`;
     detailPanel('orderPricing',`<h2>${'Giá và thanh toán'}</h2><div class="table-scroll"><table><tbody>${lines.join('')}</tbody></table></div><p><strong>${'Thanh toán:'}</strong> ${escape(payment)}</p>${order.notes?`<p><strong>${'Ghi chú:'}</strong> ${escape(order.notes)}</p>`:''}`);
   };
   // Order timeline (Task 3). Only three moments are stored: the order date, when it was handed to delivery
@@ -296,7 +296,7 @@
   };
   const renderDelivery=shipment=>{
     if(!shipment){removePanel('shipmentDetails');return}
-    const status=shipmentStatusText[shipment.shipmentStatus]||shipment.shipmentStatus||'—';
+    const status=shipmentStatusText[shipment.shipmentStatus]||shipment.shipmentStatus||'-';
     detailPanel('shipmentDetails',`<h2>${'Thông tin nhận hàng'}</h2><p><strong>${'Hình thức:'}</strong> ${shipment.pickupShowroom?'Nhận tại cửa hàng':'Giao hàng tại nhà'}</p><p><strong>${'Người nhận:'}</strong> ${escape(shipment.recipientName)} · ${escape(shipment.phoneNumber)}</p><p><strong>${'Địa chỉ:'}</strong> ${escape(shipment.shippingAddress)}</p><p><strong>${'Giao nhận:'}</strong> ${escape(status)}${shipment.trackingNumber?` ${'· Mã vận đơn'} ${escape(shipment.trackingNumber)}`:''}</p>${shipment.shippedAt?`<p><strong>${'Bàn giao vận chuyển:'}</strong> ${escape(when(shipment.shippedAt))}</p>`:''}${shipment.deliveredAt?`<p><strong>${'Đã giao lúc:'}</strong> ${escape(when(shipment.deliveredAt))}</p>`:''}`);
   };
   // Manager controls: only the valid next order statuses, and the shipment form (UC-16).
@@ -450,7 +450,7 @@
   };
   // Typing in a search box starts several requests; only the newest one may draw, or a slow earlier answer would replace it.
   let loadSeq=0;
-  const load=async()=>{if(!api){loading.hidden=true;empty.hidden=true;return}const seq=++loadSeq;loading.hidden=false;empty.hidden=true;try{const data=await get(withFilters(api));if(seq!==loadSeq)return;if(page==='/customer/orders')instalmentOf=await get('/api/v1/installments/mine').then(list=>Object.fromEntries((list||[]).map(a=>[a.orderId,a])),()=>({}));if(secondaryApi)renderPromotions(await get(secondaryApi));if(mode==='dashboard'){renderMetrics(data);if(page==='/manager/reports'){document.querySelector('#panel-title').textContent='Doanh thu theo kỳ';renderTable(data?.breakdown||[]);renderRevenueChart(data?.breakdown||[]);let extra=document.querySelector('#report-products');if(!extra){extra=document.createElement('section');extra.id='report-products';extra.className='data-panel report-products';document.querySelector('.work-main').appendChild(extra)}extra.innerHTML=`<div class="report-columns"><div><p class="eyebrow">${'KINETIC / SẢN PHẨM'}</p><h2>${'Sản phẩm bán chạy'}</h2>${reportList(data?.topProducts||[])}</div><div><p class="eyebrow">${'KINETIC / TỒN KHO'}</p><h2>${'Sản phẩm bán chậm'}</h2>${reportList(data?.slowProducts||[])}</div></div>`;return}const rows=page==='/admin'?(data?.auditLogs||[]):page==='/manager'?(data?.recentOrders||[]):data;document.querySelector('#panel-title').textContent=page==='/admin'?'Nhật ký hoạt động gần đây':'Đơn hàng gần đây';renderTable(Array.isArray(rows)?rows:[])}else if(mode==='profile'){loading.hidden=true;renderProfile(data||{});renderTable([])}else if(mode==='detail'){document.querySelector('#panel-title').textContent='Thông tin đơn hàng';renderTable([data]);renderTimeline(data);renderOrderItems(data);renderPricing(data);renderDelivery(data.shipment);renderManagerControls(data);renderUnitsForm(data);renderPickupDeadline(data);renderCancellation(data);renderDocuments(data)}else if(page==='/favorites'){document.querySelector('#panel-title').textContent='Xe bạn đã lưu';renderFavorites(data)}else{document.querySelector('#panel-title').textContent=mode==='inventory'?'Danh mục xe và tồn kho':mode==='pricing'?'Quy tắc giá hiện hành':'Danh sách';
+  const load=async()=>{if(!api){loading.hidden=true;empty.hidden=true;return}const seq=++loadSeq;loading.hidden=false;empty.hidden=true;try{const data=await get(withFilters(api));if(seq!==loadSeq)return;if(page==='/customer/orders')instalmentOf=await get('/api/v1/installments/mine').then(list=>Object.fromEntries((list||[]).map(a=>[a.orderId,a])),()=>({}));if(secondaryApi)renderPromotions(await get(secondaryApi));if(mode==='dashboard'){renderMetrics(data);if(page==='/manager/reports'){document.querySelector('#panel-title').textContent='Doanh thu theo kỳ';renderTable(data?.breakdown||[]);renderRevenueChart(data?.breakdown||[]);let extra=document.querySelector('#report-products');if(!extra){extra=document.createElement('section');extra.id='report-products';extra.className='data-panel report-products';document.querySelector('.work-main').appendChild(extra)}extra.innerHTML=`<div class="report-columns"><div><p class="eyebrow">${'Sản phẩm'}</p><h2>${'Sản phẩm bán chạy'}</h2>${reportList(data?.topProducts||[])}</div><div><p class="eyebrow">${'Tồn kho'}</p><h2>${'Sản phẩm bán chậm'}</h2>${reportList(data?.slowProducts||[])}</div></div>`;return}const rows=page==='/admin'?(data?.auditLogs||[]):page==='/manager'?(data?.recentOrders||[]):data;document.querySelector('#panel-title').textContent=page==='/admin'?'Nhật ký hoạt động gần đây':'Đơn hàng gần đây';renderTable(Array.isArray(rows)?rows:[])}else if(mode==='profile'){loading.hidden=true;renderProfile(data||{});renderTable([])}else if(mode==='detail'){document.querySelector('#panel-title').textContent='Thông tin đơn hàng';renderTable([data]);renderTimeline(data);renderOrderItems(data);renderPricing(data);renderDelivery(data.shipment);renderManagerControls(data);renderUnitsForm(data);renderPickupDeadline(data);renderCancellation(data);renderDocuments(data)}else if(page==='/favorites'){document.querySelector('#panel-title').textContent='Xe bạn đã lưu';renderFavorites(data)}else{document.querySelector('#panel-title').textContent=mode==='inventory'?'Danh mục xe và tồn kho':mode==='pricing'?'Quy tắc giá hiện hành':'Danh sách';
 // the last row of the last page was just moved on: step back one page instead of showing an empty table
 const pageNow=Number(filterQuery.get('page')||0);
 if(page==='/manager/warranty'&&Array.isArray(data)&&!data.length&&pageNow>0){if(pageNow>1)filterQuery.set('page',String(pageNow-1));else filterQuery.delete('page');return load()}

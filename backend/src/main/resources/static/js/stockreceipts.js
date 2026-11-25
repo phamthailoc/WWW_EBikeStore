@@ -10,7 +10,7 @@
   const $ = selector => document.querySelector(selector);
   const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
   const localeTag = () => 'vi-VN';
-  const whenText = iso => { const d = new Date(iso); return isNaN(d) ? '—' : d.toLocaleString(localeTag()); };
+  const whenText = iso => { const d = new Date(iso); return isNaN(d) ? '-' : d.toLocaleString(localeTag()); };
 
   const notice = $('#notice');
   const loading = $('#loading');
@@ -88,7 +88,7 @@
       <td data-field="supplierName">${esc(row.supplierName)}</td>
       <td data-field="lineCount">${row.lineCount}</td>
       <td data-field="totalQuantity">${row.totalQuantity}</td>
-      <td data-field="createdByName">${row.createdByName ? esc(row.createdByName) : '—'}</td>
+      <td data-field="createdByName">${row.createdByName ? esc(row.createdByName) : '-'}</td>
       <td data-field="createdAt">${esc(whenText(row.createdAt))}</td>
       <td><div class="product-action"><button type="button" class="table-action" data-receipt="${row.id}">${'Chi tiết'}</button></div></td></tr>`).join('');
   }
@@ -128,7 +128,7 @@
       <p class="muted">${esc(row.supplierName)} · ${esc(whenText(row.createdAt))}${row.createdByName ? ' · ' + esc(row.createdByName) : ''}</p>
       ${row.note ? `<p class="receipt-note">${esc(row.note)}</p>` : ''}
       <div class="table-scroll"><table class="stock-table"><thead><tr><th>${'Xe'}</th><th>${'Màu'}</th><th>${'Số lượng'}</th></tr></thead><tbody>
-        ${row.lines.map(line => `<tr><td>${esc(line.productName)}</td><td>${line.colorName ? esc(line.colorName) : '—'}</td><td>${line.quantity}</td></tr>`).join('')}
+        ${row.lines.map(line => `<tr><td>${esc(line.productName)}</td><td>${line.colorName ? esc(line.colorName) : '-'}</td><td>${line.quantity}</td></tr>`).join('')}
         <tr class="receipt-total"><td colspan="2"><strong>${'Tổng'}</strong></td><td><strong>${row.totalQuantity}</strong></td></tr>
       </tbody></table></div>
       <p class="muted">${'Phiếu đã lưu không sửa được. Nếu nhập nhầm, hãy chỉnh tồn kho ở trang Kho hàng và ghi rõ lý do.'}</p>
@@ -180,7 +180,7 @@
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td data-label="${'Xe'}"><select data-product aria-label="${'Xe'}"><option value="">${'Chọn xe…'}</option>${products.map(p => `<option value="${p.id}">${esc(productText(p))}</option>`).join('')}</select></td>
-        <td data-label="${'Màu'}"><select data-colour aria-label="${'Màu'}" disabled><option value="">—</option></select></td>
+        <td data-label="${'Màu'}"><select data-colour aria-label="${'Màu'}" disabled><option value="">-</option></select></td>
         <td data-label="${'Số lượng'}"><input type="number" data-qty min="1" max="${MAX_QUANTITY}" step="1" inputmode="numeric" aria-label="${'Số lượng'}"></td>
         <td><button type="button" class="table-action" data-remove aria-label="${'Xóa dòng'}">✕</button></td>`;
       tbody.appendChild(tr);
@@ -192,7 +192,7 @@
     function fillColours(tr) {
       const product = products.find(p => String(p.id) === tr.querySelector('[data-product]').value);
       const select = tr.querySelector('[data-colour]');
-      if (!product) { select.innerHTML = '<option value="">—</option>'; select.disabled = true; return; }
+      if (!product) { select.innerHTML = '<option value="">-</option>'; select.disabled = true; return; }
       if (!product.hasActiveColours) {
         select.innerHTML = `<option value="">${'Không chia màu'}</option>`;
         select.disabled = true;

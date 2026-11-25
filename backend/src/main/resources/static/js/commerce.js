@@ -161,7 +161,7 @@
         form.querySelector('#registrationBlock').hidden=!q.registrationRequired;
         form.querySelector('.registration-option').hidden=!q.registrationServiceAvailable;
         if(!q.registrationServiceAvailable)form.elements.includeRegistrationService.checked=false;
-        const stateFee=`${'Lệ phí trước bạ và lệ phí cấp biển số là tiền nộp Nhà nước do chủ xe chịu, không tính vào đơn này (lệ phí trước bạ ước tính'} ${money(q.registrationTaxLow)} – ${money(q.registrationTaxHigh)} ${'cho xe trong đơn).'}`;
+        const stateFee=`${'Lệ phí trước bạ và lệ phí cấp biển số là tiền nộp Nhà nước do chủ xe chịu, không tính vào đơn này (lệ phí trước bạ ước tính'} ${money(q.registrationTaxLow)} - ${money(q.registrationTaxHigh)} ${'cho xe trong đơn).'}`;
         const selfService='' + 'chủ xe tự đăng ký trên VNeID (tài khoản định danh mức 2) với hóa đơn và phiếu kiểm tra chất lượng xuất xưởng cửa hàng giao kèm xe.' + ' ';
         const how=form.elements.includeRegistrationService.checked
           ?'' + 'Khi bạn đến nhận xe, nhân viên hỗ trợ đăng ký biển số. Chủ xe cần có mặt và có tài khoản VNeID mức 2 để tự kê khai. Khoản cộng thêm ở trên là phí dịch vụ của cửa hàng.' + ' '

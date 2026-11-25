@@ -37,7 +37,7 @@
 
   host.innerHTML = `
     <section class="data-panel profile-extra" id="passwordPanel">
-      <p class="eyebrow">${'BẢO MẬT'}</p><h2>${'Đổi mật khẩu'}</h2>
+      <p class="eyebrow">${'Bảo mật'}</p><h2>${'Đổi mật khẩu'}</h2>
       <form id="passwordForm" class="profile-grid" autocomplete="off">
         <label>${'Mật khẩu hiện tại'}<input type="password" name="currentPassword" autocomplete="current-password" required></label>
         <label>${'Mật khẩu mới (ít nhất 6 ký tự)'}<input type="password" name="newPassword" autocomplete="new-password" minlength="6" required></label>
@@ -46,7 +46,7 @@
       </form>
     </section>
     <section class="data-panel profile-extra" id="addressPanel">
-      <p class="eyebrow">${'GIAO HÀNG'}</p><h2>${'Sổ địa chỉ'}</h2>
+      <p class="eyebrow">${'Giao hàng'}</p><h2>${'Sổ địa chỉ'}</h2>
       <p class="muted">${'Địa chỉ đã lưu được điền sẵn khi bạn chọn giao xe tận nhà. Lưu tối đa 10 địa chỉ.'}</p>
       <ul id="addressList" class="address-list"></ul>
       <form id="addressForm" class="profile-grid">
@@ -59,7 +59,7 @@
       </form>
     </section>
     <section class="data-panel profile-extra" id="preferencePanel">
-      <p class="eyebrow">${'TÙY CHỌN'}</p><h2>${'Giao diện và thông báo'}</h2>
+      <p class="eyebrow">${'Tùy chọn'}</p><h2>${'Giao diện và thông báo'}</h2>
       <label>${'Giao diện'}<select id="themeChoice"><option value="system">${'Theo thiết bị'}</option><option value="light">${'Sáng'}</option><option value="dark">${'Tối'}</option></select></label>
       <label class="inline-check"><input type="checkbox" id="notificationsEnabled"> ${'Nhận thông báo về đơn hàng và thanh toán'}</label>
     </section>`;
@@ -68,7 +68,7 @@
   if (document.body.dataset.role === 'customer') {
     host.insertAdjacentHTML('beforeend', `
     <section class="data-panel profile-extra" id="deletePanel">
-      <p class="eyebrow">${'TÀI KHOẢN'}</p><h2>${'Xóa tài khoản'}</h2>
+      <p class="eyebrow">${'Tài khoản'}</p><h2>${'Xóa tài khoản'}</h2>
       <p class="muted">${'Họ tên, địa chỉ đã lưu, yêu thích, thông báo và đánh giá của bạn sẽ bị xóa; bạn không đăng nhập lại được và'} <b>${'không khôi phục được'}</b>${'. Đơn hàng đã đặt vẫn được cửa hàng lưu theo quy định kế toán. Không xóa được khi còn đơn chưa hoàn tất.'}</p>
       <form id="deleteForm" class="profile-grid" autocomplete="off">
         <label>${'Mật khẩu hiện tại'}<input type="password" name="password" autocomplete="current-password" required></label>
