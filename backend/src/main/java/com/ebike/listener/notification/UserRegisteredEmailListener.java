@@ -25,6 +25,9 @@ public class UserRegisteredEmailListener {
     @Async(AsyncConfiguration.MAIL_EXECUTOR)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void onUserRegistered(UserRegisteredEvent event) {
+        if (!emailSender.canSend()) {
+            return; // mail is off or there is no SMTP host (the default local setup): no query for nothing
+        }
         userRepository.findById(event.userId()).ifPresent(this::send);
     }
 

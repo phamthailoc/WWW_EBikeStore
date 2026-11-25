@@ -21,6 +21,7 @@ public class OrderPlacedEmailListener {
     @Async(AsyncConfiguration.MAIL_EXECUTOR)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void onOrderPlaced(OrderPlacedEvent event) {
-        emailService.send(event.orderId());
+        // the order is read inside a short read-only transaction; the SMTP call happens after it, so no pooled connection waits on the mail server
+        emailService.compose(event.orderId()).ifPresent(emailService::deliver);
     }
 }

@@ -8,6 +8,7 @@ import com.ebike.repository.order.OrderRepository;
 import java.math.BigDecimal;
 import java.text.NumberFormat;
 import java.util.Locale;
+import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -49,31 +50,37 @@ public class OrderPlacedEmailService {
         this.publicBaseUrl = publicBaseUrl;
     }
 
+    /** Reads the order in a short read-only transaction and builds the message; empty when mail is off or the order has no address. */
     @Transactional(readOnly = true)
-    public boolean send(Long orderId) {
+    public Optional<SimpleMailMessage> compose(Long orderId) {
         if (!mailEnabled || smtpHost == null || smtpHost.isBlank()) {
             log.debug("Order confirmation of order id {} skipped: mail is off or there is no SMTP host", orderId);
-            return false;
+            return Optional.empty();
         }
         Order order = orders.findById(orderId).orElse(null);
         if (order == null) {
-            return false;
+            return Optional.empty();
         }
         String to = recipient(order);
         if (to == null) {
             log.debug("Order confirmation of {} skipped: the order has no email address", order.getOrderNumber());
-            return false;
+            return Optional.empty();
         }
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom(fromAddress);
         message.setTo(to);
         message.setSubject("KINETIC đã nhận đơn hàng " + order.getOrderNumber());
         message.setText(body(order, order.getUser() == null ? null : orderUrl(publicBaseUrl, order.getId())));
+        return Optional.of(message);
+    }
+
+    /** Hands the message to the SMTP server, outside any transaction; a refusal is logged and never touches the order. */
+    public boolean deliver(SimpleMailMessage message) {
         try {
             mailSender.send(message);
             return true;
         } catch (MailException exception) {
-            log.warn("Could not send the confirmation of order {}: {}", order.getOrderNumber(), exception.getMessage());
+            log.warn("Could not send an order confirmation email: {}", exception.getMessage());
             return false;
         }
     }
@@ -94,7 +101,9 @@ public class OrderPlacedEmailService {
         StringBuilder text = new StringBuilder();
         String name = shipment != null && notBlank(shipment.getRecipientName()) ? shipment.getRecipientName().trim() : null;
         text.append("Xin chào").append(name == null ? "" : " " + name).append(",\n\n");
-        text.append("Cảm ơn bạn đã đặt xe tại KINETIC. Đơn hàng ").append(order.getOrderNumber()).append(" đang chờ xác nhận.\n\n");
+        boolean vnpay = order.getPayment() != null && order.getPayment().getPaymentMethod() == PaymentMethod.VNPAY;
+        text.append("Cảm ơn bạn đã đặt xe tại KINETIC. Đơn hàng ").append(order.getOrderNumber())
+            .append(vnpay ? " đã được ghi nhận và đang chờ thanh toán.\n\n" : " đang chờ xác nhận.\n\n");
         for (OrderItem item : order.getItems()) {
             text.append("- ").append(item.getProductName()).append(" x ").append(item.getQuantity()).append(": ").append(money(item.getLineTotal())).append('\n');
         }
@@ -122,7 +131,11 @@ public class OrderPlacedEmailService {
         if (orderUrl != null) {
             text.append("\nTheo dõi đơn hàng: ").append(orderUrl).append('\n');
         }
-        text.append("\nChúng tôi sẽ liên hệ khi đơn hàng được xác nhận.\n");
+        if (vnpay) {
+            text.append("\nVui lòng hoàn tất thanh toán qua VNPay trong thời gian quy định; đơn chưa thanh toán sẽ tự hủy.\n");
+        } else {
+            text.append("\nChúng tôi sẽ liên hệ khi đơn hàng được xác nhận.\n");
+        }
         return text.toString();
     }
 
