@@ -469,7 +469,7 @@ public class OrderServiceImpl implements OrderService {
     /**
      * Staff change the quantity of one line while the order is still waiting for confirmation and is paid on hand-over (an online or instalment
      * order has a payment or a plan that this would put out of step). The unit price stays as it was when the order was placed; stock, the ledger, the
-     * subtotal, the delivery and registration fees (in proportion to the number of bikes), the discount and the payment amount follow.
+     * subtotal, the delivery and registration fees (rate per bike times the count), the discount and the payment amount follow.
      */
     @Override
     @Transactional
@@ -533,7 +533,9 @@ public class OrderServiceImpl implements OrderService {
                 order.getId(), order.getOrderNumber(), null, getAuthenticatedUserOrNull(authentication));
         }
 
-        // The fees that depend on the number of bikes follow the count in proportion, in whole dong (no fractions of a dong).
+        // The fees that depend on the number of bikes are the rate per bike times the count, worked out again at every edit:
+        // the rate is the fee divided by the bikes it was charged for (a whole dong already, or rounded to a whole dong when it does not divide evenly),
+        // so editing back and forth never drifts.
         BigDecimal shippingBefore = defaultValue(order.getShippingFee());
         BigDecimal registrationBefore = defaultValue(order.getRegistrationFee());
         int registrableBefore = registrableBikes(order, null, 0);
@@ -546,12 +548,13 @@ public class OrderServiceImpl implements OrderService {
         order.setSubtotal(subtotal);
         int bikesAfter = order.getItems().stream().mapToInt(OrderItem::getQuantity).sum();
         if (shippingBefore.signum() > 0 && bikesBefore > 0) {
-            order.setShippingFee(shippingBefore.multiply(BigDecimal.valueOf(bikesAfter)).divide(BigDecimal.valueOf(bikesBefore), 0, RoundingMode.HALF_UP));
+            BigDecimal perBike = shippingBefore.divide(BigDecimal.valueOf(bikesBefore), 0, RoundingMode.HALF_UP);
+            order.setShippingFee(perBike.multiply(BigDecimal.valueOf(bikesAfter)));
         }
         // when today's specification no longer asks for a plate (registrableBefore == 0) the fee that was charged stays as it is
         if (Boolean.TRUE.equals(order.getIncludeRegistrationService()) && registrationBefore.signum() > 0 && registrableBefore > 0) {
-            order.setRegistrationFee(registrationBefore.multiply(BigDecimal.valueOf(registrableBikes(order, null, 0)))
-                .divide(BigDecimal.valueOf(registrableBefore), 0, RoundingMode.HALF_UP));
+            BigDecimal perBike = registrationBefore.divide(BigDecimal.valueOf(registrableBefore), 0, RoundingMode.HALF_UP);
+            order.setRegistrationFee(perBike.multiply(BigDecimal.valueOf(registrableBikes(order, null, 0))));
         }
         if (defaultValue(order.getDiscountAmount()).signum() > 0) {
             // the terms the order was placed with: a percentage keeps its share of the subtotal (and stays under the promotion's cap),
