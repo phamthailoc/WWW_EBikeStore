@@ -116,12 +116,12 @@ class OrderItemQuantityTest {
         order.setSubtotal(new BigDecimal("30000000"));
         order.setShippingFee(new BigDecimal("1000000"));
         service.updateItemQuantity(10L, 100L, 2, null);
-        assertEquals(0, new BigDecimal("666666").compareTo(order.getShippingFee()));
-        // the rate (333,333) is rounded once; going back and forth never drifts after that
+        assertEquals(0, new BigDecimal("666668").compareTo(order.getShippingFee()));
+        // the rate (333,334, rounded up) is fixed once; going back and forth never drifts after that
         service.updateItemQuantity(10L, 100L, 3, null);
-        assertEquals(0, new BigDecimal("999999").compareTo(order.getShippingFee()));
+        assertEquals(0, new BigDecimal("1000002").compareTo(order.getShippingFee()));
         service.updateItemQuantity(10L, 100L, 2, null);
-        assertEquals(0, new BigDecimal("666666").compareTo(order.getShippingFee()));
+        assertEquals(0, new BigDecimal("666668").compareTo(order.getShippingFee()));
     }
 
     @Test void loweringTheQuantityGivesStockBack() {

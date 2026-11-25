@@ -534,7 +534,7 @@ public class OrderServiceImpl implements OrderService {
         }
 
         // The fees that depend on the number of bikes are the rate per bike times the count, worked out again at every edit:
-        // the rate is the fee divided by the bikes it was charged for (a whole dong already, or rounded to a whole dong when it does not divide evenly),
+        // the rate is the fee divided by the bikes it was charged for (a whole dong already, or rounded UP to the next whole dong when it does not divide evenly),
         // so editing back and forth never drifts.
         BigDecimal shippingBefore = defaultValue(order.getShippingFee());
         BigDecimal registrationBefore = defaultValue(order.getRegistrationFee());
@@ -548,12 +548,12 @@ public class OrderServiceImpl implements OrderService {
         order.setSubtotal(subtotal);
         int bikesAfter = order.getItems().stream().mapToInt(OrderItem::getQuantity).sum();
         if (shippingBefore.signum() > 0 && bikesBefore > 0) {
-            BigDecimal perBike = shippingBefore.divide(BigDecimal.valueOf(bikesBefore), 0, RoundingMode.HALF_UP);
+            BigDecimal perBike = shippingBefore.divide(BigDecimal.valueOf(bikesBefore), 0, RoundingMode.UP);
             order.setShippingFee(perBike.multiply(BigDecimal.valueOf(bikesAfter)));
         }
         // when today's specification no longer asks for a plate (registrableBefore == 0) the fee that was charged stays as it is
         if (Boolean.TRUE.equals(order.getIncludeRegistrationService()) && registrationBefore.signum() > 0 && registrableBefore > 0) {
-            BigDecimal perBike = registrationBefore.divide(BigDecimal.valueOf(registrableBefore), 0, RoundingMode.HALF_UP);
+            BigDecimal perBike = registrationBefore.divide(BigDecimal.valueOf(registrableBefore), 0, RoundingMode.UP);
             order.setRegistrationFee(perBike.multiply(BigDecimal.valueOf(registrableBikes(order, null, 0))));
         }
         if (defaultValue(order.getDiscountAmount()).signum() > 0) {
