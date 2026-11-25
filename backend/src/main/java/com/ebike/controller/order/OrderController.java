@@ -41,9 +41,10 @@ public class OrderController {
         @RequestParam(required = false) String status,
         @RequestParam(required = false) String paymentStatus,
         @RequestParam(required = false) String search,
-        @RequestParam(required = false) Long showroomId
+        @RequestParam(required = false) Long showroomId,
+        @RequestParam(required = false) Integer limit
     ) {
-        return orderService.getOrders(authentication, userId, status, paymentStatus, search, showroomId);
+        return orderService.getOrders(authentication, userId, status, paymentStatus, search, showroomId, limit);
     }
 
     @GetMapping("/{id}")

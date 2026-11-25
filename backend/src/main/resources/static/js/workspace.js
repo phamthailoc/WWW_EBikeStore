@@ -79,7 +79,7 @@
     if(page==='/manager/orders'&&awaitsInstalment(row))buttons.push(`<small class="muted">${'Đơn trả góp: chờ duyệt hồ sơ và khoản trả trước'}</small>`);
     if(page.startsWith('/manager')&&id!=null&&(page.includes('inventory')||page.includes('products')))buttons.push(`<button class="table-action" data-action="stock" data-id="${id}" data-slug="${escape(row.slug||'')}" data-stock="${row.stockQuantity??0}">${'Cập nhật tồn kho'}</button><button class="table-action" data-action="images" data-id="${id}" data-slug="${escape(row.slug||'')}" data-name="${escape(row.name||'')}">${'Quản lý ảnh'}</button><button class="table-action" data-action="stock-history" data-id="${id}" data-name="${escape(row.name||'')}">${'Lịch sử tồn kho'}</button>`);
     if(page.startsWith('/admin')&&id!=null&&(page.includes('inventory')||page.includes('products')))buttons.push(`<button class="table-action" data-action="stock" data-id="${id}" data-slug="${escape(row.slug||'')}" data-stock="${row.stockQuantity??0}">${'Cập nhật tồn kho'}</button><button class="table-action" data-action="images" data-id="${id}" data-slug="${escape(row.slug||'')}" data-name="${escape(row.name||'')}">${'Quản lý ảnh'}</button><button class="table-action" data-action="stock-history" data-id="${id}" data-name="${escape(row.name||'')}">${'Lịch sử tồn kho'}</button>`);
-    if(page==='/admin/accounts'&&id!=null)buttons.push(`<button class="table-action" data-action="role" data-id="${id}">${'Đổi vai trò'}</button><button class="table-action" data-action="account-status" data-id="${id}" data-status="${row.status||'ACTIVE'}">${row.status==='ACTIVE'?'Vô hiệu hóa':'Kích hoạt lại'}</button><button class="table-action" data-action="delete-account" data-id="${id}" data-email="${escape(row.email||'')}">${'Xóa'}</button>`);
+    if(page==='/admin/accounts'&&id!=null)buttons.push(`<button class="table-action" data-action="account-detail" data-id="${id}">${'Chi tiết'}</button><button class="table-action" data-action="role" data-id="${id}">${'Đổi vai trò'}</button><button class="table-action" data-action="account-status" data-id="${id}" data-status="${row.status||'ACTIVE'}">${row.status==='ACTIVE'?'Vô hiệu hóa':'Kích hoạt lại'}</button><button class="table-action" data-action="delete-account" data-id="${id}" data-email="${escape(row.email||'')}">${'Xóa'}</button>`);
     if(page==='/admin/pricing'&&id!=null)buttons.push(`<button class="table-action" data-action="pricing" data-id="${id}" data-code="${escape(row.code||'')}" data-amount="${row.amount||0}" data-status="${row.status||''}">${'Sửa quy tắc'}</button>${/^INSTALLMENT_RATE_/.test(row.code||'')?`<button class="table-action" data-action="pricing-status" data-id="${id}" data-amount="${row.amount||0}" data-status="${row.status||''}">${row.status==='INACTIVE'?'Bật kỳ hạn':'Ngừng kỳ hạn'}</button>`:''}`);
     if(page==='/manager/support'&&id!=null){if(row.status==='NEW')buttons.push(`<button class="table-action" data-action="support-status" data-id="${id}" data-status="IN_PROGRESS">${'Nhận xử lý'}</button>`);if(row.status!=='RESOLVED')buttons.push(`<button class="table-action" data-action="support-status" data-id="${id}" data-status="RESOLVED">${'Đã giải quyết'}</button>`);else buttons.push(`<button class="table-action" data-action="support-status" data-id="${id}" data-status="IN_PROGRESS">${'Mở lại'}</button>`)}
     if(page==='/customer/warranty'&&id!=null&&row.orderId!=null)buttons.push(`<button type="button" class="table-action" data-doc-url="/api/v1/orders/${row.orderId}/warranty-card?unitId=${id}" data-doc-name="warranty-card.pdf">${'Tải phiếu bảo hành'}</button>`);
@@ -160,8 +160,8 @@
   };
   // The most rows the test-ride API returns (TestRideService.SCHEDULE_LIMIT and MINE_LIMIT): a full list may be cut, so the page says so.
   // The most rows each list asks the API for. The two staff queues grow by a page each time "Xem thêm" is pressed; the customer's own list is fixed.
-  const RIDE_LIMITS={'/manager/test-rides':200,'/customer/test-rides':100,'/manager/installments':200};
-  const PAGED=['/manager/test-rides','/manager/installments'];
+  const RIDE_LIMITS={'/manager/test-rides':200,'/customer/test-rides':100,'/manager/installments':200,'/manager/orders':100};
+  const PAGED=['/manager/test-rides','/manager/installments','/manager/orders'];
   let rowLimit=RIDE_LIMITS[page]||0;
   const showRideLimit=()=>{
     const max=RIDE_LIMITS[page];if(!max)return;
@@ -172,7 +172,7 @@
     if(!full){note.textContent='';return}
     if(PAGED.includes(page)){
       note.innerHTML='';
-      const text=document.createElement('span');text.textContent=`Đang hiện ${records.length} ${page==='/manager/installments'?'hồ sơ':'lịch'}. `;
+      const text=document.createElement('span');text.textContent=`Đang hiện ${records.length} ${page==='/manager/installments'?'hồ sơ':page==='/manager/orders'?'đơn':'lịch'}. `;
       const more=document.createElement('button');more.type='button';more.className='table-action';more.textContent='Xem thêm';
       more.addEventListener('click',()=>{more.disabled=true;rowLimit+=RIDE_LIMITS[page];load()});
       note.append(text,more);
@@ -259,9 +259,22 @@
     const items=order.items||[];
     if(!items.length){removePanel('orderItems');return}
     const unitsOf=item=>(item.units||[]).map(u=>`<small class="unit-numbers">${'Số khung'} ${escape(u.frameNumber)} ${'· Số máy'} ${escape(u.engineNumber)}</small>`).join('');
-    const rows=items.map(item=>`<tr><td>${escape(item.productName||'-')}${unitsOf(item)}</td><td>${escape(item.colorName||'-')}</td><td>${escape(item.quantity??0)}</td><td>${escape(money(item.unitPrice))}</td><td>${escape(money(item.lineTotal))}</td></tr>`).join('');
+    const editable=canUpdate&&location.pathname.startsWith('/manager/orders/')&&order.status==='PENDING'&&order.paymentMethod==='PAY_LATER'&&order.paymentStatus==='PENDING'&&!(order.cancellationRequestedAt&&!order.cancellationReviewedAt);
+    const qtyCell=item=>editable&&!(item.units||[]).length
+      ?`<td><span class="qty-edit"><input type="number" min="1" max="10" value="${escape(item.quantity??1)}" data-qty-for="${item.id}" aria-label="Số lượng ${escape(item.productName||'')}"><button type="button" class="table-action" data-action="save-qty" data-order="${order.id}" data-item="${item.id}">Lưu</button></span></td>`
+      :`<td>${escape(item.quantity??0)}</td>`;
+    const rows=items.map(item=>`<tr><td>${escape(item.productName||'-')}${unitsOf(item)}</td><td>${escape(item.colorName||'-')}</td>${qtyCell(item)}<td>${escape(money(item.unitPrice))}</td><td>${escape(money(item.lineTotal))}</td></tr>`).join('');
     detailPanel('orderItems',`<h2>${'Xe trong đơn hàng'}</h2><div class="table-scroll"><table><thead><tr><th>${'Xe'}</th><th>${'Màu'}</th><th>${'Số lượng'}</th><th>${'Đơn giá'}</th><th>${'Thành tiền'}</th></tr></thead><tbody>${rows}</tbody></table></div>`);
   };
+  document.addEventListener('click',async e=>{
+    const b=e.target.closest('[data-action="save-qty"]');if(!b)return;
+    const input=document.querySelector('[data-qty-for="'+b.dataset.item+'"]');
+    const qty=Number(input?.value);
+    if(!Number.isInteger(qty)||qty<1||qty>10){tell('Số lượng mỗi xe phải từ 1 đến 10.',true);return}
+    b.disabled=true;
+    try{await send('/api/v1/orders/'+b.dataset.order+'/items/'+b.dataset.item,'PATCH',{quantity:qty});tell('Đã cập nhật số lượng, tồn kho và tổng tiền của đơn.');await load()}
+    catch(err){tell(err.message,true)}finally{b.disabled=false}
+  });
   const renderPricing=order=>{
     const line=(name,value)=>`<tr><td>${name}</td><td data-price="${escape(name)}">${escape(value)}</td></tr>`;
     const lines=[line('Tạm tính',money(order.subtotal))];
@@ -394,6 +407,7 @@
     '/manager/warranty':[{name:'status',options:[['','Đang chờ xử lý'],...Object.entries(warrantyStatusText),['ALL','Tất cả']],label:'Trạng thái'}],
     '/manager/test-rides':[{name:'status',options:[['','Đang chờ xử lý'],...Object.entries(rideStatusText),['ALL','Tất cả']],label:'Trạng thái'},{name:'date',type:'date',label:'Ngày'},{name:'showroomId',options:[['','Mọi cửa hàng']],label:'Cửa hàng'}],
     '/manager/installments':[{name:'status',options:[['','Chờ duyệt'],['APPROVED','Đã duyệt'],['REJECTED','Bị từ chối'],['CANCELLED','Đã hủy'],['ALL','Tất cả']],label:'Trạng thái'}],
+    '/admin/accounts':[{name:'q',placeholder:'Tìm theo tên, email hoặc tên đăng nhập',label:'Tìm kiếm'}],
     '/manager/customers':[{name:'search',placeholder:'Tìm theo tên, email hoặc tài khoản',label:'Tìm kiếm'}],
     '/manager/reports':[{name:'period',options:[['day','Theo ngày'],['month','Theo tháng'],['quarter','Theo quý'],['year','Theo năm']],label:'Gộp theo'},{name:'from',type:'date',label:'Từ ngày'},{name:'to',type:'date',label:'Đến ngày'}]
   };

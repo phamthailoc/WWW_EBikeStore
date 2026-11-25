@@ -56,6 +56,7 @@ class AdminAccountGuardTest {
     @Mock com.ebike.repository.product.StockAlertRepository stockAlerts;
     @Mock com.ebike.service.product.ProductReviewService reviews;
     @Mock com.ebike.service.admin.AuditLogService auditLog;
+    @Mock com.ebike.repository.auth.AuthenticationLogRepository authLogs;
     AdminServiceImpl service;
     User me;
     User otherAdmin;
@@ -63,7 +64,7 @@ class AdminAccountGuardTest {
 
     @BeforeEach void setup() {
         service = new AdminServiceImpl(pricingRules, promotions, audits, users, roles, encoder, orders,
-            new AccountErasure(addresses, favorites, preferences, notifications, stockAlerts, mock(WarrantyClaimRepository.class), mock(TestRideBookingRepository.class), mock(com.ebike.repository.installment.InstallmentApplicationRepository.class), users, reviews, encoder, "Asia/Ho_Chi_Minh"),
+            authLogs,
             auditLog);
         me = account(1L, "admin.user", "ADMIN");
         otherAdmin = account(2L, "second.admin", "ADMIN");
@@ -117,23 +118,44 @@ class AdminAccountGuardTest {
         assertEquals("INACTIVE", otherAdmin.getAccountStatus());
     }
 
-    @Test void deletingAnAccountWithOrdersAnonymisesItAndKeepsTheRow() {
+    @Test void anAccountWithOrdersIsNotDeleted() {
         customer.setEmail("khach@example.com");
-        customer.setFirstName("Nguyễn");
-        when(encoder.encode(any())).thenReturn("random-hash");
-        service.deleteAccount(3L, "KHACH@example.com");
-        assertEquals("DELETED", customer.getAccountStatus());
-        assertEquals(false, customer.getActive());
-        assertEquals("deleted_3", customer.getUsername());
-        assertEquals("deleted_3@deleted.invalid", customer.getEmail());
-        assertEquals("Tài khoản", customer.getFirstName());
-        verify(users).save(customer);
+        when(orders.existsByUserId(3L)).thenReturn(true);
+        var ex = assertThrows(ResponseStatusException.class, () -> service.deleteAccount(3L, "KHACH@example.com"));
+        assertEquals(409, ex.getStatusCode().value());
+        assertEquals("ACTIVE", customer.getAccountStatus());
         verify(users, never()).delete(any());
-        verify(addresses).deleteAll(any());
-        verify(favorites).deleteAll(any());
-        verify(notifications).deleteAll(any());
-        verify(reviews).removeReviewsOf(3L);
-        verify(auditLog).record("xóa tài khoản (ẩn danh hóa)", "tài khoản #3");
+        verify(authLogs, never()).deleteByUserId(any());
+    }
+
+    @Test void anAccountWithoutOrdersIsReallyDeletedWithItsSignInHistory() {
+        customer.setEmail("khach@example.com");
+        service.deleteAccount(3L, "KHACH@example.com");
+        verify(authLogs).deleteByUserId(3L);
+        verify(users).delete(customer);
+        verify(users).flush();
+        verify(auditLog).record("xóa tài khoản", "tài khoản #3");
+    }
+
+    @Test void searchFindsAnAccountByNameUsernameOrEmail() {
+        customer.setEmail("khach@example.com");
+        assertEquals(1, service.getAccounts(null, "KHACH").size());
+        assertEquals(1, service.getAccounts(null, "example.com").stream().filter(a -> a.username().equals("khach")).count());
+        assertEquals(0, service.getAccounts(null, "khong-co-ai").size());
+    }
+
+    @Test void updatingAnAccountChecksEmailFormatAndUniqueness() {
+        customer.setEmail("khach@example.com");
+        assertEquals(400, assertThrows(ResponseStatusException.class,
+            () -> service.updateAccount(3L, new com.ebike.dto.admin.request.AdminAccountUpdateRequest("Khách", "khong-hop-le"))).getStatusCode().value());
+        when(users.existsByEmail("trung@example.com")).thenReturn(true);
+        assertEquals(409, assertThrows(ResponseStatusException.class,
+            () -> service.updateAccount(3L, new com.ebike.dto.admin.request.AdminAccountUpdateRequest("Khách", "trung@example.com"))).getStatusCode().value());
+        when(users.save(any())).thenAnswer(inv -> inv.getArgument(0));
+        var detail = service.updateAccount(3L, new com.ebike.dto.admin.request.AdminAccountUpdateRequest("Lê Văn Khách", "moi@example.com"));
+        assertEquals("moi@example.com", detail.email());
+        assertEquals("Lê", detail.firstName());
+        assertEquals("Văn Khách", detail.lastName());
     }
 
     @Test void aStaffAccountWithAuditEntriesCannotBeDeletedOnlyLocked() {
@@ -155,8 +177,7 @@ class AdminAccountGuardTest {
     }
 
     @Test void aDeletedAccountCannotBeChangedAgainAndIsHiddenFromTheList() {
-        when(encoder.encode(any())).thenReturn("random-hash");
-        service.deleteAccount(3L, "khach@example.com");
+        customer.setAccountStatus("DELETED");
         assertEquals(400, assertThrows(ResponseStatusException.class, () -> service.deleteAccount(3L, "khach@example.com")).getStatusCode().value());
         assertThrows(ResponseStatusException.class, () -> service.updateAccountStatus(3L, new AdminAccountStatusUpdateRequest("ACTIVE")));
         assertThrows(ResponseStatusException.class, () -> service.updateAccountRole(3L, new AdminAccountRoleUpdateRequest("ADMIN")));

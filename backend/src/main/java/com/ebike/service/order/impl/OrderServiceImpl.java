@@ -156,6 +156,20 @@ public class OrderServiceImpl implements OrderService {
         String search,
         Long showroomId
     ) {
+        return getOrders(authentication, userId, status, paymentStatus, search, showroomId, null);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<OrderResponse> getOrders(
+        Authentication authentication,
+        Long userId,
+        String status,
+        String paymentStatus,
+        String search,
+        Long showroomId,
+        Integer limit
+    ) {
         User currentUser = getAuthenticatedUser(authentication);
         Long effectiveUserId = isBackOffice(authentication) ? userId : currentUser.getId();
 
@@ -169,6 +183,7 @@ public class OrderServiceImpl implements OrderService {
             .filter(order -> matchesSearch(order, search))
             .filter(order -> matchesShowroom(order, showroomId))
             .sorted(Comparator.comparing(Order::getCreatedAt).reversed())
+            .limit(limit == null || limit < 1 ? Long.MAX_VALUE : Math.min(limit, 2000))
             .map(this::toResponse)
             .toList();
     }

@@ -13,6 +13,17 @@ import org.springframework.security.core.Authentication;
 
 public interface OrderService {
 
+    /** The newest {@code limit} orders that match (all of them when limit is null). */
+    List<OrderResponse> getOrders(
+        Authentication authentication,
+        Long userId,
+        String status,
+        String paymentStatus,
+        String search,
+        Long showroomId,
+        Integer limit
+    );
+
     List<OrderResponse> getOrders(
         Authentication authentication,
         Long userId,

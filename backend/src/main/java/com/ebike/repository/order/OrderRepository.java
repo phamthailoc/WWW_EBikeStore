@@ -30,6 +30,10 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     List<Order> findByUserId(Long userId);
 
+    boolean existsByUserId(Long userId);
+
+    long countByUserId(Long userId);
+
     /**
      * V27: an order with what a receipt and a warranty card print, in one query instead of about four per line.
      */
