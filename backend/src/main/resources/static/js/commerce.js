@@ -11,6 +11,7 @@
   const normalizeSearch=value=>value.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').toLowerCase();
 
   async function renderCart(target,finish,tell){
+    await C.ready;
     let items=C.read();
     finish();
     if(!items.length){target.innerHTML=empty();return;}
@@ -51,7 +52,7 @@
   async function renderCheckout(target,finish,tell){
     const buyNow=new URLSearchParams(location.search).get('buyNow')==='1';
     let items;
-    try{items=buyNow?JSON.parse(sessionStorage.getItem('kinetic_buy_now')||'[]'):C.read();}catch{items=[];}
+    try{await C.ready;items=buyNow?JSON.parse(sessionStorage.getItem('kinetic_buy_now')||'[]'):C.read();}catch{items=[];}
     if(!Array.isArray(items)||!items.length){finish();target.innerHTML=empty();return;}
     target.innerHTML='<p class="loading">' + 'Đang chuẩn bị đơn hàng...' + '</p>';finish();
     const [refreshed,showrooms,provinces]=await Promise.all([C.refresh(items),request('/api/v1/showrooms'),request('/data/vietnam-provinces.json')]);

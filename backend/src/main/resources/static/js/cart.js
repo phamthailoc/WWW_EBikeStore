@@ -1,30 +1,58 @@
 (() => {
   'use strict';
-  const KEY = 'kinetic_cart';
+  const LEGACY_KEY = 'kinetic_cart'; // the cart used to live in localStorage; a leftover one is moved to the session once
+  const ENDPOINT = '/api/v1/cart';
+  let current = [];
   const key = item => `${item.id}:${item.variantId || ''}`;
   const money = value => `${new Intl.NumberFormat('vi-VN').format(Number(value) || 0)} ₫`;
   const escape = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const safeImage = value => typeof value === 'string' && /^(\/[^/]|https?:\/\/)/.test(value) ? value : '/images/hero-fallback.svg';
   const normalize = items => Array.isArray(items) ? items.filter(i => i && Number.isInteger(Number(i.id)) && Number(i.id) > 0).slice(0, 20).map(i => ({...i, id:Number(i.id), variantId:i.variantId ? Number(i.variantId) : null, quantity:Math.max(1, Math.min(10, Math.trunc(Number(i.quantity) || 1)))})) : [];
-  function read() {
-    try { return normalize(JSON.parse(localStorage.getItem(KEY) || '[]')); } catch { return []; }
-  }
-  function write(items) {
-    localStorage.setItem(KEY, JSON.stringify(normalize(items)));
+  // The cart is kept in the server-side session; this page holds a copy that read() returns at once. Wait for ready before the first read().
+  function read() { return current.map(item => ({...item})); }
+  let queue = Promise.resolve();
+  const lineOf = i => ({id: i.id, variantId: i.variantId || null, quantity: i.quantity, slug: i.slug});
+  function adopt(lines, shown) {
+    const extra = new Map(shown.map(i => [key(i), i]));
+    current = normalize(lines).map(line => ({...(extra.get(key(line)) || {}), ...line}));
     window.dispatchEvent(new Event('kinetic:cart'));
   }
+  // Changes are sent one after another so an older answer never overwrites a newer cart. The returned promise rejects when the server refuses.
+  function write(items) {
+    const shown = normalize(items);
+    current = shown;
+    window.dispatchEvent(new Event('kinetic:cart'));
+    const send = queue.then(async () => adopt(await request(ENDPOINT, shown.map(lineOf), 'PUT'), shown));
+    queue = send.catch(() => {});
+    send.catch(() => {});
+    return send;
+  }
+  const ready = (async () => {
+    try {
+      let lines = await request(ENDPOINT);
+      let legacy = [];
+      try { legacy = normalize(JSON.parse(localStorage.getItem(LEGACY_KEY) || '[]')); } catch { legacy = []; }
+      if (legacy.length) {
+        if (!lines.length) { try { lines = await request(ENDPOINT, legacy.map(lineOf), 'PUT'); } catch { /* the old lines are dropped */ } }
+        try { localStorage.removeItem(LEGACY_KEY); } catch { /* ignore */ }
+      }
+      adopt(lines, legacy);
+    } catch { current = []; }
+  })();
   function limit(item) { return Math.max(0, Math.min(10, item.stock == null ? 10 : Number(item.stock))); }
-  function add(item) {
+  async function add(item) {
+    await ready;
     const items = read(), existing = items.find(i => key(i) === key(item));
     const quantity = (existing?.quantity || 0) + item.quantity;
     if (quantity > limit(item)) throw Error(`${'Chỉ có thể mua tối đa'} ${limit(item)} ${'xe cho màu đã chọn.'}`);
     if (!existing && items.length >= 20) throw Error('Giỏ hàng tối đa 20 mẫu/màu xe.');
     if (existing) Object.assign(existing, item, {quantity}); else items.push({...item});
-    write(items);
+    await write(items);
   }
-  async function request(url, data) {
-    const response = await fetch(url, {credentials:'same-origin', method:data === undefined ? 'GET' : 'POST', headers:{Accept:'application/json', ...(data === undefined ? {} : {'Content-Type':'application/json'})}, ...(data === undefined ? {} : {body:JSON.stringify(data)})});
+  async function request(url, data, method) {
+    const response = await fetch(url, {credentials:'same-origin', method:method || (data === undefined ? 'GET' : 'POST'), headers:{Accept:'application/json', ...(data === undefined ? {} : {'Content-Type':'application/json'})}, ...(data === undefined ? {} : {body:JSON.stringify(data)})});
     const body = await response.json().catch(() => null);
+    if (response.status === 204) return null;
     if (!response.ok) { const error = Error(body?.detail || body?.message || body?.error || `${'Yêu cầu thất bại ('}${response.status}).`); error.status = response.status; throw error; }
     return body;
   }
@@ -56,8 +84,9 @@
     });
     updateHeader();
   }
-  window.KineticCart = {read, write, add, key, limit, money, escape, safeImage, request, refresh};
+  window.KineticCart = {read, write, add, key, limit, money, escape, safeImage, request, refresh, ready};
   window.addEventListener('kinetic:cart', updateHeader);
-  window.addEventListener('storage', event => {if (event.key === KEY) updateHeader();});
+  // another tab of the same session may have changed the cart
+  window.addEventListener('focus', () => { request(ENDPOINT).then(lines => adopt(lines, current)).catch(() => {}); });
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mountHeader); else mountHeader();
 })();

@@ -166,8 +166,8 @@ abstract class StorefrontSeleniumTest {
             });
         click(By.id("addToCart"));
         wait.until(d -> {
-            Object cart = js("return localStorage.getItem('kinetic_cart')");
-            return cart != null && !"[]".equals(cart);
+            String count = (String) js("var b = document.querySelector(\"[data-cart-count]\"); return b ? b.textContent : null");
+            return count != null && !"0".equals(count.trim());
         });
         driver.get(baseUrl + "/checkout");
         wait.until(ExpectedConditions.elementToBeClickable(By.id("placeOrder")));

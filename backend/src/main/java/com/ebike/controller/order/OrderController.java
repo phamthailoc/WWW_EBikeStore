@@ -29,8 +29,10 @@ import org.springframework.web.bind.annotation.RestController;
 public class OrderController {
 
     private final OrderService orderService;
+    private final com.ebike.service.cart.SessionCartService sessionCart;
 
-    public OrderController(OrderService orderService) {
+    public OrderController(OrderService orderService, com.ebike.service.cart.SessionCartService sessionCart) {
+        this.sessionCart = sessionCart;
         this.orderService = orderService;
     }
 
@@ -59,8 +61,11 @@ public class OrderController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public OrderResponse createOrder(@RequestBody OrderCreateRequest request, Authentication authentication) {
-        return orderService.createOrder(request, authentication);
+    public OrderResponse createOrder(@RequestBody OrderCreateRequest request, Authentication authentication, jakarta.servlet.http.HttpSession session) {
+        OrderResponse created = orderService.createOrder(request, authentication);
+        // the bought quantities leave the session cart as soon as the order exists
+        sessionCart.removePurchased(session, request.items());
+        return created;
     }
 
     @PatchMapping("/{id}/items/{itemId}")
