@@ -7,7 +7,7 @@
 
 .theme-toggle{border:1px solid var(--c-dfe3dd);background:transparent;color:inherit;width:36px;height:36px;border-radius:50%;font:600 15px/1 "Bricolage Grotesque",sans-serif;cursor:pointer;display:inline-grid;place-items:center;padding:0}
 .theme-toggle:hover{border-color:var(--c-737976)}
-.theme-toggle:focus-visible{outline:2px solid var(--c-087d98);outline-offset:2px}
+.theme-toggle:focus-visible{outline:2px solid var(--accent-text);outline-offset:2px}
 
 /* Product photos have a white background baked in. In the dark theme their frames take one soft light tone and the
    photos are dimmed by 8%, which turns the baked-in white into the same tone (255 x .92 = #ebebeb), so each photo reads

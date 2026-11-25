@@ -59,8 +59,8 @@ button, input, select, textarea { font-family: var(--font-body); }
 .top nav a { display: inline-flex; align-items: center; min-height: 40px; padding: 0 12px; border-radius: var(--r-control); color: var(--muted); white-space: nowrap; transition: color .2s, background .2s; }
 .top nav a:hover, .top nav a.active { color: var(--ink); background: var(--surface-2); }
 .actions { display: flex; align-items: center; gap: 14px; flex-wrap: nowrap; }
-.actions input { width: 150px; height: 40px; padding: 0 14px; border: 1px solid var(--line-strong); border-radius: var(--r-control); background: var(--surface); transition: border-color .2s, width .3s var(--ease); }
-.actions input:focus { width: 200px; outline: none; border-color: var(--accent-text); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 55%, transparent); }
+.actions input { width: 150px; height: 40px; padding: 0 14px; border: 1px solid var(--line-strong); border-radius: var(--r-control); background: var(--surface); transition: border-color .2s, box-shadow .2s; }
+.actions input:focus { outline: none; border-color: var(--accent-text); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 55%, transparent); }
 .login, .cart-link { font-size: 14px; font-weight: 600; white-space: nowrap; }
 .login:hover { color: var(--accent-text); }
 .register-link, .auth-register a { font-weight: 600; color: var(--accent-text); white-space: nowrap; }
@@ -290,7 +290,7 @@ tbody tr:hover { background: color-mix(in srgb, var(--surface-2) 55%, transparen
   :root { --nav-h: 60px; }
   .top .actions { flex-wrap: wrap; justify-content: flex-end; flex: 1 1 auto; }
   .actions form { flex: 1 1 100%; order: 9; }
-  .actions input, .actions input:focus { width: 100%; }
+  .actions input { width: 100%; }
   .actions { gap: 12px; }
   .actions .login, .actions .register-link { font-size: 13px; white-space: nowrap; }
   .brand { font-size: 17px; }
@@ -309,7 +309,7 @@ tbody tr:hover { background: color-mix(in srgb, var(--surface-2) 55%, transparen
 }
 
 /* Header on narrow screens: the link row moves under the brand and scrolls sideways instead of overflowing */
-@media (max-width: 1280px) { .actions input { width: 120px; } .actions input:focus { width: 160px; } }
+@media (max-width: 1280px) { .actions input { width: 120px; } }
 @media (max-width: 1240px) {
   .top { height: auto; min-height: var(--nav-h); flex-wrap: wrap; row-gap: 0; padding-block: 8px 0; }
   .top nav { order: 3; flex: 0 0 100%; overflow-x: auto; scrollbar-width: none; margin-inline: calc(var(--gutter) * -1); padding-inline: var(--gutter); }
@@ -331,3 +331,8 @@ tbody tr:hover { background: color-mix(in srgb, var(--surface-2) 55%, transparen
 @media (max-width: 720px) { .actions .register-link { display: none; } .actions { gap: 10px; } }
 @media (max-width: 520px) { .auth-links a:not(.register-link) { display: none; } }
 @media (max-width: 720px) { body.workspace .top nav { display: none; } body.workspace .top { padding-bottom: 8px; } }
+
+/* Placeholders: 4.5:1 on every surface (checkout used a 2.2:1 grey) */
+::placeholder { color: var(--muted); opacity: 1; }
+.checkout-layout input::placeholder, .checkout-layout textarea::placeholder { color: var(--muted); }
+.checkout-layout input[type=radio], .checkout-layout input[type=checkbox] { accent-color: var(--accent-text); }
