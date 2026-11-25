@@ -1,6 +1,8 @@
 package com.ebike.service.auth.impl;
 
 import com.ebike.dto.auth.response.AuthResponse;
+import com.ebike.event.notification.UserRegisteredEvent;
+import com.ebike.listener.notification.NotificationEventBridge;
 import com.ebike.dto.auth.request.ChangePasswordRequest;
 import com.ebike.dto.auth.request.LoginRequest;
 import com.ebike.dto.auth.request.RegisterRequest;
@@ -95,6 +97,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         // Guest orders with this email are NOT attached here: the email is unverified at sign-up.
         // Customers attach them later via POST /api/v1/orders/guest-orders/link after an OTP check.
         User savedUser = userRepository.save(user);
+        // the welcome email goes out after the commit, from the mail pool; a failure there never undoes the sign-up
+        NotificationEventBridge.publish(new UserRegisteredEvent(savedUser.getId()));
         return toAuthResponse(savedUser);
     }
 

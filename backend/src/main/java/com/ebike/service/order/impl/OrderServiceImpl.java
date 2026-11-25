@@ -2,6 +2,8 @@ package com.ebike.service.order.impl;
 
 import com.ebike.model.entity.auth.User;
 import com.ebike.repository.auth.UserRepository;
+import com.ebike.event.notification.OrderPlacedEvent;
+import com.ebike.listener.notification.NotificationEventBridge;
 import com.ebike.dto.order.request.GuestOrderLinkRequest;
 import com.ebike.dto.order.request.OrderCancellationRequest;
 import com.ebike.dto.order.request.OrderCreateItemRequest;
@@ -262,6 +264,8 @@ public class OrderServiceImpl implements OrderService {
         if (installment != null) {
             installmentPlanner.record(saved, user, installment);
         }
+        // the confirmation email goes out after the commit, from the mail pool; guest orders get it too
+        NotificationEventBridge.publish(new OrderPlacedEvent(saved.getId()));
         return toResponse(saved);
     }
 
