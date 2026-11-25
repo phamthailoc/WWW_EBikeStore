@@ -67,7 +67,7 @@ class AdminConsoleSeleniumTest extends StorefrontSeleniumTest {
         WebElement row = rowOf(email);
         assertTrue(row.getText().contains("MANAGER"), row.getText());
 
-        row.findElement(By.cssSelector("[data-action='delete-account']")).click();
+        click(row.findElement(By.cssSelector("[data-action='delete-account']")));
         WebElement confirm = wait.until(ExpectedConditions.visibilityOfElementLocated(DIALOG));
         // a wrong email is refused and the account stays
         type(confirm, "confirmEmail", "khong.dung@example.com");

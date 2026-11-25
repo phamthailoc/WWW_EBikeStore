@@ -31,7 +31,12 @@ public class SecurityConfiguration {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .csrf(AbstractHttpConfigurer::disable)
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            // The session only holds the cart and the sign-in is the JWT cookie. Without .none() Spring Security changes the session id on every
+            // signed-in request, so two requests sent together with the old id find an empty session and the cart seems to vanish
+            // (signing in changes the id once, in AuthController.login).
+            .sessionManagement(session -> session
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .sessionFixation(fixation -> fixation.none()))
             .anonymous(anonymous -> anonymous.authorities(
                 PermissionConstants.Guest.PRODUCT_VIEW,
                 PermissionConstants.Guest.PRODUCT_SEARCH,
