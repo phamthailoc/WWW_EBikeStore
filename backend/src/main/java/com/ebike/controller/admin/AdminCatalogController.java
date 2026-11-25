@@ -33,13 +33,13 @@ public class AdminCatalogController {
     }
 
     @GetMapping("/products")
-    @PreAuthorize("hasAuthority('" + PermissionConstants.Guest.PRODUCT_VIEW + "')")
+    @PreAuthorize("hasAuthority('" + PermissionConstants.ProductManagement.PRODUCT_UPDATE + "')")
     public List<CatalogProductRow> products(@RequestParam(required = false) String search, @RequestParam(required = false) Integer categoryId) {
         return catalog.listProducts(search, categoryId);
     }
 
     @GetMapping("/products/{id}")
-    @PreAuthorize("hasAuthority('" + PermissionConstants.Guest.PRODUCT_VIEW + "')")
+    @PreAuthorize("hasAuthority('" + PermissionConstants.ProductManagement.PRODUCT_UPDATE + "')")
     public CatalogProductDetail product(@PathVariable Long id) {
         return catalog.getProduct(id);
     }
@@ -65,13 +65,13 @@ public class AdminCatalogController {
     }
 
     @GetMapping("/categories")
-    @PreAuthorize("hasAuthority('" + PermissionConstants.Guest.CATEGORY_VIEW + "')")
+    @PreAuthorize("hasAuthority('" + PermissionConstants.ProductManagement.CATEGORY_MANAGE + "')")
     public List<CatalogCategoryRow> categories(@RequestParam(required = false) String search) {
         return catalog.listCategories(search);
     }
 
     @GetMapping("/categories/{id}")
-    @PreAuthorize("hasAuthority('" + PermissionConstants.Guest.CATEGORY_VIEW + "')")
+    @PreAuthorize("hasAuthority('" + PermissionConstants.ProductManagement.CATEGORY_MANAGE + "')")
     public CatalogCategoryRow category(@PathVariable Integer id) {
         return catalog.getCategory(id);
     }

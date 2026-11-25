@@ -45,12 +45,13 @@
 
   function drawChrome() {
     actions.innerHTML = `
-      <div role="tablist" class="product-action">
-        <button type="button" role="tab" class="button compact ${tab === 'products' ? '' : 'ghost'}" data-tab="products" aria-selected="${tab === 'products'}">Xe</button>
-        <button type="button" role="tab" class="button compact ${tab === 'categories' ? '' : 'ghost'}" data-tab="categories" aria-selected="${tab === 'categories'}">Loại sản phẩm</button>
-        <button type="button" class="button compact" id="catalogAdd">${tab === 'products' ? '+ Thêm xe' : '+ Thêm loại'}</button>
-      </div>`;
-    actions.querySelectorAll('[data-tab]').forEach(button => button.addEventListener('click', () => { tab = button.dataset.tab; clearNotice(); load(); }));
+      <button type="button" class="button compact ${tab === 'products' ? '' : 'ghost'}" data-tab="products" aria-pressed="${tab === 'products'}">Xe</button>
+      <button type="button" class="button compact ${tab === 'categories' ? '' : 'ghost'}" data-tab="categories" aria-pressed="${tab === 'categories'}">Loại sản phẩm</button>
+      <button type="button" class="button compact" id="catalogAdd">${tab === 'products' ? '+ Thêm xe' : '+ Thêm loại'}</button>`;
+    actions.querySelectorAll('[data-tab]').forEach(button => button.addEventListener('click', () => {
+      if (tab === button.dataset.tab) return;
+      tab = button.dataset.tab; resetFilters = true; clearNotice(); load();
+    }));
     $('#catalogAdd').addEventListener('click', () => openForm(null));
     panelTitle.textContent = tab === 'products' ? 'Danh sách xe' : 'Danh sách loại sản phẩm';
     filters.hidden = false;
@@ -77,19 +78,28 @@
     return text ? '?' + text : '';
   }
 
+  let loadSeq = 0;
+  let resetFilters = false;
+
   async function load() {
-    const keepSearch = $('#catalogFilter') ? new FormData($('#catalogFilter')) : null;
+    const seq = ++loadSeq;
+    // the filter form is drawn again on every load; keep what was typed (but not across the two tabs)
+    const kept = $('#catalogFilter') && !resetFilters ? new FormData($('#catalogFilter')) : null;
+    resetFilters = false;
     if (!categories.length) {
       try { categories = await request(API + '/categories'); } catch (failure) { tell(failure.message, true); }
     }
+    if (seq !== loadSeq) return;
     drawChrome();
-    if (keepSearch) {
-      const form = $('#catalogFilter');
-      if (keepSearch.get('search') != null && form.elements.search) form.elements.search.value = keepSearch.get('search');
+    const form = $('#catalogFilter');
+    if (kept) {
+      if (kept.get('search') != null && form.elements.search) form.elements.search.value = kept.get('search');
+      if (kept.get('categoryId') != null && form.elements.categoryId) form.elements.categoryId.value = kept.get('categoryId');
     }
     loading.hidden = false; empty.hidden = true; table.hidden = true;
     try {
       const rows = await request(API + (tab === 'products' ? '/products' : '/categories') + currentQuery());
+      if (seq !== loadSeq) return;
       loading.hidden = true;
       table.hidden = rows.length === 0;
       empty.hidden = rows.length > 0;
@@ -109,7 +119,7 @@
 
   function drawProducts(rows) {
     table.querySelector('thead').innerHTML = '<tr><th>Mã</th><th>Tên</th><th>Loại</th><th>Giá bán</th><th>Tồn kho</th><th>Trạng thái</th><th>Đơn hàng</th><th>Thao tác</th></tr>';
-    table.querySelector('tbody').innerHTML = rows.map(row => `<tr data-id="${row.id}">
+    table.querySelector('tbody').innerHTML = rows.map(row => `<tr data-id="${row.id}" data-name="${esc(row.name)}">
       <td data-field="id">${row.id}</td><td>${esc(row.name)}<br><small>${esc(row.slug)}</small></td><td>${esc(row.categoryName)}</td>
       <td data-field="price">${money(row.discountPrice ?? row.price)}${row.discountPrice != null ? `<br><small><s>${money(row.price)}</s></small>` : ''}</td>
       <td>${row.stockQuantity}</td><td>${row.active ? 'Đang bán' : 'Ngừng bán'}${row.featured ? ' · Nổi bật' : ''}</td><td>${row.orderCount}</td>
@@ -118,9 +128,9 @@
   }
 
   function drawCategories(rows) {
-    table.querySelector('thead').innerHTML = '<tr><th>Mã</th><th>Tên</th><th>Đường dẫn</th><th>Số xe</th><th>Trạng thái</th><th>Thao tác</th></tr>';
-    table.querySelector('tbody').innerHTML = rows.map(row => `<tr data-id="${row.id}">
-      <td data-field="id">${row.id}</td><td>${esc(row.name)}</td><td>${esc(row.slug)}</td><td>${row.productCount}</td><td>${row.active ? 'Đang dùng' : 'Ẩn'}</td>
+    table.querySelector('thead').innerHTML = '<tr><th>Mã</th><th>Tên</th><th>Đường dẫn</th><th>Số xe</th><th>Thao tác</th></tr>';
+    table.querySelector('tbody').innerHTML = rows.map(row => `<tr data-id="${row.id}" data-name="${esc(row.name)}">
+      <td data-field="id">${row.id}</td><td>${esc(row.name)}</td><td>${esc(row.slug)}</td><td>${row.productCount}</td>
       <td><button type="button" class="table-action" data-do="edit" data-id="${row.id}">Sửa</button>
       ${deleteButton(row, 'Loại còn sản phẩm nên không thể xóa.')}</td></tr>`).join('');
   }
@@ -134,8 +144,9 @@
       if (button.dataset.do === 'edit') {
         openForm(await request(`${API}/${tab === 'products' ? 'products' : 'categories'}/${id}`));
       } else if (button.dataset.do === 'delete') {
-        const name = button.closest('tr').children[1].textContent.trim();
-        if (!confirm(`Xóa "${name}"? Thao tác này không thể hoàn tác.`)) return;
+        const name = button.closest('tr').dataset.name;
+        const effect = tab === 'products' ? ' Ảnh, các màu, đánh giá, mục yêu thích và lịch sử tồn kho của xe cũng bị xóa.' : '';
+        if (!confirm(`Xóa "${name}"? Thao tác này không thể hoàn tác.${effect}`)) return;
         await request(`${API}/${tab === 'products' ? 'products' : 'categories'}/${id}`, 'DELETE');
         if (tab === 'categories') categories = [];
         tell('Đã xóa.');
@@ -188,8 +199,7 @@
       : `
       ${field('Tên loại *', input('name', item?.name, 'required maxlength="100"'))}
       ${field('Đường dẫn', input('slug', item?.slug, 'maxlength="100" pattern="[a-z0-9]+(-[a-z0-9]+)*"'), 'Để trống để tạo từ tên.')}
-      ${field('Mô tả', `<textarea name="description" rows="3" maxlength="5000">${esc(item?.description)}</textarea>`)}
-      <label class="check-line"><input type="checkbox" name="active" ${item == null || item.active ? 'checked' : ''}> Đang dùng</label>`;
+      ${field('Mô tả', `<textarea name="description" rows="3" maxlength="5000">${esc(item?.description)}</textarea>`)}`;
     dialog.innerHTML = `<form method="dialog" id="catalogForm" class="flow-form" style="max-width:none">
       <h2 id="catalogDialogTitle" style="margin:0 0 8px">${title}</h2>${fields}
       <p class="error" id="catalogError" role="alert"></p>
@@ -220,7 +230,7 @@
     const data = new FormData(form);
     const text = name => { const value = String(data.get(name) ?? '').trim(); return value === '' ? null : value; };
     const num = name => { const value = text(name); return value == null ? null : Number(value); };
-    if (!isProduct) return {name: text('name'), slug: text('slug'), description: text('description'), active: form.elements.active.checked};
+    if (!isProduct) return {name: text('name'), slug: text('slug'), description: text('description'), active: true};
     return {
       name: text('name'), slug: text('slug'), description: text('description'),
       categoryId: num('categoryId'), price: num('price'), discountPrice: num('discountPrice'),
@@ -231,6 +241,11 @@
     };
   }
 
-  dialog.addEventListener('click', event => { if (event.target === dialog) dialog.close(); });
+  dialog.addEventListener('click', event => {
+    if (event.target !== dialog) return;
+    const box = dialog.getBoundingClientRect();
+    const inside = event.clientX >= box.left && event.clientX <= box.right && event.clientY >= box.top && event.clientY <= box.bottom;
+    if (!inside) dialog.close();
+  });
   load();
 })();

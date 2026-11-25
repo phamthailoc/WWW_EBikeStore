@@ -87,7 +87,7 @@ public final class CatalogRules {
         positive(request.batteryCapacityAh(), "Dung lượng pin", new BigDecimal("100000"));
         positive(request.batteryVoltageV(), "Điện áp pin", new BigDecimal("10000"));
         positive(request.maxSpeedKmh(), "Tốc độ tối đa", new BigDecimal("1000"));
-        positive(request.maxRangeKm(), "Quãng đường tối đa", new BigDecimal("10000"));
+        positive(request.maxRangeKm(), "Quãng đường tối đa", new BigDecimal("9999.99"));
         if (request.motorPowerWatts() != null && (request.motorPowerWatts() <= 0 || request.motorPowerWatts() > 100000)) {
             throw bad("Công suất động cơ phải từ 1 đến 100000 W.");
         }
@@ -105,9 +105,15 @@ public final class CatalogRules {
         if (price.compareTo(MAX_PRICE) > 0) {
             throw bad("Giá bán tối đa 99.999.999 ₫.");
         }
+        if (price.stripTrailingZeros().scale() > 0) {
+            throw bad("Giá bán phải là số đồng nguyên.");
+        }
         if (discountPrice != null) {
             if (discountPrice.signum() <= 0) {
                 throw bad("Giá khuyến mãi phải lớn hơn 0 (để trống nếu không giảm giá).");
+            }
+            if (discountPrice.stripTrailingZeros().scale() > 0) {
+                throw bad("Giá khuyến mãi phải là số đồng nguyên.");
             }
             if (discountPrice.compareTo(price) >= 0) {
                 throw bad("Giá khuyến mãi phải thấp hơn giá bán.");

@@ -27,9 +27,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Caching;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.server.ResponseStatusException;
 
 /**
@@ -75,11 +78,15 @@ public class AdminCatalogService {
         for (Object[] row : products.orderItemCounts()) {
             orderCounts.put((Long) row[0], (Long) row[1]);
         }
+        Map<Long, Long> rideCounts = new HashMap<>();
+        for (Object[] row : products.testRideCounts()) {
+            rideCounts.put((Long) row[0], (Long) row[1]);
+        }
         return products.searchCatalog(like(search), categoryId).stream().map(product -> {
             long orders = orderCounts.getOrDefault(product.getId(), 0L);
             return new CatalogProductRow(product.getId(), product.getName(), product.getSlug(), product.getCategory().getId(),
                 product.getCategory().getName(), product.getPrice(), product.getDiscountPrice(), product.getStockQuantity(),
-                Boolean.TRUE.equals(product.getFeatured()), Boolean.TRUE.equals(product.getActive()), orders, orders == 0 && products.countTestRides(product.getId()) == 0);
+                Boolean.TRUE.equals(product.getFeatured()), Boolean.TRUE.equals(product.getActive()), orders, orders == 0 && rideCounts.getOrDefault(product.getId(), 0L) == 0);
         }).toList();
     }
 
@@ -142,19 +149,26 @@ public class AdminCatalogService {
         if (products.countTestRides(id) > 0) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Sản phẩm đã có lịch lái thử nên không thể xóa. Hãy bỏ chọn \"Đang bán\" để ngừng bán.");
         }
-        // the rows of colours, photos, reviews, favourites and stock history go with the bike (the foreign keys cascade); photos kept on S3 are removed too
-        for (ProductImage image : images.findByProductIdOrderBySortOrderAsc(id)) {
-            if (image.getStorageProvider() == StorageProvider.S3 && image.getS3Key() != null && !image.getS3Key().isBlank()) {
-                try {
-                    storage.delete(image.getS3Key());
-                } catch (RuntimeException exception) {
-                    log.warn("Could not delete the S3 object {} of deleted product id {}", image.getS3Key(), id, exception);
-                }
-            }
-        }
+        // the rows of colours, photos, reviews, favourites and stock history go with the bike (the foreign keys cascade)
+        List<String> s3Keys = images.findByProductIdOrderBySortOrderAsc(id).stream()
+            .filter(image -> image.getStorageProvider() == StorageProvider.S3 && image.getS3Key() != null && !image.getS3Key().isBlank())
+            .map(ProductImage::getS3Key).toList();
         String name = product.getName();
         products.delete(product);
+        try {
+            products.flush(); // an order that arrived after the check above is refused by the foreign key: say so before anything irreversible happens
+        } catch (DataIntegrityViolationException exception) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Sản phẩm vừa được đặt hàng nên không thể xóa. Hãy bỏ chọn \"Đang bán\" để ngừng bán.");
+        }
         auditLog.record("xóa sản phẩm", name);
+        // photos kept on S3 are removed only once the delete has committed
+        afterCommit(() -> s3Keys.forEach(key -> {
+            try {
+                storage.delete(key);
+            } catch (RuntimeException exception) {
+                log.warn("Could not delete the S3 object {} of deleted product id {}", key, id, exception);
+            }
+        }));
     }
 
     // ---- categories ----
@@ -228,6 +242,11 @@ public class AdminCatalogService {
         }
         String name = category.getName();
         categories.delete(category);
+        try {
+            categories.flush();
+        } catch (DataIntegrityViolationException exception) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Loại này vừa có thêm sản phẩm nên không thể xóa.");
+        }
         auditLog.record("xóa loại sản phẩm", name);
     }
 
@@ -239,6 +258,19 @@ public class AdminCatalogService {
 
     private Category findCategory(Integer id) {
         return categories.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy loại sản phẩm."));
+    }
+
+    private static void afterCommit(Runnable task) {
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    task.run();
+                }
+            });
+        } else {
+            task.run();
+        }
     }
 
     private static String like(String search) {

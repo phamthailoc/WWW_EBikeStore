@@ -30,6 +30,9 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
     @Query("select i.product.id, count(i) from OrderItem i group by i.product.id")
     java.util.List<Object[]> orderItemCounts();
 
+    @Query("select b.product.id, count(b) from TestRideBooking b group by b.product.id")
+    java.util.List<Object[]> testRideCounts();
+
     @Query("select count(b) from TestRideBooking b where b.product.id = :productId")
     long countTestRides(@Param("productId") Long productId);
 
