@@ -58,3 +58,5 @@ Product lists and product details are cached in the application's memory (`Cache
 - Dates: "issued at" is read from the same clock as the dates stored on the order (the JVM zone), so the order, hand-over and issue times on one page always agree. Run the server in the shop's zone (`TZ=Asia/Ho_Chi_Minh`) if the printed times must match the wall clock of the shop.
 - A provisional receipt (bike not handed over) is numbered `TT-<order number>`, the final one `PBH-<order number>`, so two different papers of one order never carry the same number.
 - Text typed by customers goes into XHTML pages; characters that XML 1.0 does not allow (such as a vertical tab) are dropped first, otherwise the page would not parse and no PDF could be made.
+
+- The shopping cart is kept in the server-side HTTP session (`/api/v1/cart`, kept 3 days and written to disk across restarts). Running more than one instance of the app needs the session shared between them (sticky sessions on the load balancer, or Spring Session with a shared store); with a single instance nothing more is needed.

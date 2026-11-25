@@ -91,6 +91,15 @@ class OrderItemQuantityTest {
         assertEquals(0, order.getTotalAmount().compareTo(payment.getAmount()));
     }
 
+    @Test void feesStayInWholeDong() {
+        item.setQuantity(3);
+        item.setLineTotal(new BigDecimal("30000000"));
+        order.setSubtotal(new BigDecimal("30000000"));
+        order.setShippingFee(new BigDecimal("1000000"));
+        service.updateItemQuantity(10L, 100L, 2, null);
+        assertEquals(0, new BigDecimal("666667").compareTo(order.getShippingFee()));
+    }
+
     @Test void loweringTheQuantityGivesStockBack() {
         service.updateItemQuantity(10L, 100L, 1, null);
         assertEquals(11, product.getStockQuantity());
