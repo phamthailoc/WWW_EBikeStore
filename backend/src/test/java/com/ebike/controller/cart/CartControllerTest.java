@@ -41,4 +41,9 @@ class CartControllerTest {
         var ex = assertThrows(ResponseStatusException.class, () -> controller.replace(put("{\"not\":\"a list\"}")));
         assertEquals(400, ex.getStatusCode().value());
     }
+
+    @Test void anEmptyBodyOrJsonNullIsABadRequest() {
+        assertEquals(400, assertThrows(ResponseStatusException.class, () -> controller.replace(put(""))).getStatusCode().value());
+        assertEquals(400, assertThrows(ResponseStatusException.class, () -> controller.replace(put("null"))).getStatusCode().value());
+    }
 }

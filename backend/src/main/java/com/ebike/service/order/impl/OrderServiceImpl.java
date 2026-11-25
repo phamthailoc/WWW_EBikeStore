@@ -469,7 +469,7 @@ public class OrderServiceImpl implements OrderService {
     /**
      * Staff change the quantity of one line while the order is still waiting for confirmation and is paid on hand-over (an online or instalment
      * order has a payment or a plan that this would put out of step). The unit price stays as it was when the order was placed; stock, the ledger, the
-     * subtotal, the delivery and registration fees (at the order's own rate), the discount and the payment amount follow.
+     * subtotal, the delivery and registration fees (in proportion to the number of bikes), the discount and the payment amount follow.
      */
     @Override
     @Transactional
@@ -576,8 +576,9 @@ public class OrderServiceImpl implements OrderService {
         auditLog.record("sửa số lượng đơn hàng", order.getOrderNumber() + ": " + item.getProductName() + " " + before + " → " + quantity);
         // the customer is told that the quantity and the total changed (a guest order has no account to tell)
         if (saved.getUser() != null) {
-            com.ebike.listener.notification.NotificationEventBridge.publish(new com.ebike.event.notification.OrderItemQuantityChangedEvent(
-                saved.getUser().getId(), saved.getId(), payment.getId(), saved.getOrderNumber(), item.getProductName(), before, quantity, saved.getTotalAmount()));
+            NotificationEventBridge.publish(new com.ebike.event.notification.OrderItemQuantityChangedEvent(
+                saved.getUser().getId(), saved.getId(), payment.getId(), saved.getOrderNumber(),
+                item.getProductName() + (variant != null && variant.getColorName() != null ? " (" + variant.getColorName() + ")" : ""), before, quantity, saved.getTotalAmount()));
         }
         return toResponse(saved);
     }

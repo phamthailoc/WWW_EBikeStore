@@ -85,8 +85,8 @@ public class NotificationCreationService {
             NotificationType.ORDER_STATUS,
             "Đổi số lượng trong đơn hàng",
             "Cửa hàng đã đổi số lượng " + event.productName() + " trong đơn hàng " + event.orderNumber() + " từ " + event.quantityBefore()
-                + " thành " + event.quantityAfter() + " xe. Tổng tiền mới: "
-                + new java.text.DecimalFormat("#,###", java.text.DecimalFormatSymbols.getInstance(java.util.Locale.forLanguageTag("vi-VN"))).format(event.totalAmount()) + " ₫.",
+                + " thành " + event.quantityAfter() + ". Tổng tiền mới: "
+                + com.ebike.service.installment.InstallmentMessages.money(event.totalAmount()) + ".",
             event.orderId(),
             event.paymentId()
         ));
