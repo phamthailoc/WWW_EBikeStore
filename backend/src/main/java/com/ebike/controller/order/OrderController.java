@@ -62,6 +62,13 @@ public class OrderController {
         return orderService.createOrder(request, authentication);
     }
 
+    @PatchMapping("/{id}/items/{itemId}")
+    @PreAuthorize("hasAuthority('" + PermissionConstants.OrderManagement.ORDER_UPDATE_STATUS + "')")
+    public OrderResponse updateItemQuantity(@PathVariable Long id, @PathVariable Long itemId,
+                                            @RequestBody com.ebike.dto.order.request.OrderItemQuantityRequest request, Authentication authentication) {
+        return orderService.updateItemQuantity(id, itemId, request == null ? null : request.quantity(), authentication);
+    }
+
     @PatchMapping("/{id}/status")
     @PreAuthorize("hasAuthority('" + PermissionConstants.OrderManagement.ORDER_UPDATE_STATUS + "')")
     public OrderResponse updateOrderStatus(@PathVariable Long id, @RequestBody OrderStatusUpdateRequest request, Authentication authentication) {

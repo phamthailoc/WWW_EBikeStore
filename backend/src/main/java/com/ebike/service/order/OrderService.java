@@ -32,6 +32,9 @@ public interface OrderService {
 
     OrderResponse requestCancellation(Long id, OrderCancellationRequest request, Authentication authentication);
 
+    /** Staff change the quantity of one line of an order that is still waiting for confirmation; stock and totals follow. */
+    OrderResponse updateItemQuantity(Long orderId, Long itemId, Integer quantity, Authentication authentication);
+
     /** Attaches guest orders placed with the signed-in customer's email, once that email is proven by OTP. */
     GuestOrderLinkResponse linkGuestOrders(GuestOrderLinkRequest request, Authentication authentication);
 
