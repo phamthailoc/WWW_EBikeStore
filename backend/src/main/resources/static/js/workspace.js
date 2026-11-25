@@ -174,7 +174,7 @@
       note.innerHTML='';
       const text=document.createElement('span');text.textContent=`Đang hiện ${records.length} ${page==='/manager/installments'?'hồ sơ':page==='/manager/orders'?'đơn':'lịch'}. `;
       const more=document.createElement('button');more.type='button';more.className='table-action';more.textContent='Xem thêm';
-      more.addEventListener('click',()=>{more.disabled=true;rowLimit+=RIDE_LIMITS[page];load()});
+      more.addEventListener('click',()=>{more.disabled=true;rowLimit=Math.min(rowLimit+RIDE_LIMITS[page],page==='/manager/orders'?2000:rowLimit+RIDE_LIMITS[page]);load()});if(page==='/manager/orders'&&rowLimit>=2000)more.replaceWith(document.createTextNode('Đã hiện tối đa 2000 đơn mới nhất: hãy dùng ô tìm kiếm để thu hẹp.'));
       note.append(text,more);
     }else{
       note.textContent=`Chỉ hiện ${max} lịch mới nhất của bạn.`;

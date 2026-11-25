@@ -60,6 +60,8 @@ public class AdminServiceImpl implements AdminService {
     private final PasswordEncoder passwordEncoder;
     private final OrderRepository orderRepository;
     private final com.ebike.repository.auth.AuthenticationLogRepository authenticationLogRepository;
+    private final com.ebike.repository.testride.TestRideBookingRepository testRides;
+    private final com.ebike.service.product.ProductReviewService reviews;
     private static final java.util.regex.Pattern ACCOUNT_EMAIL_PATTERN = java.util.regex.Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}$", java.util.regex.Pattern.CASE_INSENSITIVE);
     private final AuditLogService auditLog;
 
@@ -72,6 +74,8 @@ public class AdminServiceImpl implements AdminService {
         PasswordEncoder passwordEncoder,
         OrderRepository orderRepository,
         com.ebike.repository.auth.AuthenticationLogRepository authenticationLogRepository,
+        com.ebike.repository.testride.TestRideBookingRepository testRides,
+        com.ebike.service.product.ProductReviewService reviews,
         AuditLogService auditLog
     ) {
         this.pricingRuleRepository = pricingRuleRepository;
@@ -82,6 +86,8 @@ public class AdminServiceImpl implements AdminService {
         this.passwordEncoder = passwordEncoder;
         this.orderRepository = orderRepository;
         this.authenticationLogRepository = authenticationLogRepository;
+        this.testRides = testRides;
+        this.reviews = reviews;
         this.auditLog = auditLog;
     }
 
@@ -337,8 +343,9 @@ public class AdminServiceImpl implements AdminService {
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy tài khoản."));
         assertNotDeleted(user);
         String name = normalizeRequired(request == null ? null : request.name(), "Tên");
-        if (name.length() > 120) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tên tối đa 120 ký tự.");
+        String[] nameParts = name.split("\\s+", 2);
+        if (nameParts[0].length() > 100 || (nameParts.length > 1 && nameParts[1].length() > 100)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Họ và tên đệm/tên mỗi phần tối đa 100 ký tự.");
         }
         String email = normalizeRequired(request.email(), "Email").toLowerCase(Locale.ROOT);
         if (email.length() > 150 || !ACCOUNT_EMAIL_PATTERN.matcher(email).matches()) {
@@ -349,7 +356,12 @@ public class AdminServiceImpl implements AdminService {
         }
         applyName(user, name);
         user.setEmail(email);
-        User saved = userRepository.save(user);
+        User saved;
+        try {
+            saved = userRepository.saveAndFlush(user);
+        } catch (org.springframework.dao.DataIntegrityViolationException exception) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Email đã được sử dụng.");
+        }
         writeAudit("sửa thông tin tài khoản", saved.getEmail());
         return toAccountDetail(saved);
     }
@@ -388,7 +400,14 @@ public class AdminServiceImpl implements AdminService {
             throw new ResponseStatusException(HttpStatus.CONFLICT,
                 "Tài khoản này đã có đơn hàng nên không thể xóa. Hãy vô hiệu hóa tài khoản.");
         }
+        // A booked test ride must not vanish from the showroom's schedule with the account: the customer cancels it, or the admin disables the account.
+        if (testRides.existsByUserIdAndStatusIn(id, java.util.List.of("REQUESTED", "CONFIRMED"))) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                "Tài khoản này còn lịch lái thử chưa kết thúc nên không thể xóa. Hãy vô hiệu hóa tài khoản.");
+        }
         try {
+            // the reviews go with the account; the ratings shown on the products are recounted without them
+            reviews.removeReviewsOf(id);
             authenticationLogRepository.deleteByUserId(id);
             userRepository.delete(user);
             userRepository.flush();

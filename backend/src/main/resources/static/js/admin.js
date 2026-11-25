@@ -131,10 +131,10 @@
     const info = [
       ['Tên đăng nhập', a.username], ['Vai trò', (a.roles || []).join(', ')], ['Trạng thái', a.status],
       ['Ngày tạo', dateText(a.createdAt)], ['Số đơn hàng', a.orderCount]
-    ].map(([k, v]) => `<li><span class="muted">${esc(k)}:</span> ${esc(v)}</li>`).join('');
+    ].map(([k, v]) => `<span class="fact"><span class="muted">${esc(k)}:</span> ${esc(v)}</span>`).join('');
     formDialog({
       title: 'Thông tin tài khoản',
-      intro: `<ul class="account-facts">${info}</ul>${a.canDelete ? '' : 'Tài khoản đã có đơn hàng nên không xóa được, chỉ vô hiệu hóa.'}`,
+      intro: `<span class="account-facts">${info}</span>${a.canDelete ? '' : 'Tài khoản đã có đơn hàng nên không xóa được, chỉ vô hiệu hóa.'}`,
       fields: field('Họ và tên', `<input name="name" required maxlength="120" value="${esc(fullName)}">`)
         + field('Email', `<input name="email" type="email" required maxlength="150" value="${esc(a.email)}">`),
       submitLabel: 'Lưu thay đổi',

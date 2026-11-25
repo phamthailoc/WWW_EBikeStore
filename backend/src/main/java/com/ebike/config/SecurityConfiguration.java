@@ -140,6 +140,8 @@ public class SecurityConfiguration {
                 .requestMatchers(HttpMethod.POST, "/api/v1/admin/promotions").hasAnyRole(ADMIN_CONSOLE_ROLES)
                 .requestMatchers(HttpMethod.PATCH, "/api/v1/admin/promotions/*").hasAnyRole(ADMIN_CONSOLE_ROLES)
                 // Creating, re-roling, locking and erasing accounts is for ADMIN only; the other console roles may view.
+                .requestMatchers(HttpMethod.GET, "/api/v1/admin/accounts/*").hasAnyRole(ADMIN_CONSOLE_ROLES)
+                .requestMatchers(HttpMethod.PUT, "/api/v1/admin/accounts/*").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.POST, "/api/v1/admin/accounts").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PATCH, "/api/v1/admin/accounts/*/role").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PATCH, "/api/v1/admin/accounts/*/status").hasRole("ADMIN")

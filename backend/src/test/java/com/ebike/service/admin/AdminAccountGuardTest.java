@@ -57,6 +57,7 @@ class AdminAccountGuardTest {
     @Mock com.ebike.service.product.ProductReviewService reviews;
     @Mock com.ebike.service.admin.AuditLogService auditLog;
     @Mock com.ebike.repository.auth.AuthenticationLogRepository authLogs;
+    @Mock com.ebike.repository.testride.TestRideBookingRepository testRidesRepo;
     AdminServiceImpl service;
     User me;
     User otherAdmin;
@@ -64,7 +65,7 @@ class AdminAccountGuardTest {
 
     @BeforeEach void setup() {
         service = new AdminServiceImpl(pricingRules, promotions, audits, users, roles, encoder, orders,
-            authLogs,
+            authLogs, testRidesRepo, reviews,
             auditLog);
         me = account(1L, "admin.user", "ADMIN");
         otherAdmin = account(2L, "second.admin", "ADMIN");
@@ -131,10 +132,18 @@ class AdminAccountGuardTest {
     @Test void anAccountWithoutOrdersIsReallyDeletedWithItsSignInHistory() {
         customer.setEmail("khach@example.com");
         service.deleteAccount(3L, "KHACH@example.com");
+        verify(reviews).removeReviewsOf(3L);
         verify(authLogs).deleteByUserId(3L);
         verify(users).delete(customer);
         verify(users).flush();
         verify(auditLog).record("xóa tài khoản", "tài khoản #3");
+    }
+
+    @Test void anAccountWithAnOpenTestRideIsNotDeleted() {
+        customer.setEmail("khach@example.com");
+        when(testRidesRepo.existsByUserIdAndStatusIn(any(), any())).thenReturn(true);
+        assertEquals(409, assertThrows(ResponseStatusException.class, () -> service.deleteAccount(3L, "khach@example.com")).getStatusCode().value());
+        verify(users, never()).delete(any());
     }
 
     @Test void searchFindsAnAccountByNameUsernameOrEmail() {
@@ -151,7 +160,7 @@ class AdminAccountGuardTest {
         when(users.existsByEmail("trung@example.com")).thenReturn(true);
         assertEquals(409, assertThrows(ResponseStatusException.class,
             () -> service.updateAccount(3L, new com.ebike.dto.admin.request.AdminAccountUpdateRequest("Khách", "trung@example.com"))).getStatusCode().value());
-        when(users.save(any())).thenAnswer(inv -> inv.getArgument(0));
+        when(users.saveAndFlush(any())).thenAnswer(inv -> inv.getArgument(0));
         var detail = service.updateAccount(3L, new com.ebike.dto.admin.request.AdminAccountUpdateRequest("Lê Văn Khách", "moi@example.com"));
         assertEquals("moi@example.com", detail.email());
         assertEquals("Lê", detail.firstName());

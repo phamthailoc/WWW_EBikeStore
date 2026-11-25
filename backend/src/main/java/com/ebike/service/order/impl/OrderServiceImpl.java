@@ -481,7 +481,8 @@ public class OrderServiceImpl implements OrderService {
         if (quantity == null || quantity < 1 || quantity > MAX_ITEM_QUANTITY) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Số lượng mỗi xe phải từ 1 đến " + MAX_ITEM_QUANTITY + ".");
         }
-        Order order = orderRepository.findById(orderId)
+        // the order row is locked first (as in a status change), so a cancel, a confirm or a second edit cannot run between the checks and the save
+        Order order = orderRepository.findLockedById(orderId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy đơn hàng."));
         if (order.getStatus() != OrderStatus.PENDING) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chỉ sửa được số lượng khi đơn đang chờ xác nhận.");
@@ -508,6 +509,9 @@ public class OrderServiceImpl implements OrderService {
         ProductVariant variant = item.getProductVariant();
         stockLedger.lock(product == null ? List.of() : List.of(product), variant == null ? List.of() : List.of(variant));
         if (delta > 0) {
+            if (product == null || !Boolean.TRUE.equals(product.getActive()) || (variant != null && !Boolean.TRUE.equals(variant.getActive()))) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Xe này không còn bán nên không tăng được số lượng.");
+            }
             if (product != null && defaultStock(product.getStockQuantity()) < delta) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Không đủ hàng trong kho: " + item.getProductName());
             }
