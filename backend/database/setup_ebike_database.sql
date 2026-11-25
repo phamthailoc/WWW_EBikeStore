@@ -102,7 +102,7 @@ CREATE TABLE `reviews` (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     product_id BIGINT NOT NULL REFERENCES products(id) ON DELETE CASCADE,
     user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    rating INT NOT NULL CHECK (rating BETWEEN 1 AND 5),
+    rating INT NOT NULL,
     title VARCHAR(255),
     comment LONGTEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -172,9 +172,7 @@ CREATE TABLE `product_images` (
     status VARCHAR(30) NOT NULL DEFAULT 'ACTIVE',
     deleted_at DATETIME,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT chk_product_images_storage_provider CHECK (storage_provider IN ('LOCAL', 'S3')),
-    CONSTRAINT chk_product_images_status CHECK (status IN ('ACTIVE', 'PENDING_DELETE', 'DELETED'))
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 DROP TABLE IF EXISTS `showrooms`;
@@ -266,7 +264,7 @@ DROP TABLE IF EXISTS `user_addresses`;
 CREATE TABLE `user_addresses` (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    address_type VARCHAR(20) CHECK (address_type IN ('billing', 'shipping')),
+    address_type VARCHAR(20),
     street VARCHAR(255),
     city VARCHAR(100),
     postal_code VARCHAR(20),
@@ -359,8 +357,7 @@ CREATE TABLE `pricing_rules` (
     status VARCHAR(30) NOT NULL DEFAULT 'ACTIVE',
     effective_from DATETIME,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT chk_pricing_rules_status CHECK (status IN ('ACTIVE', 'SCHEDULED', 'INACTIVE'))
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 DROP TABLE IF EXISTS `promotions`;
@@ -377,9 +374,7 @@ CREATE TABLE `promotions` (
     starts_at DATETIME,
     ends_at DATETIME,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT chk_promotions_status CHECK (status IN ('LIVE', 'WAITING', 'EXPIRED', 'DISABLED')),
-    CONSTRAINT chk_promotions_discount_type CHECK (discount_type IN ('PERCENTAGE', 'FIXED_AMOUNT'))
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 DROP TABLE IF EXISTS `admin_audit_logs`;
@@ -410,8 +405,7 @@ CREATE TABLE `support_requests` (
     staff_note LONGTEXT,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_support_requests_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL,
-    CONSTRAINT chk_support_requests_status CHECK (status IN ('NEW', 'IN_PROGRESS', 'RESOLVED'))
+    CONSTRAINT fk_support_requests_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 CREATE INDEX `idx_support_requests_status` ON `support_requests` (status, created_at);
 
@@ -459,8 +453,7 @@ CREATE TABLE `stock_receipt_lines` (
     color_name VARCHAR(100) NULL,
     CONSTRAINT fk_stock_receipt_lines_receipt FOREIGN KEY (receipt_id) REFERENCES stock_receipts(id) ON DELETE CASCADE,
     CONSTRAINT fk_stock_receipt_lines_product FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
-    CONSTRAINT fk_stock_receipt_lines_variant FOREIGN KEY (variant_id) REFERENCES product_variants(id) ON DELETE CASCADE,
-    CONSTRAINT chk_stock_receipt_lines_quantity CHECK (quantity > 0)
+    CONSTRAINT fk_stock_receipt_lines_variant FOREIGN KEY (variant_id) REFERENCES product_variants(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 CREATE INDEX `idx_stock_receipt_lines_receipt` ON `stock_receipt_lines` (receipt_id);
 DROP TABLE IF EXISTS `stock_movements`;
@@ -481,9 +474,7 @@ CREATE TABLE `stock_movements` (
     CONSTRAINT fk_stock_movements_variant FOREIGN KEY (variant_id) REFERENCES product_variants(id) ON DELETE CASCADE,
     CONSTRAINT fk_stock_movements_order FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE SET NULL,
     CONSTRAINT fk_stock_movements_receipt FOREIGN KEY (receipt_id) REFERENCES stock_receipts(id) ON DELETE SET NULL,
-    CONSTRAINT fk_stock_movements_actor FOREIGN KEY (actor_user_id) REFERENCES users(id) ON DELETE SET NULL,
-    CONSTRAINT chk_stock_movements_reason CHECK (reason IN ('RECEIPT', 'SALE', 'CANCEL_RESTORE', 'ADJUSTMENT', 'OPENING')),
-    CONSTRAINT chk_stock_movements_change CHECK (quantity_change <> 0)
+    CONSTRAINT fk_stock_movements_actor FOREIGN KEY (actor_user_id) REFERENCES users(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 CREATE INDEX `idx_stock_movements_product` ON `stock_movements` (product_id, id);
 CREATE INDEX `idx_stock_movements_variant` ON `stock_movements` (variant_id, id);
@@ -503,7 +494,6 @@ CREATE TABLE `warranty_claims` (
     open_unit_id BIGINT AS (IF(status IN ('NEW', 'RECEIVED', 'REPAIRING'), order_item_unit_id, NULL)) VIRTUAL,
     CONSTRAINT fk_warranty_claims_unit FOREIGN KEY (order_item_unit_id) REFERENCES order_item_units(id) ON DELETE RESTRICT,
     CONSTRAINT fk_warranty_claims_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    CONSTRAINT chk_warranty_claims_status CHECK (status IN ('NEW', 'RECEIVED', 'REPAIRING', 'DONE', 'REJECTED')),
     CONSTRAINT uk_warranty_claims_open_unit UNIQUE (open_unit_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 CREATE INDEX `idx_warranty_claims_status` ON `warranty_claims` (status, created_at);
@@ -540,8 +530,6 @@ CREATE TABLE `test_ride_bookings` (
     CONSTRAINT fk_test_ride_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     CONSTRAINT fk_test_ride_product FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE RESTRICT,
     CONSTRAINT fk_test_ride_showroom FOREIGN KEY (showroom_id) REFERENCES showrooms(id) ON DELETE RESTRICT,
-    CONSTRAINT chk_test_ride_status CHECK (status IN ('REQUESTED', 'CONFIRMED', 'DONE', 'CANCELLED', 'NO_SHOW')),
-    CONSTRAINT chk_test_ride_cancel_source CHECK (cancel_source IS NULL OR cancel_source IN ('CUSTOMER', 'STORE', 'EXPIRED', 'ERASED')),
     CONSTRAINT uk_test_ride_active_user_slot UNIQUE (active_user_slot)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 CREATE INDEX `idx_test_ride_showroom_slot` ON `test_ride_bookings` (showroom_id, slot_start, status);
@@ -571,10 +559,7 @@ CREATE TABLE `installment_applications` (
     CONSTRAINT fk_installment_order FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
     CONSTRAINT fk_installment_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     CONSTRAINT fk_installment_reviewer FOREIGN KEY (reviewed_by) REFERENCES users(id) ON DELETE SET NULL,
-    CONSTRAINT uk_installment_order UNIQUE (order_id),
-    CONSTRAINT chk_installment_status CHECK (status IN ('PENDING', 'APPROVED', 'REJECTED', 'CANCELLED')),
-    CONSTRAINT chk_installment_percent CHECK (down_payment_percent BETWEEN 1 AND 99),
-    CONSTRAINT chk_installment_term CHECK (term_months BETWEEN 1 AND 60)
+    CONSTRAINT uk_installment_order UNIQUE (order_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 CREATE INDEX `idx_installment_status_created` ON `installment_applications` (status, created_at);
 CREATE INDEX `idx_installment_user_status` ON `installment_applications` (user_id, status);

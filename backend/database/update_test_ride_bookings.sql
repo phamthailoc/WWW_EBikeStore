@@ -24,8 +24,6 @@ CREATE TABLE IF NOT EXISTS `test_ride_bookings` (
     CONSTRAINT fk_test_ride_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     CONSTRAINT fk_test_ride_product FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE RESTRICT,
     CONSTRAINT fk_test_ride_showroom FOREIGN KEY (showroom_id) REFERENCES showrooms(id) ON DELETE RESTRICT,
-    CONSTRAINT chk_test_ride_status CHECK (status IN ('REQUESTED', 'CONFIRMED', 'DONE', 'CANCELLED', 'NO_SHOW')),
-    CONSTRAINT chk_test_ride_cancel_source CHECK (cancel_source IS NULL OR cancel_source IN ('CUSTOMER', 'STORE', 'EXPIRED', 'ERASED')),
     CONSTRAINT uk_test_ride_active_user_slot UNIQUE (active_user_slot)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -33,7 +31,6 @@ CREATE TABLE IF NOT EXISTS `test_ride_bookings` (
 ALTER TABLE `test_ride_bookings` ADD COLUMN IF NOT EXISTS cancelled_by_customer_at DATETIME NULL AFTER reminder_sent_at;
 -- who cancelled a CANCELLED booking (the lists word it in the reader's language); rows cancelled before this column existed stay NULL except the two cases below
 ALTER TABLE `test_ride_bookings` ADD COLUMN IF NOT EXISTS cancel_source VARCHAR(10) NULL AFTER cancelled_by_customer_at;
-ALTER TABLE `test_ride_bookings` ADD CONSTRAINT IF NOT EXISTS chk_test_ride_cancel_source CHECK (cancel_source IS NULL OR cancel_source IN ('CUSTOMER', 'STORE', 'EXPIRED', 'ERASED'));
 -- rides cancelled by an account erasure used to carry the Vietnamese sentence as the shop's note; it becomes the code
 UPDATE `test_ride_bookings` SET cancel_source = 'ERASED', staff_note = NULL WHERE status = 'CANCELLED' AND cancel_source IS NULL AND staff_note = 'Khách đã xóa tài khoản';
 UPDATE `test_ride_bookings` SET cancel_source = 'CUSTOMER' WHERE status = 'CANCELLED' AND cancel_source IS NULL AND cancelled_by_customer_at IS NOT NULL;

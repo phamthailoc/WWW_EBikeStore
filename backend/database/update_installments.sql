@@ -29,10 +29,7 @@ CREATE TABLE IF NOT EXISTS `installment_applications` (
     CONSTRAINT fk_installment_order FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
     CONSTRAINT fk_installment_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     CONSTRAINT fk_installment_reviewer FOREIGN KEY (reviewed_by) REFERENCES users(id) ON DELETE SET NULL,
-    CONSTRAINT uk_installment_order UNIQUE (order_id),
-    CONSTRAINT chk_installment_status CHECK (status IN ('PENDING', 'APPROVED', 'REJECTED', 'CANCELLED')),
-    CONSTRAINT chk_installment_percent CHECK (down_payment_percent BETWEEN 1 AND 99),
-    CONSTRAINT chk_installment_term CHECK (term_months BETWEEN 1 AND 60)
+    CONSTRAINT uk_installment_order UNIQUE (order_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 CREATE INDEX IF NOT EXISTS `idx_installment_status_created` ON `installment_applications` (status, created_at);
 CREATE INDEX IF NOT EXISTS `idx_installment_user_status` ON `installment_applications` (user_id, status);
