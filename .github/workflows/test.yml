@@ -75,8 +75,9 @@ jobs:
           USE ebike_db;
           INSERT INTO users(username,email,password_hash,first_name,last_name,is_active,is_verified,email_verified_at) VALUES
           ('selenium.manager','selenium.manager@example.com','$(hash "$MANAGER_PASSWORD")','Selenium','Manager',1,1,NOW()),
-          ('selenium.admin','selenium.admin@example.com','$(hash "$ADMIN_PASSWORD")','Selenium','Admin',1,1,NOW());
-          INSERT INTO user_roles(user_id,role_id) SELECT u.id,r.id FROM users u JOIN roles r
+          ('selenium.admin','selenium.admin@example.com','$(hash "$ADMIN_PASSWORD")','Selenium','Admin',1,1,NOW())
+          ON DUPLICATE KEY UPDATE password_hash=VALUES(password_hash);
+          INSERT IGNORE INTO user_roles(user_id,role_id) SELECT u.id,r.id FROM users u JOIN roles r
             ON r.name=IF(u.username='selenium.admin','ADMIN','MANAGER')
             WHERE u.username IN ('selenium.manager','selenium.admin');
           SQL

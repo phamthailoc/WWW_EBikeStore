@@ -529,7 +529,7 @@ public class OrderServiceImpl implements OrderService {
             backInStock = delta < 0 && StockAlertRules.isRestock(variantBefore, variant.getStockQuantity());
         }
         if (product != null) {
-            stockLedger.record(List.of(StockLedger.Entry.of(product, variant, -delta, delta > 0 ? StockMovementReason.SALE : StockMovementReason.CANCEL_RESTORE, null)),
+            stockLedger.record(List.of(StockLedger.Entry.of(product, variant, -delta, delta > 0 ? StockMovementReason.SALE : StockMovementReason.CANCEL_RESTORE, "Sửa số lượng " + before + " → " + quantity)),
                 order.getId(), order.getOrderNumber(), null, getAuthenticatedUserOrNull(authentication));
         }
 
@@ -554,12 +554,18 @@ public class OrderServiceImpl implements OrderService {
         if (Boolean.TRUE.equals(order.getIncludeRegistrationService()) && !keepRegistrationFee) {
             order.setRegistrationFee(registrationPerBike.multiply(BigDecimal.valueOf(registrableBikes(order, null, 0))));
         }
-        if (order.getPromotion() != null) {
-            // the terms the order was placed with: a percentage keeps its share of the subtotal, a fixed amount stays (never more than the subtotal)
+        if (defaultValue(order.getDiscountAmount()).signum() > 0) {
+            // the terms the order was placed with: a percentage keeps its share of the subtotal (and stays under the promotion's cap),
+            // a fixed amount stays; never more than the subtotal. A promotion deleted since then counts as a fixed amount.
             BigDecimal given = defaultValue(order.getDiscountAmount());
-            BigDecimal discount = "PERCENTAGE".equals(order.getPromotion().getDiscountType()) && subtotalBefore.signum() > 0
-                ? given.multiply(subtotal).divide(subtotalBefore, 0, RoundingMode.HALF_UP)
-                : given;
+            Promotion promotion = order.getPromotion();
+            BigDecimal discount = given;
+            if (promotion != null && "PERCENTAGE".equals(promotion.getDiscountType()) && subtotalBefore.signum() > 0) {
+                discount = given.multiply(subtotal).divide(subtotalBefore, 0, RoundingMode.HALF_UP);
+                if (promotion.getMaxDiscountAmount() != null) {
+                    discount = discount.min(promotion.getMaxDiscountAmount());
+                }
+            }
             order.setDiscountAmount(discount.min(subtotal));
         }
         order.setTotalAmount(calculateTotalAmount(subtotal, order.getShippingFee(), order.getDiscountAmount(), order.getRegistrationFee()));

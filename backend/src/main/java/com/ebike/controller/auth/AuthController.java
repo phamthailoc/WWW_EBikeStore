@@ -54,10 +54,15 @@ public class AuthController {
     public void deleteOwnAccount(
         @RequestBody com.ebike.dto.auth.request.DeleteOwnAccountRequest request,
         org.springframework.security.core.Authentication authentication,
+        HttpServletRequest httpServletRequest,
         HttpServletResponse httpServletResponse
     ) {
         ownAccountService.deleteOwnAccount(authentication, request);
         clearAuthCookie(httpServletResponse);
+        jakarta.servlet.http.HttpSession session = httpServletRequest.getSession(false);
+        if (session != null) {
+            session.invalidate();
+        }
     }
 
     @PostMapping("/register")

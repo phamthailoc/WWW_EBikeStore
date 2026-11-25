@@ -110,6 +110,39 @@ class OrderItemQuantityTest {
         assertEquals(0, new BigDecimal("4000000").compareTo(order.getDiscountAmount()));
     }
 
+    @Test void aCappedPercentageDiscountStaysUnderItsCap() {
+        Promotion promotion = new Promotion();
+        promotion.setDiscountType("PERCENTAGE");
+        promotion.setDiscountValue(new BigDecimal("10"));
+        promotion.setMaxDiscountAmount(new BigDecimal("2000000"));
+        order.setPromotion(promotion);
+        order.setDiscountAmount(new BigDecimal("2000000"));
+        service.updateItemQuantity(10L, 100L, 6, null);
+        assertEquals(0, new BigDecimal("2000000").compareTo(order.getDiscountAmount()));
+    }
+
+    @Test void aFixedDiscountStaysAndANullPromotionIsTreatedAsFixed() {
+        Promotion promotion = new Promotion();
+        promotion.setDiscountType("FIXED");
+        promotion.setDiscountValue(new BigDecimal("500000"));
+        order.setPromotion(promotion);
+        order.setDiscountAmount(new BigDecimal("500000"));
+        service.updateItemQuantity(10L, 100L, 4, null);
+        assertEquals(0, new BigDecimal("500000").compareTo(order.getDiscountAmount()));
+        order.setPromotion(null);
+        service.updateItemQuantity(10L, 100L, 1, null);
+        assertEquals(0, new BigDecimal("500000").compareTo(order.getDiscountAmount()));
+    }
+
+    @Test void theLedgerSaysSaleWhenRaisedAndRestoreWhenLowered() {
+        service.updateItemQuantity(10L, 100L, 3, null);
+        verify(ledger).record(org.mockito.ArgumentMatchers.argThat(entries -> entries.get(0).change() == -1
+            && entries.get(0).reason() == com.ebike.model.entity.stock.StockMovementReason.SALE), any(), any(), any(), any());
+        service.updateItemQuantity(10L, 100L, 1, null);
+        verify(ledger).record(org.mockito.ArgumentMatchers.argThat(entries -> entries.get(0).change() == 2
+            && entries.get(0).reason() == com.ebike.model.entity.stock.StockMovementReason.CANCEL_RESTORE), any(), any(), any(), any());
+    }
+
     @Test void moreThanTheStockOnHandIsRefused() {
         product.setStockQuantity(0);
         assertEquals(400, assertThrows(ResponseStatusException.class, () -> service.updateItemQuantity(10L, 100L, 3, null)).getStatusCode().value());
