@@ -11,18 +11,44 @@
   // The cart is kept in the server-side session; this page holds a copy that read() returns at once. Wait for ready before the first read().
   function read() { return current.map(item => ({...item})); }
   let queue = Promise.resolve();
+  let writeGen = 0;   // counts local changes: an answer from the server is adopted only when nothing newer has happened since it was asked
+  let pending = 0;    // requests on their way to the server
+  let loaded = false; // true once the cart has been read from the server at least once
   const lineOf = i => ({id: i.id, variantId: i.variantId || null, quantity: i.quantity, slug: i.slug});
   function adopt(lines, shown) {
-    const extra = new Map(shown.map(i => [key(i), i]));
+    const extra = new Map((shown || []).map(i => [key(i), i]));
     current = normalize(lines).map(line => ({...(extra.get(key(line)) || {}), ...line}));
     window.dispatchEvent(new Event('kinetic:cart'));
   }
-  // Changes are sent one after another so an older answer never overwrites a newer cart. The returned promise rejects when the server refuses.
+  // Reads the cart from the server (after the writes before it) and shows it, unless the visitor changed it meanwhile.
+  function reload() {
+    const gen = writeGen;
+    pending++;
+    const job = queue.then(async () => {
+      const lines = await request(ENDPOINT);
+      loaded = true;
+      if (gen === writeGen) adopt(lines, current);
+    }).finally(() => { pending--; });
+    queue = job.catch(() => {});
+    return job;
+  }
+  // Changes are sent one after another so an older answer never overwrites a newer cart. The returned promise rejects when the server refuses;
+  // the page then goes back to what the server really has.
   function write(items) {
     const shown = normalize(items);
+    const gen = ++writeGen;
     current = shown;
     window.dispatchEvent(new Event('kinetic:cart'));
-    const send = queue.then(async () => adopt(await request(ENDPOINT, shown.map(lineOf), 'PUT'), shown));
+    pending++;
+    const send = queue.then(async () => {
+      if (!loaded) await reload();
+      const lines = await request(ENDPOINT, shown.map(lineOf), 'PUT');
+      loaded = true;
+      if (gen === writeGen) adopt(lines, shown);
+    }).catch(async error => {
+      if (gen === writeGen) { try { adopt(await request(ENDPOINT), shown); } catch { /* keep what is shown */ } }
+      throw error;
+    }).finally(() => { pending--; });
     queue = send.catch(() => {});
     send.catch(() => {});
     return send;
@@ -30,6 +56,7 @@
   const ready = (async () => {
     try {
       let lines = await request(ENDPOINT);
+      loaded = true;
       let legacy = [];
       try { legacy = normalize(JSON.parse(localStorage.getItem(LEGACY_KEY) || '[]')); } catch { legacy = []; }
       if (legacy.length) {
@@ -42,6 +69,7 @@
   function limit(item) { return Math.max(0, Math.min(10, item.stock == null ? 10 : Number(item.stock))); }
   async function add(item) {
     await ready;
+    if (!loaded) await reload(); // never write on top of a cart that could not be read
     const items = read(), existing = items.find(i => key(i) === key(item));
     const quantity = (existing?.quantity || 0) + item.quantity;
     if (quantity > limit(item)) throw Error(`${'Chỉ có thể mua tối đa'} ${limit(item)} ${'xe cho màu đã chọn.'}`);
@@ -49,8 +77,8 @@
     if (existing) Object.assign(existing, item, {quantity}); else items.push({...item});
     await write(items);
   }
-  async function request(url, data, method) {
-    const response = await fetch(url, {credentials:'same-origin', method:method || (data === undefined ? 'GET' : 'POST'), headers:{Accept:'application/json', ...(data === undefined ? {} : {'Content-Type':'application/json'})}, ...(data === undefined ? {} : {body:JSON.stringify(data)})});
+  async function request(url, data, method, extraHeaders) {
+    const response = await fetch(url, {credentials:'same-origin', method:method || (data === undefined ? 'GET' : 'POST'), headers:{Accept:'application/json', ...(data === undefined ? {} : {'Content-Type':'application/json'}), ...(extraHeaders || {})}, ...(data === undefined ? {} : {body:JSON.stringify(data)})});
     const body = await response.json().catch(() => null);
     if (response.status === 204) return null;
     if (!response.ok) { const error = Error(body?.detail || body?.message || body?.error || `${'Yêu cầu thất bại ('}${response.status}).`); error.status = response.status; throw error; }
@@ -84,9 +112,9 @@
     });
     updateHeader();
   }
-  window.KineticCart = {read, write, add, key, limit, money, escape, safeImage, request, refresh, ready};
+  window.KineticCart = {read, write, add, key, limit, money, escape, safeImage, request, refresh, ready, reload, idle: () => pending === 0};
   window.addEventListener('kinetic:cart', updateHeader);
   // another tab of the same session may have changed the cart
-  window.addEventListener('focus', () => { request(ENDPOINT).then(lines => adopt(lines, current)).catch(() => {}); });
+  window.addEventListener('focus', () => { reload().catch(() => {}); });
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mountHeader); else mountHeader();
 })();

@@ -40,6 +40,9 @@ public class SessionCartService {
     /** Replaces the cart after checking every line against the catalogue; the checked lines are what is returned. */
     @Transactional(readOnly = true)
     public List<CartLine> replace(HttpSession session, List<CartLine> requested) {
+        if (requested != null && requested.size() > MAX_LINES) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Giỏ hàng tối đa " + MAX_LINES + " mẫu/màu xe.");
+        }
         List<CartLine> lines = requested == null ? List.of() : requested;
         if (lines.size() > MAX_LINES) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Giỏ hàng tối đa " + MAX_LINES + " mẫu/màu xe.");
@@ -76,7 +79,7 @@ public class SessionCartService {
     }
 
     /** After an order is placed the bought quantities leave the cart; lines of other bikes stay. A buy-now order that was never in the cart changes nothing. */
-    public void removePurchased(HttpSession session, List<OrderCreateItemRequest> bought) {
+    public synchronized void removePurchased(HttpSession session, List<OrderCreateItemRequest> bought) {
         if (session == null || bought == null || bought.isEmpty()) {
             return;
         }

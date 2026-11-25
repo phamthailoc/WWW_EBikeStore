@@ -68,4 +68,19 @@ class SessionCartServiceTest {
         cart.removePurchased(session, List.of(new OrderCreateItemRequest(2L, 1, null)));
         assertEquals(1, cart.read(session).size());
     }
+    @Test void aColourThatIsNotThisBikesIsDropped() {
+        assertEquals(0, cart.replace(session, List.of(new CartLine(1L, 77L, 1, null))).size());
+    }
+
+    @Test void onlyTheBoughtColourLeavesTheCart() {
+        var bike = products.findById(1L).get();
+        var red = new com.ebike.model.entity.product.ProductVariant();
+        ReflectionTestUtils.setField(red, "id", 5L);
+        var blue = new com.ebike.model.entity.product.ProductVariant();
+        ReflectionTestUtils.setField(blue, "id", 6L);
+        bike.setVariants(new java.util.HashSet<>(java.util.Set.of(red, blue)));
+        cart.replace(session, List.of(new CartLine(1L, 5L, 2, null), new CartLine(1L, 6L, 1, null)));
+        cart.removePurchased(session, List.of(new OrderCreateItemRequest(1L, 2, 5L)));
+        assertEquals(List.of(new CartLine(1L, 6L, 1, "xe-1")), cart.read(session));
+    }
 }

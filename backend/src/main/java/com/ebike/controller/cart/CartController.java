@@ -2,6 +2,7 @@ package com.ebike.controller.cart;
 
 import com.ebike.dto.cart.CartLine;
 import com.ebike.service.cart.SessionCartService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import java.util.List;
 import org.springframework.http.HttpStatus;
@@ -23,9 +24,10 @@ public class CartController {
         this.cart = cart;
     }
 
+    // Only a PUT starts a session: a visitor who never put anything in the cart gets none (and every page view asks).
     @GetMapping
-    public List<CartLine> get(HttpSession session) {
-        return cart.read(session);
+    public List<CartLine> get(HttpServletRequest request) {
+        return cart.read(request.getSession(false));
     }
 
     @PutMapping
@@ -35,7 +37,7 @@ public class CartController {
 
     @DeleteMapping
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void clear(HttpSession session) {
-        cart.clear(session);
+    public void clear(HttpServletRequest request) {
+        cart.clear(request.getSession(false));
     }
 }

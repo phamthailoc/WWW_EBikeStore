@@ -61,10 +61,18 @@ public class OrderController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public OrderResponse createOrder(@RequestBody OrderCreateRequest request, Authentication authentication, jakarta.servlet.http.HttpSession session) {
+    public OrderResponse createOrder(@RequestBody OrderCreateRequest request, Authentication authentication,
+                                    @org.springframework.web.bind.annotation.RequestHeader(value = "X-Cart-Checkout", required = false) String fromCart,
+                                    jakarta.servlet.http.HttpServletRequest http) {
         OrderResponse created = orderService.createOrder(request, authentication);
-        // the bought quantities leave the session cart as soon as the order exists
-        sessionCart.removePurchased(session, request.items());
+        // Checkout of the cart (not "buy now") takes the bought quantities out of the session cart. The order exists already, so a failure here must not fail the request.
+        if ("1".equals(fromCart)) {
+            try {
+                sessionCart.removePurchased(http.getSession(false), request.items());
+            } catch (RuntimeException exception) {
+                org.slf4j.LoggerFactory.getLogger(OrderController.class).warn("Could not update the session cart after order {}", created.id(), exception);
+            }
+        }
         return created;
     }
 
