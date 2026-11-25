@@ -337,3 +337,7 @@ tbody tr:hover { background: color-mix(in srgb, var(--surface-2) 55%, transparen
 ::placeholder { color: var(--muted); opacity: 1; }
 .checkout-layout input::placeholder, .checkout-layout textarea::placeholder { color: var(--muted); }
 .checkout-layout input[type=radio], .checkout-layout input[type=checkbox] { accent-color: var(--accent-text); }
+
+/* Row actions: the buttons keep their label on one line and wrap as whole buttons, two or three to a row, instead of one word per line. */
+td .product-action { flex-wrap: wrap; gap: 6px; min-width: 250px; }
+td .table-action { white-space: nowrap; margin: 0; font-size: 12px; }

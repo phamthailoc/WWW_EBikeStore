@@ -129,31 +129,31 @@ class AccountErasureSeleniumTest extends StorefrontSeleniumTest {
     }
 
     @Test
-    void adminErasesACustomerWithOrdersOnlyWithTheRightEmail() throws Exception {
+    void adminCannotDeleteACustomerWithOrdersButDeletesOneWithoutOnlyWithTheRightEmail() throws Exception {
         HttpClient manager = managerApi();
         HttpClient admin = adminApi();
-        Customer customer = newCustomer();
-        long orderId = placePickupOrder(customer);
 
-        assertThrows(IllegalStateException.class, () -> call(admin, "DELETE", "/api/v1/admin/accounts/" + customer.id(), null),
-            "the email is required");
-        IllegalStateException wrong = assertThrows(IllegalStateException.class, () -> adminDelete(admin, customer.id(), "sai@example.com"));
-        assertTrue(wrong.getMessage().contains("400"), wrong.getMessage());
-        assertTrue(mentions(call(admin, "GET", "/api/v1/admin/accounts", null), customer.email()), "still there after a wrong email");
-
-        adminDelete(admin, customer.id(), customer.email().toUpperCase());
-        assertFalse(mentions(call(admin, "GET", "/api/v1/admin/accounts", null), customer.email()));
+        // An account that has placed an order is never deleted (the shop keeps its accounting record): the admin disables it instead.
+        Customer buyer = newCustomer();
+        long orderId = placePickupOrder(buyer);
+        IllegalStateException refused = assertThrows(IllegalStateException.class, () -> adminDelete(admin, buyer.id(), buyer.email()));
+        assertTrue(refused.getMessage().contains("409"), refused.getMessage());
+        assertTrue(mentions(call(admin, "GET", "/api/v1/admin/accounts", null), buyer.email()), "still there");
         assertEquals(orderId, call(manager, "GET", "/api/v1/orders/" + orderId, null).path("id").asLong(), "the order is kept");
-        assertTrue(hasAudit(admin, "xóa tài khoản (ẩn danh hóa)", "tài khoản #" + customer.id()));
-
-        // A deleted account is final.
-        assertThrows(IllegalStateException.class, () -> call(admin, "PATCH", "/api/v1/admin/accounts/" + customer.id() + "/status", Map.of("status", "ACTIVE")));
-        assertThrows(IllegalStateException.class, () -> call(admin, "PATCH", "/api/v1/admin/accounts/" + customer.id() + "/role", Map.of("role", "MANAGER")));
-        assertThrows(IllegalStateException.class, () -> adminDelete(admin, customer.id(), customer.email()));
-        // The shop can still close the order of an erased account, and that adds no notification to it.
         call(manager, "PATCH", "/api/v1/orders/" + orderId + "/status", Map.of("status", "CANCELLED", "reason", "Selenium cleanup"));
-        assertEquals("CANCELLED", call(manager, "GET", "/api/v1/orders/" + orderId, null).path("status").asText());
-        // (no API reads another account's notifications; checked in the database: none for DELETED accounts)
+
+        // An account without orders is really deleted, and only when the exact email is typed.
+        Customer visitor = newCustomer();
+        assertThrows(IllegalStateException.class, () -> call(admin, "DELETE", "/api/v1/admin/accounts/" + visitor.id(), null), "the email is required");
+        IllegalStateException wrong = assertThrows(IllegalStateException.class, () -> adminDelete(admin, visitor.id(), "sai@example.com"));
+        assertTrue(wrong.getMessage().contains("400"), wrong.getMessage());
+        assertTrue(mentions(call(admin, "GET", "/api/v1/admin/accounts", null), visitor.email()), "still there after a wrong email");
+
+        adminDelete(admin, visitor.id(), visitor.email().toUpperCase());
+        assertFalse(mentions(call(admin, "GET", "/api/v1/admin/accounts", null), visitor.email()));
+        assertTrue(hasAudit(admin, "xóa tài khoản", "tài khoản #" + visitor.id()));
+        assertThrows(IllegalStateException.class, () -> call(admin, "GET", "/api/v1/admin/accounts/" + visitor.id(), null));
+        assertThrows(IllegalStateException.class, () -> adminDelete(admin, visitor.id(), visitor.email()));
     }
 
     @Test
