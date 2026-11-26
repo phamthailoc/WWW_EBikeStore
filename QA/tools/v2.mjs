@@ -1,0 +1,12 @@
+const B='http://localhost:8088'; const J={'Content-Type':'application/json'};
+const post=(u,b,h={})=>fetch(B+u,{method:'POST',headers:{...J,...h},body:JSON.stringify(b)}).then(async r=>[r.status,(await r.text()).slice(0,110)]);
+console.log('login unknown', ...(await post('/api/v1/auth/login',{usernameOrEmail:'no.such.user.qa',password:'x1234567'})));
+console.log('login wrong pw', ...(await post('/api/v1/auth/login',{usernameOrEmail:'selenium.manager',password:'x1234567'})));
+const A=(await (await fetch(B+'/api/v1/auth/login',{method:'POST',headers:J,body:JSON.stringify({usernameOrEmail:'selenium.admin',password:'SeleniumAdmin@123'})})).json()).token;
+const code='QANEG'+(Date.now()%10000);
+const [s,b]=await post('/api/v1/admin/promotions',{code,campaignName:'neg cap',discountType:'PERCENTAGE',discountValue:10,maxDiscountAmount:-50000,usageLimit:5,status:'LIVE',startsAt:'2026-01-01T00:00:00',endsAt:'2027-01-01T00:00:00'},{Authorization:'Bearer '+A});
+console.log('promo neg cap', s, b.slice(0,80));
+const q=await fetch(B+'/api/v1/orders/quote',{method:'POST',headers:J,body:JSON.stringify({items:[{productId:3,productVariantId:11,quantity:1}],discountCode:code})}).then(r=>r.json());
+console.log('quote', 'sub',q.subtotal,'disc',q.discountAmount,'total',q.totalAmount, q.message||'');
+const list=await fetch(B+'/api/v1/admin/promotions',{headers:{Authorization:'Bearer '+A}}).then(r=>r.json()); const p=list.find(x=>x.code===code);
+if(p) console.log('disable', (await fetch(B+'/api/v1/admin/promotions/'+p.id,{method:'PATCH',headers:{...J,Authorization:'Bearer '+A},body:JSON.stringify({...p,status:'DISABLED'})})).status);
