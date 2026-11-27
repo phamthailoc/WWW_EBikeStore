@@ -568,7 +568,7 @@ public class OrderServiceImpl implements OrderService {
                     discount = discount.min(promotion.getMaxDiscountAmount());
                 }
             }
-            order.setDiscountAmount(discount.min(subtotal));
+            order.setDiscountAmount(discount.max(BigDecimal.ZERO).min(subtotal));
         }
         order.setTotalAmount(calculateTotalAmount(subtotal, order.getShippingFee(), order.getDiscountAmount(), order.getRegistrationFee()));
         payment.setAmount(order.getTotalAmount());
@@ -1119,7 +1119,8 @@ public class OrderServiceImpl implements OrderService {
         } else {
             discount = promotion.getDiscountValue();
         }
-        return discount.min(base);
+        // defence in depth: a corrupt promotion row (negative value or cap) can never turn the discount into a surcharge
+        return discount.max(BigDecimal.ZERO).min(base);
     }
 
     private void attachInitialPayment(Order order, String rawPaymentMethod, InstallmentPlanner.Prepared installment) {

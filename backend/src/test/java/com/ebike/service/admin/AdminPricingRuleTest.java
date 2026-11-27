@@ -46,11 +46,13 @@ class AdminPricingRuleTest {
         rule.setUnit("VND/xe");
     }
 
-    @Test void adminCanSetFeeToZero() {
+    // M-24: the registration service fee must stay above zero (a zero fee gives the service away)
+    @Test void registrationServiceFeeOfZeroIsRejected() {
         when(pricingRules.findById(1L)).thenReturn(Optional.of(rule));
-        when(pricingRules.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
-        service.updatePricingRule(1L, new PricingRuleUpdateRequest(BigDecimal.ZERO, "ACTIVE", null));
-        assertEquals(0, BigDecimal.ZERO.compareTo(rule.getAmount()));
+        assertThrows(ResponseStatusException.class,
+            () -> service.updatePricingRule(1L, new PricingRuleUpdateRequest(BigDecimal.ZERO, "ACTIVE", null)));
+        verify(pricingRules, never()).save(any());
+        assertEquals(0, new BigDecimal("500000").compareTo(rule.getAmount()));
     }
 
     @Test void negativeOrMissingAmountIsRejected() {

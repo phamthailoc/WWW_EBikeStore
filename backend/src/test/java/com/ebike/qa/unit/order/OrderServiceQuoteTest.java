@@ -148,6 +148,21 @@ class OrderServiceQuoteTest extends OrderServiceTestBase {
         assertThat(quote.totalAmount()).isEqualByComparingTo("9000000");
     }
 
+    /** Defence in depth (U-06): a corrupt promotion row (negative cap or negative value) can never turn the discount into a surcharge. */
+    @Test
+    void aCorruptPromotionNeverGivesANegativeDiscountOrMoreThanTheSubtotal() {
+        promo("PERCENTAGE", "10").setMaxDiscountAmount(new BigDecimal("-50000"));
+        OrderQuoteResponse capped = service.quoteOrder(new OrderQuoteRequest(false, one(1L, 1), "CODE"));
+        assertThat(capped.discountAmount()).isEqualByComparingTo("0");
+        assertThat(capped.totalAmount()).isLessThanOrEqualTo(capped.subtotal());
+        promo("FIXED_AMOUNT", "-5000");
+        OrderQuoteResponse fixed = service.quoteOrder(new OrderQuoteRequest(false, one(1L, 1), "CODE"));
+        assertThat(fixed.discountAmount()).isEqualByComparingTo("0");
+        promo("FIXED_AMOUNT", "99000000");
+        OrderQuoteResponse huge = service.quoteOrder(new OrderQuoteRequest(false, one(1L, 1), "CODE"));
+        assertThat(huge.discountAmount()).isEqualByComparingTo(huge.subtotal());
+    }
+
     @Test
     void fixedDiscountIsLimitedToTheSubtotal() {
         promo("FIXED_AMOUNT", "99000000");

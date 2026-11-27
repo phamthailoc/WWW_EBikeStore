@@ -52,6 +52,8 @@ public class AdminServiceImpl implements AdminService {
     private static final Set<String> ACCOUNT_STATUSES = Set.of("ACTIVE", "INACTIVE", "LOCKED");
     private static final Set<String> ACCOUNT_ROLES = Set.of("SUPER_ADMIN", "ADMIN", "MANAGER", "OPERATOR", "SUPPORT", "MAINTENANCE", "CUSTOMER");
 
+    private static final BigDecimal MAX_DELIVERY_FEE = new BigDecimal("5000000");
+
     private final PricingRuleRepository pricingRuleRepository;
     private final PromotionRepository promotionRepository;
     private final AdminAuditLogRepository auditLogRepository;
@@ -131,6 +133,22 @@ public class AdminServiceImpl implements AdminService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Lãi suất trả góp không được vượt 60% mỗi năm.");
         }
 
+        String ruleCode = rule.getCode();
+        if (PricingService.REGISTRATION_SERVICE.equals(ruleCode) && request.amount().signum() <= 0) {
+            // a zero fee while the service is offered would silently give it away
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Phí dịch vụ hồ sơ phải lớn hơn 0.");
+        }
+        if ((PricingService.REGISTRATION_TAX_RATE_CENTRAL.equals(ruleCode) || PricingService.REGISTRATION_TAX_RATE_OTHER.equals(ruleCode))
+            && request.amount().compareTo(new BigDecimal("100")) > 0) {
+            // a rate is a percentage: 150 is an amount in dong typed in the wrong box
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Thuế trước bạ phải nằm trong khoảng 0-100%.");
+        }
+        if ((PricingService.HOME_DELIVERY_SAME_CITY.equals(ruleCode) || PricingService.HOME_DELIVERY_OTHER_PROVINCE.equals(ruleCode))
+            && request.amount().compareTo(MAX_DELIVERY_FEE) > 0) {
+            // owner decision D5: a delivery fee above 5,000,000 per bike is a typo
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Phí giao xe không được vượt quá 5.000.000 ₫ mỗi xe.");
+        }
+
         if (rule.getCode().startsWith(PricingService.SAVINGS_PREFIX)) {
             // V33: the savings calculator divides by nothing but shows these figures to every visitor, so a zero or a typo in the wrong unit is refused here
             BigDecimal ceiling = savingsCeiling(rule.getCode());
@@ -165,6 +183,11 @@ public class AdminServiceImpl implements AdminService {
             .toList();
     }
 
+    /** 0 (or less) means "no cap"; shared by create and update so a negative cap can never be stored. */
+    private static BigDecimal normalizeMaxDiscount(BigDecimal value) {
+        return value == null || value.signum() <= 0 ? null : value;
+    }
+
     @Override
     @Transactional
     public PromotionResponse createPromotion(PromotionCreateRequest request) {
@@ -178,7 +201,7 @@ public class AdminServiceImpl implements AdminService {
         promotion.setCampaignName(normalizeRequired(request.campaignName(), "Tên chiến dịch"));
         promotion.setDiscountType(normalizeOrDefault(request.discountType(), "PERCENTAGE", DISCOUNT_TYPES));
         promotion.setDiscountValue(validatePositive(request.discountValue(), "Giá trị giảm"));
-        promotion.setMaxDiscountAmount(request.maxDiscountAmount());
+        promotion.setMaxDiscountAmount(normalizeMaxDiscount(request.maxDiscountAmount()));
         promotion.setUsageLimit(request.usageLimit() == null || request.usageLimit() < 0 ? 0 : request.usageLimit());
         promotion.setUsageCount(0);
         promotion.setStatus(normalizeOrDefault(request.status(), "WAITING", PROMOTION_STATUSES));
@@ -207,8 +230,7 @@ public class AdminServiceImpl implements AdminService {
             promotion.setDiscountValue(validatePositive(request.discountValue(), "Giá trị giảm"));
         }
         if (request.maxDiscountAmount() != null) {
-            // 0 (or less) means "no cap"
-            promotion.setMaxDiscountAmount(request.maxDiscountAmount().signum() <= 0 ? null : request.maxDiscountAmount());
+            promotion.setMaxDiscountAmount(normalizeMaxDiscount(request.maxDiscountAmount()));
         }
         if (request.usageLimit() != null && request.usageLimit() >= 0) {
             promotion.setUsageLimit(request.usageLimit());
