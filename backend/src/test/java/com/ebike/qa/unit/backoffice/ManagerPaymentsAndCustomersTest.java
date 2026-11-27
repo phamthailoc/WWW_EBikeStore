@@ -286,9 +286,17 @@ class ManagerPaymentsAndCustomersTest extends ManagerBase {
         Payment p = paidCancelled(1);
         var res = service.refundPayment(1L, new ManagerPaymentConfirmationRequest(null, "  bank ref 1 "));
         assertThat(p.getPaymentStatus()).isEqualTo(PaymentStatus.REFUNDED);
-        assertThat(p.getProviderResponse()).isEqualTo("bank ref 1");
+        assertThat(p.getProviderResponse()).isEqualTo("REFUND NOTE: bank ref 1");
         assertThat(res.paymentStatus()).isEqualTo("REFUNDED");
         verify(audit).record("ghi nhận hoàn tiền", "ORD-1");
+    }
+
+    @Test
+    void refund_keepsTheGatewayRecordOfALatePayment() {
+        Payment p = paidCancelled(1);
+        p.setProviderResponse("{\"vnp_TransactionNo\":\"4242\"}");
+        service.refundPayment(1L, new ManagerPaymentConfirmationRequest(null, "bank ref 1"));
+        assertThat(p.getProviderResponse()).isEqualTo("{\"vnp_TransactionNo\":\"4242\"}\nREFUND NOTE: bank ref 1");
     }
 
     @Test

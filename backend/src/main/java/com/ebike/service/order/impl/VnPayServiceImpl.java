@@ -332,7 +332,7 @@ public class VnPayServiceImpl implements VnPayService {
             // the money shows up as PAID on a cancelled order so the manager refunds it (UC-17).
             if (orderCancelled) {
                 // M-21: VNPay is still answered "00" (the money was taken, refusing would not return it); the audit trail and the manager lists flag it
-                auditLog.recordBy("VNPay", "thanh toán đến muộn cho đơn đã hủy, cần hoàn tiền", payment.getOrder().getOrderNumber());
+                auditAfterCommit("thanh toán đến muộn cho đơn đã hủy, cần hoàn tiền", payment.getOrder().getOrderNumber());
                 LOGGER.warn("Order {} was cancelled but VNPay payment {} arrived: it must be refunded", payment.getOrder().getOrderNumber(), params.get("vnp_TransactionNo"));
             } else if (payment.getOrder().getStatus() == OrderStatus.PENDING) {
                 // U-03: only a waiting order is confirmed; one the staff already moved on (PROCESSING, SHIPPED, ...) keeps its status
@@ -342,6 +342,31 @@ public class VnPayServiceImpl implements VnPayService {
             payment.setPaymentStatus(PaymentStatus.FAILED);
         }
         paymentRepository.save(payment);
+    }
+
+    /**
+     * The audit entry is written only once the payment is committed (it is saved in its own transaction, so an earlier write could outlive a rollback
+     * and be written twice by the gateway's retry), and a failing audit never turns a recorded payment into an error answer for the gateway.
+     */
+    private void auditAfterCommit(String action, String target) {
+        Runnable write = () -> {
+            try {
+                auditLog.recordBy("VNPay", action, target);
+            } catch (RuntimeException exception) {
+                LOGGER.error("Could not write the audit entry '{}' for {}", action, target, exception);
+            }
+        };
+        if (org.springframework.transaction.support.TransactionSynchronizationManager.isSynchronizationActive()) {
+            org.springframework.transaction.support.TransactionSynchronizationManager.registerSynchronization(
+                new org.springframework.transaction.support.TransactionSynchronization() {
+                    @Override
+                    public void afterCommit() {
+                        write.run();
+                    }
+                });
+        } else {
+            write.run();
+        }
     }
 
     private boolean isValidSignature(Map<String, String> params) {

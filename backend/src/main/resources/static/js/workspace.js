@@ -148,10 +148,11 @@
     if (k === 'amount' && typeof row.amount === 'number' && row.unit && !/^VND/.test(row.unit)) return new Intl.NumberFormat(localeTag(),{maximumFractionDigits:2}).format(row.amount) + ' ' + (row.unit);
     return null;
   };
-  // M-21: money taken for an order that was cancelled (a late VNPay result): flagged so the manager sees it needs a refund
-  const needsRefund = row => (page === '/manager/payments' || page === '/manager/orders') && row.paymentStatus === 'PAID' && (page === '/manager/payments' ? row.orderStatus : row.status) === 'CANCELLED';
+  // M-21: money taken for an order that was cancelled (a late VNPay result): the manager sees it needs a refund, the customer that the shop will get in touch
+  const refundText = (paymentStatus,orderStatus) => paymentStatus === 'PAID' && orderStatus === 'CANCELLED' ? (page.startsWith('/customer') ? 'Đã thanh toán — cửa hàng sẽ liên hệ hoàn tiền' : 'Đã thanh toán, cần hoàn tiền') : null;
+  const rowRefundText = row => refundText(row.paymentStatus, row.orderStatus || row.status);
   const cellHtml = (row,k) => {
-    if (k === 'paymentStatus' && needsRefund(row)) return escape('Đã thanh toán, cần hoàn tiền');
+    if (k === 'paymentStatus' && rowRefundText(row)) return escape(rowRefundText(row));
     const text = pricingCell(row,k) !== null ? pricingCell(row,k) : k === 'paymentStatus' && downPaymentPaid(row.paymentMethod,row.paymentStatus)
       ? downPaymentPaid(row.paymentMethod,row.paymentStatus)
       : isRidePage && k === 'status' && row.status === 'CANCELLED' && rideCancelText(row) ? rideCancelText(row)
@@ -285,7 +286,7 @@
     if(Number(order.shippingFee)>0)lines.push(line('Phí giao hàng',money(order.shippingFee)));
     if(Number(order.discountAmount)>0)lines.push(line('Giảm giá','−'+money(order.discountAmount)));
     lines.push(line('<strong>' + 'Tổng cộng' + '</strong>',money(order.totalAmount)));
-    const payment=`${valueText.paymentMethod[order.paymentMethod]||order.paymentMethod||'-'} · ${downPaymentPaid(order.paymentMethod,order.paymentStatus)||order.paymentStatus||'Chưa có giao dịch'}`;
+    const payment=`${valueText.paymentMethod[order.paymentMethod]||order.paymentMethod||'-'} · ${refundText(order.paymentStatus,order.status)||downPaymentPaid(order.paymentMethod,order.paymentStatus)||order.paymentStatus||'Chưa có giao dịch'}`;
     detailPanel('orderPricing',`<h2>${'Giá và thanh toán'}</h2><div class="table-scroll"><table><tbody>${lines.join('')}</tbody></table></div><p><strong>${'Thanh toán:'}</strong> ${escape(payment)}</p>${order.notes?`<p><strong>${'Ghi chú:'}</strong> ${escape(order.notes)}</p>`:''}`);
   };
   // Order timeline (Task 3). Only three moments are stored: the order date, when it was handed to delivery

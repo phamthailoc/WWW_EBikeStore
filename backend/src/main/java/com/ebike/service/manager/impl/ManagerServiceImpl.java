@@ -123,9 +123,9 @@ public class ManagerServiceImpl implements ManagerService {
             .filter(payment -> payment.getPaymentStatus() == PaymentStatus.PENDING)
             .count();
 
-        BigDecimal todayRevenue = sumRevenueWithin(paidAtKnown(orders), today, today);
-        BigDecimal weekRevenue = sumRevenueWithin(paidAtKnown(orders), weekStart, today);
-        BigDecimal monthRevenue = sumRevenueWithin(paidAtKnown(orders), monthStart, today);
+        BigDecimal todayRevenue = sumRevenueWithin(orders, today, today);
+        BigDecimal weekRevenue = sumRevenueWithin(orders, weekStart, today);
+        BigDecimal monthRevenue = sumRevenueWithin(orders, monthStart, today);
         List<OrderResponse> recentOrders = orders.stream()
             .sorted(Comparator.comparing(Order::getCreatedAt).reversed())
             .limit(5)
@@ -266,7 +266,9 @@ public class ManagerServiceImpl implements ManagerService {
         }
 
         payment.setPaymentStatus(PaymentStatus.REFUNDED);
-        payment.setProviderResponse(request.note().trim());
+        // the gateway record (a late payment keeps its VNPay JSON) stays; the refund note is added under it
+        String gatewayRecord = payment.getProviderResponse();
+        payment.setProviderResponse((gatewayRecord == null || gatewayRecord.isBlank() ? "" : gatewayRecord + "\n") + "REFUND NOTE: " + request.note().trim());
 
         ManagerPaymentResponse refunded = toPaymentResponse(paymentRepository.save(payment));
         auditLog.record("ghi nhận hoàn tiền", payment.getOrder().getOrderNumber());
@@ -625,11 +627,6 @@ public class ManagerServiceImpl implements ManagerService {
 
     private BigDecimal revenueOf(Order order) {
         return order.getPayment().getAmount();
-    }
-
-    /** The dashboard only counts payments that carry a payment time (the report also dates older rows by the order date). */
-    private List<Order> paidAtKnown(List<Order> orders) {
-        return orders.stream().filter(order -> order.getPayment() == null || order.getPayment().getPaidAt() != null).toList();
     }
 
     /** Revenue received between two dates, by payment date. */

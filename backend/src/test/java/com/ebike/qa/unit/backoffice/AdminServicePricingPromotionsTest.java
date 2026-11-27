@@ -182,6 +182,20 @@ class AdminServicePricingPromotionsTest {
     }
 
     @Test
+    void pricing_acceptedBoundaries_deliveryFeeAtTheCapAndTaxRateAtZeroAndHundred() {
+        PricingRule delivery = rule("HOME_DELIVERY_OTHER_PROVINCE");
+        service.updatePricingRule(1L, amt("5000000"));
+        assertThat(delivery.getAmount()).isEqualByComparingTo("5000000");
+        assertThatThrownBy(() -> service.updatePricingRule(1L, amt("5000001"))).satisfies(t -> assertStatus(t, HttpStatus.BAD_REQUEST));
+        PricingRule tax = rule("REGISTRATION_TAX_RATE_OTHER");
+        service.updatePricingRule(1L, amt("0"));
+        assertThat(tax.getAmount()).isEqualByComparingTo("0");
+        service.updatePricingRule(1L, amt("100"));
+        assertThat(tax.getAmount()).isEqualByComparingTo("100");
+        assertThatThrownBy(() -> service.updatePricingRule(1L, amt("100.01"))).satisfies(t -> assertStatus(t, HttpStatus.BAD_REQUEST));
+    }
+
+    @Test
     void promo_create_happy_stripsWhitespaceInCode_defaultsPercentageAndWaiting() {
         var res = service.createPromotion(promo(" SAVE 10 ", " Summer ", null, "10", null, null, null, null, null));
         ArgumentCaptor<Promotion> saved = ArgumentCaptor.forClass(Promotion.class);

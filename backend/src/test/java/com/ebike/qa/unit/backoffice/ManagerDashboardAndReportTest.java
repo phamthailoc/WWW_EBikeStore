@@ -101,7 +101,7 @@ class ManagerDashboardAndReportTest extends ManagerBase {
     }
 
     @Test
-    void dashboard_onlyPaidPaymentsCount_notPendingFailedRefundedOrMissingPaidAt() {
+    void dashboard_onlyPaidPaymentsCount_notPendingFailedRefundedOrCancelled() {
         LocalDateTime now = LocalDateTime.now();
         List<Order> list = new ArrayList<>();
         for (PaymentStatus s : List.of(PaymentStatus.PENDING, PaymentStatus.FAILED, PaymentStatus.REFUNDED, PaymentStatus.CANCELLED)) {
@@ -109,9 +109,17 @@ class ManagerDashboardAndReportTest extends ManagerBase {
             Fx.payment(o.getId(), o, PaymentMethod.VNPAY, s, "700", now);
             list.add(o);
         }
-        list.add(paidOrder(50, OrderStatus.CONFIRMED, now, null, "700"));
         when(orders.findAll()).thenReturn(list);
         assertThat(service.getDashboard().todayRevenue()).isEqualByComparingTo("0");
+    }
+
+    /** A PAID payment with no payment time is dated by its order date, in the dashboard exactly like in the report. */
+    @Test
+    void dashboard_paymentWithoutPaidAt_isDatedByTheOrderDate_likeTheReport() {
+        LocalDateTime now = LocalDateTime.now();
+        when(orders.findAll()).thenReturn(List.of(paidOrder(50, OrderStatus.CONFIRMED, now, null, "700")));
+        assertThat(service.getDashboard().todayRevenue()).isEqualByComparingTo("700");
+        assertThat(report("custom", now.toLocalDate().toString(), now.toLocalDate().toString()).totalRevenue()).isEqualByComparingTo("700");
     }
 
     /**

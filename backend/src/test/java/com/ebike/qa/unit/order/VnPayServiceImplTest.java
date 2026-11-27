@@ -660,9 +660,9 @@ class VnPayServiceImplTest {
         assertThat(order.getStatus()).isEqualTo(OrderStatus.CANCELLED);
     }
 
-    /** M-21: the money was taken for a cancelled order: VNPay is still answered 00, stock is not re-reserved, the case is audited, and a retry adds nothing. */
+    /** M-21: the money was taken for a cancelled order: VNPay is still answered 00, the order stays CANCELLED (the service has no stock collaborator at all, so stock cannot be re-reserved from here), the case is audited once, and a retry adds nothing. */
     @Test
-    void ipn_lateSuccessForACancelledOrder_isAuditedAndNeverReReservesStock() {
+    void ipn_lateSuccessForACancelledOrder_isAuditedOnceAndKeepsTheOrderCancelled() {
         Order order = stubPendingPayment(OrderStatus.CANCELLED, PaymentMethod.VNPAY, PaymentStatus.CANCELLED, "1000000", "EBIKE20261126101000X");
         Map<String, String> params = success("EBIKE20261126101000X", "100000000", "4242");
 
@@ -672,7 +672,61 @@ class VnPayServiceImplTest {
         assertThat(order.getStatus()).isEqualTo(OrderStatus.CANCELLED);
         assertThat(order.getPayment().getPaymentStatus()).isEqualTo(PaymentStatus.PAID);
         verify(audit, times(1)).recordBy(org.mockito.ArgumentMatchers.eq("VNPay"), org.mockito.ArgumentMatchers.contains("cần hoàn tiền"), org.mockito.ArgumentMatchers.eq("ORD-20261126-ABCD1234"));
-        verify(orderRepository, never()).save(any());
+        verify(orderRepository, never()).save(any()); // the order row is not written at all
+    }
+
+    /** A failing audit write never turns a recorded payment into an error for the gateway (it would retry forever). */
+    @Test
+    void ipn_lateSuccess_auditFailureStillRecordsThePaymentAndAnswers00() {
+        Order order = stubPendingPayment(OrderStatus.CANCELLED, PaymentMethod.VNPAY, PaymentStatus.CANCELLED, "1000000", "EBIKE20261126101000X");
+        org.mockito.Mockito.doThrow(new IllegalStateException("audit down")).when(audit).recordBy(any(), any(), any());
+
+        assertThat(service.handleIpnCallback(success("EBIKE20261126101000X", "100000000", "4242"))).containsEntry("RspCode", "00");
+
+        assertThat(order.getPayment().getPaymentStatus()).isEqualTo(PaymentStatus.PAID);
+        verify(paymentRepository).save(order.getPayment());
+    }
+
+    /** Inside a transaction the audit entry waits for the commit: nothing is written if the transaction rolls back. */
+    @Test
+    void ipn_lateSuccess_auditIsWrittenOnlyAfterCommit() {
+        org.springframework.transaction.support.TransactionSynchronizationManager.initSynchronization();
+        try {
+            stubPendingPayment(OrderStatus.CANCELLED, PaymentMethod.VNPAY, PaymentStatus.CANCELLED, "1000000", "EBIKE20261126101000X");
+            service.handleIpnCallback(success("EBIKE20261126101000X", "100000000", "4242"));
+            verify(audit, never()).recordBy(any(), any(), any());
+            org.springframework.transaction.support.TransactionSynchronizationManager.getSynchronizations().forEach(
+                org.springframework.transaction.support.TransactionSynchronization::afterCommit);
+            verify(audit, times(1)).recordBy(any(), any(), any());
+        } finally {
+            org.springframework.transaction.support.TransactionSynchronizationManager.clearSynchronization();
+        }
+    }
+
+    @Test
+    void return_lateSuccessForACancelledOrderWritesTheAuditOnce() {
+        Order order = stubPendingPayment(OrderStatus.CANCELLED, PaymentMethod.VNPAY, PaymentStatus.CANCELLED, "1000000", "EBIKE20261126101000X");
+        Map<String, String> params = success("EBIKE20261126101000X", "100000000", "4242");
+
+        service.handleReturnUrl(params);
+        service.handleReturnUrl(params);
+        service.handleIpnCallback(params);
+
+        assertThat(order.getPayment().getPaymentStatus()).isEqualTo(PaymentStatus.PAID);
+        verify(audit, times(1)).recordBy(any(), any(), any());
+    }
+
+    /** A replayed IPN after the manager refunded the payment changes nothing and is still answered 00. */
+    @Test
+    void ipn_replayAfterAManagerRefundStaysRefunded() {
+        Order order = stubPendingPayment(OrderStatus.CANCELLED, PaymentMethod.VNPAY, PaymentStatus.REFUNDED, "1000000", "EBIKE20261126101000X");
+        order.getPayment().setProviderTxnId("4242");
+
+        assertThat(service.handleIpnCallback(success("EBIKE20261126101000X", "100000000", "4242"))).containsEntry("RspCode", "00");
+
+        assertThat(order.getPayment().getPaymentStatus()).isEqualTo(PaymentStatus.REFUNDED);
+        assertThat(order.getStatus()).isEqualTo(OrderStatus.CANCELLED);
+        verify(audit, never()).recordBy(any(), any(), any());
     }
 
     @Test

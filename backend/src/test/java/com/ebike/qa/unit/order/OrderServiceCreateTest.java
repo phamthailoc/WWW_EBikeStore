@@ -437,18 +437,25 @@ class OrderServiceCreateTest extends OrderServiceTestBase {
     }
 
     @Test
-    void fixedDiscountNeverExceedsTheSubtotalAndTotalNeverGoesNegative() {
+    void aDiscountThatBringsTheTotalToZeroIsRefused() {
+        // owner decision: a total of 0 can not be paid, so such an order is never created (the promotion's use is not counted either)
         promotion(5L, "HUGE", "FIXED_AMOUNT", "999999999");
-        service.createOrder(copy(pickupRequest(1L, 1), f -> f.discountCode = "HUGE"), aliceAuth);
-        assertThat(saved().getDiscountAmount()).isEqualByComparingTo("10000000");
-        assertThat(saved().getTotalAmount()).isEqualByComparingTo("0");
+        assertRejected(copy(pickupRequest(1L, 1), f -> f.discountCode = "HUGE"));
+        verify(promotionRepository, never()).tryIncrementUsage(any());
     }
 
     @Test
-    void percentageOver100IsClampedToTheSubtotal() {
+    void aTotalOfOneDongIsStillAllowed() {
+        promotion(5L, "ALMOST", "FIXED_AMOUNT", "9999999");
+        service.createOrder(copy(pickupRequest(1L, 1), f -> f.discountCode = "ALMOST"), aliceAuth);
+        assertThat(saved().getDiscountAmount()).isEqualByComparingTo("9999999");
+        assertThat(saved().getTotalAmount()).isEqualByComparingTo("1");
+    }
+
+    @Test
+    void percentageOver100IsClampedToTheSubtotalSoTheOrderIsRefusedAsZeroTotal() {
         promotion(5L, "CRAZY", "PERCENTAGE", "250");
-        service.createOrder(copy(pickupRequest(1L, 1), f -> f.discountCode = "CRAZY"), aliceAuth);
-        assertThat(saved().getDiscountAmount()).isEqualByComparingTo("10000000");
+        assertRejected(copy(pickupRequest(1L, 1), f -> f.discountCode = "CRAZY"));
     }
 
     @Test

@@ -255,6 +255,7 @@ public class OrderServiceImpl implements OrderService {
         order.setRegistrationFee(registrationFee(includeRegistrationService, pricingService.registrationServicePerBike(), items));
         Promotion promotion = findValidPromotion(request.discountCode());
         BigDecimal promoDiscountAmount = promotion == null ? ZERO : calculatePromoDiscount(promotion, subtotal);
+        assertPayableTotal(calculateTotalAmount(subtotal, order.getShippingFee(), promoDiscountAmount, order.getRegistrationFee()));
         if (promotion != null) {
             assertCodeNotUsedBefore(promotion, user, order.getCustomerEmail());
             if (promotionRepository.tryIncrementUsage(promotion.getId()) == 0) {
@@ -970,12 +971,15 @@ public class OrderServiceImpl implements OrderService {
         BigDecimal totalDiscountAmount = promoDiscountAmount;
         BigDecimal shippingFee = shippingFee(homeDelivery, province, items);
 
+        BigDecimal quotedTotal = calculateTotalAmount(subtotal, shippingFee, totalDiscountAmount, registrationFee);
+        assertPayableTotal(quotedTotal);
+
         return new OrderQuoteResponse(
             subtotal,
             shippingFee,
             totalDiscountAmount,
             registrationFee,
-            calculateTotalAmount(subtotal, shippingFee, totalDiscountAmount, registrationFee),
+            quotedTotal,
             registrationServicePerBike,
             registrationServiceOffered,
             percentOf(subtotal, pricingService.registrationTaxRateOther()),
@@ -1060,6 +1064,13 @@ public class OrderServiceImpl implements OrderService {
 
     private boolean shouldIncludeRegistrationService(Boolean includeRegistrationService) {
         return Boolean.TRUE.equals(includeRegistrationService);
+    }
+
+    /** A total of 0 can not be paid (VNPay refuses it, the order would sit unpaid until it expires): the quote and the order both refuse it. */
+    private void assertPayableTotal(BigDecimal total) {
+        if (total == null || total.signum() <= 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tổng thanh toán của đơn phải lớn hơn 0.");
+        }
     }
 
     private BigDecimal calculateTotalAmount(
