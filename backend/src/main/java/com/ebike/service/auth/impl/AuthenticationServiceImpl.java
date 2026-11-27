@@ -121,13 +121,19 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             passwordEncoder.matches(request.password(), dummyPasswordHash());
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, LOGIN_FAILED_MESSAGE);
         }
-        if (!Boolean.TRUE.equals(user.getActive())) {
-            auditSignIn(user, false, "tài khoản bị khóa");
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Tài khoản đang bị khóa.");
-        }
+        // The password is checked first: a locked or erased account answers a wrong password exactly like a missing one,
+        // so the 403 never confirms that an account exists. Only the owner (right password) learns it is locked.
         if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
             auditSignIn(user, false, "sai mật khẩu");
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, LOGIN_FAILED_MESSAGE);
+        }
+        if ("DELETED".equals(user.getAccountStatus())) {
+            // an erased account is never "locked", it simply does not exist for the outside
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, LOGIN_FAILED_MESSAGE);
+        }
+        if (!Boolean.TRUE.equals(user.getActive())) {
+            auditSignIn(user, false, "tài khoản bị khóa");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Tài khoản đang bị khóa.");
         }
         auditSignIn(user, true, null);
 

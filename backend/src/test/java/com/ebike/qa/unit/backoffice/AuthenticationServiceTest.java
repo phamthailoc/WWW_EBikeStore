@@ -2,6 +2,7 @@ package com.ebike.qa.unit.backoffice;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -353,13 +354,50 @@ class AuthenticationServiceTest {
         verify(jwt, never()).generateToken(any());
     }
 
+    // Rewritten for B1b: the old rule (403 before the password is checked) let anyone confirm that a locked account exists.
     @Test
-    void login_inactiveAccount_is403_andPasswordNotEvenChecked() {
+    void login_inactiveAccount_wrongPassword_is401_sameBodyAsUnknownUser() {
+        User u = customer();
+        u.setActive(false);
+        when(users.findByEmail("tien@example.com")).thenReturn(Optional.of(u));
+        when(users.findByEmail("ghost@example.com")).thenReturn(Optional.empty());
+        when(encoder.matches(anyString(), any())).thenReturn(false);
+        Throwable locked = catchThrowable(() -> service.login(new LoginRequest("tien@example.com", "wrong"), null, null));
+        Throwable unknown = catchThrowable(() -> service.login(new LoginRequest("ghost@example.com", "wrong"), null, null));
+        assertStatus(locked, HttpStatus.UNAUTHORIZED);
+        var lockedBody = new com.ebike.common.exception.ApiExceptionHandler().handleResponseStatusException((ResponseStatusException) locked);
+        var unknownBody = new com.ebike.common.exception.ApiExceptionHandler().handleResponseStatusException((ResponseStatusException) unknown);
+        assertThat(lockedBody.getStatusCode()).isEqualTo(unknownBody.getStatusCode());
+        assertThat(lockedBody.getBody().message()).isEqualTo(unknownBody.getBody().message());
+        assertThat(lockedBody.getBody().error()).isEqualTo(unknownBody.getBody().error());
+        assertThat(lockedBody.getBody().status()).isEqualTo(unknownBody.getBody().status());
+        verify(jwt, never()).generateToken(any());
+    }
+
+    @Test
+    void login_inactiveAccount_correctPassword_is403() {
         User u = customer();
         u.setActive(false);
         when(users.findByEmail(anyString())).thenReturn(Optional.of(u));
+        when(encoder.matches(anyString(), any())).thenReturn(true);
         assertThatThrownBy(() -> service.login(new LoginRequest("tien@example.com", "secret1"), null, null))
-            .satisfies(t -> assertStatus(t, HttpStatus.FORBIDDEN));
+            .satisfies(t -> assertStatus(t, HttpStatus.FORBIDDEN))
+            .hasMessageContaining("Tài khoản đang bị khóa.");
+        verify(jwt, never()).generateToken(any());
+    }
+
+    @Test
+    void login_erasedAccount_isAlways401_evenIfThePasswordMatched() {
+        User u = customer();
+        u.setActive(false);
+        u.setAccountStatus("DELETED");
+        when(users.findByEmail(anyString())).thenReturn(Optional.of(u));
+        for (boolean passwordMatches : new boolean[] {false, true}) {
+            when(encoder.matches(anyString(), any())).thenReturn(passwordMatches);
+            assertThatThrownBy(() -> service.login(new LoginRequest("tien@example.com", "secret1"), null, null))
+                .satisfies(t -> assertStatus(t, HttpStatus.UNAUTHORIZED))
+                .hasMessageContaining("Tên đăng nhập hoặc mật khẩu chưa chính xác.");
+        }
         verify(jwt, never()).generateToken(any());
     }
 
@@ -380,6 +418,7 @@ class AuthenticationServiceTest {
         User u = customer();
         u.setActive(null);
         when(users.findByEmail(anyString())).thenReturn(Optional.of(u));
+        when(encoder.matches(anyString(), any())).thenReturn(true); // B1b: the lock is only revealed to someone who knows the password
         assertThatThrownBy(() -> service.login(new LoginRequest("tien@example.com", "secret1"), null, null))
             .satisfies(t -> assertStatus(t, HttpStatus.FORBIDDEN));
     }
@@ -389,6 +428,7 @@ class AuthenticationServiceTest {
         User u = Fx.user(9L, "boss", "boss@example.com", "ADMIN");
         u.setActive(false);
         when(users.findByEmail(anyString())).thenReturn(Optional.of(u));
+        when(encoder.matches(anyString(), any())).thenReturn(true); // B1b: the lock is only revealed to someone who knows the password
         assertThatThrownBy(() -> service.login(new LoginRequest("boss@example.com", "x"), null, null))
             .isInstanceOf(ResponseStatusException.class);
         verify(audit).recordBy(eq("boss"), eq("đăng nhập thất bại"), eq("tài khoản bị khóa"));
