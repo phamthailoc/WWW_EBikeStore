@@ -120,8 +120,7 @@ class ManagerDashboardAndReportTest extends ManagerBase {
      * screens must agree. Expected today revenue 0, actual 700. ManagerServiceImpl.java:617-624 (sumPaidOrdersWithin has no status filter).
      */
     @Test
-    @Tag("bug")
-    void bug_dashboard_countsPaidMoneyOfCancelledOrdersAsRevenue() {
+    void regression_dashboard_countsPaidMoneyOfCancelledOrdersAsRevenue() {
         LocalDateTime now = LocalDateTime.now();
         when(orders.findAll()).thenReturn(List.of(paidOrder(1, OrderStatus.CANCELLED, now, now, "700")));
         assertThat(service.getDashboard().todayRevenue()).isEqualByComparingTo("0");
@@ -416,5 +415,31 @@ class ManagerDashboardAndReportTest extends ManagerBase {
     void export_cancellationRateIsZero_whenNothingWasPlaced() {
         when(orders.findAll()).thenReturn(List.of());
         assertThat(service.getRevenueReportForExport("custom", "2025-03-10", "2025-03-10").cancellationRate()).isZero();
+    }
+
+    /** M-25: the dashboard, the revenue report and a customer's total spent use ONE definition: PAID payments of orders that are not CANCELLED. */
+    @Test
+    void revenue_dashboardReportAndTotalSpentAgree() {
+        LocalDateTime now = LocalDateTime.now();
+        com.ebike.model.entity.auth.User anna = Fx.user(1, "anna", "anna@x.com", new String[] {"CUSTOMER"});
+        Order normal = paidOrder(1, OrderStatus.DELIVERED, now, now, "16800000");
+        Order cancelledPaid = paidOrder(2, OrderStatus.CANCELLED, now, now, "16800000");
+        Order refunded = Fx.order(3, "ORD-3", OrderStatus.CANCELLED, now);
+        Fx.payment(3, refunded, PaymentMethod.VNPAY, PaymentStatus.REFUNDED, "16800000", now);
+        Order refundedLive = Fx.order(4, "ORD-4", OrderStatus.CONFIRMED, now);
+        Fx.payment(4, refundedLive, PaymentMethod.VNPAY, PaymentStatus.REFUNDED, "16800000", now);
+        List<Order> all = List.of(normal, cancelledPaid, refunded, refundedLive);
+        all.forEach(o -> o.setUser(anna));
+        when(orders.findAll()).thenReturn(all);
+        when(users.findAll()).thenReturn(List.of(anna));
+
+        var dashboard = service.getDashboard();
+        var report = service.getRevenueReport("custom", now.toLocalDate().toString(), now.toLocalDate().toString());
+        var spent = service.getCustomers(null).get(0).totalSpent();
+
+        assertThat(dashboard.todayRevenue()).isEqualByComparingTo("16800000");
+        assertThat(report.totalRevenue()).isEqualByComparingTo(dashboard.todayRevenue());
+        assertThat(report.breakdown().stream().map(p -> p.revenue()).reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add)).isEqualByComparingTo(dashboard.todayRevenue());
+        assertThat(spent).isEqualByComparingTo(dashboard.todayRevenue());
     }
 }

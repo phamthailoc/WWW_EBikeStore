@@ -148,7 +148,10 @@
     if (k === 'amount' && typeof row.amount === 'number' && row.unit && !/^VND/.test(row.unit)) return new Intl.NumberFormat(localeTag(),{maximumFractionDigits:2}).format(row.amount) + ' ' + (row.unit);
     return null;
   };
+  // M-21: money taken for an order that was cancelled (a late VNPay result): flagged so the manager sees it needs a refund
+  const needsRefund = row => (page === '/manager/payments' || page === '/manager/orders') && row.paymentStatus === 'PAID' && (page === '/manager/payments' ? row.orderStatus : row.status) === 'CANCELLED';
   const cellHtml = (row,k) => {
+    if (k === 'paymentStatus' && needsRefund(row)) return escape('Đã thanh toán, cần hoàn tiền');
     const text = pricingCell(row,k) !== null ? pricingCell(row,k) : k === 'paymentStatus' && downPaymentPaid(row.paymentMethod,row.paymentStatus)
       ? downPaymentPaid(row.paymentMethod,row.paymentStatus)
       : isRidePage && k === 'status' && row.status === 'CANCELLED' && rideCancelText(row) ? rideCancelText(row)
