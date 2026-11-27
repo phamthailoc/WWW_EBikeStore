@@ -1,8 +1,8 @@
 package com.ebike.repository.order;
 
 import com.ebike.model.entity.order.OrderEmailVerificationSession;
-import jakarta.persistence.LockModeType;
 import com.ebike.model.entity.order.OrderEmailVerificationStatus;
+import jakarta.persistence.LockModeType;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
@@ -20,10 +20,13 @@ public interface OrderEmailVerificationSessionRepository extends JpaRepository<O
 
     Optional<OrderEmailVerificationSession> findFirstByEmailAndRequesterKeyOrderByCreatedAtDesc(String email, String requesterKey);
 
-    /** Sends in the window; served by idx_order_email_verification_email_created (email, created_at). */
+    /** Sends to the email from anyone in the window; served by idx_order_email_verification_email_created (email, created_at). */
     long countByEmailAndCreatedAtAfter(String email, LocalDateTime after);
 
-    /** Sessions locked by too many wrong codes in the window. */
-    long countByEmailAndStatusAndAttemptCountGreaterThanEqualAndCreatedAtAfter(
-        String email, OrderEmailVerificationStatus status, int attempts, LocalDateTime after);
+    /** Sends to the email from one requester in the window; served by idx_order_email_verification_email_requester. */
+    long countByEmailAndRequesterKeyAndCreatedAtAfter(String email, String requesterKey, LocalDateTime after);
+
+    /** Sessions of one requester locked by too many wrong codes in the window. */
+    long countByEmailAndRequesterKeyAndStatusAndAttemptCountGreaterThanEqualAndCreatedAtAfter(
+        String email, String requesterKey, OrderEmailVerificationStatus status, int attempts, LocalDateTime after);
 }

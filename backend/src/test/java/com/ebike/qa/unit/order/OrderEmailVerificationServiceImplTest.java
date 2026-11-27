@@ -61,7 +61,7 @@ class OrderEmailVerificationServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        service = new OrderEmailVerificationServiceImpl(repository, emailSender, SECRET, 10, 20);
+        service = new OrderEmailVerificationServiceImpl(repository, emailSender, SECRET, 3, 5, 50);
         when(repository.save(any(OrderEmailVerificationSession.class))).thenAnswer(invocation -> {
             OrderEmailVerificationSession session = invocation.getArgument(0);
             if (session.getId() == null) {
@@ -77,6 +77,10 @@ class OrderEmailVerificationServiceImplTest {
         return HexFormat.of().formatHex(mac.doFinal(value.getBytes(StandardCharsets.UTF_8)));
     }
 
+    private static String otpHash(String code) throws Exception {
+        return hmac("otp:" + code);
+    }
+
     private static String sha256(String code) throws Exception {
         return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(code.getBytes(StandardCharsets.UTF_8)));
     }
@@ -90,7 +94,7 @@ class OrderEmailVerificationServiceImplTest {
         OrderEmailVerificationSession session = new OrderEmailVerificationSession();
         session.setId(UUID.randomUUID());
         session.setEmail("khach@example.com");
-        session.setOtpHash(hmac(code));
+        session.setOtpHash(otpHash(code));
         session.setOtpExpiresAt(expiresAt);
         session.setResendAvailableAt(LocalDateTime.now());
         session.setAttemptCount(attempts);
@@ -141,7 +145,7 @@ class OrderEmailVerificationServiceImplTest {
         verify(repository).save(saved.capture());
 
         assertThat(code.getValue()).matches("[1-9]\\d{5}");
-        assertThat(saved.getValue().getOtpHash()).isEqualTo(hmac(code.getValue())).doesNotContain(code.getValue()).hasSize(64);
+        assertThat(saved.getValue().getOtpHash()).isEqualTo(otpHash(code.getValue())).doesNotContain(code.getValue()).hasSize(64);
     }
 
     @Test
@@ -267,11 +271,13 @@ class OrderEmailVerificationServiceImplTest {
     }
 
     @Test
-    void cooldown_legacyRowWithoutRequesterKeyIsIgnored() {
-        // a row from before the column existed has requester_key = null, so the (email, requester) lookup never returns it
-        when(repository.findFirstByEmailAndRequesterKeyOrderByCreatedAtDesc(anyString(), anyString())).thenReturn(Optional.empty());
-        service.sendVerificationCode(new OrderEmailOtpSendRequest("khach@example.com"), IP);
-        verify(emailSender).sendOtp(anyString(), anyString());
+    void cooldown_lookupAlwaysUsesANonNullKeyEvenWithoutAnIp() throws Exception {
+        // rows from before the column existed have a null key; the lookup must never ask for null, or it would match them
+        service.sendVerificationCode(new OrderEmailOtpSendRequest("khach@example.com"), null);
+        service.sendVerificationCode(new OrderEmailOtpSendRequest("khach@example.com"), "  ");
+        ArgumentCaptor<String> key = ArgumentCaptor.forClass(String.class);
+        verify(repository, times(2)).findFirstByEmailAndRequesterKeyOrderByCreatedAtDesc(anyString(), key.capture());
+        assertThat(key.getAllValues()).containsOnly(hmac("ip:unknown"));
     }
 
     @Test
@@ -281,7 +287,7 @@ class OrderEmailVerificationServiceImplTest {
         verify(emailSender).sendOtp(anyString(), code.capture());
         ArgumentCaptor<OrderEmailVerificationSession> saved = ArgumentCaptor.forClass(OrderEmailVerificationSession.class);
         verify(repository).save(saved.capture());
-        assertThat(saved.getValue().getOtpHash()).isNotEqualTo(sha256(code.getValue())).isEqualTo(hmac(code.getValue())).hasSize(64);
+        assertThat(saved.getValue().getOtpHash()).isNotEqualTo(sha256(code.getValue())).isEqualTo(otpHash(code.getValue())).hasSize(64);
     }
 
     @Test
@@ -293,13 +299,13 @@ class OrderEmailVerificationServiceImplTest {
     @Test
     void hmac_aServiceWithAnotherSecretRefusesTheCode() throws Exception {
         OrderEmailVerificationSession session = pending("123456", 0, LocalDateTime.now().plusMinutes(5));
-        OrderEmailVerificationServiceImpl other = new OrderEmailVerificationServiceImpl(repository, emailSender, "another-secret", 10, 20);
+        OrderEmailVerificationServiceImpl other = new OrderEmailVerificationServiceImpl(repository, emailSender, "another-secret", 3, 5, 50);
         assertBadRequest(() -> other.verifyCode(new OrderEmailOtpVerifyRequest(session.getId(), "123456")));
     }
 
     @Test
     void hmac_blankSecretGeneratesARandomKeyThatStillWorksWithinOneInstance() {
-        OrderEmailVerificationServiceImpl random = new OrderEmailVerificationServiceImpl(repository, emailSender, "  ", 10, 20);
+        OrderEmailVerificationServiceImpl random = new OrderEmailVerificationServiceImpl(repository, emailSender, "  ", 3, 5, 50);
         random.sendVerificationCode(new OrderEmailOtpSendRequest("khach@example.com"), IP);
         ArgumentCaptor<String> code = ArgumentCaptor.forClass(String.class);
         verify(emailSender).sendOtp(anyString(), code.capture());
@@ -309,50 +315,98 @@ class OrderEmailVerificationServiceImplTest {
         when(repository.findLockedById(session.getId())).thenReturn(Optional.of(session));
         assertThat(random.verifyCode(new OrderEmailOtpVerifyRequest(session.getId(), code.getValue())).verified()).isTrue();
         // a second instance with its own random key cannot read the first one's codes
-        OrderEmailVerificationServiceImpl random2 = new OrderEmailVerificationServiceImpl(repository, emailSender, "", 10, 20);
+        OrderEmailVerificationServiceImpl random2 = new OrderEmailVerificationServiceImpl(repository, emailSender, "", 3, 5, 50);
         session.setStatus(OrderEmailVerificationStatus.PENDING);
         assertBadRequest(() -> random2.verifyCode(new OrderEmailOtpVerifyRequest(session.getId(), code.getValue())));
     }
 
-    @Test
-    void dailyCap_tenLockedSessionsBlockTheEleventhSend() {
-        when(repository.countByEmailAndStatusAndAttemptCountGreaterThanEqualAndCreatedAtAfter(
-            org.mockito.ArgumentMatchers.eq("khach@example.com"), org.mockito.ArgumentMatchers.eq(OrderEmailVerificationStatus.CANCELLED),
-            org.mockito.ArgumentMatchers.eq(3), any(LocalDateTime.class))).thenReturn(10L);
-        assertThatThrownBy(() -> service.sendVerificationCode(new OrderEmailOtpSendRequest("khach@example.com"), IP))
+    private static final String MAIL = "khach@example.com";
+
+    private void assertTooMany(String ip, String message) {
+        assertThatThrownBy(() -> service.sendVerificationCode(new OrderEmailOtpSendRequest(MAIL), ip))
             .isInstanceOfSatisfying(ResponseStatusException.class, e -> {
                 assertThat(e.getStatusCode()).isEqualTo(HttpStatus.TOO_MANY_REQUESTS);
-                assertThat(e.getReason()).isEqualTo("Email này đã nhập sai mã quá nhiều lần. Vui lòng thử lại sau 24 giờ.");
+                assertThat(e.getReason()).isEqualTo(message);
             });
         verify(emailSender, never()).sendOtp(anyString(), anyString());
         verify(repository, never()).save(any());
     }
 
+    private void lockedCount(String ip, long count) throws Exception {
+        when(repository.countByEmailAndRequesterKeyAndStatusAndAttemptCountGreaterThanEqualAndCreatedAtAfter(
+            org.mockito.ArgumentMatchers.eq(MAIL), org.mockito.ArgumentMatchers.eq(hmac("ip:" + ip)),
+            org.mockito.ArgumentMatchers.eq(OrderEmailVerificationStatus.CANCELLED), org.mockito.ArgumentMatchers.eq(3), any(LocalDateTime.class))).thenReturn(count);
+    }
+
+    private void sendsCount(String ip, long count) throws Exception {
+        when(repository.countByEmailAndRequesterKeyAndCreatedAtAfter(
+            org.mockito.ArgumentMatchers.eq(MAIL), org.mockito.ArgumentMatchers.eq(hmac("ip:" + ip)), any(LocalDateTime.class))).thenReturn(count);
+    }
+
     @Test
-    void dailyCap_nineLockedSessionsStillAllowASend() {
-        when(repository.countByEmailAndStatusAndAttemptCountGreaterThanEqualAndCreatedAtAfter(anyString(), any(), org.mockito.ArgumentMatchers.anyInt(), any())).thenReturn(9L);
-        service.sendVerificationCode(new OrderEmailOtpSendRequest("khach@example.com"), IP);
+    void dailyCap_threeLockedSessionsOfARequesterBlockItsNextSendWithANeutralMessage() throws Exception {
+        lockedCount(IP, 3);
+        assertTooMany(IP, "Đã nhập sai mã quá nhiều lần. Vui lòng thử lại sau 24 giờ.");
+    }
+
+    @Test
+    void dailyCap_twoLockedSessionsStillAllowASend() throws Exception {
+        lockedCount(IP, 2);
+        service.sendVerificationCode(new OrderEmailOtpSendRequest(MAIL), IP);
         verify(emailSender).sendOtp(anyString(), anyString());
     }
 
     @Test
-    void dailyCap_twentySendsBlockTheTwentyFirst() {
-        when(repository.countByEmailAndCreatedAtAfter(org.mockito.ArgumentMatchers.eq("khach@example.com"), any(LocalDateTime.class))).thenReturn(20L);
-        assertThatThrownBy(() -> service.sendVerificationCode(new OrderEmailOtpSendRequest("khach@example.com"), IP))
-            .isInstanceOfSatisfying(ResponseStatusException.class, e -> {
-                assertThat(e.getStatusCode()).isEqualTo(HttpStatus.TOO_MANY_REQUESTS);
-                assertThat(e.getReason()).isEqualTo("Email này đã nhận quá nhiều mã trong hôm nay. Vui lòng thử lại sau.");
-            });
-        verify(emailSender, never()).sendOtp(anyString(), anyString());
+    void dailyCap_fiveSendsFromOneRequesterBlockTheSixth() throws Exception {
+        sendsCount(IP, 5);
+        assertTooMany(IP, "Bạn đã yêu cầu quá nhiều mã cho email này hôm nay. Vui lòng thử lại sau.");
+    }
+
+    @Test
+    void dailyCap_fourSendsFromOneRequesterStillAllowTheFifth() throws Exception {
+        sendsCount(IP, 4);
+        service.sendVerificationCode(new OrderEmailOtpSendRequest(MAIL), IP);
+        verify(emailSender).sendOtp(anyString(), anyString());
+    }
+
+    @Test
+    void dailyCap_anotherRequesterIsNotBlockedByTheFirstOnesCaps() throws Exception {
+        lockedCount(IP, 3);
+        sendsCount(IP, 5);
+        service.sendVerificationCode(new OrderEmailOtpSendRequest(MAIL), "198.51.100.9");
+        verify(emailSender).sendOtp(anyString(), anyString());
+    }
+
+    @Test
+    void dailyCap_globalCapOf50SendsPerEmailStillAppliesToEveryone() {
+        when(repository.countByEmailAndCreatedAtAfter(org.mockito.ArgumentMatchers.eq(MAIL), any(LocalDateTime.class))).thenReturn(50L);
+        assertTooMany("198.51.100.9", "Email này đã nhận quá nhiều mã trong hôm nay. Vui lòng thử lại sau.");
+    }
+
+    @Test
+    void dailyCap_49SendsPerEmailStillAllowASend() {
+        when(repository.countByEmailAndCreatedAtAfter(org.mockito.ArgumentMatchers.eq(MAIL), any(LocalDateTime.class))).thenReturn(49L);
+        service.sendVerificationCode(new OrderEmailOtpSendRequest(MAIL), IP);
+        verify(emailSender).sendOtp(anyString(), anyString());
     }
 
     @Test
     void dailyCap_countsOnlyTheLast24Hours() {
         LocalDateTime before = LocalDateTime.now();
-        service.sendVerificationCode(new OrderEmailOtpSendRequest("khach@example.com"), IP);
+        service.sendVerificationCode(new OrderEmailOtpSendRequest(MAIL), IP);
         ArgumentCaptor<LocalDateTime> since = ArgumentCaptor.forClass(LocalDateTime.class);
-        verify(repository).countByEmailAndCreatedAtAfter(org.mockito.ArgumentMatchers.eq("khach@example.com"), since.capture());
+        verify(repository).countByEmailAndCreatedAtAfter(org.mockito.ArgumentMatchers.eq(MAIL), since.capture());
         assertThat(Duration.between(since.getValue(), before)).isBetween(Duration.ofHours(24).minusSeconds(5), Duration.ofHours(24).plusSeconds(5));
+        verify(repository).countByEmailAndRequesterKeyAndCreatedAtAfter(anyString(), anyString(), org.mockito.ArgumentMatchers.eq(since.getValue()));
+    }
+
+    @Test
+    void dailyCap_cooldownIsCheckedBeforeTheCaps() throws Exception {
+        rememberSavedSessionsPerEmail();
+        service.sendVerificationCode(new OrderEmailOtpSendRequest(MAIL), IP);
+        sendsCount(IP, 5);
+        assertThatThrownBy(() -> service.sendVerificationCode(new OrderEmailOtpSendRequest(MAIL), IP))
+            .isInstanceOfSatisfying(ResponseStatusException.class, e -> assertThat(e.getReason()).startsWith("Vui lòng đợi"));
     }
 
     // --- transaction rules (a real transaction proxy over a recording transaction manager) ------------------
