@@ -36,6 +36,11 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private static final java.util.regex.Pattern EMAIL_PATTERN =
         java.util.regex.Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}$", java.util.regex.Pattern.CASE_INSENSITIVE);
 
+    private static final String LOGIN_FAILED_MESSAGE = "Tên đăng nhập hoặc mật khẩu chưa chính xác.";
+
+    // hash checked for unknown usernames so that a refused login costs about the same as one for a real account
+    private volatile String dummyPasswordHash;
+
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final AuthenticationLogRepository authenticationLogRepository;
@@ -110,14 +115,19 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vui lòng nhập tên đăng nhập hoặc email và mật khẩu.");
         }
 
-        User user = findUser(request.usernameOrEmail());
+        User user = findLoginUser(request.usernameOrEmail());
+        if (user == null) {
+            // Same answer and similar timing as a wrong password, so nobody can tell which usernames exist.
+            passwordEncoder.matches(request.password(), dummyPasswordHash());
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, LOGIN_FAILED_MESSAGE);
+        }
         if (!Boolean.TRUE.equals(user.getActive())) {
             auditSignIn(user, false, "tài khoản bị khóa");
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Tài khoản đang bị khóa.");
         }
         if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
             auditSignIn(user, false, "sai mật khẩu");
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Tên đăng nhập hoặc mật khẩu chưa chính xác.");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, LOGIN_FAILED_MESSAGE);
         }
         auditSignIn(user, true, null);
 
@@ -199,6 +209,22 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         user.setPasswordHash(passwordEncoder.encode(newPassword));
         userRepository.save(user);
+    }
+
+    private User findLoginUser(String usernameOrEmail) {
+        String trimmed = usernameOrEmail.trim();
+        return userRepository.findByEmail(trimmed.toLowerCase(Locale.ROOT))
+            .or(() -> userRepository.findByUsername(trimmed))
+            .orElse(null);
+    }
+
+    private String dummyPasswordHash() {
+        String hash = dummyPasswordHash;
+        if (hash == null) {
+            hash = passwordEncoder.encode("dummy-password-for-timing");
+            dummyPasswordHash = hash;
+        }
+        return hash;
     }
 
     private User findUser(String usernameOrEmail) {

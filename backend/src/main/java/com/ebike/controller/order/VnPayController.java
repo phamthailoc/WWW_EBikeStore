@@ -51,14 +51,8 @@ public class VnPayController {
     }
 
     private String resolveClientIp(HttpServletRequest request) {
-        String forwardedFor = request.getHeader("X-Forwarded-For");
-        if (forwardedFor != null && !forwardedFor.isBlank()) {
-            return forwardedFor.split(",")[0].trim();
-        }
-        String realIp = request.getHeader("X-Real-IP");
-        if (realIp != null && !realIp.isBlank()) {
-            return realIp.trim();
-        }
+        // Never read X-Forwarded-For / X-Real-IP: any client can forge them. Behind a trusted proxy, Tomcat
+        // (server.forward-headers-strategy=native in the prod profile) already puts the real client address here.
         return request.getRemoteAddr();
     }
 

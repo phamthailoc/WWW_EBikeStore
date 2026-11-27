@@ -12,6 +12,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.HexFormat;
 import java.util.Locale;
@@ -51,8 +52,17 @@ public class OrderEmailVerificationServiceImpl implements OrderEmailVerification
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email chưa hợp lệ.");
         }
 
-        String code = generateOtp();
         LocalDateTime now = LocalDateTime.now();
+        // The 60 s cooldown is enforced here, not only by the browser's countdown: a second request for the same email is refused and sends no mail.
+        repository.findFirstByEmailOrderByCreatedAtDesc(email)
+            .map(OrderEmailVerificationSession::getResendAvailableAt)
+            .filter(availableAt -> availableAt != null && availableAt.isAfter(now))
+            .ifPresent(availableAt -> {
+                long waitSeconds = Math.max(1, (long) Math.ceil(Duration.between(now, availableAt).toMillis() / 1000.0));
+                throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS, "Vui lòng đợi " + waitSeconds + " giây trước khi gửi lại mã.");
+            });
+
+        String code = generateOtp();
 
         OrderEmailVerificationSession session = new OrderEmailVerificationSession();
         session.setEmail(email);
@@ -74,8 +84,10 @@ public class OrderEmailVerificationServiceImpl implements OrderEmailVerification
         );
     }
 
+    // noRollbackFor: the wrong-attempt counter and the CANCELLED/EXPIRED status are written right before the exception is thrown;
+    // with the default rules the exception would roll those writes back and the limit of 3 attempts would never hold.
     @Override
-    @Transactional
+    @Transactional(noRollbackFor = ResponseStatusException.class)
     public OrderEmailOtpVerifyResponse verifyCode(OrderEmailOtpVerifyRequest request) {
         if (request == null || request.verificationSessionId() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Thiếu phiên xác thực email.");
@@ -107,8 +119,9 @@ public class OrderEmailVerificationServiceImpl implements OrderEmailVerification
         return new OrderEmailOtpVerifyResponse(session.getId(), session.getEmail(), true);
     }
 
+    // noRollbackFor keeps the EXPIRED status written before the refusal; inside the caller's order transaction the caller still decides the outcome.
     @Override
-    @Transactional
+    @Transactional(noRollbackFor = ResponseStatusException.class)
     public void assertVerifiedForOrder(UUID verificationSessionId, String email) {
         String normalizedEmail = normalizeEmail(email);
         if (verificationSessionId == null) {

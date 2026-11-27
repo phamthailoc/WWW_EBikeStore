@@ -425,8 +425,7 @@ class AuthenticationServiceTest {
      * AuthenticationServiceImpl.java:~220 (findUser throws NOT_FOUND and login does not translate it).
      */
     @Test
-    @Tag("bug")
-    void bug_login_unknownUserMustBeIndistinguishableFromWrongPassword() {
+    void regression_login_unknownUserMustBeIndistinguishableFromWrongPassword() {
         when(users.findByEmail(anyString())).thenReturn(Optional.empty());
         when(users.findByUsername(anyString())).thenReturn(Optional.empty());
         assertThatThrownBy(() -> service.login(new LoginRequest("ghost", "whatever1"), null, null))

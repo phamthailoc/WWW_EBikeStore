@@ -30,6 +30,9 @@ public class ServerRateLimitFilter extends OncePerRequestFilter {
         new RateLimitRule("cart-write", HttpMethod.PUT.name(), "/api/v1/cart", 120, Duration.ofMinutes(1)),
         new RateLimitRule("auth-login", HttpMethod.POST.name(), "/api/v1/auth/login", 5, Duration.ofMinutes(1)),
         new RateLimitRule("email-otp-send", HttpMethod.POST.name(), "/api/v1/orders/email-verification/send", 3, Duration.ofMinutes(5)),
+        // a 6-digit code: besides the 3-attempt limit per session, a flood guard per address on the check itself (guest-order linking uses the same endpoint)
+        new RateLimitRule("email-otp-verify", HttpMethod.POST.name(), "/api/v1/orders/email-verification/verify", 10, Duration.ofMinutes(5)),
+        new RateLimitRule("auth-register", HttpMethod.POST.name(), "/api/v1/auth/register", 5, Duration.ofMinutes(10)),
         new RateLimitRule("chatbot-ask", HttpMethod.POST.name(), "/api/v1/chatbot/ask", 20, Duration.ofMinutes(1)),
         new RateLimitRule("vnpay-create", HttpMethod.POST.name(), "/api/v1/payments/vnpay/create", 10, Duration.ofMinutes(1)),
         // a frame number is a short code: slow down anyone trying many of them
