@@ -21,6 +21,10 @@ public class OrderEmailVerificationSession {
     @Column(nullable = false, length = 255)
     private String email;
 
+    /** Keyed hash of the requester's IP (never the raw address); null on rows from before the column existed. */
+    @Column(name = "requester_key", length = 64)
+    private String requesterKey;
+
     @Column(name = "otp_hash", nullable = false, length = 64)
     private String otpHash;
 
@@ -78,6 +82,14 @@ public class OrderEmailVerificationSession {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getRequesterKey() {
+        return requesterKey;
+    }
+
+    public void setRequesterKey(String requesterKey) {
+        this.requesterKey = requesterKey;
     }
 
     public String getOtpHash() {
