@@ -43,7 +43,7 @@ Mặc định ứng dụng kết nối MariaDB ở `localhost:3306`. Thông tin 
 
 ## Triển khai thật (danh sách kiểm tra)
 
-1. **Profile và bí mật:** chạy với profile `prod`; đặt `SPRING_DATASOURCE_PASSWORD` và `APP_JWT_SECRET` (≥ 32 ký tự) bằng biến môi trường, không ghi vào file. Khóa Gemini, khóa VNPay và mật khẩu SMTP cũng chỉ đặt bằng biến môi trường; nếu một khóa từng bị dán vào chat hoặc commit thì đổi khóa mới.
+1. **Profile và bí mật:** chạy với profile `prod`; đặt `SPRING_DATASOURCE_PASSWORD`, `APP_JWT_SECRET` và `APP_ORDER_EMAIL_OTP_HMAC_SECRET` (mỗi khóa ≥ 32 ký tự; thiếu khóa mã email thì app không khởi động) bằng biến môi trường, không ghi vào file. Khóa Gemini, khóa VNPay và mật khẩu SMTP cũng chỉ đặt bằng biến môi trường; nếu một khóa từng bị dán vào chat hoặc commit thì đổi khóa mới.
 2. **Địa chỉ công khai:** đặt `APP_PUBLIC_BASE_URL` (ví dụ `https://cua-hang.example.vn`), nếu không sitemap, robots, thẻ chia sẻ và link trong email lấy theo địa chỉ khách đang truy cập.
 3. **Thông tin cửa hàng trên chứng từ:** `APP_STORE_NAME`, `APP_STORE_LEGAL_NAME`, `APP_STORE_TAX_CODE`, `APP_STORE_ADDRESS`, `APP_STORE_PHONE`, `APP_STORE_EMAIL`.
 4. **Email:** đặt `SMTP_*` và bật các cờ gửi mail cần dùng (`STOCK_ALERT_MAIL_ENABLED`, `APP_MAINTENANCE_MAIL_ENABLED`, `DOCUMENTS_MAIL_ENABLED`); không có mail server thì các thông báo trong app vẫn chạy, chỉ email không gửi.

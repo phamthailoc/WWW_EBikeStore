@@ -401,6 +401,13 @@ class OrderEmailVerificationServiceImplTest {
     }
 
     @Test
+    void dailyCap_lockCapWinsOverTheSendCapWhenBothAreReached() throws Exception {
+        lockedCount(IP, 3);
+        sendsCount(IP, 5);
+        assertTooMany(IP, "Đã nhập sai mã quá nhiều lần. Vui lòng thử lại sau 24 giờ.");
+    }
+
+    @Test
     void dailyCap_cooldownIsCheckedBeforeTheCaps() throws Exception {
         rememberSavedSessionsPerEmail();
         service.sendVerificationCode(new OrderEmailOtpSendRequest(MAIL), IP);
