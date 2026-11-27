@@ -86,6 +86,18 @@ class PaymentHistoryAndJobTest {
     }
 
     @Test
+    void theHistoryRowsCarryTheOrderStatus() {
+        com.ebike.model.entity.order.Order order = OrderFixtures.order(10L, "ORD-1", com.ebike.model.entity.order.OrderStatus.CANCELLED, alice);
+        com.ebike.model.entity.order.Payment payment = OrderFixtures.payment(order, com.ebike.model.entity.order.PaymentMethod.VNPAY, com.ebike.model.entity.order.PaymentStatus.PAID, "1000");
+        when(payments.findHistoryByUserId(1L, null)).thenReturn(java.util.List.of(payment));
+        assertThat(history.getMyPaymentHistory(OrderFixtures.customer("alice"), null)).singleElement()
+            .satisfies(row -> {
+                assertThat(row.orderStatus()).isEqualTo("CANCELLED");
+                assertThat(row.paymentStatus()).isEqualTo("PAID");
+            });
+    }
+
+    @Test
     void theHistoryIsQueriedForTheCallerOnly() {
         history.getMyPaymentHistory(OrderFixtures.customer("alice"), null);
         verify(payments).findHistoryByUserId(1L, null);
