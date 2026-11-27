@@ -255,24 +255,28 @@ class OrderControllersTest {
     }
 
     @Test
-    void createPaymentUsesTheFirstForwardedAddress() throws Exception {
+    void createPaymentIgnoresAForgedForwardedForHeader() throws Exception {
         when(vnPay.createPaymentUrl(any(), any(), any(), org.mockito.ArgumentMatchers.anyBoolean())).thenReturn(paymentResponse());
         payments.perform(post("/api/v1/payments/vnpay/create").header("X-Forwarded-For", " 203.0.113.7 , 10.0.0.1")
+            .with(request -> {
+                request.setRemoteAddr("192.0.2.9");
+                return request;
+            })
             .contentType(MediaType.APPLICATION_JSON).content("{\"orderId\":5}")).andExpect(status().isOk()).andExpect(jsonPath("$.paymentUrl").value("https://pay"));
-        verify(vnPay).createPaymentUrl(eq(new VnPayCreatePaymentRequest(5L, null)), eq("203.0.113.7"), isNull(), eq(false));
+        verify(vnPay).createPaymentUrl(eq(new VnPayCreatePaymentRequest(5L, null)), eq("192.0.2.9"), isNull(), eq(false));
     }
 
     @Test
-    void createPaymentFallsBackToRealIpThenRemoteAddress() throws Exception {
+    void createPaymentIgnoresAForgedRealIpHeaderAndUsesTheRemoteAddress() throws Exception {
         when(vnPay.createPaymentUrl(any(), any(), any(), org.mockito.ArgumentMatchers.anyBoolean())).thenReturn(paymentResponse());
         payments.perform(post("/api/v1/payments/vnpay/create").header("X-Real-IP", " 198.51.100.4 ").header("X-Forwarded-For", "  ")
+            .with(request -> {
+                request.setRemoteAddr("192.0.2.9");
+                return request;
+            })
             .contentType(MediaType.APPLICATION_JSON).content("{\"orderId\":5}")).andExpect(status().isOk());
-        verify(vnPay).createPaymentUrl(any(), eq("198.51.100.4"), any(), eq(false));
-        payments.perform(post("/api/v1/payments/vnpay/create").with(request -> {
-            request.setRemoteAddr("192.0.2.9");
-            return request;
-        }).contentType(MediaType.APPLICATION_JSON).content("{\"orderId\":5}")).andExpect(status().isOk());
         verify(vnPay).createPaymentUrl(any(), eq("192.0.2.9"), any(), eq(false));
+        org.mockito.Mockito.verify(vnPay, org.mockito.Mockito.never()).createPaymentUrl(any(), eq("198.51.100.4"), any(), org.mockito.ArgumentMatchers.anyBoolean());
     }
 
     @Test

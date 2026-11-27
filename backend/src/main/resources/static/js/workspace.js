@@ -64,7 +64,7 @@
   // Server errors come back as JSON ({status, error, message}); show only the message, not the raw body.
   const errorText = async(r,fallback) => { const body=await r.text(); try{const j=JSON.parse(body); if(j&&typeof j.message==='string'&&j.message.trim())return j.message.trim()}catch(ignored){} return body.slice(0,240)||fallback; };
   const get = async url => { const r=await fetch(url,{credentials:'same-origin',headers:{Accept:'application/json'}}); if(r.status===401){location.href='/login?returnTo='+encodeURIComponent(location.pathname);throw Error('Vui lòng đăng nhập để tiếp tục.')} if(!r.ok)throw Error(await errorText(r,'Không tải được dữ liệu.')); lastHasNext=r.headers.get('X-Has-Next'); return r.status===204?null:r.json(); };
-  const send = async(url,method,data) => { const r=await fetch(url,{method,credentials:'same-origin',headers:{'Content-Type':'application/json',Accept:'application/json'},body:data===undefined?undefined:JSON.stringify(data)});if(r.status===401){location.href='/login';throw Error('Phiên đăng nhập đã hết hạn.')}if(!r.ok)throw Error(await errorText(r,'Không thể lưu thay đổi.'));return r.status===204?null:r.json(); };
+  const send = async(url,method,data) => { const r=await fetch(url,{method,credentials:'same-origin',headers:{'Content-Type':'application/json',Accept:'application/json'},body:data===undefined?undefined:JSON.stringify(data)});if(r.status===401){location.href='/login';throw Error('Phiên đăng nhập đã hết hạn.')}if(!r.ok){const e=Error(await errorText(r,'Không thể lưu thay đổi.'));e.status=r.status;throw e}return r.status===204?null:r.json(); };
   const vnpayEnabled = body.dataset.vnpayEnabled === 'true';
   // VNPay orders have no payment row until the first payment URL is created, so a missing method also means VNPay.
   // the reasons the server writes itself are Vietnamese text: show them in the page language (a rejected application keeps the staff's own words after the prefix)
@@ -499,7 +499,7 @@ renderTable(clientFiltered(data));renderWarrantyPager(data)}}catch(err){loading.
         if(!confirm(`${'Hệ thống sẽ gửi mã xác minh tới'} ${email} ${'để tìm các đơn bạn đã đặt bằng email này khi chưa đăng nhập. Tiếp tục?'}`))return;
         let sent;
         try{sent=await send('/api/v1/orders/email-verification/send','POST',{email})}
-        catch(err){tell('Chưa gửi được mã xác minh qua email. Vui lòng thử lại sau hoặc liên hệ cửa hàng.',true);return}
+        catch(err){tell(err.status===429&&err.message?err.message:'Chưa gửi được mã xác minh qua email. Vui lòng thử lại sau hoặc liên hệ cửa hàng.',true);return}
         const code=prompt(`${'Nhập mã gồm 6 chữ số đã gửi tới'} ${email}`);
         if(code===null)return;
         if(!/^\d{6}$/.test(code.trim())){tell('Mã xác minh gồm 6 chữ số.',true);return}

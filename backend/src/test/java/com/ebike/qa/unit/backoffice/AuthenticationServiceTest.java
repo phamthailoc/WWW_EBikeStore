@@ -425,12 +425,39 @@ class AuthenticationServiceTest {
      * AuthenticationServiceImpl.java:~220 (findUser throws NOT_FOUND and login does not translate it).
      */
     @Test
-    @Tag("bug")
-    void bug_login_unknownUserMustBeIndistinguishableFromWrongPassword() {
+    void regression_login_unknownUserMustBeIndistinguishableFromWrongPassword() {
         when(users.findByEmail(anyString())).thenReturn(Optional.empty());
         when(users.findByUsername(anyString())).thenReturn(Optional.empty());
         assertThatThrownBy(() -> service.login(new LoginRequest("ghost", "whatever1"), null, null))
             .satisfies(t -> assertStatus(t, HttpStatus.UNAUTHORIZED));
+    }
+
+    @Test
+    void login_unknownUserAndWrongPasswordGiveTheSameStatusMessageAndBodyThroughTheHandler() {
+        User u = customer();
+        when(users.findByEmail("tien@example.com")).thenReturn(Optional.of(u));
+        when(users.findByEmail("ghost@example.com")).thenReturn(Optional.empty());
+        when(users.findByUsername(anyString())).thenReturn(Optional.empty());
+        when(encoder.matches(anyString(), anyString())).thenReturn(false);
+        var handler = new com.ebike.common.exception.ApiExceptionHandler();
+
+        var wrong = handlerAnswer(handler, "tien@example.com");
+        var unknown = handlerAnswer(handler, "ghost@example.com");
+
+        assertThat(unknown.getStatusCode()).isEqualTo(wrong.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+        assertThat(unknown.getBody().message()).isEqualTo(wrong.getBody().message());
+        assertThat(unknown.getBody().error()).isEqualTo(wrong.getBody().error());
+        assertThat(unknown.getBody().status()).isEqualTo(wrong.getBody().status());
+    }
+
+    private org.springframework.http.ResponseEntity<com.ebike.common.exception.ApiExceptionHandler.ApiErrorResponse> handlerAnswer(
+        com.ebike.common.exception.ApiExceptionHandler handler, String identifier) {
+        try {
+            service.login(new LoginRequest(identifier, "whatever1"), null, null);
+            throw new AssertionError("login should have been refused");
+        } catch (ResponseStatusException e) {
+            return handler.handleResponseStatusException(e);
+        }
     }
 
     /**

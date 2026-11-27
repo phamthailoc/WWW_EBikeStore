@@ -45,7 +45,7 @@ Catalog provenance: `database/catalog/README.md`.
 
 Product lists and product details are cached in the application's memory (`CacheNames`); every change to stock, photos, reviews or orders evicts both caches. The cache is per process, so the application is meant to run as a single instance.
 
-`ServerRateLimitFilter` limits, per client IP, sign-in attempts, email-code requests, chatbot questions and VNPay payment creation. It reads the client address from `X-Forwarded-For`, so it is only as trustworthy as the proxy in front of the application.
+`ServerRateLimitFilter` limits, per client IP, sign-in attempts, sign-up (5 per 10 minutes), email-code requests, email-code checks (10 per 5 minutes), chatbot questions and VNPay payment creation. It reads `request.getRemoteAddr()` and never `X-Forwarded-For` (any client can forge it); the VNPay controller does the same. Behind a proxy, the prod profile sets `server.forward-headers-strategy=native`, so Tomcat replaces the address with the real client only for a trusted internal proxy; a load balancer on a public address must be added to `server.tomcat.remoteip.internal-proxies`.
 
 ## Receipts and warranty cards (V27)
 

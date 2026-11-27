@@ -12,6 +12,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.HexFormat;
 import java.util.Locale;
@@ -30,6 +31,7 @@ public class OrderEmailVerificationServiceImpl implements OrderEmailVerification
     private static final int OTP_TTL_MINUTES = 15;
     private static final int RESEND_AFTER_SECONDS = 60;
     private static final int MAX_ATTEMPTS = 3;
+    private static final String LOCKED_MESSAGE = "Bạn đã nhập sai OTP quá số lần cho phép. Vui lòng gửi mã mới.";
 
     private final SecureRandom secureRandom = new SecureRandom();
     private final OrderEmailVerificationSessionRepository repository;
@@ -51,8 +53,17 @@ public class OrderEmailVerificationServiceImpl implements OrderEmailVerification
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email chưa hợp lệ.");
         }
 
-        String code = generateOtp();
         LocalDateTime now = LocalDateTime.now();
+        // The 60 s cooldown is enforced here, not only by the browser's countdown: a second request for the same email is refused and sends no mail.
+        repository.findFirstByEmailOrderByCreatedAtDesc(email)
+            .map(OrderEmailVerificationSession::getResendAvailableAt)
+            .filter(availableAt -> availableAt != null && availableAt.isAfter(now))
+            .ifPresent(availableAt -> {
+                long waitSeconds = Math.max(1, (long) Math.ceil(Duration.between(now, availableAt).toMillis() / 1000.0));
+                throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS, "Vui lòng đợi " + waitSeconds + " giây trước khi gửi lại mã.");
+            });
+
+        String code = generateOtp();
 
         OrderEmailVerificationSession session = new OrderEmailVerificationSession();
         session.setEmail(email);
@@ -74,8 +85,10 @@ public class OrderEmailVerificationServiceImpl implements OrderEmailVerification
         );
     }
 
+    // noRollbackFor: the wrong-attempt counter and the CANCELLED/EXPIRED status are written right before the exception is thrown;
+    // with the default rules the exception would roll those writes back and the limit of 3 attempts would never hold.
     @Override
-    @Transactional
+    @Transactional(noRollbackFor = ResponseStatusException.class)
     public OrderEmailOtpVerifyResponse verifyCode(OrderEmailOtpVerifyRequest request) {
         if (request == null || request.verificationSessionId() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Thiếu phiên xác thực email.");
@@ -85,7 +98,7 @@ public class OrderEmailVerificationServiceImpl implements OrderEmailVerification
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mã OTP phải gồm 6 chữ số.");
         }
 
-        OrderEmailVerificationSession session = repository.findById(request.verificationSessionId())
+        OrderEmailVerificationSession session = repository.findLockedById(request.verificationSessionId())
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy phiên xác thực email."));
 
         ensurePending(session);
@@ -93,11 +106,12 @@ public class OrderEmailVerificationServiceImpl implements OrderEmailVerification
         if (!hashOtp(code).equals(session.getOtpHash())) {
             int attempts = session.getAttemptCount() == null ? 0 : session.getAttemptCount();
             session.setAttemptCount(attempts + 1);
-            if (session.getAttemptCount() >= MAX_ATTEMPTS) {
+            boolean locked = session.getAttemptCount() >= MAX_ATTEMPTS;
+            if (locked) {
                 session.setStatus(OrderEmailVerificationStatus.CANCELLED);
             }
             repository.save(session);
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mã OTP chưa đúng.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, locked ? LOCKED_MESSAGE : "Mã OTP chưa đúng.");
         }
 
         session.setStatus(OrderEmailVerificationStatus.VERIFIED);
@@ -107,6 +121,8 @@ public class OrderEmailVerificationServiceImpl implements OrderEmailVerification
         return new OrderEmailOtpVerifyResponse(session.getId(), session.getEmail(), true);
     }
 
+    // Always joins the caller's order transaction, so the outcome (including the EXPIRED status written before a refusal) follows the caller's rollback rules.
+    // The row lock makes two parallel orders spend one proof only once.
     @Override
     @Transactional
     public void assertVerifiedForOrder(UUID verificationSessionId, String email) {
@@ -115,7 +131,7 @@ public class OrderEmailVerificationServiceImpl implements OrderEmailVerification
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vui lòng xác thực email bằng mã OTP trước khi đặt hàng.");
         }
 
-        OrderEmailVerificationSession session = repository.findById(verificationSessionId)
+        OrderEmailVerificationSession session = repository.findLockedById(verificationSessionId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Phiên xác thực email không hợp lệ."));
 
         if (session.getStatus() != OrderEmailVerificationStatus.VERIFIED || session.getVerifiedAt() == null) {
@@ -138,13 +154,17 @@ public class OrderEmailVerificationServiceImpl implements OrderEmailVerification
     }
 
     private void ensurePending(OrderEmailVerificationSession session) {
+        boolean attemptsUsedUp = session.getAttemptCount() != null && session.getAttemptCount() >= MAX_ATTEMPTS;
         if (session.getStatus() != OrderEmailVerificationStatus.PENDING) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Phiên xác thực email không còn hiệu lực.");
+            // a session cancelled by too many wrong codes keeps saying so; other cancellations/expiry stay generic
+            String message = attemptsUsedUp && session.getStatus() == OrderEmailVerificationStatus.CANCELLED
+                ? LOCKED_MESSAGE : "Phiên xác thực email không còn hiệu lực.";
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, message);
         }
-        if (session.getAttemptCount() != null && session.getAttemptCount() >= MAX_ATTEMPTS) {
+        if (attemptsUsedUp) {
             session.setStatus(OrderEmailVerificationStatus.CANCELLED);
             repository.save(session);
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bạn đã nhập sai OTP quá số lần cho phép.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, LOCKED_MESSAGE);
         }
         if (session.getOtpExpiresAt().isBefore(LocalDateTime.now())) {
             session.setStatus(OrderEmailVerificationStatus.EXPIRED);

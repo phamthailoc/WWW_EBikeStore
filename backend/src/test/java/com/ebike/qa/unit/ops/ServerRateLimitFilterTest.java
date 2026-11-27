@@ -34,6 +34,8 @@ class ServerRateLimitFilterTest {
         return Stream.of(
             Arguments.of("POST", "/api/v1/auth/login", 5, 60),
             Arguments.of("POST", "/api/v1/orders/email-verification/send", 3, 300),
+            Arguments.of("POST", "/api/v1/orders/email-verification/verify", 10, 300),
+            Arguments.of("POST", "/api/v1/auth/register", 5, 600),
             Arguments.of("POST", "/api/v1/chatbot/ask", 20, 60),
             Arguments.of("POST", "/api/v1/payments/vnpay/create", 10, 60),
             Arguments.of("GET", "/api/v1/warranty/lookup", 20, 60),

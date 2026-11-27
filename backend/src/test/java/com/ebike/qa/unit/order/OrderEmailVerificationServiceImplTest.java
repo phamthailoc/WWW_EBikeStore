@@ -16,6 +16,7 @@ import com.ebike.dto.order.response.OrderEmailOtpVerifyResponse;
 import com.ebike.model.entity.order.OrderEmailVerificationSession;
 import com.ebike.model.entity.order.OrderEmailVerificationStatus;
 import com.ebike.repository.order.OrderEmailVerificationSessionRepository;
+import com.ebike.service.order.OrderEmailVerificationService;
 import com.ebike.service.order.impl.OrderEmailSender;
 import com.ebike.service.order.impl.OrderEmailVerificationServiceImpl;
 import java.lang.reflect.Method;
@@ -38,7 +39,12 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.annotation.AnnotationTransactionAttributeSource;
+import org.springframework.transaction.interceptor.TransactionInterceptor;
+import org.springframework.transaction.support.SimpleTransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -80,7 +86,7 @@ class OrderEmailVerificationServiceImplTest {
         session.setResendAvailableAt(LocalDateTime.now());
         session.setAttemptCount(attempts);
         session.setStatus(OrderEmailVerificationStatus.PENDING);
-        when(repository.findById(session.getId())).thenReturn(Optional.of(session));
+        when(repository.findLockedById(session.getId())).thenReturn(Optional.of(session));
         return session;
     }
 
@@ -92,7 +98,7 @@ class OrderEmailVerificationServiceImplTest {
         session.setOtpExpiresAt(expiresAt);
         session.setStatus(OrderEmailVerificationStatus.VERIFIED);
         session.setVerifiedAt(LocalDateTime.now().minusMinutes(1));
-        when(repository.findById(session.getId())).thenReturn(Optional.of(session));
+        when(repository.findLockedById(session.getId())).thenReturn(Optional.of(session));
         return session;
     }
 
@@ -169,8 +175,8 @@ class OrderEmailVerificationServiceImplTest {
     }
 
     @Test
-    @Tag("bug")
-    void bug_resendCooldownIsNotEnforcedOnTheServer() {
+    void regression_resendCooldownIsNotEnforcedOnTheServer() {
+        rememberSavedSessionsPerEmail();
         // BUG (Medium): OrderEmailVerificationServiceImpl.java:47-70 sendVerificationCode writes resendAvailableAt (+60 s) and tells the browser
         // "resend after 60 seconds", but nothing ever reads it: a second request for the same email a moment later sends another mail and creates
         // another session. Expected: the second call within 60 s is refused (429/400) and no second mail goes out. Actual: both succeed.
@@ -178,6 +184,147 @@ class OrderEmailVerificationServiceImplTest {
         assertThatThrownBy(() -> service.sendVerificationCode(new OrderEmailOtpSendRequest("khach@example.com")))
             .isInstanceOf(ResponseStatusException.class);
         verify(emailSender, times(1)).sendOtp(anyString(), anyString());
+    }
+
+    /** Makes the mocked repository answer the cooldown lookup with the newest session saved for that email, like the real query. */
+    private void rememberSavedSessionsPerEmail() {
+        java.util.Map<String, OrderEmailVerificationSession> latest = new java.util.HashMap<>();
+        when(repository.save(any(OrderEmailVerificationSession.class))).thenAnswer(invocation -> {
+            OrderEmailVerificationSession session = invocation.getArgument(0);
+            if (session.getId() == null) {
+                session.setId(UUID.randomUUID());
+            }
+            latest.put(session.getEmail(), session);
+            return session;
+        });
+        when(repository.findFirstByEmailOrderByCreatedAtDesc(anyString()))
+            .thenAnswer(invocation -> Optional.ofNullable(latest.get(invocation.<String>getArgument(0))));
+    }
+
+    @Test
+    void send_secondRequestWithin60SecondsIs429WithRemainingSecondsAndSendsNoMail() {
+        rememberSavedSessionsPerEmail();
+        service.sendVerificationCode(new OrderEmailOtpSendRequest("khach@example.com"));
+        assertThatThrownBy(() -> service.sendVerificationCode(new OrderEmailOtpSendRequest(" Khach@Example.com ")))
+            .isInstanceOfSatisfying(ResponseStatusException.class, e -> {
+                assertThat(e.getStatusCode()).isEqualTo(HttpStatus.TOO_MANY_REQUESTS);
+                assertThat(e.getReason()).matches("Vui lòng đợi (\\d+) giây trước khi gửi lại mã\\.");
+                int seconds = Integer.parseInt(e.getReason().replaceAll("\\D+", ""));
+                assertThat(seconds).isBetween(1, 60);
+            });
+        verify(emailSender, times(1)).sendOtp(anyString(), anyString());
+        verify(repository, times(1)).save(any(OrderEmailVerificationSession.class));
+    }
+
+    @Test
+    void send_aDifferentEmailIsNotHeldByAnotherAddressesCooldown() {
+        rememberSavedSessionsPerEmail();
+        service.sendVerificationCode(new OrderEmailOtpSendRequest("a@example.com"));
+        service.sendVerificationCode(new OrderEmailOtpSendRequest("b@example.com"));
+        verify(emailSender, times(2)).sendOtp(anyString(), anyString());
+    }
+
+    @Test
+    void send_afterTheCooldownHasPassedANewCodeIsSent() {
+        rememberSavedSessionsPerEmail();
+        service.sendVerificationCode(new OrderEmailOtpSendRequest("khach@example.com"));
+        ArgumentCaptor<OrderEmailVerificationSession> saved = ArgumentCaptor.forClass(OrderEmailVerificationSession.class);
+        verify(repository).save(saved.capture());
+        saved.getValue().setResendAvailableAt(LocalDateTime.now().minusSeconds(1));
+
+        service.sendVerificationCode(new OrderEmailOtpSendRequest("khach@example.com"));
+        verify(emailSender, times(2)).sendOtp(anyString(), anyString());
+    }
+
+    // --- transaction rules (a real transaction proxy over a recording transaction manager) ------------------
+
+    private OrderEmailVerificationService proxied(PlatformTransactionManager manager) {
+        ProxyFactory factory = new ProxyFactory(service);
+        factory.addInterface(OrderEmailVerificationService.class);
+        factory.addAdvice(new TransactionInterceptor(manager, new AnnotationTransactionAttributeSource()));
+        return (OrderEmailVerificationService) factory.getProxy();
+    }
+
+    @Test
+    void tx_aWrongCodeCommitsTheCounterInsteadOfRollingBack() throws Exception {
+        PlatformTransactionManager manager = org.mockito.Mockito.mock(PlatformTransactionManager.class);
+        when(manager.getTransaction(any())).thenReturn(new SimpleTransactionStatus());
+        OrderEmailVerificationSession session = pending("654321", 0, LocalDateTime.now().plusMinutes(10));
+        OrderEmailVerificationService proxy = proxied(manager);
+
+        assertBadRequest(() -> proxy.verifyCode(new OrderEmailOtpVerifyRequest(session.getId(), "111111")));
+
+        verify(manager).commit(any());
+        verify(manager, never()).rollback(any());
+        assertThat(session.getAttemptCount()).isEqualTo(1);
+    }
+
+    @Test
+    void tx_threeWrongCodesThroughTheProxyKeepTheSessionLockedAgainstTheRightCode() throws Exception {
+        PlatformTransactionManager manager = org.mockito.Mockito.mock(PlatformTransactionManager.class);
+        when(manager.getTransaction(any())).thenReturn(new SimpleTransactionStatus());
+        OrderEmailVerificationSession session = pending("654321", 0, LocalDateTime.now().plusMinutes(10));
+        OrderEmailVerificationService proxy = proxied(manager);
+
+        for (int i = 0; i < 3; i++) {
+            assertBadRequest(() -> proxy.verifyCode(new OrderEmailOtpVerifyRequest(session.getId(), "000000")));
+        }
+        assertThat(session.getAttemptCount()).isEqualTo(3);
+        assertThat(session.getStatus()).isEqualTo(OrderEmailVerificationStatus.CANCELLED);
+
+        assertThatThrownBy(() -> proxy.verifyCode(new OrderEmailOtpVerifyRequest(session.getId(), "654321")))
+            .isInstanceOfSatisfying(ResponseStatusException.class, e -> assertThat(e.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST));
+        verify(manager, never()).rollback(any());
+    }
+
+    @Test
+    void tx_anUnexpectedErrorStillRollsBack() {
+        PlatformTransactionManager manager = org.mockito.Mockito.mock(PlatformTransactionManager.class);
+        when(manager.getTransaction(any())).thenReturn(new SimpleTransactionStatus());
+        UUID id = UUID.randomUUID();
+        when(repository.findLockedById(id)).thenThrow(new IllegalStateException("db down"));
+
+        assertThatThrownBy(() -> proxied(manager).verifyCode(new OrderEmailOtpVerifyRequest(id, "123456")))
+            .isInstanceOf(IllegalStateException.class);
+        verify(manager).rollback(any());
+    }
+
+    @Test
+    void lock_verifyAndAssertReadTheSessionWithTheRowLockNeverWithPlainFindById() throws Exception {
+        OrderEmailVerificationSession pendingSession = pending("654321", 0, LocalDateTime.now().plusMinutes(10));
+        service.verifyCode(new OrderEmailOtpVerifyRequest(pendingSession.getId(), "654321"));
+        OrderEmailVerificationSession proof = verified("khach@example.com", LocalDateTime.now().plusMinutes(5));
+        service.assertVerifiedForOrder(proof.getId(), "khach@example.com");
+
+        verify(repository).findLockedById(pendingSession.getId());
+        verify(repository).findLockedById(proof.getId());
+        verify(repository, never()).findById(any());
+    }
+
+    @Test
+    void verify_theWrongCodeThatUsesTheLastAttemptSaysTheSessionIsLocked() throws Exception {
+        OrderEmailVerificationSession session = pending("654321", 2, LocalDateTime.now().plusMinutes(10));
+        assertThatThrownBy(() -> service.verifyCode(new OrderEmailOtpVerifyRequest(session.getId(), "111111")))
+            .isInstanceOfSatisfying(ResponseStatusException.class,
+                e -> assertThat(e.getReason()).isEqualTo("Bạn đã nhập sai OTP quá số lần cho phép. Vui lòng gửi mã mới."));
+    }
+
+    @Test
+    void verify_laterCallsOnASessionLockedByAttemptsKeepSayingSo() throws Exception {
+        OrderEmailVerificationSession session = pending("654321", 3, LocalDateTime.now().plusMinutes(10));
+        session.setStatus(OrderEmailVerificationStatus.CANCELLED);
+        assertThatThrownBy(() -> service.verifyCode(new OrderEmailOtpVerifyRequest(session.getId(), "654321")))
+            .isInstanceOfSatisfying(ResponseStatusException.class,
+                e -> assertThat(e.getReason()).startsWith("Bạn đã nhập sai OTP quá số lần cho phép."));
+    }
+
+    @Test
+    void verify_aSessionNotLockedByAttemptsStaysGeneric() throws Exception {
+        OrderEmailVerificationSession session = pending("654321", 1, LocalDateTime.now().plusMinutes(10));
+        session.setStatus(OrderEmailVerificationStatus.EXPIRED);
+        assertThatThrownBy(() -> service.verifyCode(new OrderEmailOtpVerifyRequest(session.getId(), "654321")))
+            .isInstanceOfSatisfying(ResponseStatusException.class,
+                e -> assertThat(e.getReason()).isEqualTo("Phiên xác thực email không còn hiệu lực."));
     }
 
     // --- verify -------------------------------------------------------------------------------------
@@ -193,13 +340,13 @@ class OrderEmailVerificationServiceImplTest {
     @ValueSource(strings = {"12345", "1234567", "12345a", "abcdef", "12 456", "١٢٣٤٥٦", "-12345", "12.456"})
     void verify_rejectsCodesThatAreNotExactlySixDigits(String code) {
         assertBadRequest(() -> service.verifyCode(new OrderEmailOtpVerifyRequest(UUID.randomUUID(), code)));
-        verify(repository, never()).findById(any());
+        verify(repository, never()).findLockedById(any());
     }
 
     @Test
     void verify_unknownSessionIs404() {
         UUID id = UUID.randomUUID();
-        when(repository.findById(id)).thenReturn(Optional.empty());
+        when(repository.findLockedById(id)).thenReturn(Optional.empty());
         assertThatThrownBy(() -> service.verifyCode(new OrderEmailOtpVerifyRequest(id, "123456")))
             .isInstanceOfSatisfying(ResponseStatusException.class, e -> assertThat(e.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND));
     }
@@ -293,8 +440,7 @@ class OrderEmailVerificationServiceImplTest {
     }
 
     @Test
-    @Tag("bug")
-    void bug_wrongOtpAttemptsAreRolledBackSoTheLimitOf3NeverHolds() throws Exception {
+    void regression_wrongOtpAttemptsAreRolledBackSoTheLimitOf3NeverHolds() throws Exception {
         // BUG (Critical): OrderEmailVerificationServiceImpl.java:78-79 verifyCode is a plain @Transactional method. A wrong code increments
         // attemptCount (and at 3 sets CANCELLED) and then throws ResponseStatusException, a RuntimeException: Spring rolls the transaction
         // back, so the increment is never committed. The counter stays at 0 forever and a 6-digit code can be brute forced
@@ -319,7 +465,7 @@ class OrderEmailVerificationServiceImplTest {
     @Test
     void assert_unknownSessionIs400() {
         UUID id = UUID.randomUUID();
-        when(repository.findById(id)).thenReturn(Optional.empty());
+        when(repository.findLockedById(id)).thenReturn(Optional.empty());
         assertBadRequest(() -> service.assertVerifiedForOrder(id, "khach@example.com"));
     }
 
