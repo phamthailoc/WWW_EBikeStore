@@ -333,6 +333,7 @@ DROP TABLE IF EXISTS `order_email_verification_sessions`;
 CREATE TABLE `order_email_verification_sessions` (
     id UUID PRIMARY KEY,
     email VARCHAR(255) NOT NULL,
+    requester_key VARCHAR(64),
     otp_hash VARCHAR(64) NOT NULL,
     otp_expires_at DATETIME NOT NULL,
     resend_available_at DATETIME NOT NULL,
@@ -345,6 +346,7 @@ CREATE TABLE `order_email_verification_sessions` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 ALTER TABLE orders DROP COLUMN customer_identity_number;
 CREATE INDEX `idx_order_email_verification_email_created` ON `order_email_verification_sessions` (email, created_at DESC);
+CREATE INDEX `idx_order_email_verification_email_requester` ON `order_email_verification_sessions` (email, requester_key, created_at DESC);
 
 DROP TABLE IF EXISTS `pricing_rules`;
 CREATE TABLE `pricing_rules` (

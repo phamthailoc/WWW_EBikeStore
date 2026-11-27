@@ -9,8 +9,8 @@ import com.ebike.model.entity.order.OrderEmailVerificationStatus;
 import com.ebike.repository.order.OrderEmailVerificationSessionRepository;
 import com.ebike.service.order.OrderEmailVerificationService;
 import java.nio.charset.StandardCharsets;
+import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -18,6 +18,11 @@ import java.util.HexFormat;
 import java.util.Locale;
 import java.util.UUID;
 import java.util.regex.Pattern;
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,29 +38,53 @@ public class OrderEmailVerificationServiceImpl implements OrderEmailVerification
     private static final int MAX_ATTEMPTS = 3;
     private static final String LOCKED_MESSAGE = "Bạn đã nhập sai OTP quá số lần cho phép. Vui lòng gửi mã mới.";
 
+    private static final Logger log = LoggerFactory.getLogger(OrderEmailVerificationServiceImpl.class);
+    private static final String HMAC_ALGORITHM = "HmacSHA256";
+    private static final String DAILY_LOCK_MESSAGE = "Email này đã nhập sai mã quá nhiều lần. Vui lòng thử lại sau 24 giờ.";
+    private static final String DAILY_SEND_MESSAGE = "Email này đã nhận quá nhiều mã trong hôm nay. Vui lòng thử lại sau.";
+
     private final SecureRandom secureRandom = new SecureRandom();
     private final OrderEmailVerificationSessionRepository repository;
     private final OrderEmailSender emailSender;
+    private final SecretKeySpec hmacKey;
+    private final int maxLockedSessionsPerDay;
+    private final int maxSendsPerDay;
 
     public OrderEmailVerificationServiceImpl(
         OrderEmailVerificationSessionRepository repository,
-        OrderEmailSender emailSender
+        OrderEmailSender emailSender,
+        @Value("${app.order.email-otp.hmac-secret:}") String hmacSecret,
+        @Value("${app.order.email-otp.max-locked-sessions-per-day:10}") int maxLockedSessionsPerDay,
+        @Value("${app.order.email-otp.max-sends-per-day:20}") int maxSendsPerDay
     ) {
         this.repository = repository;
         this.emailSender = emailSender;
+        this.maxLockedSessionsPerDay = maxLockedSessionsPerDay;
+        this.maxSendsPerDay = maxSendsPerDay;
+        byte[] keyBytes;
+        if (hmacSecret == null || hmacSecret.isBlank()) {
+            keyBytes = new byte[32];
+            secureRandom.nextBytes(keyBytes);
+            log.warn("app.order.email-otp.hmac-secret is not set: using a random key generated at startup, so pending email codes stop working after a restart. Set APP_ORDER_EMAIL_OTP_HMAC_SECRET in production.");
+        } else {
+            keyBytes = hmacSecret.getBytes(StandardCharsets.UTF_8);
+        }
+        this.hmacKey = new SecretKeySpec(keyBytes, HMAC_ALGORITHM);
     }
 
     @Override
     @Transactional
-    public OrderEmailOtpSendResponse sendVerificationCode(OrderEmailOtpSendRequest request) {
+    public OrderEmailOtpSendResponse sendVerificationCode(OrderEmailOtpSendRequest request, String requesterIp) {
         String email = normalizeEmail(request == null ? null : request.email());
         if (email == null || !EMAIL_PATTERN.matcher(email).matches()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email chưa hợp lệ.");
         }
 
         LocalDateTime now = LocalDateTime.now();
-        // The 60 s cooldown is enforced here, not only by the browser's countdown: a second request for the same email is refused and sends no mail.
-        repository.findFirstByEmailOrderByCreatedAtDesc(email)
+        // The 60 s cooldown is enforced here, not only by the browser's countdown: a second request for the same email from the same requester is refused and sends no mail.
+        // It is keyed by email AND requester, so a stranger who knows the address cannot keep the owner's own request at 429.
+        String requesterKey = keyed("ip:" + (requesterIp == null || requesterIp.isBlank() ? "unknown" : requesterIp.trim()));
+        repository.findFirstByEmailAndRequesterKeyOrderByCreatedAtDesc(email, requesterKey)
             .map(OrderEmailVerificationSession::getResendAvailableAt)
             .filter(availableAt -> availableAt != null && availableAt.isAfter(now))
             .ifPresent(availableAt -> {
@@ -63,10 +92,21 @@ public class OrderEmailVerificationServiceImpl implements OrderEmailVerification
                 throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS, "Vui lòng đợi " + waitSeconds + " giây trước khi gửi lại mã.");
             });
 
+        // Daily caps per email, whoever asks: a fresh session gives fresh guesses, so without them a slow attacker keeps guessing and the owner is mail-bombed.
+        LocalDateTime dayAgo = now.minusHours(24);
+        if (repository.countByEmailAndStatusAndAttemptCountGreaterThanEqualAndCreatedAtAfter(
+                email, OrderEmailVerificationStatus.CANCELLED, MAX_ATTEMPTS, dayAgo) >= maxLockedSessionsPerDay) {
+            throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS, DAILY_LOCK_MESSAGE);
+        }
+        if (repository.countByEmailAndCreatedAtAfter(email, dayAgo) >= maxSendsPerDay) {
+            throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS, DAILY_SEND_MESSAGE);
+        }
+
         String code = generateOtp();
 
         OrderEmailVerificationSession session = new OrderEmailVerificationSession();
         session.setEmail(email);
+        session.setRequesterKey(requesterKey);
         session.setOtpHash(hashOtp(code));
         session.setOtpExpiresAt(now.plusMinutes(OTP_TTL_MINUTES));
         session.setResendAvailableAt(now.plusSeconds(RESEND_AFTER_SECONDS));
@@ -103,7 +143,7 @@ public class OrderEmailVerificationServiceImpl implements OrderEmailVerification
 
         ensurePending(session);
 
-        if (!hashOtp(code).equals(session.getOtpHash())) {
+        if (!matchesStoredHash(code, session.getOtpHash())) {
             int attempts = session.getAttemptCount() == null ? 0 : session.getAttemptCount();
             session.setAttemptCount(attempts + 1);
             boolean locked = session.getAttemptCount() >= MAX_ATTEMPTS;
@@ -178,12 +218,25 @@ public class OrderEmailVerificationServiceImpl implements OrderEmailVerification
     }
 
     private String hashOtp(String code) {
+        return keyed(code);
+    }
+
+    /** Keyed hash (HMAC-SHA256, hex): a leaked table cannot be reversed by hashing the million possible codes without the server secret. */
+    private String keyed(String value) {
         try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            return HexFormat.of().formatHex(digest.digest(code.getBytes(StandardCharsets.UTF_8)));
-        } catch (NoSuchAlgorithmException exception) {
-            throw new IllegalStateException("SHA-256 is not available", exception);
+            Mac mac = Mac.getInstance(HMAC_ALGORITHM);
+            mac.init(hmacKey);
+            return HexFormat.of().formatHex(mac.doFinal(value.getBytes(StandardCharsets.UTF_8)));
+        } catch (GeneralSecurityException exception) {
+            throw new IllegalStateException(HMAC_ALGORITHM + " is not available", exception);
         }
+    }
+
+    private boolean matchesStoredHash(String code, String storedHash) {
+        if (storedHash == null) {
+            return false;
+        }
+        return MessageDigest.isEqual(hashOtp(code).getBytes(StandardCharsets.UTF_8), storedHash.getBytes(StandardCharsets.UTF_8));
     }
 
     private String normalizeEmail(String value) {

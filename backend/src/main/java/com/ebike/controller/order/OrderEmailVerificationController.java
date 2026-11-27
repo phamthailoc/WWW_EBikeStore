@@ -5,6 +5,7 @@ import com.ebike.dto.order.request.OrderEmailOtpVerifyRequest;
 import com.ebike.dto.order.response.OrderEmailOtpSendResponse;
 import com.ebike.dto.order.response.OrderEmailOtpVerifyResponse;
 import com.ebike.service.order.OrderEmailVerificationService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,8 +22,9 @@ public class OrderEmailVerificationController {
     }
 
     @PostMapping("/send")
-    public OrderEmailOtpSendResponse send(@RequestBody OrderEmailOtpSendRequest request) {
-        return verificationService.sendVerificationCode(request);
+    public OrderEmailOtpSendResponse send(@RequestBody OrderEmailOtpSendRequest request, HttpServletRequest httpRequest) {
+        // getRemoteAddr only, like the rate limiter: X-Forwarded-For is forgeable (production resolves the proxy through forward-headers-strategy=native)
+        return verificationService.sendVerificationCode(request, httpRequest.getRemoteAddr());
     }
 
     @PostMapping("/verify")

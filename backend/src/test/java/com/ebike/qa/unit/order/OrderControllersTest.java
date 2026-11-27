@@ -322,7 +322,7 @@ class OrderControllersTest {
             .andExpect(status().isOk());
         mvc.perform(post("/api/v1/orders/email-verification/verify").contentType(MediaType.APPLICATION_JSON)
             .content("{\"verificationSessionId\":\"" + java.util.UUID.randomUUID() + "\",\"code\":\"123456\"}")).andExpect(status().isOk());
-        verify(verification).sendVerificationCode(any());
+        verify(verification).sendVerificationCode(any(), any());
         verify(verification).verifyCode(any());
     }
 

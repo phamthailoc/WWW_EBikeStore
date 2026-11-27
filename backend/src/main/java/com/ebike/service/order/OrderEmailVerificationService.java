@@ -7,7 +7,7 @@ import com.ebike.dto.order.response.OrderEmailOtpVerifyResponse;
 import java.util.UUID;
 
 public interface OrderEmailVerificationService {
-    OrderEmailOtpSendResponse sendVerificationCode(OrderEmailOtpSendRequest request);
+    OrderEmailOtpSendResponse sendVerificationCode(OrderEmailOtpSendRequest request, String requesterIp);
 
     OrderEmailOtpVerifyResponse verifyCode(OrderEmailOtpVerifyRequest request);
 

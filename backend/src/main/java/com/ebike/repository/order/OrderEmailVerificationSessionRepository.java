@@ -2,6 +2,8 @@ package com.ebike.repository.order;
 
 import com.ebike.model.entity.order.OrderEmailVerificationSession;
 import jakarta.persistence.LockModeType;
+import com.ebike.model.entity.order.OrderEmailVerificationStatus;
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -16,5 +18,12 @@ public interface OrderEmailVerificationSessionRepository extends JpaRepository<O
     @Query("select s from OrderEmailVerificationSession s where s.id = :id")
     Optional<OrderEmailVerificationSession> findLockedById(@Param("id") UUID id);
 
-    Optional<OrderEmailVerificationSession> findFirstByEmailOrderByCreatedAtDesc(String email);
+    Optional<OrderEmailVerificationSession> findFirstByEmailAndRequesterKeyOrderByCreatedAtDesc(String email, String requesterKey);
+
+    /** Sends in the window; served by idx_order_email_verification_email_created (email, created_at). */
+    long countByEmailAndCreatedAtAfter(String email, LocalDateTime after);
+
+    /** Sessions locked by too many wrong codes in the window. */
+    long countByEmailAndStatusAndAttemptCountGreaterThanEqualAndCreatedAtAfter(
+        String email, OrderEmailVerificationStatus status, int attempts, LocalDateTime after);
 }
