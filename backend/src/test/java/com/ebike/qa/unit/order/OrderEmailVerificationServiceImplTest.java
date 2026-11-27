@@ -86,7 +86,7 @@ class OrderEmailVerificationServiceImplTest {
         session.setResendAvailableAt(LocalDateTime.now());
         session.setAttemptCount(attempts);
         session.setStatus(OrderEmailVerificationStatus.PENDING);
-        when(repository.findById(session.getId())).thenReturn(Optional.of(session));
+        when(repository.findLockedById(session.getId())).thenReturn(Optional.of(session));
         return session;
     }
 
@@ -98,7 +98,7 @@ class OrderEmailVerificationServiceImplTest {
         session.setOtpExpiresAt(expiresAt);
         session.setStatus(OrderEmailVerificationStatus.VERIFIED);
         session.setVerifiedAt(LocalDateTime.now().minusMinutes(1));
-        when(repository.findById(session.getId())).thenReturn(Optional.of(session));
+        when(repository.findLockedById(session.getId())).thenReturn(Optional.of(session));
         return session;
     }
 
@@ -282,11 +282,49 @@ class OrderEmailVerificationServiceImplTest {
         PlatformTransactionManager manager = org.mockito.Mockito.mock(PlatformTransactionManager.class);
         when(manager.getTransaction(any())).thenReturn(new SimpleTransactionStatus());
         UUID id = UUID.randomUUID();
-        when(repository.findById(id)).thenThrow(new IllegalStateException("db down"));
+        when(repository.findLockedById(id)).thenThrow(new IllegalStateException("db down"));
 
         assertThatThrownBy(() -> proxied(manager).verifyCode(new OrderEmailOtpVerifyRequest(id, "123456")))
             .isInstanceOf(IllegalStateException.class);
         verify(manager).rollback(any());
+    }
+
+    @Test
+    void lock_verifyAndAssertReadTheSessionWithTheRowLockNeverWithPlainFindById() throws Exception {
+        OrderEmailVerificationSession pendingSession = pending("654321", 0, LocalDateTime.now().plusMinutes(10));
+        service.verifyCode(new OrderEmailOtpVerifyRequest(pendingSession.getId(), "654321"));
+        OrderEmailVerificationSession proof = verified("khach@example.com", LocalDateTime.now().plusMinutes(5));
+        service.assertVerifiedForOrder(proof.getId(), "khach@example.com");
+
+        verify(repository).findLockedById(pendingSession.getId());
+        verify(repository).findLockedById(proof.getId());
+        verify(repository, never()).findById(any());
+    }
+
+    @Test
+    void verify_theWrongCodeThatUsesTheLastAttemptSaysTheSessionIsLocked() throws Exception {
+        OrderEmailVerificationSession session = pending("654321", 2, LocalDateTime.now().plusMinutes(10));
+        assertThatThrownBy(() -> service.verifyCode(new OrderEmailOtpVerifyRequest(session.getId(), "111111")))
+            .isInstanceOfSatisfying(ResponseStatusException.class,
+                e -> assertThat(e.getReason()).isEqualTo("Bạn đã nhập sai OTP quá số lần cho phép. Vui lòng gửi mã mới."));
+    }
+
+    @Test
+    void verify_laterCallsOnASessionLockedByAttemptsKeepSayingSo() throws Exception {
+        OrderEmailVerificationSession session = pending("654321", 3, LocalDateTime.now().plusMinutes(10));
+        session.setStatus(OrderEmailVerificationStatus.CANCELLED);
+        assertThatThrownBy(() -> service.verifyCode(new OrderEmailOtpVerifyRequest(session.getId(), "654321")))
+            .isInstanceOfSatisfying(ResponseStatusException.class,
+                e -> assertThat(e.getReason()).startsWith("Bạn đã nhập sai OTP quá số lần cho phép."));
+    }
+
+    @Test
+    void verify_aSessionNotLockedByAttemptsStaysGeneric() throws Exception {
+        OrderEmailVerificationSession session = pending("654321", 1, LocalDateTime.now().plusMinutes(10));
+        session.setStatus(OrderEmailVerificationStatus.EXPIRED);
+        assertThatThrownBy(() -> service.verifyCode(new OrderEmailOtpVerifyRequest(session.getId(), "654321")))
+            .isInstanceOfSatisfying(ResponseStatusException.class,
+                e -> assertThat(e.getReason()).isEqualTo("Phiên xác thực email không còn hiệu lực."));
     }
 
     // --- verify -------------------------------------------------------------------------------------
@@ -302,13 +340,13 @@ class OrderEmailVerificationServiceImplTest {
     @ValueSource(strings = {"12345", "1234567", "12345a", "abcdef", "12 456", "١٢٣٤٥٦", "-12345", "12.456"})
     void verify_rejectsCodesThatAreNotExactlySixDigits(String code) {
         assertBadRequest(() -> service.verifyCode(new OrderEmailOtpVerifyRequest(UUID.randomUUID(), code)));
-        verify(repository, never()).findById(any());
+        verify(repository, never()).findLockedById(any());
     }
 
     @Test
     void verify_unknownSessionIs404() {
         UUID id = UUID.randomUUID();
-        when(repository.findById(id)).thenReturn(Optional.empty());
+        when(repository.findLockedById(id)).thenReturn(Optional.empty());
         assertThatThrownBy(() -> service.verifyCode(new OrderEmailOtpVerifyRequest(id, "123456")))
             .isInstanceOfSatisfying(ResponseStatusException.class, e -> assertThat(e.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND));
     }
@@ -427,7 +465,7 @@ class OrderEmailVerificationServiceImplTest {
     @Test
     void assert_unknownSessionIs400() {
         UUID id = UUID.randomUUID();
-        when(repository.findById(id)).thenReturn(Optional.empty());
+        when(repository.findLockedById(id)).thenReturn(Optional.empty());
         assertBadRequest(() -> service.assertVerifiedForOrder(id, "khach@example.com"));
     }
 

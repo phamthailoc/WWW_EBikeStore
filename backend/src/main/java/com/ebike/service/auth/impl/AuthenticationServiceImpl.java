@@ -115,7 +115,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vui lòng nhập tên đăng nhập hoặc email và mật khẩu.");
         }
 
-        User user = findLoginUser(request.usernameOrEmail());
+        User user = lookupUser(request.usernameOrEmail()).orElse(null);
         if (user == null) {
             // Same answer and similar timing as a wrong password, so nobody can tell which usernames exist.
             passwordEncoder.matches(request.password(), dummyPasswordHash());
@@ -211,13 +211,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         userRepository.save(user);
     }
 
-    private User findLoginUser(String usernameOrEmail) {
-        String trimmed = usernameOrEmail.trim();
-        return userRepository.findByEmail(trimmed.toLowerCase(Locale.ROOT))
-            .or(() -> userRepository.findByUsername(trimmed))
-            .orElse(null);
-    }
-
     private String dummyPasswordHash() {
         String hash = dummyPasswordHash;
         if (hash == null) {
@@ -227,10 +220,14 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         return hash;
     }
 
-    private User findUser(String usernameOrEmail) {
+    private java.util.Optional<User> lookupUser(String usernameOrEmail) {
         String trimmed = usernameOrEmail.trim();
         return userRepository.findByEmail(trimmed.toLowerCase(Locale.ROOT))
-            .or(() -> userRepository.findByUsername(trimmed))
+            .or(() -> userRepository.findByUsername(trimmed));
+    }
+
+    private User findUser(String usernameOrEmail) {
+        return lookupUser(usernameOrEmail)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy người dùng."));
     }
 
