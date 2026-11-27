@@ -24,7 +24,7 @@ class KnownDefectsTest extends QaBase {
     void regression_homeHeroBackgroundImageIsMissing() {
         new HomePage(ui).open();
         String css = String.valueOf(ui.js("return getComputedStyle(document.querySelector('.hero-image')).backgroundImage;"));
-        // Expected: the hero picture named by home.css loads (HTTP 200). Actual: /images/Kinetic-Banner.jpg answers 404.
+        // Expected: the hero picture named by taste.css loads (HTTP 200). It once answered 404 because the file was deleted but still referenced.
         assertTrue(css.contains("url("), "the hero has a background image: " + css);
         String path = css.replaceAll(".*url\\([\"']?([^\"')]+)[\"']?\\).*", "$1").replace(QaConfig.baseUrl(), "");
         assertEquals(200, Api.statusOf(path), "hero image " + path);
@@ -33,7 +33,7 @@ class KnownDefectsTest extends QaBase {
     @Test
     void regression_tasteCssImportsNeverLoadIconsAndFonts() {
         new HomePage(ui).open();
-        // taste.css declares two @import rules (Phosphor icons, Google fonts) but puts a rule before them; browsers ignore a late @import.
+        // taste.css declares two @import rules (Phosphor icons, Google fonts); they must come before every rule, or browsers ignore them.
         Object imports = ui.js("""
             const sheet=[...document.styleSheets].find(s=>s.href&&s.href.includes('taste.css'));
             return sheet?[...sheet.cssRules].filter(r=>r instanceof CSSImportRule).length:-1;""");
@@ -91,8 +91,7 @@ class KnownDefectsTest extends QaBase {
     }
 
     @Test
-    @Tag("bug")
-    void bug_loginAnswersDifferentlyForUnknownUserAndWrongPassword() {
+    void regression_loginAnswersDifferentlyForUnknownUserAndWrongPassword() {
         // Expected: one answer (401) for both, so that nobody can find out which usernames exist. Actual: unknown user 404, wrong password 401.
         int wrongPassword = new Api().post("/api/v1/auth/login", java.util.Map.of("usernameOrEmail", QaConfig.get("staff.manager.username"), "password", "definitely-wrong")).status();
         int unknownUser = new Api().post("/api/v1/auth/login", java.util.Map.of("usernameOrEmail", "no.such.user." + System.nanoTime(), "password", "definitely-wrong")).status();

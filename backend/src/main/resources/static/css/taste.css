@@ -94,7 +94,7 @@ input[type=checkbox], input[type=radio] { accent-color: var(--accent-text); }
 /* Hero */
 .hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: clamp(28px, 5vw, 72px); align-items: center; position: static; height: auto; min-height: calc(100dvh - var(--nav-h)); max-height: 900px; max-width: 1480px; margin: 0 auto; padding: 28px var(--gutter) 56px; background: none; overflow: visible; }
 .hero-content { position: static; margin: 0; max-width: 560px; padding-block: 24px; }
-.hero-image { position: static; order: 2; align-self: stretch; min-height: 460px; border-radius: var(--r-feature); background: url('/images/Kinetic-Banner.jpg') center / cover, var(--surface-2); box-shadow: var(--shadow); }
+.hero-image { position: static; order: 2; align-self: stretch; min-height: 460px; border-radius: var(--r-feature); background: url('/images/catalog/kinetic-butterfly/source-03.png') center / cover, var(--surface-2); box-shadow: var(--shadow); }
 .hero-meta, .hero-note { display: none; }
 .hero h1, .detail h1, .auth h1, .catalog-intro h1 { font: 600 clamp(38px, 5vw, 68px)/1.08 var(--font-display); letter-spacing: -.035em; margin: 18px 0 20px; }
 .hero h1 em, .manifesto h2 em, .catalog-intro h1 em { font-style: normal; color: var(--accent-text); }
