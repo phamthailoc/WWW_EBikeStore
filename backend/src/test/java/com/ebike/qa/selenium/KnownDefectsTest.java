@@ -22,7 +22,7 @@ import org.openqa.selenium.By;
 class KnownDefectsTest extends QaBase {
 
     @Test
-    void bug_homeHeroBackgroundImageIsMissing() {
+    void regression_homeHeroBackgroundImageIsMissing() {
         new HomePage(ui).open();
         String css = String.valueOf(ui.js("return getComputedStyle(document.querySelector('.hero-image')).backgroundImage;"));
         // Expected: the hero picture named by home.css loads (HTTP 200). Actual: /images/Kinetic-Banner.jpg answers 404.
@@ -32,7 +32,7 @@ class KnownDefectsTest extends QaBase {
     }
 
     @Test
-    void bug_tasteCssImportsNeverLoadIconsAndFonts() {
+    void regression_tasteCssImportsNeverLoadIconsAndFonts() {
         new HomePage(ui).open();
         // taste.css declares two @import rules (Phosphor icons, Google fonts) but puts a rule before them; browsers ignore a late @import.
         Object imports = ui.js("""
