@@ -77,8 +77,7 @@ class KnownDefectsTest extends QaBase {
     }
 
     @Test
-    @Tag("bug")
-    void bug_profileEmailFieldIsPlainTextAndAcceptsGarbage() {
+    void regression_profileEmailFieldIsPlainTextAndAcceptsGarbage() {
         Customer c = newCustomer();
         loginCustomer(c);
         new WorkspacePage(ui).open("/customer/profile");

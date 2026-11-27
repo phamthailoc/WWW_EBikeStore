@@ -32,7 +32,6 @@ import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
@@ -95,7 +94,7 @@ class AdminServiceAccountsTest {
 
     @Test
     void create_happyPath_hashesPassword_normalisesEmail_splitsName() {
-        AdminAccountResponse r = service.createAccount(create(" Le Van Tien ", " newbie ", "  New@Shop.COM ", "secret1", "manager", null));
+        AdminAccountResponse r = service.createAccount(create(" Le Van Tien ", " newbie ", "  New@Shop.COM ", "secret12", "manager", null));
         ArgumentCaptor<User> saved = ArgumentCaptor.forClass(User.class);
         verify(users).save(saved.capture());
         User u = saved.getValue();
@@ -103,7 +102,7 @@ class AdminServiceAccountsTest {
         assertThat(u.getUsername()).isEqualTo("newbie");
         assertThat(u.getFirstName()).isEqualTo("Le");
         assertThat(u.getLastName()).isEqualTo("Van Tien");
-        assertThat(u.getPasswordHash()).isEqualTo("ENC(secret1)");
+        assertThat(u.getPasswordHash()).isEqualTo("ENC(secret12)");
         assertThat(u.getActive()).isTrue();
         assertThat(u.getAccountStatus()).isEqualTo("ACTIVE");
         assertThat(u.getVerified()).isFalse();
@@ -113,7 +112,7 @@ class AdminServiceAccountsTest {
 
     @Test
     void create_usernameDefaultsToEmailLocalPart() {
-        service.createAccount(create("A B", null, "jane.doe@shop.com", "secret1", "SUPPORT", null));
+        service.createAccount(create("A B", null, "jane.doe@shop.com", "secret12", "SUPPORT", null));
         ArgumentCaptor<User> saved = ArgumentCaptor.forClass(User.class);
         verify(users).save(saved.capture());
         assertThat(saved.getValue().getUsername()).isEqualTo("jane.doe");
@@ -121,19 +120,19 @@ class AdminServiceAccountsTest {
 
     @Test
     void create_superAdminRoleIsStoredAsAdmin() {
-        AdminAccountResponse r = service.createAccount(create("A B", "x1", "x1@shop.com", "secret1", "super_admin", null));
+        AdminAccountResponse r = service.createAccount(create("A B", "x1", "x1@shop.com", "secret12", "super_admin", null));
         assertThat(r.role()).isEqualTo("ADMIN");
     }
 
     @Test
     void create_missingRole_defaultsToCustomer_neverToAdmin() {
-        AdminAccountResponse r = service.createAccount(create("A B", "x1", "x1@shop.com", "secret1", null, null));
+        AdminAccountResponse r = service.createAccount(create("A B", "x1", "x1@shop.com", "secret12", null, null));
         assertThat(r.role()).isEqualTo("CUSTOMER");
     }
 
     @Test
     void create_lockedStatus_createsInactiveAccount() {
-        AdminAccountResponse r = service.createAccount(create("A B", "x1", "x1@shop.com", "secret1", "MANAGER", "locked"));
+        AdminAccountResponse r = service.createAccount(create("A B", "x1", "x1@shop.com", "secret12", "MANAGER", "locked"));
         assertThat(r.status()).isEqualTo("LOCKED");
         ArgumentCaptor<User> saved = ArgumentCaptor.forClass(User.class);
         verify(users).save(saved.capture());
@@ -142,9 +141,9 @@ class AdminServiceAccountsTest {
 
     @Test
     void create_unknownRoleOrStatus_is400() {
-        assertThatThrownBy(() -> service.createAccount(create("A B", "x1", "x1@shop.com", "secret1", "GOD", null)))
+        assertThatThrownBy(() -> service.createAccount(create("A B", "x1", "x1@shop.com", "secret12", "GOD", null)))
             .satisfies(t -> assertStatus(t, HttpStatus.BAD_REQUEST));
-        assertThatThrownBy(() -> service.createAccount(create("A B", "x1", "x1@shop.com", "secret1", "MANAGER", "banana")))
+        assertThatThrownBy(() -> service.createAccount(create("A B", "x1", "x1@shop.com", "secret12", "MANAGER", "banana")))
             .satisfies(t -> assertStatus(t, HttpStatus.BAD_REQUEST));
         verify(users, never()).save(any());
     }
@@ -152,7 +151,7 @@ class AdminServiceAccountsTest {
     @Test
     void create_roleMissingFromDatabase_is400() {
         when(roles.findByName("OPERATOR")).thenReturn(Optional.empty());
-        assertThatThrownBy(() -> service.createAccount(create("A B", "x1", "x1@shop.com", "secret1", "OPERATOR", null)))
+        assertThatThrownBy(() -> service.createAccount(create("A B", "x1", "x1@shop.com", "secret12", "OPERATOR", null)))
             .satisfies(t -> assertStatus(t, HttpStatus.BAD_REQUEST));
     }
 
@@ -169,16 +168,16 @@ class AdminServiceAccountsTest {
     @NullAndEmptySource
     @ValueSource(strings = {"   "})
     void create_blankNameOrEmail_is400(String blank) {
-        assertThatThrownBy(() -> service.createAccount(create(blank, "x1", "x1@shop.com", "secret1", "MANAGER", null)))
+        assertThatThrownBy(() -> service.createAccount(create(blank, "x1", "x1@shop.com", "secret12", "MANAGER", null)))
             .satisfies(t -> assertStatus(t, HttpStatus.BAD_REQUEST));
-        assertThatThrownBy(() -> service.createAccount(create("A B", "x1", blank, "secret1", "MANAGER", null)))
+        assertThatThrownBy(() -> service.createAccount(create("A B", "x1", blank, "secret12", "MANAGER", null)))
             .satisfies(t -> assertStatus(t, HttpStatus.BAD_REQUEST));
     }
 
     @Test
     void create_duplicateEmail_is409_caseAndWhitespaceInsensitive() {
         when(users.existsByEmail("root@shop.com")).thenReturn(true);
-        assertThatThrownBy(() -> service.createAccount(create("A B", "x1", "  ROOT@Shop.com ", "secret1", "MANAGER", null)))
+        assertThatThrownBy(() -> service.createAccount(create("A B", "x1", "  ROOT@Shop.com ", "secret12", "MANAGER", null)))
             .satisfies(t -> assertStatus(t, HttpStatus.CONFLICT));
         verify(users, never()).save(any());
     }
@@ -186,15 +185,14 @@ class AdminServiceAccountsTest {
     @Test
     void create_duplicateUsername_is409() {
         when(users.existsByUsername("taken")).thenReturn(true);
-        assertThatThrownBy(() -> service.createAccount(create("A B", " taken ", "x1@shop.com", "secret1", "MANAGER", null)))
+        assertThatThrownBy(() -> service.createAccount(create("A B", " taken ", "x1@shop.com", "secret12", "MANAGER", null)))
             .satisfies(t -> assertStatus(t, HttpStatus.CONFLICT));
     }
 
     /** Live finding: POST /admin/accounts saves email "zzz". Update validates the email; create must too. */
     @Test
-    @Tag("bug")
-    void bug_create_acceptsMalformedEmail() {
-        assertThatThrownBy(() -> service.createAccount(create("A B", "zzz1", "zzz", "secret1", "MANAGER", null)))
+    void regression_create_acceptsMalformedEmail() {
+        assertThatThrownBy(() -> service.createAccount(create("A B", "zzz1", "zzz", "secret12", "MANAGER", null)))
             .satisfies(t -> {
                 assertThat(t).isInstanceOf(ResponseStatusException.class);
                 assertStatus(t, HttpStatus.BAD_REQUEST);
@@ -203,17 +201,15 @@ class AdminServiceAccountsTest {
 
     /** Without an "@" and without a username the default username is built with substring(0, indexOf('@')) and blows up (HTTP 500). */
     @Test
-    @Tag("bug")
-    void bug_create_emailWithoutAtAndNoUsername_mustBe400NotStringIndexError() {
-        assertThatThrownBy(() -> service.createAccount(create("A B", null, "zzz", "secret1", "MANAGER", null)))
+    void regression_create_emailWithoutAtAndNoUsername_mustBe400NotStringIndexError() {
+        assertThatThrownBy(() -> service.createAccount(create("A B", null, "zzz", "secret12", "MANAGER", null)))
             .satisfies(t -> assertStatus(t, HttpStatus.BAD_REQUEST));
     }
 
     @Test
-    @Tag("bug")
-    void bug_create_emailStartingWithAtGivesBlankUsername() {
+    void regression_create_emailStartingWithAtGivesBlankUsername() {
         try {
-            service.createAccount(create("A B", null, "@shop.com", "secret1", "MANAGER", null));
+            service.createAccount(create("A B", null, "@shop.com", "secret12", "MANAGER", null));
         } catch (ResponseStatusException expected) {
             return;
         }
@@ -224,16 +220,14 @@ class AdminServiceAccountsTest {
 
     /** create applies no length rule, update does (100 per name part): a 300-character name reaches the database (HTTP 500). */
     @Test
-    @Tag("bug")
-    void bug_create_nameParts_over100CharsMustBe400() {
-        assertThatThrownBy(() -> service.createAccount(create("A".repeat(300) + " B", "x1", "x1@shop.com", "secret1", "MANAGER", null)))
+    void regression_create_nameParts_over100CharsMustBe400() {
+        assertThatThrownBy(() -> service.createAccount(create("A".repeat(300) + " B", "x1", "x1@shop.com", "secret12", "MANAGER", null)))
             .satisfies(t -> assertStatus(t, HttpStatus.BAD_REQUEST));
     }
 
     @Test
-    @Tag("bug")
-    void bug_create_usernameWithSpacesAccepted() {
-        assertThatThrownBy(() -> service.createAccount(create("A B", "qa user x", "x1@shop.com", "secret1", "MANAGER", null)))
+    void regression_create_usernameWithSpacesAccepted() {
+        assertThatThrownBy(() -> service.createAccount(create("A B", "qa user x", "x1@shop.com", "secret12", "MANAGER", null)))
             .satisfies(t -> assertStatus(t, HttpStatus.BAD_REQUEST));
     }
 

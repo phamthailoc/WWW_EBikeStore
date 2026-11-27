@@ -40,8 +40,8 @@
       <p class="eyebrow">${'Bảo mật'}</p><h2>${'Đổi mật khẩu'}</h2>
       <form id="passwordForm" class="profile-grid" autocomplete="off">
         <label>${'Mật khẩu hiện tại'}<input type="password" name="currentPassword" autocomplete="current-password" required></label>
-        <label>${'Mật khẩu mới (ít nhất 6 ký tự)'}<input type="password" name="newPassword" autocomplete="new-password" minlength="6" required></label>
-        <label>${'Nhập lại mật khẩu mới'}<input type="password" name="confirmPassword" autocomplete="new-password" minlength="6" required></label>
+        <label>${'Mật khẩu mới (ít nhất 8 ký tự)'}<input type="password" name="newPassword" autocomplete="new-password" minlength="8" required></label>
+        <label>${'Nhập lại mật khẩu mới'}<input type="password" name="confirmPassword" autocomplete="new-password" minlength="8" required></label>
         <p><button class="button compact" type="submit">${'Đổi mật khẩu'}</button></p>
       </form>
     </section>

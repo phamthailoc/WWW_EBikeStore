@@ -1,5 +1,6 @@
 package com.ebike.service.admin.impl;
 
+import com.ebike.common.validation.AccountFieldRules;
 import com.ebike.dto.admin.request.AdminAccountCreateRequest;
 import com.ebike.dto.admin.request.AdminAccountRoleUpdateRequest;
 import com.ebike.dto.admin.request.AdminAccountStatusUpdateRequest;
@@ -257,10 +258,12 @@ public class AdminServiceImpl implements AdminService {
     @Override
     @Transactional
     public AdminAccountResponse createAccount(AdminAccountCreateRequest request) {
-        String email = normalizeRequired(request.email(), "Email").toLowerCase(Locale.ROOT);
+        String email = AccountFieldRules.email(request.email());
         String username = request.username() == null || request.username().isBlank()
-            ? email.substring(0, email.indexOf('@'))
-            : request.username().trim();
+            ? AccountFieldRules.usernameFromEmail(email)
+            : AccountFieldRules.username(request.username());
+        String name = normalizeRequired(request.name(), "Tên");
+        assertNameParts(name);
 
         if (userRepository.existsByEmail(email)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Email đã được sử dụng.");
@@ -276,8 +279,8 @@ public class AdminServiceImpl implements AdminService {
         User user = new User();
         user.setEmail(email);
         user.setUsername(username);
-        user.setPasswordHash(passwordEncoder.encode(requiredPassword(request.password())));
-        applyName(user, normalizeRequired(request.name(), "Tên"));
+        user.setPasswordHash(passwordEncoder.encode(AccountFieldRules.password(request.password())));
+        applyName(user, name);
         user.setVerified(Boolean.TRUE.equals(request.verified()));
         user.setAccountStatus(normalizeOrDefault(request.status(), "ACTIVE", ACCOUNT_STATUSES));
         user.setActive("ACTIVE".equals(user.getAccountStatus()));
@@ -343,10 +346,7 @@ public class AdminServiceImpl implements AdminService {
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy tài khoản."));
         assertNotDeleted(user);
         String name = normalizeRequired(request == null ? null : request.name(), "Tên");
-        String[] nameParts = name.split("\\s+", 2);
-        if (nameParts[0].length() > 100 || (nameParts.length > 1 && nameParts[1].length() > 100)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Họ và tên đệm/tên mỗi phần tối đa 100 ký tự.");
-        }
+        assertNameParts(name);
         String email = normalizeRequired(request.email(), "Email").toLowerCase(Locale.ROOT);
         if (email.length() > 150 || !ACCOUNT_EMAIL_PATTERN.matcher(email).matches()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email không hợp lệ.");
@@ -537,11 +537,12 @@ public class AdminServiceImpl implements AdminService {
         }
     }
 
-    private String requiredPassword(String password) {
-        if (password == null || password.trim().length() < 6) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mật khẩu cần ít nhất 6 ký tự.");
+    private void assertNameParts(String name) {
+        String[] nameParts = name.trim().split("\\s+", 2);
+        if (nameParts[0].length() > AccountFieldRules.MAX_NAME_LENGTH
+            || (nameParts.length > 1 && nameParts[1].length() > AccountFieldRules.MAX_NAME_LENGTH)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Họ và tên đệm/tên mỗi phần tối đa 100 ký tự.");
         }
-        return password;
     }
 
     private void assertNotSelf(User target, String message) {
