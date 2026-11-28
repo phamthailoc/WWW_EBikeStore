@@ -163,7 +163,7 @@ class UserProfileServiceTest {
     void createAddress_trimsFields_defaultsCountry() {
         var res = service.createAddress(5L, addr("  123 Nguyen Trai, P1  ", " Ho Chi Minh ", false), meAuth);
         assertThat(res.street()).isEqualTo("123 Nguyen Trai, P1");
-        assertThat(res.city()).isEqualTo("Ho Chi Minh");
+        assertThat(res.city()).isEqualTo("Hồ Chí Minh");
         assertThat(res.country()).isEqualTo("Việt Nam");
         assertThat(res.addressType()).isEqualTo("SHIPPING");
         assertThat(res.userId()).isEqualTo(5L);
@@ -182,6 +182,12 @@ class UserProfileServiceTest {
         service.createAddress(5L, addr("x".repeat(255), "Hà Nội", false), meAuth);
         assertThatThrownBy(() -> service.createAddress(5L, addr("x".repeat(256), "Hà Nội", false), meAuth)).satisfies(t -> assertStatus(t, HttpStatus.BAD_REQUEST));
         assertThatThrownBy(() -> service.createAddress(5L, addr("   123 a b   ", "Hà Nội", false), meAuth)).satisfies(t -> assertStatus(t, HttpStatus.BAD_REQUEST));
+    }
+
+    @Test
+    void createAddress_storesTheProvinceAsTheListSpellsIt() {
+        var res = service.createAddress(5L, addr("123 Nguyen Trai, P1", " ha noi ", false), meAuth);
+        assertThat(res.city()).isEqualTo("Hà Nội");
     }
 
     @Test

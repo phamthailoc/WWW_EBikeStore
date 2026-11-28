@@ -73,7 +73,7 @@ public class UserProfileServiceImpl implements UserProfileService {
         address.setUser(user);
         address.setAddressType(parseAddressType(request.addressType()));
         address.setStreet(request.street().trim());
-        address.setCity(request.city().trim());
+        address.setCity(com.ebike.common.validation.VietnamProvinces.require(request.city().trim()));
         address.setPostalCode(request.postalCode());
         address.setCountry(countryOrDefault(request.country()));
         address.setDefaultAddress(request != null && Boolean.TRUE.equals(request.isDefault()));
@@ -96,7 +96,7 @@ public class UserProfileServiceImpl implements UserProfileService {
         validateAddress(request);
         address.setAddressType(parseAddressType(request.addressType()));
         address.setStreet(request.street().trim());
-        address.setCity(request.city().trim());
+        address.setCity(com.ebike.common.validation.VietnamProvinces.require(request.city().trim()));
         address.setPostalCode(request.postalCode());
         address.setCountry(countryOrDefault(request.country()));
         address.setDefaultAddress(request != null && Boolean.TRUE.equals(request.isDefault()));

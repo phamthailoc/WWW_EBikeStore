@@ -65,7 +65,6 @@ public class AdminServiceImpl implements AdminService {
     private final com.ebike.repository.auth.AuthenticationLogRepository authenticationLogRepository;
     private final com.ebike.repository.testride.TestRideBookingRepository testRides;
     private final com.ebike.service.product.ProductReviewService reviews;
-    private static final java.util.regex.Pattern ACCOUNT_EMAIL_PATTERN = java.util.regex.Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}$", java.util.regex.Pattern.CASE_INSENSITIVE);
     private final AuditLogService auditLog;
 
     public AdminServiceImpl(
@@ -369,10 +368,9 @@ public class AdminServiceImpl implements AdminService {
         assertNotDeleted(user);
         String name = normalizeRequired(request == null ? null : request.name(), "Tên");
         assertNameParts(name);
-        String email = normalizeRequired(request.email(), "Email").toLowerCase(Locale.ROOT);
-        if (email.length() > 150 || !ACCOUNT_EMAIL_PATTERN.matcher(email).matches()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email không hợp lệ.");
-        }
+        String sentEmail = normalizeRequired(request.email(), "Email").toLowerCase(Locale.ROOT);
+        // an address that is unchanged is not checked again: an old account with a legacy address can still save its name
+        String email = sentEmail.equalsIgnoreCase(user.getEmail()) ? user.getEmail() : AccountFieldRules.email(sentEmail);
         if (!email.equalsIgnoreCase(user.getEmail()) && userRepository.existsByEmail(email)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Email đã được sử dụng.");
         }

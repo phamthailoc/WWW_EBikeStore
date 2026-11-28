@@ -361,6 +361,29 @@ class AdminServiceAccountsTest {
     // ------------------------------------------------------------------ update details
 
     @Test
+    void updateAccount_legacyEmailThatIsNotChangedStillSaves() {
+        customer.setEmail("legacy@localhost");
+        service.updateAccount(10L, new AdminAccountUpdateRequest("Anh Nguyen", "Legacy@Localhost"));
+        assertThat(customer.getFirstName()).isEqualTo("Anh");
+    }
+
+    @Test
+    void updateAccount_changedEmailMustUseTheSharedRules() {
+        assertThatThrownBy(() -> service.updateAccount(10L, new AdminAccountUpdateRequest("A B", "a@b.com.")))
+            .satisfies(t -> assertStatus(t, HttpStatus.BAD_REQUEST));
+        assertThatThrownBy(() -> service.updateAccount(10L, new AdminAccountUpdateRequest("A B", "a".repeat(250) + "@b.com")))
+            .satisfies(t -> assertStatus(t, HttpStatus.BAD_REQUEST));
+    }
+
+    @Test
+    void create_autoUsernameFromAVeryLongEmailLocalPartIsCutTo100() {
+        service.createAccount(create("A B", null, "u".repeat(120) + "@shop.com", "secret12", "MANAGER", null));
+        ArgumentCaptor<User> saved = ArgumentCaptor.forClass(User.class);
+        verify(users).save(saved.capture());
+        assertThat(saved.getValue().getUsername()).hasSize(100);
+    }
+
+    @Test
     void updateAccount_changesNameAndEmail() {
         var d = service.updateAccount(10L, new AdminAccountUpdateRequest(" Anh  Nguyen Van ", " NEW@x.com "));
         assertThat(customer.getEmail()).isEqualTo("new@x.com");
@@ -371,7 +394,7 @@ class AdminServiceAccountsTest {
 
     @Test
     void updateAccount_badEmail_is400() {
-        for (String bad : List.of("zzz", "a@b", "a b@c.com", "@c.com", "x".repeat(150) + "@example.com")) {
+        for (String bad : List.of("zzz", "a@b", "a b@c.com", "@c.com", "x".repeat(250) + "@example.com")) {
             assertThatThrownBy(() -> service.updateAccount(10L, new AdminAccountUpdateRequest("A B", bad)))
                 .satisfies(t -> assertStatus(t, HttpStatus.BAD_REQUEST));
         }

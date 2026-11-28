@@ -75,7 +75,8 @@ public final class AccountFieldRules {
 
     /** A login name made from the part of an email before the "@" (the email must already be valid). */
     public static String usernameFromEmail(String validEmail) {
-        return username(validEmail.substring(0, validEmail.indexOf('@')));
+        String local = validEmail.substring(0, validEmail.indexOf('@'));
+        return username(local.length() > MAX_USERNAME_LENGTH ? local.substring(0, MAX_USERNAME_LENGTH) : local);
     }
 
     /** The password is used exactly as typed (never trimmed), here and at sign-in. */

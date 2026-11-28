@@ -501,6 +501,14 @@ public class OrderServiceImpl implements OrderService {
         if (!item.getUnits().isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Xe này đã có số khung và số máy nên không sửa được số lượng.");
         }
+        // the limit is per product, summed over the colours on the order
+        int sameProduct = order.getItems().stream()
+            .filter(line -> line != item && line.getProduct() != null && item.getProduct() != null
+                && Objects.equals(line.getProduct().getId(), item.getProduct().getId()))
+            .mapToInt(OrderItem::getQuantity).sum();
+        if (sameProduct + quantity > MAX_ITEM_QUANTITY) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Số lượng mỗi sản phẩm không được vượt quá " + MAX_ITEM_QUANTITY + ".");
+        }
         int before = item.getQuantity();
         int delta = quantity - before;
         if (delta == 0) {
@@ -888,17 +896,22 @@ public class OrderServiceImpl implements OrderService {
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Màu xe đã chọn không có cho sản phẩm này."));
     }
 
+    /** The province as the list spells it, so the stored address matches what the storefront selects offer. */
+    private String canonicalProvince(String province) {
+        return VietnamProvinces.canonical(province).orElseGet(() -> normalize(province));
+    }
+
     private Shipment buildShipment(Order order, Showroom showroom, OrderCreateRequest request) {
         Shipment shipment = new Shipment();
         shipment.setOrder(order);
         shipment.setRecipientName(normalize(request.customerName()));
         shipment.setPhoneNumber(normalizeDigits(request.phoneNumber()));
         shipment.setRecipientEmail(normalizeEmail(request.customerEmail()));
-        shipment.setPickupDistrict(showroom == null ? normalize(request.province()) : showroom.getDistrict());
+        shipment.setPickupDistrict(showroom == null ? canonicalProvince(request.province()) : showroom.getDistrict());
         shipment.setDetailedAddress(showroom == null ? normalize(request.detailedAddress()) : showroom.getAddress());
         shipment.setPickupShowroom(showroom);
         shipment.setShippingAddress(showroom == null
-            ? normalize(request.detailedAddress()) + ", " + normalize(request.province())
+            ? normalize(request.detailedAddress()) + ", " + canonicalProvince(request.province())
             : showroom.getName() + " - " + showroom.getAddress());
         return shipment;
     }
@@ -1049,26 +1062,11 @@ public class OrderServiceImpl implements OrderService {
         if (!homeDelivery || isBlank(province)) {
             return ZERO;
         }
-        String wanted = provinceKey(province);
+        String wanted = VietnamProvinces.key(province);
         boolean hasShowroom = showroomRepository.findByActiveTrueOrderByDistrictAscNameAsc().stream()
-            .anyMatch(showroom -> provinceKey(showroom.getCity()).equals(wanted));
+            .anyMatch(showroom -> VietnamProvinces.key(showroom.getCity()).equals(wanted));
         int bikes = items.stream().mapToInt(OrderCreateItemRequest::quantity).sum();
         return pricingService.homeDeliveryPerBike(hasShowroom).multiply(BigDecimal.valueOf(bikes));
-    }
-
-    /** "Thành phố Hồ Chí Minh", "TP. Ho Chi Minh" and "Hồ Chí Minh" all become "ho chi minh". */
-    private static String provinceKey(String name) {
-        if (name == null) {
-            return "";
-        }
-        String plain = java.text.Normalizer.normalize(name, java.text.Normalizer.Form.NFD)
-            .replaceAll("\\p{M}+", "")
-            .replace("đ", "d").replace("Đ", "D")
-            .toLowerCase(java.util.Locale.ROOT)
-            .replaceAll("[^a-z0-9 ]", " ")
-            .replaceAll("\\s+", " ")
-            .trim();
-        return plain.replaceFirst("^(thanh pho|tinh|tp) ", "");
     }
 
     /** Each bike is registered on its own papers, so the fee is charged per bike that needs a plate. */

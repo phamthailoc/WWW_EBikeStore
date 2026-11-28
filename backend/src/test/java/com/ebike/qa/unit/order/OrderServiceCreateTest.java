@@ -323,6 +323,14 @@ class OrderServiceCreateTest extends OrderServiceTestBase {
         service.createOrder(homeRequest(1L, 1, "Hà Nội"), aliceAuth);
     }
 
+    /** The stored address uses the list's spelling, which is what the storefront select offers. */
+    @Test
+    void provinceIsStoredAsTheListSpellsIt() {
+        service.createOrder(homeRequest(1L, 1, "  ha noi "), aliceAuth);
+        assertThat(saved().getShipment().getPickupDistrict()).isEqualTo("Hà Nội");
+        assertThat(saved().getShipment().getShippingAddress()).endsWith(", Hà Nội");
+    }
+
     @Test
     void unknownDeliveryMethodIsRejected() {
         assertRejected(copy(pickupRequest(1L, 1), f -> f.deliveryMethod = "DRONE"));
