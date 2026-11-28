@@ -20,7 +20,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -242,8 +241,7 @@ class SupportServiceTest {
     }
 
     @Test
-    @Tag("bug")
-    void bug_create_emailRegexAcceptsTrailingDotDomain() {
+    void regression_create_emailRegexAcceptsTrailingDotDomain() {
         // "a@b.com." is not a deliverable address (register/checkout reject it); support accepts it because its pattern is looser.
         assertThatThrownBy(() -> service.create(req("A", "a@b.com.", null, "s", "0123456789"), null)).satisfies(t -> assertStatus(t, HttpStatus.BAD_REQUEST));
     }

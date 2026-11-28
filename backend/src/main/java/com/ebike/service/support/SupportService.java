@@ -23,7 +23,6 @@ import org.springframework.web.server.ResponseStatusException;
 @Service
 public class SupportService {
 
-    private static final Pattern EMAIL = Pattern.compile("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$");
     private static final Pattern PHONE = Pattern.compile("^0\\d{9,10}$");
     private static final Set<String> STATUSES = Set.of(SupportRequest.NEW, SupportRequest.IN_PROGRESS, SupportRequest.RESOLVED);
     /** At most this many requests per email per hour, so the form cannot be used to flood the staff. */
@@ -50,7 +49,7 @@ public class SupportService {
         if (name.isEmpty() || name.length() > 100) {
             throw bad("Vui lòng nhập họ tên (tối đa 100 ký tự).");
         }
-        if (!EMAIL.matcher(email).matches() || email.length() > 255) {
+        if (!com.ebike.common.validation.AccountFieldRules.isValidEmail(email)) {
             throw bad("Email chưa hợp lệ. Ví dụ đúng: khachhang@example.com.");
         }
         if (!phone.isEmpty() && !PHONE.matcher(phone).matches()) {
