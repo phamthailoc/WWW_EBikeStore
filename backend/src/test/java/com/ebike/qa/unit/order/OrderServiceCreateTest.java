@@ -453,6 +453,19 @@ class OrderServiceCreateTest extends OrderServiceTestBase {
     }
 
     @Test
+    void aDiscountAboveTheSubtotalOnAHomeDeliveryIsClampedSoTheTotalIsTheShippingFee() {
+        when(showroomRepository.findByActiveTrueOrderByDistrictAscNameAsc()).thenReturn(List.of(OrderFixtures.showroom(1L, "Thành phố Hồ Chí Minh", "Quận 1", true)));
+        promotion(5L, "HUGE", "FIXED_AMOUNT", "999999999");
+        service.createOrder(copy(homeRequest(1L, 1, "TP. Hồ Chí Minh"), f -> f.discountCode = "HUGE"), aliceAuth);
+        assertThat(saved().getSubtotal()).isEqualByComparingTo("10000000");
+        assertThat(saved().getDiscountAmount()).isEqualByComparingTo("10000000");
+        assertThat(saved().getShippingFee()).isEqualByComparingTo("200000");
+        assertThat(saved().getRegistrationFee()).isEqualByComparingTo("0");
+        assertThat(saved().getTotalAmount()).isEqualByComparingTo("200000");
+        verify(promotionRepository).tryIncrementUsage(5L);
+    }
+
+    @Test
     void percentageOver100IsClampedToTheSubtotalSoTheOrderIsRefusedAsZeroTotal() {
         promotion(5L, "CRAZY", "PERCENTAGE", "250");
         assertRejected(copy(pickupRequest(1L, 1), f -> f.discountCode = "CRAZY"));

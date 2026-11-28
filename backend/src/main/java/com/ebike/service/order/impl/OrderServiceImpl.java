@@ -520,20 +520,6 @@ public class OrderServiceImpl implements OrderService {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Màu xe đã chọn không đủ hàng trong kho: " + variant.getColorName());
             }
         }
-        if (product != null) {
-            product.setStockQuantity(defaultStock(product.getStockQuantity()) - delta);
-        }
-        boolean backInStock = false;
-        if (variant != null) {
-            Integer variantBefore = variant.getStockQuantity();
-            variant.setStockQuantity(defaultStock(variantBefore) - delta);
-            backInStock = delta < 0 && StockAlertRules.isRestock(variantBefore, variant.getStockQuantity());
-        }
-        if (product != null) {
-            stockLedger.record(List.of(StockLedger.Entry.of(product, variant, -delta, delta > 0 ? StockMovementReason.SALE : StockMovementReason.CANCEL_RESTORE, "Sửa số lượng " + before + " → " + quantity)),
-                order.getId(), order.getOrderNumber(), null, getAuthenticatedUserOrNull(authentication));
-        }
-
         // The fees that depend on the number of bikes are the rate per bike times the count, worked out again at every edit:
         // the rate is the fee divided by the bikes it was charged for (a whole dong already, or rounded UP to the next whole dong when it does not divide evenly),
         // so editing back and forth never drifts.
@@ -571,7 +557,24 @@ public class OrderServiceImpl implements OrderService {
             }
             order.setDiscountAmount(discount.max(BigDecimal.ZERO).min(subtotal));
         }
-        order.setTotalAmount(calculateTotalAmount(subtotal, order.getShippingFee(), order.getDiscountAmount(), order.getRegistrationFee()));
+        BigDecimal newTotal = calculateTotalAmount(subtotal, order.getShippingFee(), order.getDiscountAmount(), order.getRegistrationFee());
+        // checked before any stock change, the same as at checkout: an edit must not leave an order that can not be paid
+        assertPayableTotal(newTotal);
+
+        if (product != null) {
+            product.setStockQuantity(defaultStock(product.getStockQuantity()) - delta);
+        }
+        boolean backInStock = false;
+        if (variant != null) {
+            Integer variantBefore = variant.getStockQuantity();
+            variant.setStockQuantity(defaultStock(variantBefore) - delta);
+            backInStock = delta < 0 && StockAlertRules.isRestock(variantBefore, variant.getStockQuantity());
+        }
+        if (product != null) {
+            stockLedger.record(List.of(StockLedger.Entry.of(product, variant, -delta, delta > 0 ? StockMovementReason.SALE : StockMovementReason.CANCEL_RESTORE, "Sửa số lượng " + before + " → " + quantity)),
+                order.getId(), order.getOrderNumber(), null, getAuthenticatedUserOrNull(authentication));
+        }
+        order.setTotalAmount(newTotal);
         payment.setAmount(order.getTotalAmount());
         Order saved = orderRepository.save(order);
         if (backInStock) {
