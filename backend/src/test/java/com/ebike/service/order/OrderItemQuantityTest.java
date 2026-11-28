@@ -167,6 +167,23 @@ class OrderItemQuantityTest {
         assertEquals(0, new BigDecimal("500000").compareTo(order.getDiscountAmount()));
     }
 
+    @Test void anEditThatWouldLeaveNothingToPayIsRefusedAndStockStaysPut() {
+        // a fixed discount worth the whole old subtotal and no delivery fee: lowering the quantity clamps the discount to the new subtotal, so the total would be 0
+        Promotion promotion = new Promotion();
+        promotion.setDiscountType("FIXED_AMOUNT");
+        promotion.setDiscountValue(new BigDecimal("20000000"));
+        order.setPromotion(promotion);
+        order.setShippingFee(BigDecimal.ZERO);
+        order.setDiscountAmount(new BigDecimal("20000000"));
+        ResponseStatusException e = assertThrows(ResponseStatusException.class, () -> service.updateItemQuantity(10L, 100L, 1, null));
+        assertEquals(400, e.getStatusCode().value());
+        assertEquals("Tổng thanh toán của đơn phải lớn hơn 0.", e.getReason());
+        assertEquals(10, product.getStockQuantity());
+        verify(ledger, never()).record(any(), any(), any(), any(), any());
+        verify(orders, never()).save(any());
+        assertEquals(0, new BigDecimal("21000000").compareTo(order.getTotalAmount()));
+    }
+
     @Test void theLedgerSaysSaleWhenRaisedAndRestoreWhenLowered() {
         service.updateItemQuantity(10L, 100L, 3, null);
         verify(ledger).record(org.mockito.ArgumentMatchers.argThat(entries -> entries.get(0).change() == -1

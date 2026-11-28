@@ -286,23 +286,36 @@ class ManagerPaymentsAndCustomersTest extends ManagerBase {
         Payment p = paidCancelled(1);
         var res = service.refundPayment(1L, new ManagerPaymentConfirmationRequest(null, "  bank ref 1 "));
         assertThat(p.getPaymentStatus()).isEqualTo(PaymentStatus.REFUNDED);
-        assertThat(p.getProviderResponse()).isEqualTo("bank ref 1");
+        assertThat(p.getProviderResponse()).isEqualTo("REFUND NOTE: bank ref 1");
         assertThat(res.paymentStatus()).isEqualTo("REFUNDED");
         verify(audit).record("ghi nhận hoàn tiền", "ORD-1");
     }
 
     @Test
-    void refund_nullRequestOk() {
+    void refund_keepsTheGatewayRecordOfALatePayment() {
         Payment p = paidCancelled(1);
-        service.refundPayment(1L, null);
-        assertThat(p.getPaymentStatus()).isEqualTo(PaymentStatus.REFUNDED);
+        p.setProviderResponse("{\"vnp_TransactionNo\":\"4242\"}");
+        service.refundPayment(1L, new ManagerPaymentConfirmationRequest(null, "bank ref 1"));
+        assertThat(p.getProviderResponse()).isEqualTo("{\"vnp_TransactionNo\":\"4242\"}\nREFUND NOTE: bank ref 1");
+    }
+
+    @Test
+    void refund_withoutANote_isRefused() {
+        Payment p = paidCancelled(1);
+        for (var request : java.util.Arrays.asList(null, new ManagerPaymentConfirmationRequest(null, null), new ManagerPaymentConfirmationRequest(null, ""), new ManagerPaymentConfirmationRequest(null, "   "))) {
+            assertThatThrownBy(() -> service.refundPayment(1L, request)).satisfies(t -> {
+                assertStatus(t, HttpStatus.BAD_REQUEST);
+                assertThat(((org.springframework.web.server.ResponseStatusException) t).getReason()).isEqualTo("Vui lòng nhập ghi chú hoàn tiền.");
+            });
+        }
+        assertThat(p.getPaymentStatus()).isEqualTo(PaymentStatus.PAID);
     }
 
     @Test
     void refund_isNotRepeatable() {
         paidCancelled(1);
-        service.refundPayment(1L, null);
-        assertThatThrownBy(() -> service.refundPayment(1L, null)).satisfies(t -> assertStatus(t, HttpStatus.BAD_REQUEST));
+        service.refundPayment(1L, new ManagerPaymentConfirmationRequest(null, "ref"));
+        assertThatThrownBy(() -> service.refundPayment(1L, new ManagerPaymentConfirmationRequest(null, "ref"))).satisfies(t -> assertStatus(t, HttpStatus.BAD_REQUEST));
         verify(audit, org.mockito.Mockito.times(1)).record(any(), any());
     }
 
@@ -328,6 +341,19 @@ class ManagerPaymentsAndCustomersTest extends ManagerBase {
     @Test
     void refund_unknownPayment_is404() {
         assertThatThrownBy(() -> service.refundPayment(404L, null)).satisfies(t -> assertStatus(t, HttpStatus.NOT_FOUND));
+    }
+
+    /** M-21: a PAID payment of a cancelled order (a VNPay result that came after the cancellation) is flagged for the manager as needing a refund. */
+    @Test
+    void payments_paidPaymentOfACancelledOrder_isFlaggedRefundRequired() {
+        Payment late = paidCancelled(1);
+        Payment normal = pending(2, PaymentMethod.VNPAY, OrderStatus.CONFIRMED);
+        normal.setPaymentStatus(PaymentStatus.PAID);
+        Payment refunded = paidCancelled(3);
+        refunded.setPaymentStatus(PaymentStatus.REFUNDED);
+        when(payments.findAll()).thenReturn(List.of(late, normal, refunded));
+        assertThat(service.getPayments(null, null, null)).extracting(r -> r.id() + ":" + r.refundRequired())
+            .containsExactlyInAnyOrder("1:true", "2:false", "3:false");
     }
 
     // ------------------------------------------------------------------ customers
@@ -410,8 +436,7 @@ class ManagerPaymentsAndCustomersTest extends ManagerBase {
 
     /** The money of a cancelled order that is waiting for its refund is not "spent" by the customer. */
     @Test
-    @Tag("bug")
-    void bug_customers_totalSpentCountsPaidMoneyOfCancelledOrders() {
+    void regression_customers_totalSpentCountsPaidMoneyOfCancelledOrders() {
         User c1 = customer(1, "anna", "anna@x.com", "Anna", "Le");
         Order cancelled = Fx.order(1, "A", OrderStatus.CANCELLED, BASE);
         cancelled.setUser(c1);

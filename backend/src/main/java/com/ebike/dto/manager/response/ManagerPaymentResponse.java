@@ -22,6 +22,8 @@ public record ManagerPaymentResponse(
     /** V24: the status of the instalment application when this is the down payment of an instalment order, else null. */
     String installmentStatus,
     /** V24: true when this is an instalment down payment past its hold: the expiry job is about to cancel the order, so it can no longer be taken. */
-    boolean downPaymentOverdue
+    boolean downPaymentOverdue,
+    /** M-21: money was taken (PAID) for an order that is cancelled, e.g. a VNPay result that arrived after the cancellation: the manager has to refund it. */
+    boolean refundRequired
 ) {
 }

@@ -155,23 +155,20 @@ class AdminServicePricingPromotionsTest {
 
     /** Live finding: REGISTRATION_SERVICE accepts amount 0. The default is 500,000 VND; a 0 fee while the service is "offered" silently gives it away. */
     @Test
-    @Tag("bug")
-    void bug_pricing_registrationServiceAcceptsZero() {
+    void regression_pricing_registrationServiceAcceptsZero() {
         rule("REGISTRATION_SERVICE");
         assertThatThrownBy(() -> service.updatePricingRule(1L, amt("0"))).satisfies(t -> assertStatus(t, HttpStatus.BAD_REQUEST));
     }
 
     /** Registration tax is a percentage "shown for reference"; 150% is a typo (an amount in dong) that customers would see. */
     @Test
-    @Tag("bug")
-    void bug_pricing_registrationTaxRateAbove100PercentAccepted() {
+    void regression_pricing_registrationTaxRateAbove100PercentAccepted() {
         rule("REGISTRATION_TAX_RATE_CENTRAL");
         assertThatThrownBy(() -> service.updatePricingRule(1L, amt("150"))).satisfies(t -> assertStatus(t, HttpStatus.BAD_REQUEST));
     }
 
     @Test
-    @Tag("bug")
-    void bug_pricing_deliveryFeeHasNoUpperBound() {
+    void regression_pricing_deliveryFeeHasNoUpperBound() {
         rule("HOME_DELIVERY_OTHER_PROVINCE");
         assertThatThrownBy(() -> service.updatePricingRule(1L, amt("999999999999"))).satisfies(t -> assertStatus(t, HttpStatus.BAD_REQUEST));
     }
@@ -182,6 +179,20 @@ class AdminServicePricingPromotionsTest {
                                                 String status, LocalDateTime from, LocalDateTime to) {
         return new PromotionCreateRequest(code, name, type, value == null ? null : new BigDecimal(value),
             max == null ? null : new BigDecimal(max), limit, status, from, to);
+    }
+
+    @Test
+    void pricing_acceptedBoundaries_deliveryFeeAtTheCapAndTaxRateAtZeroAndHundred() {
+        PricingRule delivery = rule("HOME_DELIVERY_OTHER_PROVINCE");
+        service.updatePricingRule(1L, amt("5000000"));
+        assertThat(delivery.getAmount()).isEqualByComparingTo("5000000");
+        assertThatThrownBy(() -> service.updatePricingRule(1L, amt("5000001"))).satisfies(t -> assertStatus(t, HttpStatus.BAD_REQUEST));
+        PricingRule tax = rule("REGISTRATION_TAX_RATE_OTHER");
+        service.updatePricingRule(1L, amt("0"));
+        assertThat(tax.getAmount()).isEqualByComparingTo("0");
+        service.updatePricingRule(1L, amt("100"));
+        assertThat(tax.getAmount()).isEqualByComparingTo("100");
+        assertThatThrownBy(() -> service.updatePricingRule(1L, amt("100.01"))).satisfies(t -> assertStatus(t, HttpStatus.BAD_REQUEST));
     }
 
     @Test
@@ -269,8 +280,7 @@ class AdminServicePricingPromotionsTest {
      * AdminServiceImpl.java:142 (createPromotion) vs :170-173 (updatePromotion).
      */
     @Test
-    @Tag("bug")
-    void bug_promo_create_negativeMaxDiscountIsStoredAsIs() {
+    void regression_promo_create_negativeMaxDiscountIsStoredAsIs() {
         try {
             service.createPromotion(promo("NEG", "x", "PERCENTAGE", "10", "-50000", null, null, null, null));
         } catch (ResponseStatusException refused) {
@@ -282,8 +292,7 @@ class AdminServicePricingPromotionsTest {
     }
 
     @Test
-    @Tag("bug")
-    void bug_promo_create_zeroMaxDiscountIsNotNormalisedLikeUpdateDoes() {
+    void regression_promo_create_zeroMaxDiscountIsNotNormalisedLikeUpdateDoes() {
         try {
             service.createPromotion(promo("ZERO", "x", "PERCENTAGE", "10", "0", null, null, null, null));
         } catch (ResponseStatusException refused) {

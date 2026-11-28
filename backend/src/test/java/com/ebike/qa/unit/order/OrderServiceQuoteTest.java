@@ -148,12 +148,30 @@ class OrderServiceQuoteTest extends OrderServiceTestBase {
         assertThat(quote.totalAmount()).isEqualByComparingTo("9000000");
     }
 
+    /** Defence in depth (U-06): a corrupt promotion row (negative cap or negative value) can never turn the discount into a surcharge. */
     @Test
-    void fixedDiscountIsLimitedToTheSubtotal() {
+    void aCorruptPromotionNeverGivesANegativeDiscountOrMoreThanTheSubtotal() {
+        promo("PERCENTAGE", "10").setMaxDiscountAmount(new BigDecimal("-50000"));
+        OrderQuoteResponse capped = service.quoteOrder(new OrderQuoteRequest(false, one(1L, 1), "CODE"));
+        assertThat(capped.discountAmount()).isEqualByComparingTo("0");
+        assertThat(capped.totalAmount()).isLessThanOrEqualTo(capped.subtotal());
+        promo("FIXED_AMOUNT", "-5000");
+        OrderQuoteResponse fixed = service.quoteOrder(new OrderQuoteRequest(false, one(1L, 1), "CODE"));
+        assertThat(fixed.discountAmount()).isEqualByComparingTo("0");
+        promo("FIXED_AMOUNT", "9999999");
+        OrderQuoteResponse huge = service.quoteOrder(new OrderQuoteRequest(false, one(1L, 1), "CODE"));
+        assertThat(huge.discountAmount()).isLessThanOrEqualTo(huge.subtotal());
+        assertThat(huge.totalAmount()).isEqualByComparingTo("1");
+    }
+
+    @Test
+    void aQuoteWhoseTotalIsZeroIsRefusedWithTheSameMessageAsTheOrder() {
         promo("FIXED_AMOUNT", "99000000");
-        OrderQuoteResponse quote = service.quoteOrder(new OrderQuoteRequest(false, one(1L, 1), "CODE"));
-        assertThat(quote.discountAmount()).isEqualByComparingTo("10000000");
-        assertThat(quote.totalAmount()).isEqualByComparingTo("0");
+        assertThatThrownBy(() -> service.quoteOrder(new OrderQuoteRequest(false, one(1L, 1), "CODE")))
+            .isInstanceOfSatisfying(ResponseStatusException.class, e -> {
+                assertThat(e.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+                assertThat(e.getReason()).isEqualTo("Tổng thanh toán của đơn phải lớn hơn 0.");
+            });
     }
 
     @Test

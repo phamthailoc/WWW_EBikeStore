@@ -14,6 +14,8 @@ public record PaymentHistoryResponse(
     String paymentStatus,
     String providerTxnId,
     LocalDateTime paidAt,
-    LocalDateTime createdAt
+    LocalDateTime createdAt,
+    /** The status of the order the payment belongs to: a PAID payment of a CANCELLED order is shown as waiting for a refund. */
+    String orderStatus
 ) {
 }

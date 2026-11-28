@@ -123,9 +123,9 @@ public class ManagerServiceImpl implements ManagerService {
             .filter(payment -> payment.getPaymentStatus() == PaymentStatus.PENDING)
             .count();
 
-        BigDecimal todayRevenue = sumPaidOrdersWithin(orders, today, today);
-        BigDecimal weekRevenue = sumPaidOrdersWithin(orders, weekStart, today);
-        BigDecimal monthRevenue = sumPaidOrdersWithin(orders, monthStart, today);
+        BigDecimal todayRevenue = sumRevenueWithin(orders, today, today);
+        BigDecimal weekRevenue = sumRevenueWithin(orders, weekStart, today);
+        BigDecimal monthRevenue = sumRevenueWithin(orders, monthStart, today);
         List<OrderResponse> recentOrders = orders.stream()
             .sorted(Comparator.comparing(Order::getCreatedAt).reversed())
             .limit(5)
@@ -260,11 +260,15 @@ public class ManagerServiceImpl implements ManagerService {
         if (payment.getOrder().getStatus() != OrderStatus.CANCELLED) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chỉ hoàn tiền được cho khoản thanh toán của đơn đã hủy.");
         }
+        if (request == null || request.note() == null || request.note().isBlank()) {
+            // M-22: a refund is money going back to a customer: the manager says how it was returned
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vui lòng nhập ghi chú hoàn tiền.");
+        }
 
         payment.setPaymentStatus(PaymentStatus.REFUNDED);
-        if (request != null && request.note() != null && !request.note().isBlank()) {
-            payment.setProviderResponse(request.note().trim());
-        }
+        // the gateway record (a late payment keeps its VNPay JSON) stays; the refund note is added under it
+        String gatewayRecord = payment.getProviderResponse();
+        payment.setProviderResponse((gatewayRecord == null || gatewayRecord.isBlank() ? "" : gatewayRecord + "\n") + "REFUND NOTE: " + request.note().trim());
 
         ManagerPaymentResponse refunded = toPaymentResponse(paymentRepository.save(payment));
         auditLog.record("ghi nhận hoàn tiền", payment.getOrder().getOrderNumber());
@@ -325,15 +329,14 @@ public class ManagerServiceImpl implements ManagerService {
             .count();
         // Revenue is money received in the period (by payment date, like the dashboard), whenever the order was placed.
         List<Order> paidInPeriod = orders.stream()
-            .filter(this::isCountedOrder)
-            .filter(this::hasPaidPayment)
+            .filter(this::countsAsRevenue)
             .filter(order -> {
                 LocalDate paid = paymentDate(order);
                 return !paid.isBefore(fromDate) && !paid.isAfter(toDate);
             })
             .toList();
         BigDecimal totalRevenue = paidInPeriod.stream()
-            .map(order -> order.getPayment().getAmount())
+            .map(this::revenueOf)
             .reduce(ZERO, BigDecimal::add);
 
         List<ManagerRevenuePeriodPointResponse> breakdown = buildRevenueBreakdown(orders, bucketPeriod, fromDate, toDate);
@@ -614,21 +617,28 @@ public class ManagerServiceImpl implements ManagerService {
             || containsIgnoreCase(shipment == null ? null : shipment.getPhoneNumber(), search);
     }
 
-    private BigDecimal sumPaidOrdersWithin(List<Order> orders, LocalDate fromDate, LocalDate toDate) {
-        return orders.stream()
-            .map(Order::getPayment)
-            .filter(payment -> payment != null && payment.getPaymentStatus() == PaymentStatus.PAID)
-            .filter(payment -> isWithinRange(payment.getPaidAt(), fromDate, toDate))
-            .map(Payment::getAmount)
-            .reduce(ZERO, BigDecimal::add);
+    /**
+     * THE revenue definition, shared by the dashboard, the revenue report (totals and breakdown) and a customer's total spent: the amount of a payment
+     * that is PAID (a REFUNDED one is money given back) on an order that is not CANCELLED (its money is to be refunded, not earned).
+     */
+    private boolean countsAsRevenue(Order order) {
+        return isCountedOrder(order) && hasPaidPayment(order);
     }
 
-    private boolean isWithinRange(LocalDateTime timestamp, LocalDate fromDate, LocalDate toDate) {
-        if (timestamp == null) {
-            return false;
-        }
-        LocalDate date = timestamp.toLocalDate();
-        return !date.isBefore(fromDate) && !date.isAfter(toDate);
+    private BigDecimal revenueOf(Order order) {
+        return order.getPayment().getAmount();
+    }
+
+    /** Revenue received between two dates, by payment date. */
+    private BigDecimal sumRevenueWithin(List<Order> orders, LocalDate fromDate, LocalDate toDate) {
+        return orders.stream()
+            .filter(this::countsAsRevenue)
+            .filter(order -> {
+                LocalDate paid = paymentDate(order);
+                return !paid.isBefore(fromDate) && !paid.isAfter(toDate);
+            })
+            .map(this::revenueOf)
+            .reduce(ZERO, BigDecimal::add);
     }
 
     private ManagerCustomerResponse toCustomerResponse(User user, List<Order> orders) {
@@ -638,9 +648,8 @@ public class ManagerServiceImpl implements ManagerService {
             .toList();
 
         BigDecimal totalSpent = customerOrders.stream()
-            .map(Order::getPayment)
-            .filter(payment -> payment != null && payment.getPaymentStatus() == PaymentStatus.PAID)
-            .map(Payment::getAmount)
+            .filter(this::countsAsRevenue)
+            .map(this::revenueOf)
             .reduce(ZERO, BigDecimal::add);
 
         return new ManagerCustomerResponse(
@@ -685,7 +694,8 @@ public class ManagerServiceImpl implements ManagerService {
             order.getStatus().name(),
             application == null ? null : application.getStatus(),
             application != null && InstallmentApplication.APPROVED.equals(application.getStatus())
-                && InstallmentRules.downPaymentOverdue(application.getReviewedAt(), downPaymentHold, LocalDateTime.now())
+                && InstallmentRules.downPaymentOverdue(application.getReviewedAt(), downPaymentHold, LocalDateTime.now()),
+            payment.getPaymentStatus() == PaymentStatus.PAID && order.getStatus() == OrderStatus.CANCELLED
         );
     }
 
@@ -858,15 +868,7 @@ public class ManagerServiceImpl implements ManagerService {
                     })
                     .count();
 
-                BigDecimal revenue = orders.stream()
-                    .filter(this::isCountedOrder)
-                    .filter(this::hasPaidPayment)
-                    .filter(order -> {
-                        LocalDate paid = paymentDate(order);
-                        return !paid.isBefore(bucket.start()) && !paid.isAfter(bucket.end());
-                    })
-                    .map(order -> order.getPayment().getAmount())
-                    .reduce(ZERO, BigDecimal::add);
+                BigDecimal revenue = sumRevenueWithin(orders, bucket.start(), bucket.end());
 
                 return new ManagerRevenuePeriodPointResponse(bucket.label(), orderCount, revenue);
             })

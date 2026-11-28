@@ -255,6 +255,7 @@ public class OrderServiceImpl implements OrderService {
         order.setRegistrationFee(registrationFee(includeRegistrationService, pricingService.registrationServicePerBike(), items));
         Promotion promotion = findValidPromotion(request.discountCode());
         BigDecimal promoDiscountAmount = promotion == null ? ZERO : calculatePromoDiscount(promotion, subtotal);
+        assertPayableTotal(calculateTotalAmount(subtotal, order.getShippingFee(), promoDiscountAmount, order.getRegistrationFee()));
         if (promotion != null) {
             assertCodeNotUsedBefore(promotion, user, order.getCustomerEmail());
             if (promotionRepository.tryIncrementUsage(promotion.getId()) == 0) {
@@ -519,20 +520,6 @@ public class OrderServiceImpl implements OrderService {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Màu xe đã chọn không đủ hàng trong kho: " + variant.getColorName());
             }
         }
-        if (product != null) {
-            product.setStockQuantity(defaultStock(product.getStockQuantity()) - delta);
-        }
-        boolean backInStock = false;
-        if (variant != null) {
-            Integer variantBefore = variant.getStockQuantity();
-            variant.setStockQuantity(defaultStock(variantBefore) - delta);
-            backInStock = delta < 0 && StockAlertRules.isRestock(variantBefore, variant.getStockQuantity());
-        }
-        if (product != null) {
-            stockLedger.record(List.of(StockLedger.Entry.of(product, variant, -delta, delta > 0 ? StockMovementReason.SALE : StockMovementReason.CANCEL_RESTORE, "Sửa số lượng " + before + " → " + quantity)),
-                order.getId(), order.getOrderNumber(), null, getAuthenticatedUserOrNull(authentication));
-        }
-
         // The fees that depend on the number of bikes are the rate per bike times the count, worked out again at every edit:
         // the rate is the fee divided by the bikes it was charged for (a whole dong already, or rounded UP to the next whole dong when it does not divide evenly),
         // so editing back and forth never drifts.
@@ -568,9 +555,26 @@ public class OrderServiceImpl implements OrderService {
                     discount = discount.min(promotion.getMaxDiscountAmount());
                 }
             }
-            order.setDiscountAmount(discount.min(subtotal));
+            order.setDiscountAmount(discount.max(BigDecimal.ZERO).min(subtotal));
         }
-        order.setTotalAmount(calculateTotalAmount(subtotal, order.getShippingFee(), order.getDiscountAmount(), order.getRegistrationFee()));
+        BigDecimal newTotal = calculateTotalAmount(subtotal, order.getShippingFee(), order.getDiscountAmount(), order.getRegistrationFee());
+        // checked before any stock change, the same as at checkout: an edit must not leave an order that can not be paid
+        assertPayableTotal(newTotal);
+
+        if (product != null) {
+            product.setStockQuantity(defaultStock(product.getStockQuantity()) - delta);
+        }
+        boolean backInStock = false;
+        if (variant != null) {
+            Integer variantBefore = variant.getStockQuantity();
+            variant.setStockQuantity(defaultStock(variantBefore) - delta);
+            backInStock = delta < 0 && StockAlertRules.isRestock(variantBefore, variant.getStockQuantity());
+        }
+        if (product != null) {
+            stockLedger.record(List.of(StockLedger.Entry.of(product, variant, -delta, delta > 0 ? StockMovementReason.SALE : StockMovementReason.CANCEL_RESTORE, "Sửa số lượng " + before + " → " + quantity)),
+                order.getId(), order.getOrderNumber(), null, getAuthenticatedUserOrNull(authentication));
+        }
+        order.setTotalAmount(newTotal);
         payment.setAmount(order.getTotalAmount());
         Order saved = orderRepository.save(order);
         if (backInStock) {
@@ -970,12 +974,15 @@ public class OrderServiceImpl implements OrderService {
         BigDecimal totalDiscountAmount = promoDiscountAmount;
         BigDecimal shippingFee = shippingFee(homeDelivery, province, items);
 
+        BigDecimal quotedTotal = calculateTotalAmount(subtotal, shippingFee, totalDiscountAmount, registrationFee);
+        assertPayableTotal(quotedTotal);
+
         return new OrderQuoteResponse(
             subtotal,
             shippingFee,
             totalDiscountAmount,
             registrationFee,
-            calculateTotalAmount(subtotal, shippingFee, totalDiscountAmount, registrationFee),
+            quotedTotal,
             registrationServicePerBike,
             registrationServiceOffered,
             percentOf(subtotal, pricingService.registrationTaxRateOther()),
@@ -1062,6 +1069,13 @@ public class OrderServiceImpl implements OrderService {
         return Boolean.TRUE.equals(includeRegistrationService);
     }
 
+    /** A total of 0 can not be paid (VNPay refuses it, the order would sit unpaid until it expires): the quote and the order both refuse it. */
+    private void assertPayableTotal(BigDecimal total) {
+        if (total == null || total.signum() <= 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tổng thanh toán của đơn phải lớn hơn 0.");
+        }
+    }
+
     private BigDecimal calculateTotalAmount(
         BigDecimal subtotal,
         BigDecimal shippingFee,
@@ -1119,7 +1133,8 @@ public class OrderServiceImpl implements OrderService {
         } else {
             discount = promotion.getDiscountValue();
         }
-        return discount.min(base);
+        // defence in depth: a corrupt promotion row (negative value or cap) can never turn the discount into a surcharge
+        return discount.max(BigDecimal.ZERO).min(base);
     }
 
     private void attachInitialPayment(Order order, String rawPaymentMethod, InstallmentPlanner.Prepared installment) {

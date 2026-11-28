@@ -71,7 +71,8 @@ public class PaymentHistoryServiceImpl implements PaymentHistoryService {
             payment.getPaymentStatus().name(),
             payment.getProviderTxnId(),
             payment.getPaidAt(),
-            order.getCreatedAt()
+            order.getCreatedAt(),
+            order.getStatus().name()
         );
     }
 }

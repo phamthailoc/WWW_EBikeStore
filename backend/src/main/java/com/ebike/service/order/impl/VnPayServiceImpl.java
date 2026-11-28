@@ -14,6 +14,7 @@ import com.ebike.model.entity.order.PaymentMethod;
 import com.ebike.model.entity.order.PaymentStatus;
 import com.ebike.repository.order.OrderRepository;
 import com.ebike.repository.order.PaymentRepository;
+import com.ebike.service.admin.AuditLogService;
 import com.ebike.service.order.VnPayService;
 import com.ebike.util.order.VnPayUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -49,6 +50,7 @@ public class VnPayServiceImpl implements VnPayService {
     private final PaymentRepository paymentRepository;
     private final InstallmentApplicationRepository installmentApplications;
     private final ObjectMapper objectMapper;
+    private final AuditLogService auditLog;
     // how long an approved instalment application waits for its down payment (the expiry job and the order page read the same setting)
     private final Duration downPaymentHold;
 
@@ -58,6 +60,7 @@ public class VnPayServiceImpl implements VnPayService {
         PaymentRepository paymentRepository,
         InstallmentApplicationRepository installmentApplications,
         ObjectMapper objectMapper,
+        AuditLogService auditLog,
         @Value("${app.order.installment-down-payment-hold:PT72H}") Duration downPaymentHold
     ) {
         this.properties = properties;
@@ -65,6 +68,7 @@ public class VnPayServiceImpl implements VnPayService {
         this.paymentRepository = paymentRepository;
         this.installmentApplications = installmentApplications;
         this.objectMapper = objectMapper;
+        this.auditLog = auditLog;
         this.downPaymentHold = downPaymentHold;
     }
 
@@ -111,6 +115,12 @@ public class VnPayServiceImpl implements VnPayService {
                 || (holdLeft != null && holdLeft.compareTo(MIN_HOLD_LEFT_TO_PAY) < 0)) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Đã quá hạn thanh toán khoản trả trước nên đơn hàng sắp bị hủy tự động.");
             }
+        }
+
+        BigDecimal amountToPay = installmentOrder && existingPayment != null ? existingPayment.getAmount() : order.getTotalAmount();
+        if (amountToPay == null || amountToPay.signum() <= 0) {
+            // U-04: VNPay refuses vnp_Amount=0, so there is nothing to send the customer to pay
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Đơn hàng không có số tiền cần thanh toán.");
         }
 
         Payment payment = existingPayment != null ? prepareExistingPayment(existingPayment, order) : createPendingPayment(order);
@@ -320,13 +330,43 @@ public class VnPayServiceImpl implements VnPayService {
             payment.setPaidAt(LocalDateTime.now());
             // A cancelled order stays cancelled (its stock is already back on sale);
             // the money shows up as PAID on a cancelled order so the manager refunds it (UC-17).
-            if (!orderCancelled) {
+            if (orderCancelled) {
+                // M-21: VNPay is still answered "00" (the money was taken, refusing would not return it); the audit trail and the manager lists flag it
+                auditAfterCommit("thanh toán đến muộn cho đơn đã hủy, cần hoàn tiền", payment.getOrder().getOrderNumber());
+                LOGGER.warn("Order {} was cancelled but VNPay payment {} arrived: it must be refunded", payment.getOrder().getOrderNumber(), params.get("vnp_TransactionNo"));
+            } else if (payment.getOrder().getStatus() == OrderStatus.PENDING) {
+                // U-03: only a waiting order is confirmed; one the staff already moved on (PROCESSING, SHIPPED, ...) keeps its status
                 payment.getOrder().setStatus(OrderStatus.CONFIRMED);
             }
         } else if (!orderCancelled) {
             payment.setPaymentStatus(PaymentStatus.FAILED);
         }
         paymentRepository.save(payment);
+    }
+
+    /**
+     * The audit entry is written only once the payment is committed (it is saved in its own transaction, so an earlier write could outlive a rollback
+     * and be written twice by the gateway's retry), and a failing audit never turns a recorded payment into an error answer for the gateway.
+     */
+    private void auditAfterCommit(String action, String target) {
+        Runnable write = () -> {
+            try {
+                auditLog.recordBy("VNPay", action, target);
+            } catch (RuntimeException exception) {
+                LOGGER.error("Could not write the audit entry '{}' for {}", action, target, exception);
+            }
+        };
+        if (org.springframework.transaction.support.TransactionSynchronizationManager.isSynchronizationActive()) {
+            org.springframework.transaction.support.TransactionSynchronizationManager.registerSynchronization(
+                new org.springframework.transaction.support.TransactionSynchronization() {
+                    @Override
+                    public void afterCommit() {
+                        write.run();
+                    }
+                });
+        } else {
+            write.run();
+        }
     }
 
     private boolean isValidSignature(Map<String, String> params) {
