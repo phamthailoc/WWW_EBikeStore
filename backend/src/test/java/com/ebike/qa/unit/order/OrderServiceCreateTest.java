@@ -249,9 +249,12 @@ class OrderServiceCreateTest extends OrderServiceTestBase {
         List<OrderCreateItemRequest> twentyOne = java.util.stream.IntStream.range(0, 21).mapToObj(i -> new OrderCreateItemRequest(1L, 1, null)).toList();
         assertRejected(copy(pickupRequest(1L, 1), f -> f.items = twentyOne));
         bike.setStockQuantity(100);
-        List<OrderCreateItemRequest> twenty = java.util.stream.IntStream.range(0, 20).mapToObj(i -> new OrderCreateItemRequest(1L, 1, null)).toList();
+        Product helmet = OrderFixtures.accessory(3L, "500000", 100);
+        when(productRepository.findById(3L)).thenReturn(Optional.of(helmet));
+        // the limit of 10 is per product, so twenty lines are spread over two products
+        List<OrderCreateItemRequest> twenty = java.util.stream.IntStream.range(0, 20).mapToObj(i -> new OrderCreateItemRequest(i < 10 ? 1L : 3L, 1, null)).toList();
         service.createOrder(copy(pickupRequest(1L, 1), f -> f.items = twenty), aliceAuth);
-        assertThat(bike.getStockQuantity()).isEqualTo(80);
+        assertThat(bike.getStockQuantity()).isEqualTo(90);
     }
 
     @Test
@@ -316,7 +319,8 @@ class OrderServiceCreateTest extends OrderServiceTestBase {
         assertRejected(homeRequest(1L, 1, null));
         assertRejected(homeRequest(1L, 1, "  "));
         assertRejected(homeRequest(1L, 1, "P".repeat(101)));
-        service.createOrder(homeRequest(1L, 1, "P".repeat(100)), aliceAuth);
+        assertRejected(homeRequest(1L, 1, "P".repeat(100)));
+        service.createOrder(homeRequest(1L, 1, "Hà Nội"), aliceAuth);
     }
 
     @Test

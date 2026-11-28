@@ -60,6 +60,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import com.ebike.common.validation.VietnamProvinces;
 import java.util.regex.Pattern;
 import org.springframework.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Value;
@@ -789,6 +790,9 @@ public class OrderServiceImpl implements OrderService {
         if (homeDelivery && (isBlank(request.province()) || request.province().trim().length() > 100)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vui lòng chọn tỉnh/thành phố nhận hàng hợp lệ.");
         }
+        if (homeDelivery) {
+            VietnamProvinces.require(request.province());
+        }
         if (!homeDelivery && request.pickupShowroomId() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vui lòng chọn showroom nhận xe.");
         }
@@ -934,6 +938,13 @@ public class OrderServiceImpl implements OrderService {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Số lượng mỗi sản phẩm không được vượt quá " + MAX_ITEM_QUANTITY + ".");
             }
         }
+        // the limit is per product, whatever the colours: 3 colours x 4 is 12 bikes of one model
+        Map<Long, Integer> perProduct = new HashMap<>();
+        for (OrderCreateItemRequest itemRequest : items) {
+            if (perProduct.merge(itemRequest.productId(), itemRequest.quantity(), Integer::sum) > MAX_ITEM_QUANTITY) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Số lượng mỗi sản phẩm không được vượt quá " + MAX_ITEM_QUANTITY + ".");
+            }
+        }
 
         return items;
     }
@@ -945,6 +956,9 @@ public class OrderServiceImpl implements OrderService {
         boolean homeDelivery,
         String province
     ) {
+        if (homeDelivery && !isBlank(province)) {
+            VietnamProvinces.require(province);
+        }
         BigDecimal subtotal = ZERO;
         Map<Long, Integer> productQuantities = new HashMap<>();
         Map<Long, Integer> variantQuantities = new HashMap<>();

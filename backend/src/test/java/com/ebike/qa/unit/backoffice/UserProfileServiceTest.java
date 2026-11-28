@@ -75,7 +75,7 @@ class UserProfileServiceTest {
         ReflectionTestUtils.setField(a, "id", id);
         a.setUser(owner);
         a.setStreet("123 Nguyen Trai, P1");
-        a.setCity("HCM");
+        a.setCity("Hà Nội");
         a.setDefaultAddress(def);
         return a;
     }
@@ -91,8 +91,8 @@ class UserProfileServiceTest {
     @Test
     void customer_cannotTouchAnotherUsersAddressesOrPreferences() {
         assertThatThrownBy(() -> service.getAddresses(6L, meAuth)).satisfies(t -> assertStatus(t, HttpStatus.FORBIDDEN));
-        assertThatThrownBy(() -> service.createAddress(6L, addr("123 Nguyen Trai, P1", "HCM", false), meAuth)).satisfies(t -> assertStatus(t, HttpStatus.FORBIDDEN));
-        assertThatThrownBy(() -> service.updateAddress(6L, 1L, addr("123 Nguyen Trai, P1", "HCM", false), meAuth)).satisfies(t -> assertStatus(t, HttpStatus.FORBIDDEN));
+        assertThatThrownBy(() -> service.createAddress(6L, addr("123 Nguyen Trai, P1", "Hà Nội", false), meAuth)).satisfies(t -> assertStatus(t, HttpStatus.FORBIDDEN));
+        assertThatThrownBy(() -> service.updateAddress(6L, 1L, addr("123 Nguyen Trai, P1", "Hà Nội", false), meAuth)).satisfies(t -> assertStatus(t, HttpStatus.FORBIDDEN));
         assertThatThrownBy(() -> service.deleteAddress(6L, 1L, meAuth)).satisfies(t -> assertStatus(t, HttpStatus.FORBIDDEN));
         assertThatThrownBy(() -> service.getPreferences(6L, meAuth)).satisfies(t -> assertStatus(t, HttpStatus.FORBIDDEN));
         assertThatThrownBy(() -> service.upsertPreferences(6L, new UserPreferenceRequest("dark", true), meAuth)).satisfies(t -> assertStatus(t, HttpStatus.FORBIDDEN));
@@ -138,7 +138,7 @@ class UserProfileServiceTest {
     @Tag("bug")
     void bug_userViewAloneAllowsCreatingAddressForAnotherUser() {
         Authentication viewer = Fx.auth("mgr", PermissionConstants.UserManagement.USER_VIEW);
-        assertThatThrownBy(() -> service.createAddress(6L, addr("123 Nguyen Trai, P1", "HCM", false), viewer))
+        assertThatThrownBy(() -> service.createAddress(6L, addr("123 Nguyen Trai, P1", "Hà Nội", false), viewer))
             .satisfies(t -> assertStatus(t, HttpStatus.FORBIDDEN));
     }
 
@@ -172,16 +172,16 @@ class UserProfileServiceTest {
     @ParameterizedTest
     @ValueSource(ints = {0, 9})
     void createAddress_streetBelowTenCharacters_isRefused(int length) {
-        assertThatThrownBy(() -> service.createAddress(5L, addr("x".repeat(length), "HCM", false), meAuth)).satisfies(t -> assertStatus(t, HttpStatus.BAD_REQUEST));
+        assertThatThrownBy(() -> service.createAddress(5L, addr("x".repeat(length), "Hà Nội", false), meAuth)).satisfies(t -> assertStatus(t, HttpStatus.BAD_REQUEST));
         verify(addresses, never()).save(any());
     }
 
     @Test
     void createAddress_streetBoundaries_10ok_255ok_256refused_whitespaceDoesNotCount() {
-        service.createAddress(5L, addr("x".repeat(10), "HCM", false), meAuth);
-        service.createAddress(5L, addr("x".repeat(255), "HCM", false), meAuth);
-        assertThatThrownBy(() -> service.createAddress(5L, addr("x".repeat(256), "HCM", false), meAuth)).satisfies(t -> assertStatus(t, HttpStatus.BAD_REQUEST));
-        assertThatThrownBy(() -> service.createAddress(5L, addr("   123 a b   ", "HCM", false), meAuth)).satisfies(t -> assertStatus(t, HttpStatus.BAD_REQUEST));
+        service.createAddress(5L, addr("x".repeat(10), "Hà Nội", false), meAuth);
+        service.createAddress(5L, addr("x".repeat(255), "Hà Nội", false), meAuth);
+        assertThatThrownBy(() -> service.createAddress(5L, addr("x".repeat(256), "Hà Nội", false), meAuth)).satisfies(t -> assertStatus(t, HttpStatus.BAD_REQUEST));
+        assertThatThrownBy(() -> service.createAddress(5L, addr("   123 a b   ", "Hà Nội", false), meAuth)).satisfies(t -> assertStatus(t, HttpStatus.BAD_REQUEST));
     }
 
     @Test
@@ -189,7 +189,7 @@ class UserProfileServiceTest {
         assertThatThrownBy(() -> service.createAddress(5L, addr("123 Nguyen Trai, P1", null, false), meAuth)).satisfies(t -> assertStatus(t, HttpStatus.BAD_REQUEST));
         assertThatThrownBy(() -> service.createAddress(5L, addr("123 Nguyen Trai, P1", "  ", false), meAuth)).satisfies(t -> assertStatus(t, HttpStatus.BAD_REQUEST));
         assertThatThrownBy(() -> service.createAddress(5L, addr("123 Nguyen Trai, P1", "c".repeat(101), false), meAuth)).satisfies(t -> assertStatus(t, HttpStatus.BAD_REQUEST));
-        service.createAddress(5L, addr("123 Nguyen Trai, P1", "c".repeat(100), false), meAuth);
+        service.createAddress(5L, addr("123 Nguyen Trai, P1", "Hà Nội", false), meAuth);
     }
 
     @Test
@@ -199,11 +199,11 @@ class UserProfileServiceTest {
 
     @Test
     void createAddress_badType_is400_blankTypeIsAllowed() {
-        assertThatThrownBy(() -> service.createAddress(5L, new UserAddressRequest("HOME", "123 Nguyen Trai, P1", "HCM", null, null, false), meAuth))
+        assertThatThrownBy(() -> service.createAddress(5L, new UserAddressRequest("HOME", "123 Nguyen Trai, P1", "Hà Nội", null, null, false), meAuth))
             .satisfies(t -> assertStatus(t, HttpStatus.BAD_REQUEST));
-        var res = service.createAddress(5L, new UserAddressRequest(" ", "123 Nguyen Trai, P1", "HCM", null, null, false), meAuth);
+        var res = service.createAddress(5L, new UserAddressRequest(" ", "123 Nguyen Trai, P1", "Hà Nội", null, null, false), meAuth);
         assertThat(res.addressType()).isNull();
-        var billing = service.createAddress(5L, new UserAddressRequest(" billing ", "123 Nguyen Trai, P1", "HCM", null, null, false), meAuth);
+        var billing = service.createAddress(5L, new UserAddressRequest(" billing ", "123 Nguyen Trai, P1", "Hà Nội", null, null, false), meAuth);
         assertThat(billing.addressType()).isEqualTo("BILLING");
     }
 
@@ -214,11 +214,11 @@ class UserProfileServiceTest {
             nine.add(saved(i, me, false));
         }
         when(addresses.findByUserId(5L)).thenReturn(nine);
-        service.createAddress(5L, addr("123 Nguyen Trai, P1", "HCM", false), meAuth);
+        service.createAddress(5L, addr("123 Nguyen Trai, P1", "Hà Nội", false), meAuth);
         List<UserAddress> ten = new ArrayList<>(nine);
         ten.add(saved(10, me, false));
         when(addresses.findByUserId(5L)).thenReturn(ten);
-        assertThatThrownBy(() -> service.createAddress(5L, addr("123 Nguyen Trai, P1", "HCM", false), meAuth))
+        assertThatThrownBy(() -> service.createAddress(5L, addr("123 Nguyen Trai, P1", "Hà Nội", false), meAuth))
             .satisfies(t -> {
                 assertStatus(t, HttpStatus.BAD_REQUEST);
                 assertThat(((ResponseStatusException) t).getReason()).contains("10");
@@ -229,7 +229,7 @@ class UserProfileServiceTest {
     void createAddress_asDefault_clearsPreviousDefaults() {
         UserAddress old = saved(1, me, true);
         when(addresses.findByUserIdAndDefaultAddressTrue(5L)).thenReturn(List.of(old));
-        var res = service.createAddress(5L, addr("123 Nguyen Trai, P1", "HCM", true), meAuth);
+        var res = service.createAddress(5L, addr("123 Nguyen Trai, P1", "Hà Nội", true), meAuth);
         assertThat(res.isDefault()).isTrue();
         assertThat(old.getDefaultAddress()).isFalse();
         verify(addresses).saveAll(anyList());
@@ -239,21 +239,21 @@ class UserProfileServiceTest {
     void createAddress_notDefault_leavesDefaultsAlone() {
         UserAddress old = saved(1, me, true);
         when(addresses.findByUserIdAndDefaultAddressTrue(5L)).thenReturn(List.of(old));
-        service.createAddress(5L, addr("123 Nguyen Trai, P1", "HCM", null), meAuth);
+        service.createAddress(5L, addr("123 Nguyen Trai, P1", "Hà Nội", null), meAuth);
         assertThat(old.getDefaultAddress()).isTrue();
     }
 
     @Test
     void updateAddress_ownedOnly_unknownIs404() {
         when(addresses.findByIdAndUserId(1L, 5L)).thenReturn(Optional.empty());
-        assertThatThrownBy(() -> service.updateAddress(5L, 1L, addr("123 Nguyen Trai, P1", "HCM", false), meAuth)).satisfies(t -> assertStatus(t, HttpStatus.NOT_FOUND));
+        assertThatThrownBy(() -> service.updateAddress(5L, 1L, addr("123 Nguyen Trai, P1", "Hà Nội", false), meAuth)).satisfies(t -> assertStatus(t, HttpStatus.NOT_FOUND));
     }
 
     @Test
     void updateAddress_cannotReachAnotherUsersAddressByGuessingItsId() {
         // address 9 belongs to bob; the lookup is scoped to the caller (5), so it is not found
         when(addresses.findByIdAndUserId(9L, 5L)).thenReturn(Optional.empty());
-        assertThatThrownBy(() -> service.updateAddress(5L, 9L, addr("123 Nguyen Trai, P1", "HCM", false), meAuth)).satisfies(t -> assertStatus(t, HttpStatus.NOT_FOUND));
+        assertThatThrownBy(() -> service.updateAddress(5L, 9L, addr("123 Nguyen Trai, P1", "Hà Nội", false), meAuth)).satisfies(t -> assertStatus(t, HttpStatus.NOT_FOUND));
         assertThatThrownBy(() -> service.deleteAddress(5L, 9L, meAuth)).satisfies(t -> assertStatus(t, HttpStatus.NOT_FOUND));
         verify(addresses, never()).deleteByIdAndUserId(any(), any());
     }
@@ -264,7 +264,7 @@ class UserProfileServiceTest {
         UserAddress oldDefault = saved(2, me, true);
         when(addresses.findByIdAndUserId(1L, 5L)).thenReturn(Optional.of(mine));
         when(addresses.findByUserIdAndDefaultAddressTrue(5L)).thenReturn(List.of(oldDefault, mine));
-        service.updateAddress(5L, 1L, addr("456 Le Loi, P2", "HCM", true), meAuth);
+        service.updateAddress(5L, 1L, addr("456 Le Loi, P2", "Hà Nội", true), meAuth);
         assertThat(mine.getDefaultAddress()).isTrue();
         assertThat(oldDefault.getDefaultAddress()).isFalse();
         assertThat(mine.getStreet()).isEqualTo("456 Le Loi, P2");
@@ -274,7 +274,7 @@ class UserProfileServiceTest {
     void updateAddress_invalidPayload_leavesTheStoredAddressUntouched() {
         UserAddress mine = saved(1, me, false);
         when(addresses.findByIdAndUserId(1L, 5L)).thenReturn(Optional.of(mine));
-        assertThatThrownBy(() -> service.updateAddress(5L, 1L, addr("short", "HCM", true), meAuth)).satisfies(t -> assertStatus(t, HttpStatus.BAD_REQUEST));
+        assertThatThrownBy(() -> service.updateAddress(5L, 1L, addr("short", "Hà Nội", true), meAuth)).satisfies(t -> assertStatus(t, HttpStatus.BAD_REQUEST));
         assertThat(mine.getStreet()).isEqualTo("123 Nguyen Trai, P1");
     }
 

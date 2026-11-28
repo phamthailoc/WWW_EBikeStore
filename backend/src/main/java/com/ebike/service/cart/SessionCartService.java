@@ -48,10 +48,15 @@ public class SessionCartService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Giỏ hàng tối đa " + MAX_LINES + " mẫu/màu xe.");
         }
         Set<String> seen = new HashSet<>();
+        java.util.Map<Long, Integer> perProduct = new java.util.HashMap<>();
         List<CartLine> checked = new ArrayList<>();
         for (CartLine line : lines) {
             if (line == null || line.id() == null || line.quantity() == null || line.quantity() < 1 || line.quantity() > MAX_QUANTITY) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Số lượng mỗi xe phải từ 1 đến " + MAX_QUANTITY + ".");
+            }
+            // the limit is per product, whatever the colours
+            if (perProduct.merge(line.id(), line.quantity(), Integer::sum) > MAX_QUANTITY) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Số lượng mỗi sản phẩm không được vượt quá " + MAX_QUANTITY + ".");
             }
             if (!seen.add(line.id() + ":" + line.variantId())) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Một mẫu xe và màu chỉ xuất hiện một lần trong giỏ hàng.");
