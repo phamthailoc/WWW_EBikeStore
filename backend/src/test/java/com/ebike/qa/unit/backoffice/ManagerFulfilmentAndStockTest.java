@@ -367,6 +367,15 @@ class ManagerFulfilmentAndStockTest extends ManagerBase {
     }
 
     @Test
+    void shipment_returned_isAcceptedWhileThePaymentIsStillUnpaid() {
+        Order o = delivery(OrderStatus.SHIPPED, ShipmentStatus.IN_TRANSIT);
+        o.getPayment().setPaymentStatus(com.ebike.model.entity.order.PaymentStatus.PENDING);
+        service.updateOrderShipment(1L, returned("Khách từ chối nhận hàng thu tiền"));
+        assertThat(o.getShipment().getShipmentStatus()).isEqualTo(ShipmentStatus.RETURNED);
+        verify(orderService).cancelReturnedOrder(o, "Khách từ chối nhận hàng thu tiền");
+    }
+
+    @Test
     void shipment_delivered_withoutAnyPaymentRow_isRefusedWithTheOnlineWording() {
         Order o = delivery(OrderStatus.SHIPPED, ShipmentStatus.SHIPPED);
         o.setPayment(null);

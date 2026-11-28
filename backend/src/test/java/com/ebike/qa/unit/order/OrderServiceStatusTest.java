@@ -172,6 +172,16 @@ class OrderServiceStatusTest extends OrderServiceTestBase {
             && entries.get(0).reason() == com.ebike.model.entity.stock.StockMovementReason.CANCEL_RESTORE), any(), any(), any(), any());
     }
 
+    @Test
+    void aReturnedCashOnDeliveryOrderClosesItsPendingPayment() {
+        Order order = order(OrderStatus.SHIPPED, false, accessory);
+        order.getPayment().setPaymentStatus(PaymentStatus.PENDING);
+        service.cancelReturnedOrder(order, "Khách từ chối nhận");
+        assertThat(order.getStatus()).isEqualTo(OrderStatus.CANCELLED);
+        assertThat(order.getPayment().getPaymentStatus()).isEqualTo(PaymentStatus.CANCELLED);
+        assertThat(accessory.getStockQuantity()).isEqualTo(12);
+    }
+
     // --- request parsing -----------------------------------------------------------------------------
 
     @ParameterizedTest
