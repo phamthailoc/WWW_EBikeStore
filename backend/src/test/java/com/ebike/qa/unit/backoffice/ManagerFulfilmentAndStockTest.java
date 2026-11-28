@@ -46,6 +46,8 @@ class ManagerFulfilmentAndStockTest extends ManagerBase {
     private Order delivery(OrderStatus status, ShipmentStatus shipmentStatus) {
         Order o = Fx.order(1L, "ORD-1", status, LocalDateTime.of(2025, 3, 1, 9, 0));
         Fx.shipment(o, shipmentStatus);
+        // a hand-over needs the money in (M-20): the orders here start paid unless a test says otherwise
+        Fx.payment(7L, o, com.ebike.model.entity.order.PaymentMethod.PAY_LATER, com.ebike.model.entity.order.PaymentStatus.PAID, "1000", LocalDateTime.of(2025, 3, 1, 9, 0));
         when(orders.findLockedById(1L)).thenReturn(Optional.of(o));
         return o;
     }
@@ -282,7 +284,7 @@ class ManagerFulfilmentAndStockTest extends ManagerBase {
         assertThat(o.getShipment().getShipmentStatus()).isEqualTo(ShipmentStatus.DELIVERED);
         assertThat(o.getStatus()).isEqualTo(OrderStatus.DELIVERED);
         verify(orders, never()).save(any());
-        verify(orderService, never()).cancelReturnedOrder(any());
+        verify(orderService, never()).cancelReturnedOrder(any(), any());
     }
 
     @Test
@@ -321,15 +323,69 @@ class ManagerFulfilmentAndStockTest extends ManagerBase {
         assertThat(o.getStatus()).isEqualTo(OrderStatus.DELIVERED);
     }
 
+    private static ManagerShipmentUpdateRequest returned(String reason) {
+        return new ManagerShipmentUpdateRequest("RETURNED", null, reason);
+    }
+
     @ParameterizedTest
-    @EnumSource(value = OrderStatus.class, names = {"PROCESSING", "SHIPPED"})
-    void shipment_returned_cancelsTheOrderThroughTheCancelPath(OrderStatus before) {
-        Order o = delivery(before, before == OrderStatus.SHIPPED ? ShipmentStatus.IN_TRANSIT : ShipmentStatus.PREPARING);
-        service.updateOrderShipment(1L, ship("RETURNED", null));
+    @EnumSource(value = ShipmentStatus.class, names = {"SHIPPED", "IN_TRANSIT"})
+    void shipment_returned_cancelsTheOrderThroughTheCancelPath(ShipmentStatus before) {
+        Order o = delivery(OrderStatus.SHIPPED, before);
+        service.updateOrderShipment(1L, returned("  Khách từ chối nhận  "));
         assertThat(o.getShipment().getShipmentStatus()).isEqualTo(ShipmentStatus.RETURNED);
-        verify(orderService).cancelReturnedOrder(o);
+        verify(orderService).cancelReturnedOrder(o, "  Khách từ chối nhận  ");
         verify(orders).save(o);
-        verify(audit).record(any(), any());
+        verify(audit).record(any(), org.mockito.ArgumentMatchers.contains("Khách từ chối nhận"));
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = OrderStatus.class, names = {"PENDING", "CONFIRMED", "PROCESSING"})
+    void shipment_returned_refusedForAnOrderThatNeverLeftTheStore(OrderStatus before) {
+        Order o = delivery(before, ShipmentStatus.PREPARING);
+        assertThatThrownBy(() -> service.updateOrderShipment(1L, returned("x"))).satisfies(t -> assertStatus(t, HttpStatus.BAD_REQUEST));
+        assertThat(o.getStatus()).isEqualTo(before);
+        verify(orderService, never()).cancelReturnedOrder(any(), any());
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = OrderStatus.class, names = {"PROCESSING", "READY_FOR_PICKUP"})
+    void shipment_returned_refusedForAStorePickupOrder(OrderStatus before) {
+        Order o = pickup(before);
+        assertThatThrownBy(() -> service.updateOrderShipment(1L, returned("x"))).satisfies(t -> assertStatus(t, HttpStatus.BAD_REQUEST));
+        assertThat(o.getStatus()).isEqualTo(before);
+        verify(orderService, never()).cancelReturnedOrder(any(), any());
+    }
+
+    @ParameterizedTest
+    @org.junit.jupiter.params.provider.NullAndEmptySource
+    @org.junit.jupiter.params.provider.ValueSource(strings = {"   "})
+    void shipment_returned_needsAReason(String reason) {
+        Order o = delivery(OrderStatus.SHIPPED, ShipmentStatus.SHIPPED);
+        assertThatThrownBy(() -> service.updateOrderShipment(1L, returned(reason))).satisfies(t -> assertStatus(t, HttpStatus.BAD_REQUEST));
+        assertThat(o.getShipment().getShipmentStatus()).isEqualTo(ShipmentStatus.SHIPPED);
+        verify(orderService, never()).cancelReturnedOrder(any(), any());
+    }
+
+    @Test
+    void shipment_delivered_withoutAnyPaymentRow_isRefusedWithTheOnlineWording() {
+        Order o = delivery(OrderStatus.SHIPPED, ShipmentStatus.SHIPPED);
+        o.setPayment(null);
+        assertThatThrownBy(() -> service.updateOrderShipment(1L, ship("DELIVERED", null))).satisfies(t -> {
+            assertStatus(t, HttpStatus.BAD_REQUEST);
+            assertThat(((org.springframework.web.server.ResponseStatusException) t).getReason()).contains("thanh toán trực tuyến");
+        });
+        assertThat(o.getStatus()).isEqualTo(OrderStatus.SHIPPED);
+    }
+
+    @Test
+    void shipment_delivered_unpaidVnpay_isRefusedWithTheOnlineWording() {
+        Order o = delivery(OrderStatus.SHIPPED, ShipmentStatus.SHIPPED);
+        o.getPayment().setPaymentMethod(com.ebike.model.entity.order.PaymentMethod.VNPAY);
+        o.getPayment().setPaymentStatus(com.ebike.model.entity.order.PaymentStatus.PENDING);
+        assertThatThrownBy(() -> service.updateOrderShipment(1L, ship("DELIVERED", null))).satisfies(t -> {
+            assertStatus(t, HttpStatus.BAD_REQUEST);
+            assertThat(((org.springframework.web.server.ResponseStatusException) t).getReason()).contains("thanh toán trực tuyến");
+        });
     }
 
     // ------------------------------------------------------------------ pickup deadline

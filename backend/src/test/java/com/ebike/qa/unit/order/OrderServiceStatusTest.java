@@ -142,17 +142,32 @@ class OrderServiceStatusTest extends OrderServiceTestBase {
         assertThat(order.getStatus()).isEqualTo(OrderStatus.DELIVERED);
     }
 
+    @Test
+    void deliveringAnOrderWithNoPaymentRowOrAnUnpaidVnpayIsRefusedWithTheOnlineWording() {
+        Order none = order(OrderStatus.SHIPPED, false, accessory);
+        none.setPayment(null);
+        assertThatThrownBy(() -> change(none, OrderStatus.DELIVERED)).isInstanceOfSatisfying(ResponseStatusException.class, e -> {
+            assertThat(e.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+            assertThat(e.getReason()).contains("thanh toán trực tuyến");
+        });
+        Order online = order(OrderStatus.SHIPPED, false, accessory);
+        online.getPayment().setPaymentMethod(PaymentMethod.VNPAY);
+        online.getPayment().setPaymentStatus(PaymentStatus.PENDING);
+        assertThatThrownBy(() -> change(online, OrderStatus.DELIVERED)).isInstanceOfSatisfying(ResponseStatusException.class,
+            e -> assertThat(e.getReason()).contains("thanh toán trực tuyến"));
+    }
+
     // --- D3: a returned shipment cancels the order and puts the bikes back on sale --------------------
 
     @Test
     void aReturnedOrderIsCancelledAndItsStockRestoredButAPaidPaymentStaysPaidForTheRefund() {
         Order order = order(OrderStatus.SHIPPED, false, accessory);
         order.getPayment().setPaymentStatus(PaymentStatus.PAID);
-        service.cancelReturnedOrder(order);
+        service.cancelReturnedOrder(order, "Khách từ chối nhận");
         assertThat(order.getStatus()).isEqualTo(OrderStatus.CANCELLED);
         assertThat(accessory.getStockQuantity()).isEqualTo(12);
         assertThat(order.getPayment().getPaymentStatus()).isEqualTo(PaymentStatus.PAID);
-        assertThat(order.getCancellationReason()).isNotBlank();
+        assertThat(order.getCancellationReason()).isEqualTo("Khách từ chối nhận");
         verify(stockLedger).record(org.mockito.ArgumentMatchers.argThat(entries -> entries.size() == 1
             && entries.get(0).reason() == com.ebike.model.entity.stock.StockMovementReason.CANCEL_RESTORE), any(), any(), any(), any());
     }

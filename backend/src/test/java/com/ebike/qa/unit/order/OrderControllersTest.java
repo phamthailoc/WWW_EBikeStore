@@ -136,7 +136,8 @@ class OrderControllersTest {
     void listWithoutFiltersPassesNulls() throws Exception {
         when(orderService.getOrders(any(), any(), any(), any(), any(), any(), any())).thenReturn(List.of());
         orders.perform(get("/api/v1/orders")).andExpect(status().isOk());
-        verify(orderService).getOrders(any(), isNull(), isNull(), isNull(), isNull(), isNull(), isNull());
+        // U-05: a list without a limit is capped at 2000 here (the report export calls the service without a limit)
+        verify(orderService).getOrders(any(), isNull(), isNull(), isNull(), isNull(), isNull(), eq(2000));
     }
 
     @Test

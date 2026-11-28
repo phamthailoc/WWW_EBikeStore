@@ -55,6 +55,11 @@ class OrderStatusUpdateTest {
         order.setId(10L);
         order.setStatus(OrderStatus.PENDING);
         order.getItems().add(item);
+        // a hand-over needs the money in (M-20)
+        com.ebike.model.entity.order.Payment payment = new com.ebike.model.entity.order.Payment();
+        payment.setPaymentMethod(com.ebike.model.entity.order.PaymentMethod.PAY_LATER);
+        payment.setPaymentStatus(com.ebike.model.entity.order.PaymentStatus.PAID);
+        order.setPayment(payment);
         org.mockito.Mockito.lenient().when(orders.findLockedById(10L)).thenReturn(Optional.of(order));
     }
 
