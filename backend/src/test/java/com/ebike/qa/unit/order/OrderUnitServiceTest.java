@@ -134,16 +134,16 @@ class OrderUnitServiceTest {
     // --- replaceUnits: status ------------------------------------------------------------------------
 
     @ParameterizedTest
-    @EnumSource(value = OrderStatus.class, names = {"PENDING", "CONFIRMED", "CANCELLED"})
-    void numbersCannotBeRecordedBeforeProcessingOrOnACancelledOrder(OrderStatus status) {
+    @EnumSource(value = OrderStatus.class, names = {"PENDING", "CONFIRMED", "CANCELLED", "DELIVERED"})
+    void numbersCannotBeRecordedBeforeProcessingOrOnACancelledOrDeliveredOrder(OrderStatus status) {
         order.setStatus(status);
         assertBad(request(entry(100, "FRAME-0001", "ENGINE-0001")));
         verify(orders, never()).saveAndFlush(any());
     }
 
     @ParameterizedTest
-    @EnumSource(value = OrderStatus.class, names = {"PROCESSING", "READY_FOR_PICKUP", "SHIPPED", "DELIVERED"})
-    void numbersCanBeRecordedFromProcessingOnwards(OrderStatus status) {
+    @EnumSource(value = OrderStatus.class, names = {"PROCESSING", "READY_FOR_PICKUP", "SHIPPED"})
+    void numbersCanBeRecordedFromProcessingUntilDelivery(OrderStatus status) {
         order.setStatus(status);
         assertThat(service.replaceUnits(10L, request(entry(100, "FRAME-0001", "ENGINE-0001")))).hasSize(1);
     }

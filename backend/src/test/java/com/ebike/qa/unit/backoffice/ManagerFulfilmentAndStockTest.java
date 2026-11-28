@@ -28,7 +28,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
@@ -196,7 +195,8 @@ class ManagerFulfilmentAndStockTest extends ManagerBase {
         Order o = delivery(OrderStatus.SHIPPED, ShipmentStatus.SHIPPED);
         service.updateOrderShipment(1L, ship("DELIVERED", null));
         LocalDateTime first = o.getShipment().getDeliveredAt();
-        service.updateOrderShipment(1L, ship("DELIVERED", null));
+        // the shipment is locked once the order is delivered (M-18): a second save is refused and nothing moves
+        assertThatThrownBy(() -> service.updateOrderShipment(1L, ship("DELIVERED", null))).satisfies(t -> assertStatus(t, HttpStatus.BAD_REQUEST));
         assertThat(o.getShipment().getDeliveredAt()).isEqualTo(first);
         assertThat(o.getStatus()).isEqualTo(OrderStatus.DELIVERED);
     }
@@ -259,19 +259,77 @@ class ManagerFulfilmentAndStockTest extends ManagerBase {
      * it is not even packed (the order status is only synced forwards, ManagerServiceImpl.java:768-780). Expected 400; actual: accepted.
      */
     @Test
-    @Tag("bug")
-    void bug_shipment_canBeMovedBackToPreparingAfterDelivery() {
+    void regression_shipment_canBeMovedBackToPreparingAfterDelivery() {
         Order o = delivery(OrderStatus.DELIVERED, ShipmentStatus.DELIVERED);
         assertThatThrownBy(() -> service.updateOrderShipment(1L, ship("PREPARING", null))).satisfies(t -> assertStatus(t, HttpStatus.BAD_REQUEST));
         assertThat(o.getShipment().getShipmentStatus()).isEqualTo(ShipmentStatus.DELIVERED);
     }
 
     @Test
-    @Tag("bug")
-    void bug_shipment_canBeSetBackToPendingForAnOrderThatIsAlreadyShipped() {
+    void regression_shipment_canBeSetBackToPendingForAnOrderThatIsAlreadyShipped() {
         Order o = delivery(OrderStatus.SHIPPED, ShipmentStatus.SHIPPED);
         assertThatThrownBy(() -> service.updateOrderShipment(1L, ship("PENDING", null))).satisfies(t -> assertStatus(t, HttpStatus.BAD_REQUEST));
         assertThat(o.getShipment().getShipmentStatus()).isEqualTo(ShipmentStatus.SHIPPED);
+    }
+
+    // ------------------------------------------------------------------ B5: forward-only shipment, payment before hand-over, returns
+
+    @ParameterizedTest
+    @EnumSource(value = ShipmentStatus.class, names = {"PENDING", "PREPARING", "SHIPPED", "IN_TRANSIT", "DELIVERED", "RETURNED"})
+    void shipment_aDeliveredOrderIsLocked(ShipmentStatus next) {
+        Order o = delivery(OrderStatus.DELIVERED, ShipmentStatus.DELIVERED);
+        assertThatThrownBy(() -> service.updateOrderShipment(1L, ship(next.name(), "TRACK"))).satisfies(t -> assertStatus(t, HttpStatus.BAD_REQUEST));
+        assertThat(o.getShipment().getShipmentStatus()).isEqualTo(ShipmentStatus.DELIVERED);
+        assertThat(o.getStatus()).isEqualTo(OrderStatus.DELIVERED);
+        verify(orders, never()).save(any());
+        verify(orderService, never()).cancelReturnedOrder(any());
+    }
+
+    @Test
+    void shipment_inTransitCannotGoBackToShipped() {
+        Order o = delivery(OrderStatus.SHIPPED, ShipmentStatus.IN_TRANSIT);
+        assertThatThrownBy(() -> service.updateOrderShipment(1L, ship("SHIPPED", null))).satisfies(t -> assertStatus(t, HttpStatus.BAD_REQUEST));
+        assertThat(o.getShipment().getShipmentStatus()).isEqualTo(ShipmentStatus.IN_TRANSIT);
+    }
+
+    @Test
+    void shipment_preparingCannotGoBackToPending() {
+        Order o = delivery(OrderStatus.PROCESSING, ShipmentStatus.PREPARING);
+        assertThatThrownBy(() -> service.updateOrderShipment(1L, ship("PENDING", null))).satisfies(t -> assertStatus(t, HttpStatus.BAD_REQUEST));
+        assertThat(o.getShipment().getShipmentStatus()).isEqualTo(ShipmentStatus.PREPARING);
+    }
+
+    @Test
+    void shipment_sameStatusAgainStillSavesTheTrackingNumber() {
+        Order o = delivery(OrderStatus.SHIPPED, ShipmentStatus.SHIPPED);
+        service.updateOrderShipment(1L, ship("SHIPPED", "GHN9"));
+        assertThat(o.getShipment().getTrackingNumber()).isEqualTo("GHN9");
+    }
+
+    @Test
+    void shipment_deliveredIsRefusedWhileThePaymentIsNotPaid_andAllowedOnceItIs() {
+        Order o = delivery(OrderStatus.SHIPPED, ShipmentStatus.SHIPPED);
+        Fx.payment(7L, o, com.ebike.model.entity.order.PaymentMethod.PAY_LATER, com.ebike.model.entity.order.PaymentStatus.PENDING, "1000", null);
+        assertThatThrownBy(() -> service.updateOrderShipment(1L, ship("DELIVERED", null))).satisfies(t -> {
+            assertStatus(t, HttpStatus.BAD_REQUEST);
+            assertThat(((org.springframework.web.server.ResponseStatusException) t).getReason()).contains("Xác nhận đã thu");
+        });
+        assertThat(o.getStatus()).isEqualTo(OrderStatus.SHIPPED);
+        assertThat(o.getShipment().getShipmentStatus()).isEqualTo(ShipmentStatus.SHIPPED);
+        o.getPayment().setPaymentStatus(com.ebike.model.entity.order.PaymentStatus.PAID);
+        service.updateOrderShipment(1L, ship("DELIVERED", null));
+        assertThat(o.getStatus()).isEqualTo(OrderStatus.DELIVERED);
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = OrderStatus.class, names = {"PROCESSING", "SHIPPED"})
+    void shipment_returned_cancelsTheOrderThroughTheCancelPath(OrderStatus before) {
+        Order o = delivery(before, before == OrderStatus.SHIPPED ? ShipmentStatus.IN_TRANSIT : ShipmentStatus.PREPARING);
+        service.updateOrderShipment(1L, ship("RETURNED", null));
+        assertThat(o.getShipment().getShipmentStatus()).isEqualTo(ShipmentStatus.RETURNED);
+        verify(orderService).cancelReturnedOrder(o);
+        verify(orders).save(o);
+        verify(audit).record(any(), any());
     }
 
     // ------------------------------------------------------------------ pickup deadline

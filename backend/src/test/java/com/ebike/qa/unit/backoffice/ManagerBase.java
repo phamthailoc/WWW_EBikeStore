@@ -10,6 +10,7 @@ import com.ebike.repository.order.PaymentRepository;
 import com.ebike.repository.product.ProductRepository;
 import com.ebike.service.admin.AuditLogService;
 import com.ebike.service.manager.impl.ManagerServiceImpl;
+import com.ebike.service.order.OrderService;
 import com.ebike.service.product.ProductService;
 import com.ebike.service.stock.StockLedger;
 import com.ebike.service.stock.StockAlertService;
@@ -31,12 +32,13 @@ abstract class ManagerBase {
     StockAlertService stockAlerts = mock(StockAlertService.class);
     InstallmentApplicationRepository installments = mock(InstallmentApplicationRepository.class);
     StockLedger ledger = mock(StockLedger.class);
+    OrderService orderService = mock(OrderService.class);
     ManagerServiceImpl service;
 
     @BeforeEach
     void baseSetUp() {
         service = new ManagerServiceImpl(orders, payments, users, products, productService, audit, stockAlerts, installments,
-            Duration.ofHours(72), ledger);
+            Duration.ofHours(72), ledger, orderService);
     }
 
     @AfterEach

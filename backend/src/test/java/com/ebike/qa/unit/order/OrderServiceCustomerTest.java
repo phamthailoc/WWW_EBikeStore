@@ -28,7 +28,6 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.IntStream;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
@@ -300,8 +299,7 @@ class OrderServiceCustomerTest extends OrderServiceTestBase {
 
     @ParameterizedTest
     @ValueSource(ints = {0, -1, Integer.MIN_VALUE})
-    @Tag("bug")
-    void bug_limitBelowOneReturnsEveryOrder(int limit) {
+    void regression_limitBelowOneReturnsEveryOrder(int limit) {
         // BUG (Low): OrderServiceImpl.java:186 `.limit(limit == null || limit < 1 ? Long.MAX_VALUE : ...)`. OrderService Javadoc: "The newest
         // {limit} orders that match (all of them when limit is null)". limit=0 or negative is not null, so it must not mean "everything":
         // expected 0 orders or a 400, actual the whole table (up to the 2000 cap does not apply here either).

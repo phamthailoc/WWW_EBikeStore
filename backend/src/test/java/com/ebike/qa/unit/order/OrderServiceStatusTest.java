@@ -65,7 +65,9 @@ class OrderServiceStatusTest extends OrderServiceTestBase {
     private Order order(OrderStatus status, boolean pickup, Product product) {
         Order order = OrderFixtures.order(10L, "ORD-20261126-ABCD1234", status, owner);
         OrderFixtures.line(order, 100L, product, null, 2, product.getPrice().toPlainString());
-        OrderFixtures.payment(order, PaymentMethod.PAY_LATER, PaymentStatus.PENDING, "200000");
+        // a bike may only be handed over once it is paid (M-20): the orders that can be delivered from here start paid
+        boolean handOverNext = status == OrderStatus.READY_FOR_PICKUP || status == OrderStatus.SHIPPED;
+        OrderFixtures.payment(order, PaymentMethod.PAY_LATER, handOverNext ? PaymentStatus.PAID : PaymentStatus.PENDING, "200000");
         OrderFixtures.shipment(order, pickup ? OrderFixtures.showroom(1L, "Hà Nội", "Cầu Giấy", true) : null);
         when(orderRepository.findLockedById(10L)).thenReturn(Optional.of(order));
         return order;
@@ -114,6 +116,45 @@ class OrderServiceStatusTest extends OrderServiceTestBase {
             verify(orderRepository, never()).save(any());
             assertThat(accessory.getStockQuantity()).isEqualTo(10);
         }
+    }
+
+    // --- M-20: a bike is handed over only once it is paid --------------------------------------------
+
+    @Test
+    void deliveringAnUnpaidPayLaterOrderIsRefusedWithAHintToMarkItPaid() {
+        Order order = order(OrderStatus.SHIPPED, false, accessory);
+        order.getPayment().setPaymentStatus(PaymentStatus.PENDING);
+        assertThatThrownBy(() -> change(order, OrderStatus.DELIVERED)).isInstanceOfSatisfying(ResponseStatusException.class, e -> {
+            assertThat(e.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+            assertThat(e.getReason()).contains("Xác nhận đã thu");
+        });
+        assertThat(order.getStatus()).isEqualTo(OrderStatus.SHIPPED);
+        verify(orderRepository, never()).save(any());
+    }
+
+    @Test
+    void deliveringAPickupOrderIsRefusedWhileUnpaidAndAllowedOnceMarkedPaid() {
+        Order order = order(OrderStatus.READY_FOR_PICKUP, true, accessory);
+        order.getPayment().setPaymentStatus(PaymentStatus.PENDING);
+        assertBad(() -> change(order, OrderStatus.DELIVERED));
+        order.getPayment().setPaymentStatus(PaymentStatus.PAID);
+        change(order, OrderStatus.DELIVERED);
+        assertThat(order.getStatus()).isEqualTo(OrderStatus.DELIVERED);
+    }
+
+    // --- D3: a returned shipment cancels the order and puts the bikes back on sale --------------------
+
+    @Test
+    void aReturnedOrderIsCancelledAndItsStockRestoredButAPaidPaymentStaysPaidForTheRefund() {
+        Order order = order(OrderStatus.SHIPPED, false, accessory);
+        order.getPayment().setPaymentStatus(PaymentStatus.PAID);
+        service.cancelReturnedOrder(order);
+        assertThat(order.getStatus()).isEqualTo(OrderStatus.CANCELLED);
+        assertThat(accessory.getStockQuantity()).isEqualTo(12);
+        assertThat(order.getPayment().getPaymentStatus()).isEqualTo(PaymentStatus.PAID);
+        assertThat(order.getCancellationReason()).isNotBlank();
+        verify(stockLedger).record(org.mockito.ArgumentMatchers.argThat(entries -> entries.size() == 1
+            && entries.get(0).reason() == com.ebike.model.entity.stock.StockMovementReason.CANCEL_RESTORE), any(), any(), any(), any());
     }
 
     // --- request parsing -----------------------------------------------------------------------------
