@@ -293,6 +293,30 @@ class OrderServiceExpiryAndQuantityTest extends OrderServiceTestBase {
         verify(auditLog).record(any(), any());
     }
 
+    /** M-11: the limit is per product over all colours: another line of the same bike with 8 leaves room for only 2. */
+    @Test
+    void raisingTheQuantityPastTenBikesOfOneProductAcrossLinesIs400() {
+        Order order = editable(PaymentMethod.PAY_LATER);
+        Product moto = order.getItems().iterator().next().getProduct();
+        OrderFixtures.line(order, 101L, moto, null, 8, "10000000");
+
+        assertBad(() -> service.updateItemQuantity(10L, 100L, 3, staff));
+        assertThat(order.getItems().iterator().next().getQuantity()).isEqualTo(2);
+        service.updateItemQuantity(10L, 100L, 2, staff);
+    }
+
+    /** An old order already over the cap (10 + 5 of one product) can still be lowered. */
+    @Test
+    void loweringALineOfAnOrderAlreadyOverTheProductCapIsAllowed() {
+        Order order = editable(PaymentMethod.PAY_LATER);
+        Product moto = order.getItems().iterator().next().getProduct();
+        OrderFixtures.line(order, 101L, moto, null, 9, "10000000");
+
+        service.updateItemQuantity(10L, 100L, 1, staff);
+
+        assertThat(order.getItems().stream().filter(l -> l.getId() == 100L).findFirst().orElseThrow().getQuantity()).isEqualTo(1);
+    }
+
     @Test
     void loweringTheQuantityReturnsStockAndTheLedgerRecordsARestore() {
         Order order = editable(PaymentMethod.PAY_LATER);

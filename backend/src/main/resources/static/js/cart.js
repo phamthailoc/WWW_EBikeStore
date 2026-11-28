@@ -73,6 +73,9 @@
     const items = read(), existing = items.find(i => key(i) === key(item));
     const quantity = (existing?.quantity || 0) + item.quantity;
     if (quantity > limit(item)) throw Error(`${'Chỉ có thể mua tối đa'} ${limit(item)} ${'xe cho màu đã chọn.'}`);
+    // the server limit is 10 bikes per model, whatever the colours
+    const sameModel = items.filter(i => Number(i.id) === Number(item.id) && key(i) !== key(item)).reduce((sum, i) => sum + i.quantity, 0);
+    if (sameModel + quantity > 10) throw Error(`${'Chỉ có thể mua tối đa'} 10 ${'xe cho mỗi mẫu, tính cả các màu.'}`);
     if (!existing && items.length >= 20) throw Error('Giỏ hàng tối đa 20 mẫu/màu xe.');
     if (existing) Object.assign(existing, item, {quantity}); else items.push({...item});
     await write(items);

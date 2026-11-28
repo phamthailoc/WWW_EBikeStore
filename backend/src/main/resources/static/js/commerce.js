@@ -36,6 +36,8 @@
       if(!item)return;
       const max=C.limit(item);
       if(!Number.isInteger(value)||value<1||value>max){tell(`${'Số lượng phải từ 1 đến'} ${max||1}${', theo tồn kho của màu xe.'}`,true);render();return;}
+      const sameModel=items.filter(i=>Number(i.id)===Number(item.id)&&key(i)!==key(item)).reduce((sum,i)=>sum+i.quantity,0);
+      if(sameModel+value>10){tell(`${'Chỉ có thể mua tối đa'} 10 ${'xe cho mỗi mẫu, tính cả các màu.'}`,true);render();return;}
       item.quantity=value; C.write(items); render();
     }
     target.addEventListener('click',event=>{

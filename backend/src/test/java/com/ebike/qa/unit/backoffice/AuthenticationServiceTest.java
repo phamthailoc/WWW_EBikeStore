@@ -28,7 +28,6 @@ import com.ebike.service.auth.PermissionService;
 import com.ebike.service.auth.impl.AuthenticationServiceImpl;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
@@ -77,7 +76,7 @@ class AuthenticationServiceTest {
 
     @Test
     void register_happyPath_createsActiveUnverifiedCustomerWithHashedPassword() {
-        AuthResponse res = service.register(reg("  tien  ", "  Tien@Example.COM ", "secret1", " Le ", " Tien "));
+        AuthResponse res = service.register(reg("  tien  ", "  Tien@Example.COM ", "secret12", " Le ", " Tien "));
 
         ArgumentCaptor<User> saved = ArgumentCaptor.forClass(User.class);
         verify(users).save(saved.capture());
@@ -88,7 +87,7 @@ class AuthenticationServiceTest {
         assertThat(u.getLastName()).isEqualTo("Tien");
         assertThat(u.getActive()).isTrue();
         assertThat(u.getVerified()).isFalse();
-        assertThat(u.getPasswordHash()).isEqualTo("ENC(secret1)").doesNotContain("secret1".concat("x"));
+        assertThat(u.getPasswordHash()).isEqualTo("ENC(secret12)").doesNotContain("secret12".concat("x"));
         assertThat(u.getRoles()).extracting(Role::getName).containsExactly("CUSTOMER");
         assertThat(res.token()).isEqualTo("jwt-token");
         assertThat(res.roles()).containsExactly("CUSTOMER");
@@ -106,7 +105,7 @@ class AuthenticationServiceTest {
 
     @Test
     void register_noNames_fullNameFallsBackToUsername() {
-        AuthResponse res = service.register(reg("tien", "t@x.com", "secret1", "  ", null));
+        AuthResponse res = service.register(reg("tien", "t@x.com", "secret12", "  ", null));
         assertThat(res.fullName()).isEqualTo("tien");
     }
 
@@ -119,7 +118,7 @@ class AuthenticationServiceTest {
     @NullAndEmptySource
     @ValueSource(strings = {" ", "   \t"})
     void register_blankUsername_is400(String username) {
-        assertThatThrownBy(() -> service.register(reg(username, "a@b.com", "secret1", null, null)))
+        assertThatThrownBy(() -> service.register(reg(username, "a@b.com", "secret12", null, null)))
             .satisfies(t -> assertStatus(t, HttpStatus.BAD_REQUEST));
         verify(users, never()).save(any());
     }
@@ -128,7 +127,7 @@ class AuthenticationServiceTest {
     @NullAndEmptySource
     @ValueSource(strings = {" "})
     void register_blankEmail_is400(String email) {
-        assertThatThrownBy(() -> service.register(reg("tien", email, "secret1", null, null)))
+        assertThatThrownBy(() -> service.register(reg("tien", email, "secret12", null, null)))
             .satisfies(t -> assertStatus(t, HttpStatus.BAD_REQUEST));
     }
 
@@ -153,8 +152,8 @@ class AuthenticationServiceTest {
     }
 
     @Test
-    void register_passwordExactlySix_acceptedByServerMinimum() {
-        service.register(reg("tien", "a@b.com", "abcdef", null, null));
+    void register_passwordExactlyEight_acceptedByServerMinimum() {
+        service.register(reg("tien", "a@b.com", "abcdefgh", null, null));
         verify(users).save(any(User.class));
     }
 
@@ -164,8 +163,7 @@ class AuthenticationServiceTest {
      * AuthenticationServiceImpl.java:~252 (validateRegisterRequest: length() < 6).
      */
     @Test
-    @Tag("bug")
-    void bug_register_acceptsSevenCharacterPasswordThoughSignupFormRequiresEight() {
+    void regression_register_acceptsSevenCharacterPasswordThoughSignupFormRequiresEight() {
         assertThatThrownBy(() -> service.register(reg("tien", "a@b.com", "abcdefg", null, null)))
             .satisfies(t -> assertStatus(t, HttpStatus.BAD_REQUEST));
     }
@@ -173,21 +171,21 @@ class AuthenticationServiceTest {
     @ParameterizedTest
     @ValueSource(strings = {"plainaddress", "a@b", "@b.com", "a@.com", "a b@c.com", "a@b.c", "a@@b.com", "a@b..", "a@b.com."})
     void register_badEmail_is400(String email) {
-        assertThatThrownBy(() -> service.register(reg("tien", email, "secret1", null, null)))
+        assertThatThrownBy(() -> service.register(reg("tien", email, "secret12", null, null)))
             .satisfies(t -> assertStatus(t, HttpStatus.BAD_REQUEST));
     }
 
     @ParameterizedTest
     @ValueSource(strings = {"a@b.co", "first.last+tag@sub.example.org", "UPPER@EXAMPLE.COM", "a_b%c@x-y.io"})
     void register_validEmails_accepted(String email) {
-        service.register(reg("tien" + email.length(), email, "secret1", null, null));
+        service.register(reg("tien" + email.length(), email, "secret12", null, null));
         verify(users).save(any(User.class));
     }
 
     @Test
     void register_duplicateUsername_is409_andNothingSaved() {
         when(users.existsByUsername("tien")).thenReturn(true);
-        assertThatThrownBy(() -> service.register(reg(" tien ", "a@b.com", "secret1", null, null)))
+        assertThatThrownBy(() -> service.register(reg(" tien ", "a@b.com", "secret12", null, null)))
             .satisfies(t -> assertStatus(t, HttpStatus.CONFLICT));
         verify(users, never()).save(any());
     }
@@ -195,7 +193,7 @@ class AuthenticationServiceTest {
     @Test
     void register_duplicateEmailDifferentCaseAndPadding_is409() {
         when(users.existsByEmail("dup@example.com")).thenReturn(true);
-        assertThatThrownBy(() -> service.register(reg("tien", "  DUP@Example.com  ", "secret1", null, null)))
+        assertThatThrownBy(() -> service.register(reg("tien", "  DUP@Example.com  ", "secret12", null, null)))
             .satisfies(t -> assertStatus(t, HttpStatus.CONFLICT));
         verify(users, never()).save(any());
     }
@@ -203,14 +201,14 @@ class AuthenticationServiceTest {
     @Test
     void register_missingCustomerRole_is500NotSilentlyStaff() {
         when(roles.findByName("CUSTOMER")).thenReturn(Optional.empty());
-        assertThatThrownBy(() -> service.register(reg("tien", "a@b.com", "secret1", null, null)))
+        assertThatThrownBy(() -> service.register(reg("tien", "a@b.com", "secret12", null, null)))
             .satisfies(t -> assertStatus(t, HttpStatus.INTERNAL_SERVER_ERROR));
         verify(users, never()).save(any());
     }
 
     @Test
     void register_alwaysAssignsOnlyCustomerRole_evenIfRequestSmugglesNothing() {
-        service.register(reg("tien", "a@b.com", "secret1", null, null));
+        service.register(reg("tien", "a@b.com", "secret12", null, null));
         verify(roles).findByName("CUSTOMER");
         verify(roles, never()).findByName("ADMIN");
     }
@@ -221,37 +219,33 @@ class AuthenticationServiceTest {
      * AuthenticationServiceImpl.java:~87 (register copies trimToNull(firstName) without a length check).
      */
     @Test
-    @Tag("bug")
-    void bug_register_firstNameOf300CharactersMustBeRefusedWith400() {
+    void regression_register_firstNameOf300CharactersMustBeRefusedWith400() {
         String longName = "A".repeat(300);
-        assertThatThrownBy(() -> service.register(reg("tien", "a@b.com", "secret1", longName, "Tien")))
+        assertThatThrownBy(() -> service.register(reg("tien", "a@b.com", "secret12", longName, "Tien")))
             .satisfies(t -> assertStatus(t, HttpStatus.BAD_REQUEST));
         verify(users, never()).save(any());
     }
 
     @Test
-    @Tag("bug")
-    void bug_register_lastNameOf101CharactersMustBeRefusedWith400() {
-        assertThatThrownBy(() -> service.register(reg("tien", "a@b.com", "secret1", "Le", "B".repeat(101))))
+    void regression_register_lastNameOf101CharactersMustBeRefusedWith400() {
+        assertThatThrownBy(() -> service.register(reg("tien", "a@b.com", "secret12", "Le", "B".repeat(101))))
             .satisfies(t -> assertStatus(t, HttpStatus.BAD_REQUEST));
         verify(users, never()).save(any());
     }
 
     /** username column is VARCHAR(100) (User.java:35): 101 characters would be a database error, i.e. HTTP 500. */
     @Test
-    @Tag("bug")
-    void bug_register_usernameLongerThan100MustBeRefusedWith400() {
-        assertThatThrownBy(() -> service.register(reg("u".repeat(101), "a@b.com", "secret1", null, null)))
+    void regression_register_usernameLongerThan100MustBeRefusedWith400() {
+        assertThatThrownBy(() -> service.register(reg("u".repeat(101), "a@b.com", "secret12", null, null)))
             .satisfies(t -> assertStatus(t, HttpStatus.BAD_REQUEST));
         verify(users, never()).save(any());
     }
 
     /** email column is VARCHAR(255): a 300-character (otherwise valid) email must be a 400, not a database error. */
     @Test
-    @Tag("bug")
-    void bug_register_emailLongerThan255MustBeRefusedWith400() {
+    void regression_register_emailLongerThan255MustBeRefusedWith400() {
         String email = "a".repeat(300) + "@example.com";
-        assertThatThrownBy(() -> service.register(reg("tien", email, "secret1", null, null)))
+        assertThatThrownBy(() -> service.register(reg("tien", email, "secret12", null, null)))
             .satisfies(t -> assertStatus(t, HttpStatus.BAD_REQUEST));
         verify(users, never()).save(any());
     }
@@ -262,18 +256,16 @@ class AuthenticationServiceTest {
      * AuthenticationServiceImpl.java:~83 (only trim() is applied to the username).
      */
     @Test
-    @Tag("bug")
-    void bug_register_usernameWithSpacesMustBeRefused() {
-        assertThatThrownBy(() -> service.register(reg("qa user x", "a@b.com", "secret1", null, null)))
+    void regression_register_usernameWithSpacesMustBeRefused() {
+        assertThatThrownBy(() -> service.register(reg("qa user x", "a@b.com", "secret12", null, null)))
             .satisfies(t -> assertStatus(t, HttpStatus.BAD_REQUEST));
         verify(users, never()).save(any());
     }
 
     /** A username that looks like another person's email would shadow that email at login (findUser tries the email first). */
     @Test
-    @Tag("bug")
-    void bug_register_usernameThatLooksLikeAnEmailMustBeRefused() {
-        assertThatThrownBy(() -> service.register(reg("victim@example.com", "attacker@example.com", "secret1", null, null)))
+    void regression_register_usernameThatLooksLikeAnEmailMustBeRefused() {
+        assertThatThrownBy(() -> service.register(reg("victim@example.com", "attacker@example.com", "secret12", null, null)))
             .satisfies(t -> assertStatus(t, HttpStatus.BAD_REQUEST));
         verify(users, never()).save(any());
     }
@@ -291,9 +283,9 @@ class AuthenticationServiceTest {
     void login_byEmail_success_recordsLogAndReturnsToken() {
         User u = customer();
         when(users.findByEmail("tien@example.com")).thenReturn(Optional.of(u));
-        when(encoder.matches("secret1", u.getPasswordHash())).thenReturn(true);
+        when(encoder.matches("secret12", u.getPasswordHash())).thenReturn(true);
 
-        AuthResponse res = service.login(new LoginRequest("  TIEN@Example.com ", "secret1"), " 10.0.0.1 ", "JUnit");
+        AuthResponse res = service.login(new LoginRequest("  TIEN@Example.com ", "secret12"), " 10.0.0.1 ", "JUnit");
 
         assertThat(res.userId()).isEqualTo(5L);
         assertThat(res.token()).isEqualTo("jwt-token");
@@ -310,8 +302,8 @@ class AuthenticationServiceTest {
         User u = customer();
         when(users.findByEmail("tien")).thenReturn(Optional.empty());
         when(users.findByUsername("tien")).thenReturn(Optional.of(u));
-        when(encoder.matches("secret1", u.getPasswordHash())).thenReturn(true);
-        assertThat(service.login(new LoginRequest(" tien ", "secret1"), null, null).username()).isEqualTo("tien");
+        when(encoder.matches("secret12", u.getPasswordHash())).thenReturn(true);
+        assertThat(service.login(new LoginRequest(" tien ", "secret12"), null, null).username()).isEqualTo("tien");
     }
 
     @Test
@@ -319,7 +311,7 @@ class AuthenticationServiceTest {
         User u = customer();
         when(users.findByEmail(anyString())).thenReturn(Optional.of(u));
         when(encoder.matches(anyString(), anyString())).thenReturn(true);
-        service.login(new LoginRequest("tien@example.com", "secret1"), null, null);
+        service.login(new LoginRequest("tien@example.com", "secret12"), null, null);
         verify(audit, never()).recordBy(anyString(), anyString(), any());
     }
 
@@ -328,7 +320,7 @@ class AuthenticationServiceTest {
         User u = Fx.user(9L, "boss", "boss@example.com", "MANAGER");
         when(users.findByEmail(anyString())).thenReturn(Optional.of(u));
         when(encoder.matches(anyString(), anyString())).thenReturn(true);
-        service.login(new LoginRequest("boss@example.com", "secret1"), null, null);
+        service.login(new LoginRequest("boss@example.com", "secret12"), null, null);
         verify(audit).recordBy(eq("boss"), eq("đăng nhập"), eq("boss"));
     }
 
@@ -380,7 +372,7 @@ class AuthenticationServiceTest {
         u.setActive(false);
         when(users.findByEmail(anyString())).thenReturn(Optional.of(u));
         when(encoder.matches(anyString(), any())).thenReturn(true);
-        assertThatThrownBy(() -> service.login(new LoginRequest("tien@example.com", "secret1"), null, null))
+        assertThatThrownBy(() -> service.login(new LoginRequest("tien@example.com", "secret12"), null, null))
             .satisfies(t -> assertStatus(t, HttpStatus.FORBIDDEN))
             .hasMessageContaining("Tài khoản đang bị khóa.");
         verify(jwt, never()).generateToken(any());
@@ -394,7 +386,7 @@ class AuthenticationServiceTest {
         when(users.findByEmail(anyString())).thenReturn(Optional.of(u));
         for (boolean passwordMatches : new boolean[] {false, true}) {
             when(encoder.matches(anyString(), any())).thenReturn(passwordMatches);
-            assertThatThrownBy(() -> service.login(new LoginRequest("tien@example.com", "secret1"), null, null))
+            assertThatThrownBy(() -> service.login(new LoginRequest("tien@example.com", "secret12"), null, null))
                 .satisfies(t -> assertStatus(t, HttpStatus.UNAUTHORIZED))
                 .hasMessageContaining("Tên đăng nhập hoặc mật khẩu chưa chính xác.");
         }
@@ -407,7 +399,7 @@ class AuthenticationServiceTest {
         u.setActive(false);
         when(users.findByEmail(anyString())).thenReturn(Optional.of(u));
         when(encoder.matches(anyString(), anyString())).thenReturn(true);
-        assertThatThrownBy(() -> service.login(new LoginRequest("tien@example.com", "secret1"), null, null))
+        assertThatThrownBy(() -> service.login(new LoginRequest("tien@example.com", "secret12"), null, null))
             .isInstanceOf(ResponseStatusException.class);
         verify(jwt, never()).generateToken(any());
         verify(logs, never()).save(any());
@@ -419,7 +411,7 @@ class AuthenticationServiceTest {
         u.setActive(null);
         when(users.findByEmail(anyString())).thenReturn(Optional.of(u));
         when(encoder.matches(anyString(), any())).thenReturn(true); // B1b: the lock is only revealed to someone who knows the password
-        assertThatThrownBy(() -> service.login(new LoginRequest("tien@example.com", "secret1"), null, null))
+        assertThatThrownBy(() -> service.login(new LoginRequest("tien@example.com", "secret12"), null, null))
             .satisfies(t -> assertStatus(t, HttpStatus.FORBIDDEN));
     }
 
@@ -440,7 +432,7 @@ class AuthenticationServiceTest {
         u.setActive(false);
         u.setAccountStatus("DELETED");
         when(users.findByEmail(anyString())).thenReturn(Optional.of(u));
-        assertThatThrownBy(() -> service.login(new LoginRequest("tien@example.com", "secret1"), null, null))
+        assertThatThrownBy(() -> service.login(new LoginRequest("tien@example.com", "secret12"), null, null))
             .isInstanceOf(ResponseStatusException.class);
     }
 
@@ -501,19 +493,18 @@ class AuthenticationServiceTest {
     }
 
     /**
-     * register() hashes password.trim() but login() compares the raw password, so a person who typed " secret1 " in the sign-up form
-     * can never log in with the same text. Expected: login(" secret1 ") works (or register must not trim). Actual: 401.
+     * register() hashes password.trim() but login() compares the raw password, so a person who typed " secret12 " in the sign-up form
+     * can never log in with the same text. Expected: login(" secret12 ") works (or register must not trim). Actual: 401.
      */
     @Test
-    @Tag("bug")
-    void bug_registerTrimsPasswordButLoginDoesNot() {
-        service.register(reg("tien", "a@b.com", " secret1 ", null, null));
+    void regression_registerTrimsPasswordButLoginDoesNot() {
+        service.register(reg("tien", "a@b.com", " secret12 ", null, null));
         ArgumentCaptor<User> saved = ArgumentCaptor.forClass(User.class);
         verify(users).save(saved.capture());
         User stored = saved.getValue();
         when(users.findByEmail("a@b.com")).thenReturn(Optional.of(stored));
         when(encoder.matches(anyString(), anyString())).thenAnswer(inv -> ("ENC(" + inv.getArgument(0) + ")").equals(inv.getArgument(1)));
-        assertThat(service.login(new LoginRequest("a@b.com", " secret1 "), null, null)).isNotNull();
+        assertThat(service.login(new LoginRequest("a@b.com", " secret12 "), null, null)).isNotNull();
     }
 
     // ------------------------------------------------------------------ profile
@@ -549,9 +540,10 @@ class AuthenticationServiceTest {
         User u = customer();
         when(users.findByEmail("tien")).thenReturn(Optional.empty());
         when(users.findByUsername("tien")).thenReturn(Optional.of(u));
-        var out = service.updateProfile("tien", new UpdateProfileRequest(" Anh ", "  ", "  NEW@Example.com "));
+        when(encoder.matches("oldpass1", u.getPasswordHash())).thenReturn(true);
+        var out = service.updateProfile("tien", new UpdateProfileRequest(" Anh ", null, "  NEW@Example.com ", "oldpass1"));
         assertThat(out.firstName()).isEqualTo("Anh");
-        assertThat(out.lastName()).isNull();
+        assertThat(out.lastName()).as("a name that was not sent stays").isEqualTo("Tien");
         assertThat(out.email()).isEqualTo("new@example.com");
     }
 
@@ -561,7 +553,8 @@ class AuthenticationServiceTest {
         when(users.findByEmail("tien")).thenReturn(Optional.empty());
         when(users.findByUsername("tien")).thenReturn(Optional.of(u));
         when(users.existsByEmail("other@example.com")).thenReturn(true);
-        assertThatThrownBy(() -> service.updateProfile("tien", new UpdateProfileRequest("A", "B", "Other@Example.com")))
+        when(encoder.matches("oldpass1", u.getPasswordHash())).thenReturn(true);
+        assertThatThrownBy(() -> service.updateProfile("tien", new UpdateProfileRequest("A", "B", "Other@Example.com", "oldpass1")))
             .satisfies(t -> assertStatus(t, HttpStatus.CONFLICT));
         assertThat(u.getEmail()).isEqualTo("tien@example.com");
         verify(users, never()).save(any());
@@ -595,8 +588,7 @@ class AuthenticationServiceTest {
 
     /** Register validates the email format; the profile form must apply the same rule (the welcome/OTP emails go there). */
     @Test
-    @Tag("bug")
-    void bug_updateProfile_acceptsMalformedEmail() {
+    void regression_updateProfile_acceptsMalformedEmail() {
         User u = customer();
         when(users.findByEmail("tien")).thenReturn(Optional.empty());
         when(users.findByUsername("tien")).thenReturn(Optional.of(u));
@@ -606,8 +598,7 @@ class AuthenticationServiceTest {
     }
 
     @Test
-    @Tag("bug")
-    void bug_updateProfile_firstNameOf300CharactersMustBeRefusedWith400() {
+    void regression_updateProfile_firstNameOf300CharactersMustBeRefusedWith400() {
         User u = customer();
         when(users.findByEmail("tien")).thenReturn(Optional.empty());
         when(users.findByUsername("tien")).thenReturn(Optional.of(u));
@@ -617,13 +608,74 @@ class AuthenticationServiceTest {
 
     /** Live finding: the profile form accepts blank first and last name and stores null (the signup form marks both required). */
     @Test
-    @Tag("bug")
-    void bug_updateProfile_blankNamesAreSilentlyStoredAsNull() {
+    void regression_updateProfile_blankNamesAreSilentlyStoredAsNull() {
         User u = customer();
         when(users.findByEmail("tien")).thenReturn(Optional.empty());
         when(users.findByUsername("tien")).thenReturn(Optional.of(u));
         assertThatThrownBy(() -> service.updateProfile("tien", new UpdateProfileRequest("  ", "", null)))
             .satisfies(t -> assertStatus(t, HttpStatus.BAD_REQUEST));
+    }
+
+    @Test
+    void updateProfile_emailChangeWithoutCurrentPassword_is400_andNothingChanges() {
+        User u = customer();
+        when(users.findByEmail("tien")).thenReturn(Optional.empty());
+        when(users.findByUsername("tien")).thenReturn(Optional.of(u));
+        assertThatThrownBy(() -> service.updateProfile("tien", new UpdateProfileRequest("A", "B", "new@example.com")))
+            .satisfies(t -> assertStatus(t, HttpStatus.BAD_REQUEST));
+        assertThatThrownBy(() -> service.updateProfile("tien", new UpdateProfileRequest("A", "B", "new@example.com", "  ")))
+            .satisfies(t -> assertStatus(t, HttpStatus.BAD_REQUEST));
+        assertThat(u.getEmail()).isEqualTo("tien@example.com");
+        verify(users, never()).save(any());
+    }
+
+    @Test
+    void updateProfile_emailChangeWithWrongCurrentPassword_is400_andNothingChanges() {
+        User u = customer();
+        when(users.findByEmail("tien")).thenReturn(Optional.empty());
+        when(users.findByUsername("tien")).thenReturn(Optional.of(u));
+        when(encoder.matches("wrong-pass", u.getPasswordHash())).thenReturn(false);
+        assertThatThrownBy(() -> service.updateProfile("tien", new UpdateProfileRequest("A", "B", "new@example.com", "wrong-pass")))
+            .satisfies(t -> assertStatus(t, HttpStatus.BAD_REQUEST));
+        assertThat(u.getEmail()).isEqualTo("tien@example.com");
+        verify(users, never()).save(any());
+    }
+
+    @Test
+    void updateProfile_emailChangeWithRightPassword_isSaved() {
+        User u = customer();
+        when(users.findByEmail("tien")).thenReturn(Optional.empty());
+        when(users.findByUsername("tien")).thenReturn(Optional.of(u));
+        when(encoder.matches("oldpass1", u.getPasswordHash())).thenReturn(true);
+        var out = service.updateProfile("tien", new UpdateProfileRequest("A", "B", "New@Example.com", "oldpass1"));
+        assertThat(out.email()).isEqualTo("new@example.com");
+    }
+
+    @Test
+    void updateProfile_unchangedEmailNeedsNoPassword() {
+        User u = customer();
+        when(users.findByEmail("tien")).thenReturn(Optional.empty());
+        when(users.findByUsername("tien")).thenReturn(Optional.of(u));
+        var out = service.updateProfile("tien", new UpdateProfileRequest("A", "B", "TIEN@example.com"));
+        assertThat(out.firstName()).isEqualTo("A");
+    }
+
+    /** Only the fields that are sent are checked: an old account with no last name can still be saved with just another first name. */
+    @Test
+    void updateProfile_legacyAccountWithNullLastName_canStillChangeFirstName() {
+        User u = customer();
+        u.setLastName(null);
+        when(users.findByEmail("tien")).thenReturn(Optional.empty());
+        when(users.findByUsername("tien")).thenReturn(Optional.of(u));
+        var out = service.updateProfile("tien", new UpdateProfileRequest("Anh", null, null));
+        assertThat(out.firstName()).isEqualTo("Anh");
+        assertThat(out.lastName()).isNull();
+    }
+
+    @Test
+    void register_passwordIsHashedExactlyAsTyped_neverTrimmed() {
+        service.register(reg("tien", "a@b.com", " secret12 ", null, null));
+        verify(encoder).encode(" secret12 ");
     }
 
     // ------------------------------------------------------------------ change password
@@ -668,11 +720,11 @@ class AuthenticationServiceTest {
     }
 
     @Test
-    void changePassword_fiveCharacters_is400_sixAccepted() {
+    void changePassword_sevenCharacters_is400_eightAccepted() {
         givenSignedInCustomer();
-        assertThatThrownBy(() -> service.changePassword("tien", new ChangePasswordRequest("oldpass1", "12345", "12345")))
+        assertThatThrownBy(() -> service.changePassword("tien", new ChangePasswordRequest("oldpass1", "1234567", "1234567")))
             .satisfies(t -> assertStatus(t, HttpStatus.BAD_REQUEST));
-        service.changePassword("tien", new ChangePasswordRequest("oldpass1", "123456", "123456"));
+        service.changePassword("tien", new ChangePasswordRequest("oldpass1", "12345678", "12345678"));
         verify(users).save(any(User.class));
     }
 

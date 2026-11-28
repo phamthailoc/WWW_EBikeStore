@@ -1,6 +1,9 @@
 package com.ebike.common.exception;
 
 import java.time.OffsetDateTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.PessimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +16,8 @@ import org.springframework.web.server.ResponseStatusException;
 
 @RestControllerAdvice
 public class ApiExceptionHandler {
+
+    private static final Logger LOG = LoggerFactory.getLogger(ApiExceptionHandler.class);
 
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<ApiErrorResponse> handleResponseStatusException(ResponseStatusException exception) {
@@ -55,6 +60,17 @@ public class ApiExceptionHandler {
         return ResponseEntity.status(status).body(new ApiErrorResponse(status.value(), status.getReasonPhrase(),
             "Dữ liệu đang được người khác xử lý cùng lúc. Vui lòng tải lại và thử lại.",
             OffsetDateTime.now().toString()));
+    }
+
+    /**
+     * Safety net: a value the database refused (too long, a missing required column). Services validate first, and the duplicate-key
+     * cases they expect are turned into 409 where they happen, so what reaches here is a bad input, never a server fault.
+     * The SQL and constraint names stay in the log, not in the answer.
+     */
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ApiErrorResponse> handleDataIntegrity(DataIntegrityViolationException exception) {
+        LOG.warn("Database refused a value: {}", exception.getMostSpecificCause().getMessage());
+        return badRequest("Dữ liệu không hợp lệ hoặc quá dài.");
     }
 
     private static ResponseEntity<ApiErrorResponse> badRequest(String message) {

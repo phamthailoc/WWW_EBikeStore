@@ -71,8 +71,7 @@ class ApiExceptionHandlerTest {
      * Expected: a 400/409 ApiErrorResponse. Actual: no handler, so Spring answers 500. ApiExceptionHandler.java (no such @ExceptionHandler).
      */
     @Test
-    @org.junit.jupiter.api.Tag("bug")
-    void bug_dataIntegrityViolation_hasNoHandler_soTheClientSees500() {
+    void regression_dataIntegrityViolation_hasNoHandler_soTheClientSees500() {
         boolean handles = Arrays.stream(ApiExceptionHandler.class.getDeclaredMethods())
             .map(m -> m.getAnnotation(org.springframework.web.bind.annotation.ExceptionHandler.class))
             .filter(a -> a != null)
