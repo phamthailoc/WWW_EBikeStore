@@ -31,7 +31,7 @@ public class OrderUnitService {
     // Letters, digits and hyphens: real frame (VIN-style) and motor numbers look like RLHPC1234MY123456 or 6D12-345678.
     private static final Pattern NUMBER = Pattern.compile("[A-Z0-9-]{5,30}");
     private static final Set<OrderStatus> EDITABLE = Set.of(
-        OrderStatus.PROCESSING, OrderStatus.READY_FOR_PICKUP, OrderStatus.SHIPPED, OrderStatus.DELIVERED);
+        OrderStatus.PROCESSING, OrderStatus.READY_FOR_PICKUP, OrderStatus.SHIPPED);
 
     private final OrderRepository orders;
     private final OrderItemUnitRepository unitRepository;
@@ -60,6 +60,10 @@ public class OrderUnitService {
         unitRepository.findLockedByOrderId(orderId);
         Order order = orders.findById(orderId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy đơn hàng."));
+        if (order.getStatus() == OrderStatus.DELIVERED) {
+            // M-19: the numbers are what the warranty book is built on; once the bike is handed over they no longer change
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Đơn đã giao nên không sửa được số khung, số máy.");
+        }
         if (!EDITABLE.contains(order.getStatus())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                 "Chỉ nhập số khung, số máy khi đơn đã sang bước đang xử lý.");

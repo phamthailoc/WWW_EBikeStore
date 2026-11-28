@@ -324,7 +324,11 @@
     const canShip=shipment&&order.status!=='CANCELLED';
     if(!steps.length&&!canShip){removePanel('orderManage');return}
     const stepForm=steps.length?`<form id="orderStatusForm" class="flow-form"><label>${'Chuyển đơn sang'}<select name="status">${steps.map(s=>`<option value="${s}">${escape(stepText(s,order))}</option>`).join('')}</select></label><button class="button compact">${'Cập nhật trạng thái'}</button></form>`:'';
-    const shipForm=canShip?`<form id="shipmentForm" class="flow-form"><label>${'Trạng thái giao nhận'}<select name="shipmentStatus">${Object.keys(shipmentStatusText).filter(s=>!isPickup(order)||!['SHIPPED','IN_TRANSIT'].includes(s)).map(s=>`<option value="${s}"${s===shipment.shipmentStatus?' selected':''}>${escape(shipmentStatusText[s])}</option>`).join('')}</select></label><label>${'Mã vận đơn'}<input name="trackingNumber" value="${escape(shipment.trackingNumber||'')}" maxlength="100"></label><button class="button compact">${'Lưu giao nhận'}</button></form>`:'';
+    // The shipment only moves forward and is locked once the order is delivered (the server enforces the same); RETURNED cancels the order.
+    const shipOrder=['PENDING','PREPARING','SHIPPED','IN_TRANSIT','DELIVERED','RETURNED'];
+    const shipLocked=order.status==='DELIVERED';
+    const shipLock=shipLocked?' disabled':'';
+    const shipForm=canShip?`<form id="shipmentForm" class="flow-form"><label>${'Trạng thái giao nhận'}<select name="shipmentStatus"${shipLock}>${Object.keys(shipmentStatusText).filter(s=>shipLocked||s===shipment.shipmentStatus||s==='RETURNED'||shipOrder.indexOf(s)>shipOrder.indexOf(shipment.shipmentStatus)).filter(s=>!isPickup(order)||!['SHIPPED','IN_TRANSIT'].includes(s)).map(s=>`<option value="${s}"${s===shipment.shipmentStatus?' selected':''}>${escape(shipmentStatusText[s])}</option>`).join('')}</select></label><label>${'Mã vận đơn'}<input name="trackingNumber" value="${escape(shipment.trackingNumber||'')}" maxlength="100"${shipLock}></label><button class="button compact"${shipLock}>${'Lưu giao nhận'}</button>${shipLocked?`<small class="muted">${'Đơn đã giao: thông tin giao nhận không đổi được nữa.'}</small>`:''}</form>`:'';
     const panel=detailPanel('orderManage',`<h2>${'Xử lý đơn hàng'}</h2><div class="profile-grid">${stepForm}${shipForm}</div>`);
     panel.querySelector('#orderStatusForm')?.addEventListener('submit',async e=>{
       e.preventDefault();
@@ -354,14 +358,16 @@
     const tracked=(order.items||[]).filter(item=>item.requiresUnitNumbers);
     const open=['PROCESSING','READY_FOR_PICKUP','SHIPPED','DELIVERED'].includes(order.status);
     if(!page.startsWith('/manager/orders/')||!tracked.length||!open){removePanel('orderUnits');return}
+    // once the bike is delivered the numbers are fixed (the warranty book depends on them): shown, not editable
+    const unitsLocked=order.status==='DELIVERED';
     const blocks=tracked.map(item=>{
       const rows=Array.from({length:item.quantity||0},(_,i)=>{
         const unit=(item.units||[])[i]||{};
-        return `<div class="unit-row"><span>${`Xe ${i+1}`}</span><input name="frame" placeholder="${'Số khung'}" value="${escape(unit.frameNumber||'')}" maxlength="30" autocomplete="off"><input name="engine" placeholder="${'Số máy'}" value="${escape(unit.engineNumber||'')}" maxlength="30" autocomplete="off"></div>`;
+        return `<div class="unit-row"><span>${`Xe ${i+1}`}</span><input name="frame" placeholder="${'Số khung'}" value="${escape(unit.frameNumber||'')}" maxlength="30" autocomplete="off"${unitsLocked?' disabled':''}><input name="engine" placeholder="${'Số máy'}" value="${escape(unit.engineNumber||'')}" maxlength="30" autocomplete="off"${unitsLocked?' disabled':''}></div>`;
       }).join('');
       return `<fieldset data-item="${item.id}"><legend>${escape(item.productName||'Xe')}${item.colorName?' · '+escape(item.colorName):''}</legend>${rows}</fieldset>`;
     }).join('');
-    const panel=detailPanel('orderUnits',`<h2>${'Số khung, số máy'}</h2><p class="muted">${'Nhập cho từng xe trước khi bàn giao. Cần đủ mới bấm được'} "${isPickup(order)?'Đã nhận':'Đang giao'}"${': xe phải có số trước khi rời cửa hàng. Số khung không trùng với xe nào khác.'}</p><form id="unitsForm" class="flow-form">${blocks}<button class="button compact">${'Lưu số khung, số máy'}</button></form>`);
+    const panel=detailPanel('orderUnits',`<h2>${'Số khung, số máy'}</h2><p class="muted">${'Nhập cho từng xe trước khi bàn giao. Cần đủ mới bấm được'} "${isPickup(order)?'Đã nhận':'Đang giao'}"${': xe phải có số trước khi rời cửa hàng. Số khung không trùng với xe nào khác.'}</p><form id="unitsForm" class="flow-form">${blocks}<button class="button compact"${unitsLocked?' disabled':''}>${'Lưu số khung, số máy'}</button>${unitsLocked?`<small class="muted">${'Đơn đã giao: số khung, số máy không sửa được nữa.'}</small>`:''}</form>`);
     panel.querySelector('#unitsForm').addEventListener('submit',async e=>{
       e.preventDefault();
       const units=[];

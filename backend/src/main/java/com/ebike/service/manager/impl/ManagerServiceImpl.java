@@ -79,6 +79,7 @@ public class ManagerServiceImpl implements ManagerService {
     // how long an approved instalment application waits for its down payment (the expiry job reads the same setting)
     private final Duration downPaymentHold;
     private final StockLedger stockLedger;
+    private final com.ebike.service.order.OrderService orderService;
 
     public ManagerServiceImpl(
         OrderRepository orderRepository,
@@ -90,7 +91,8 @@ public class ManagerServiceImpl implements ManagerService {
         StockAlertService stockAlerts,
         InstallmentApplicationRepository installments,
         @Value("${app.order.installment-down-payment-hold:PT72H}") Duration downPaymentHold,
-        StockLedger stockLedger
+        StockLedger stockLedger,
+        com.ebike.service.order.OrderService orderService
     ) {
         this.orderRepository = orderRepository;
         this.paymentRepository = paymentRepository;
@@ -102,6 +104,7 @@ public class ManagerServiceImpl implements ManagerService {
         this.installments = installments;
         this.downPaymentHold = downPaymentHold;
         this.stockLedger = stockLedger;
+        this.orderService = orderService;
     }
 
     @Override
@@ -411,6 +414,10 @@ public class ManagerServiceImpl implements ManagerService {
         if (order.getStatus() == OrderStatus.CANCELLED) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Không cập nhật giao nhận cho đơn đã hủy.");
         }
+        if (order.getStatus() == OrderStatus.DELIVERED) {
+            // M-18 / U-12: once the bike is handed over the shipment is final
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Đơn đã giao nên không đổi được thông tin giao nhận.");
+        }
 
         Shipment shipment = order.getShipment();
         if (shipment == null) {
@@ -422,6 +429,12 @@ public class ManagerServiceImpl implements ManagerService {
             nextStatus = ShipmentStatus.valueOf(request.shipmentStatus().trim().toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException exception) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Trạng thái giao nhận không hợp lệ.");
+        }
+
+        // M-18 / U-12: the shipment only moves forward (PENDING, PREPARING, SHIPPED, IN_TRANSIT, DELIVERED); RETURNED is the one way out, and it cancels the order
+        ShipmentStatus currentStatus = shipment.getShipmentStatus();
+        if (nextStatus != ShipmentStatus.RETURNED && currentStatus != null && nextStatus.ordinal() < currentStatus.ordinal()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Trạng thái giao nhận chỉ được chuyển tiến, không lùi lại bước trước.");
         }
 
         // The shipment must not push the order past a step it has not reached (e.g. a PENDING order straight to DELIVERED).
@@ -446,6 +459,11 @@ public class ManagerServiceImpl implements ManagerService {
                 : "Chỉ đơn đang được giao mới chuyển được sang \"Đã giao\".");
         }
 
+        // M-20: the bike is handed over only once it is paid; a pay-later order collected on delivery is marked paid first
+        if (nextStatus == ShipmentStatus.DELIVERED && com.ebike.service.order.impl.OrderServiceImpl.isUnpaid(order)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, com.ebike.service.order.impl.OrderServiceImpl.UNPAID_BEFORE_DELIVERY);
+        }
+
         shipment.setShipmentStatus(nextStatus);
         if (request.trackingNumber() != null) {
             String trackingNumber = request.trackingNumber().trim();
@@ -465,7 +483,12 @@ public class ManagerServiceImpl implements ManagerService {
             }
         }
 
-        syncOrderStatusWithShipment(order, nextStatus);
+        if (nextStatus == ShipmentStatus.RETURNED) {
+            // D3: the carrier brought the bike back: the order is cancelled and the stock restored by the same code as a staff cancellation
+            orderService.cancelReturnedOrder(order);
+        } else {
+            syncOrderStatusWithShipment(order, nextStatus);
+        }
         OrderResponse updated = toOrderResponse(orderRepository.save(order));
         auditLog.record("cập nhật giao nhận", order.getOrderNumber() + ": " + nextStatus);
         return updated;

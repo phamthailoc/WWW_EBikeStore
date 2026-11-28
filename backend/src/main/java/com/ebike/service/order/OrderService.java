@@ -39,6 +39,12 @@ public interface OrderService {
 
     OrderResponse createOrder(OrderCreateRequest request, Authentication authentication);
 
+    /**
+     * D3: the carrier returned the shipment. The order is cancelled the way a staff cancellation does it (stock back with a CANCEL_RESTORE ledger line,
+     * vehicle numbers freed, open payment closed; a PAID payment stays PAID so it shows as waiting for a refund). The caller holds the order lock.
+     */
+    void cancelReturnedOrder(com.ebike.model.entity.order.Order order);
+
     OrderResponse updateOrderStatus(Long id, OrderStatusUpdateRequest request, Authentication authentication);
 
     OrderResponse requestCancellation(Long id, OrderCancellationRequest request, Authentication authentication);

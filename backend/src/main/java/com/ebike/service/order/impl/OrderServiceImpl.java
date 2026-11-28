@@ -171,6 +171,9 @@ public class OrderServiceImpl implements OrderService {
         Long showroomId,
         Integer limit
     ) {
+        if (limit != null && limit < 1) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Số đơn hàng cần lấy phải từ 1 trở lên.");
+        }
         User currentUser = getAuthenticatedUser(authentication);
         Long effectiveUserId = isBackOffice(authentication) ? userId : currentUser.getId();
 
@@ -184,7 +187,7 @@ public class OrderServiceImpl implements OrderService {
             .filter(order -> matchesSearch(order, search))
             .filter(order -> matchesShowroom(order, showroomId))
             .sorted(Comparator.comparing(Order::getCreatedAt).reversed())
-            .limit(limit == null || limit < 1 ? Long.MAX_VALUE : Math.min(limit, 2000))
+            .limit(limit == null ? Long.MAX_VALUE : Math.min(limit, 2000))
             .map(this::toResponse)
             .toList();
     }
@@ -352,6 +355,11 @@ public class OrderServiceImpl implements OrderService {
             || (nextStatus == OrderStatus.DELIVERED && order.getStatus() != OrderStatus.SHIPPED);
         if (leavesTheStore && !OrderUnits.isComplete(order)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, UNITS_REQUIRED);
+        }
+
+        // M-20: the bike is handed over only once it is paid; a pay-later order collected on delivery is marked paid first
+        if (nextStatus == OrderStatus.DELIVERED && isUnpaid(order)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, UNPAID_BEFORE_DELIVERY);
         }
 
         if (nextStatus == OrderStatus.CANCELLED) {
@@ -662,6 +670,24 @@ public class OrderServiceImpl implements OrderService {
         cancelOrder(order, request == null ? null : request.reason(), currentUser, "Cancelled by customer");
 
         return toResponse(orderRepository.save(order));
+    }
+
+    /** True when the order has a payment that has not been collected (the hand-over waits for it). */
+    public static boolean isUnpaid(Order order) {
+        return order.getPayment() != null && order.getPayment().getPaymentStatus() != PaymentStatus.PAID;
+    }
+
+    public static final String UNPAID_BEFORE_DELIVERY =
+        "Đơn hàng chưa được thanh toán nên chưa chuyển sang đã giao/đã nhận được. Hãy vào mục Thanh toán, bấm \"Xác nhận đã thu\" cho khoản của đơn này rồi thử lại.";
+
+    @Override
+    @Transactional
+    @CacheEvict(cacheNames = {
+        com.ebike.config.CacheNames.PRODUCT_LIST_CACHE,
+        com.ebike.config.CacheNames.PRODUCT_DETAIL_CACHE
+    }, allEntries = true)
+    public void cancelReturnedOrder(Order order) {
+        cancelOrder(order, "Đơn hàng bị trả lại trong quá trình giao nhận.", stockLedger.currentStaff(), "Returned by carrier");
     }
 
     private void cancelOrder(Order order, String rawReason, User actor, String paymentNote) {
