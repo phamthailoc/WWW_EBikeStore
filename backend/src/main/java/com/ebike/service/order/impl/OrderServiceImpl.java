@@ -506,7 +506,8 @@ public class OrderServiceImpl implements OrderService {
             .filter(line -> line != item && line.getProduct() != null && item.getProduct() != null
                 && Objects.equals(line.getProduct().getId(), item.getProduct().getId()))
             .mapToInt(OrderItem::getQuantity).sum();
-        if (sameProduct + quantity > MAX_ITEM_QUANTITY) {
+        // lowering a line is always allowed, so an old order that is already over the cap can still be brought down
+        if (quantity > item.getQuantity() && sameProduct + quantity > MAX_ITEM_QUANTITY) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Số lượng mỗi sản phẩm không được vượt quá " + MAX_ITEM_QUANTITY + ".");
         }
         int before = item.getQuantity();

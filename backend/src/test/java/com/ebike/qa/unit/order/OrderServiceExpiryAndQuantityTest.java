@@ -305,6 +305,18 @@ class OrderServiceExpiryAndQuantityTest extends OrderServiceTestBase {
         service.updateItemQuantity(10L, 100L, 2, staff);
     }
 
+    /** An old order already over the cap (10 + 5 of one product) can still be lowered. */
+    @Test
+    void loweringALineOfAnOrderAlreadyOverTheProductCapIsAllowed() {
+        Order order = editable(PaymentMethod.PAY_LATER);
+        Product moto = order.getItems().iterator().next().getProduct();
+        OrderFixtures.line(order, 101L, moto, null, 9, "10000000");
+
+        service.updateItemQuantity(10L, 100L, 1, staff);
+
+        assertThat(order.getItems().stream().filter(l -> l.getId() == 100L).findFirst().orElseThrow().getQuantity()).isEqualTo(1);
+    }
+
     @Test
     void loweringTheQuantityReturnsStockAndTheLedgerRecordsARestore() {
         Order order = editable(PaymentMethod.PAY_LATER);
