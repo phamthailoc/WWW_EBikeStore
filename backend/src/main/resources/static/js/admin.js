@@ -89,7 +89,7 @@
       fields: field('Họ và tên', '<input name="name" required maxlength="150">')
         + field('Email', '<input name="email" type="email" required maxlength="255">')
         + field('Tên đăng nhập (để trống sẽ lấy phần trước @ của email)', '<input name="username" maxlength="100">')
-        + field('Mật khẩu tạm thời (ít nhất 6 ký tự)', '<input name="password" type="password" minlength="6" required autocomplete="new-password">')
+        + field('Mật khẩu tạm thời (ít nhất 8 ký tự)', '<input name="password" type="password" minlength="8" required autocomplete="new-password">')
         + field('Vai trò', `<select name="role">${options(roles, 'CUSTOMER')}</select>`),
       submitLabel: 'Tạo tài khoản',
       submit: async form => {

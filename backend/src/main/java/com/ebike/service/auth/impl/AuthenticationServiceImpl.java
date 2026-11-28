@@ -1,5 +1,6 @@
 package com.ebike.service.auth.impl;
 
+import com.ebike.common.validation.AccountFieldRules;
 import com.ebike.dto.auth.response.AuthResponse;
 import com.ebike.event.notification.UserRegisteredEvent;
 import com.ebike.listener.notification.NotificationEventBridge;
@@ -33,9 +34,6 @@ import org.springframework.web.server.ResponseStatusException;
 public class AuthenticationServiceImpl implements AuthenticationService {
 
     private static final String DEFAULT_CUSTOMER_ROLE = "CUSTOMER";
-    private static final java.util.regex.Pattern EMAIL_PATTERN =
-        java.util.regex.Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}$", java.util.regex.Pattern.CASE_INSENSITIVE);
-
     private static final String LOGIN_FAILED_MESSAGE = "Tên đăng nhập hoặc mật khẩu chưa chính xác.";
 
     // hash checked for unknown usernames so that a refused login costs about the same as one for a real account
@@ -79,21 +77,25 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     public AuthResponse register(RegisterRequest request) {
         validateRegisterRequest(request);
+        String username = AccountFieldRules.username(request.username());
+        String normalizedEmail = AccountFieldRules.email(request.email());
+        String firstName = AccountFieldRules.nameOrNull(request.firstName(), "Họ");
+        String lastName = AccountFieldRules.nameOrNull(request.lastName(), "Tên");
+        String password = AccountFieldRules.password(request.password());
 
-        if (userRepository.existsByUsername(request.username().trim())) {
+        if (userRepository.existsByUsername(username)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Tên đăng nhập đã được sử dụng.");
         }
-        String normalizedEmail = request.email().trim().toLowerCase(Locale.ROOT);
         if (userRepository.existsByEmail(normalizedEmail)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Email đã được sử dụng.");
         }
 
         User user = new User();
-        user.setUsername(request.username().trim());
+        user.setUsername(username);
         user.setEmail(normalizedEmail);
-        user.setPasswordHash(passwordEncoder.encode(request.password().trim()));
-        user.setFirstName(trimToNull(request.firstName()));
-        user.setLastName(trimToNull(request.lastName()));
+        user.setPasswordHash(passwordEncoder.encode(password));
+        user.setFirstName(firstName);
+        user.setLastName(lastName);
         user.setActive(true);
         user.setVerified(false);
 
@@ -168,15 +170,29 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         }
 
         User user = findUser(usernameOrEmail);
-        user.setFirstName(trimToNull(request.firstName()));
-        user.setLastName(trimToNull(request.lastName()));
+        // only the fields that were sent are checked and changed; a name that was sent must not be blank
+        String firstName = isUnchanged(request.firstName(), user.getFirstName()) ? null : AccountFieldRules.requiredName(request.firstName(), "Họ");
+        String lastName = isUnchanged(request.lastName(), user.getLastName()) ? null : AccountFieldRules.requiredName(request.lastName(), "Tên");
         String requestedEmail = trimToNull(request.email());
-        if (requestedEmail != null) {
-            String normalizedEmail = requestedEmail.toLowerCase(Locale.ROOT);
-            if (!normalizedEmail.equalsIgnoreCase(user.getEmail()) && userRepository.existsByEmail(normalizedEmail)) {
+        String normalizedEmail = requestedEmail == null || requestedEmail.equalsIgnoreCase(user.getEmail()) ? null : AccountFieldRules.email(requestedEmail);
+        if (normalizedEmail != null && !normalizedEmail.equalsIgnoreCase(user.getEmail())) {
+            // the address receives the OTP and order mails, so changing it needs proof that the owner is at the keyboard
+            if (isBlank(request.currentPassword())) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vui lòng nhập mật khẩu hiện tại để đổi email.");
+            }
+            if (!passwordEncoder.matches(request.currentPassword(), user.getPasswordHash())) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mật khẩu hiện tại không đúng.");
+            }
+            if (userRepository.existsByEmail(normalizedEmail)) {
                 throw new ResponseStatusException(HttpStatus.CONFLICT, "Email đã được sử dụng.");
             }
             user.setEmail(normalizedEmail);
+        }
+        if (firstName != null) {
+            user.setFirstName(firstName);
+        }
+        if (lastName != null) {
+            user.setLastName(lastName);
         }
         User savedUser = userRepository.save(user);
         return toUserProfileResponse(savedUser);
@@ -191,18 +207,20 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Thiếu nội dung yêu cầu.");
         }
 
-        String currentPassword = trimToNull(request.currentPassword());
-        String newPassword = trimToNull(request.newPassword());
-        String confirmPassword = trimToNull(request.confirmPassword());
+        // passwords are never trimmed: what was typed is what is hashed and what sign-in compares
+        String currentPassword = request.currentPassword();
+        String newPassword = request.newPassword();
+        String confirmPassword = request.confirmPassword();
 
-        if (currentPassword == null || newPassword == null || confirmPassword == null) {
+        if (isBlank(currentPassword) || isBlank(newPassword) || isBlank(confirmPassword)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vui lòng nhập mật khẩu hiện tại, mật khẩu mới và nhập lại mật khẩu mới.");
         }
         if (!newPassword.equals(confirmPassword)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mật khẩu nhập lại không khớp.");
         }
-        if (newPassword.length() < 6) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mật khẩu mới cần ít nhất 6 ký tự.");
+        if (newPassword.length() < AccountFieldRules.MIN_PASSWORD_LENGTH) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                "Mật khẩu mới cần ít nhất " + AccountFieldRules.MIN_PASSWORD_LENGTH + " ký tự.");
         }
         if (newPassword.equals(currentPassword)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mật khẩu mới phải khác mật khẩu hiện tại.");
@@ -244,13 +262,16 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         if (isBlank(request.username()) || isBlank(request.email()) || isBlank(request.password())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vui lòng nhập tên đăng nhập, email và mật khẩu.");
         }
-        if (request.password().trim().length() < 6) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mật khẩu phải có ít nhất 6 ký tự.");
+    }
+
+    // a field that was not sent, or is sent as it already is, is not checked: an old account with legacy data can still save the rest
+    private static boolean isUnchanged(String sent, String stored) {
+        if (sent == null) {
+            return true;
         }
-        // the welcome email goes to this address, so it must at least look like one (checkout applies the same rule)
-        if (!EMAIL_PATTERN.matcher(request.email().trim()).matches()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email không hợp lệ.");
-        }
+        String a = sent.trim();
+        String b = stored == null ? "" : stored.trim();
+        return a.equals(b);
     }
 
     private AuthResponse toAuthResponse(User user) {
