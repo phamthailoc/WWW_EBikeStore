@@ -249,10 +249,10 @@
   const removePanel=id=>document.querySelector('#'+id)?.remove();
   // Staff cancellations need a reason, exactly like the customer's. Returns false when nothing was sent.
   // One place that asks staff for the reason of an order cancellation (also used for a returned shipment), so the dialog can be replaced in one go.
-  const askCancelReason=question=>{
+  const askCancelReason=(question,missing='Vui lòng nhập lý do hủy đơn hàng.')=>{
     const reason=prompt(question);
     if(reason===null)return null;
-    if(!reason.trim()){tell('Vui lòng nhập lý do hủy đơn hàng.',true);return null}
+    if(!reason.trim()){tell(missing,true);return null}
     return reason.trim();
   };
   const changeOrderStatus=async(id,status)=>{
@@ -348,7 +348,7 @@
       const body={shipmentStatus:form.get('shipmentStatus'),trackingNumber:form.get('trackingNumber')};
       if(body.shipmentStatus==='RETURNED'){
         // a return cancels the order and puts the bikes back on sale: asked for like a cancellation, with the reason
-        const reason=askCancelReason('Hoàn trả sẽ hủy đơn hàng và trả xe về kho. Nhập lý do hoàn trả để xác nhận');
+        const reason=askCancelReason('Hoàn trả sẽ hủy đơn hàng và trả xe về kho. Nhập lý do hoàn trả để xác nhận','Vui lòng nhập lý do hoàn trả.');
         if(reason===null)return;
         body.reason=reason;
       }
