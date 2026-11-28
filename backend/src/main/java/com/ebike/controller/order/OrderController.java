@@ -46,7 +46,7 @@ public class OrderController {
         @RequestParam(required = false) Long showroomId,
         @RequestParam(required = false) Integer limit
     ) {
-        return orderService.getOrders(authentication, userId, status, paymentStatus, search, showroomId, limit);
+        return orderService.getOrders(authentication, userId, status, paymentStatus, search, showroomId, limit == null ? 2000 : limit);
     }
 
     @GetMapping("/{id}")

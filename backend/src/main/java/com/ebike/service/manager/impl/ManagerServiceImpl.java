@@ -440,6 +440,20 @@ public class ManagerServiceImpl implements ManagerService {
         // The shipment must not push the order past a step it has not reached (e.g. a PENDING order straight to DELIVERED).
         // Store-pickup orders never go through a carrier: they wait in READY_FOR_PICKUP and are handed over at the showroom.
         boolean pickup = shipment.getPickupShowroom() != null;
+        if (nextStatus == ShipmentStatus.RETURNED) {
+            // D3: only a bike that went out with a carrier can come back (a pickup order waits at the store and has its own cancel rules)
+            if (pickup) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Đơn nhận tại cửa hàng không có bước vận chuyển nên không hoàn trả được; hãy hủy đơn.");
+            }
+            boolean withCarrier = order.getStatus() == OrderStatus.SHIPPED
+                || currentStatus == ShipmentStatus.SHIPPED || currentStatus == ShipmentStatus.IN_TRANSIT;
+            if (!withCarrier) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chỉ hoàn trả được đơn đã giao cho đơn vị vận chuyển.");
+            }
+            if (request.reason() == null || request.reason().isBlank()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vui lòng nhập lý do hoàn trả.");
+            }
+        }
         boolean leavingWarehouse = nextStatus == ShipmentStatus.SHIPPED || nextStatus == ShipmentStatus.IN_TRANSIT;
         if (leavingWarehouse && pickup) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Đơn nhận tại cửa hàng không giao đi; hãy chuyển sang \"Chờ lấy\".");
@@ -461,7 +475,7 @@ public class ManagerServiceImpl implements ManagerService {
 
         // M-20: the bike is handed over only once it is paid; a pay-later order collected on delivery is marked paid first
         if (nextStatus == ShipmentStatus.DELIVERED && com.ebike.service.order.impl.OrderServiceImpl.isUnpaid(order)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, com.ebike.service.order.impl.OrderServiceImpl.UNPAID_BEFORE_DELIVERY);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, com.ebike.service.order.impl.OrderServiceImpl.unpaidMessage(order));
         }
 
         shipment.setShipmentStatus(nextStatus);
@@ -485,12 +499,13 @@ public class ManagerServiceImpl implements ManagerService {
 
         if (nextStatus == ShipmentStatus.RETURNED) {
             // D3: the carrier brought the bike back: the order is cancelled and the stock restored by the same code as a staff cancellation
-            orderService.cancelReturnedOrder(order);
+            orderService.cancelReturnedOrder(order, request.reason());
         } else {
             syncOrderStatusWithShipment(order, nextStatus);
         }
         OrderResponse updated = toOrderResponse(orderRepository.save(order));
-        auditLog.record("cập nhật giao nhận", order.getOrderNumber() + ": " + nextStatus);
+        auditLog.record("cập nhật giao nhận", order.getOrderNumber() + ": " + nextStatus
+            + (nextStatus == ShipmentStatus.RETURNED ? " (đơn đã hủy, hoàn kho): " + request.reason().trim() : ""));
         return updated;
     }
 

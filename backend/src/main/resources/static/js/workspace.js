@@ -248,13 +248,19 @@
   };
   const removePanel=id=>document.querySelector('#'+id)?.remove();
   // Staff cancellations need a reason, exactly like the customer's. Returns false when nothing was sent.
+  // One place that asks staff for the reason of an order cancellation (also used for a returned shipment), so the dialog can be replaced in one go.
+  const askCancelReason=question=>{
+    const reason=prompt(question);
+    if(reason===null)return null;
+    if(!reason.trim()){tell('Vui lòng nhập lý do hủy đơn hàng.',true);return null}
+    return reason.trim();
+  };
   const changeOrderStatus=async(id,status)=>{
     const payload={status};
     if(status==='CANCELLED'){
-      const reason=prompt('Lý do hủy đơn hàng');
+      const reason=askCancelReason('Lý do hủy đơn hàng');
       if(reason===null)return false;
-      if(!reason.trim()){tell('Vui lòng nhập lý do hủy đơn hàng.',true);return false}
-      payload.reason=reason.trim();
+      payload.reason=reason;
     }
     await send(`/api/v1/orders/${id}/status`,'PATCH',payload);
     return true;
@@ -327,8 +333,10 @@
     // The shipment only moves forward and is locked once the order is delivered (the server enforces the same); RETURNED cancels the order.
     const shipOrder=['PENDING','PREPARING','SHIPPED','IN_TRANSIT','DELIVERED','RETURNED'];
     const shipLocked=order.status==='DELIVERED';
+    // a bike only comes back from the carrier: home delivery that has left the store (the server checks the same)
+    const canReturn=!isPickup(order)&&(order.status==='SHIPPED'||['SHIPPED','IN_TRANSIT'].includes(shipment.shipmentStatus));
     const shipLock=shipLocked?' disabled':'';
-    const shipForm=canShip?`<form id="shipmentForm" class="flow-form"><label>${'Trạng thái giao nhận'}<select name="shipmentStatus"${shipLock}>${Object.keys(shipmentStatusText).filter(s=>shipLocked||s===shipment.shipmentStatus||s==='RETURNED'||shipOrder.indexOf(s)>shipOrder.indexOf(shipment.shipmentStatus)).filter(s=>!isPickup(order)||!['SHIPPED','IN_TRANSIT'].includes(s)).map(s=>`<option value="${s}"${s===shipment.shipmentStatus?' selected':''}>${escape(shipmentStatusText[s])}</option>`).join('')}</select></label><label>${'Mã vận đơn'}<input name="trackingNumber" value="${escape(shipment.trackingNumber||'')}" maxlength="100"${shipLock}></label><button class="button compact"${shipLock}>${'Lưu giao nhận'}</button>${shipLocked?`<small class="muted">${'Đơn đã giao: thông tin giao nhận không đổi được nữa.'}</small>`:''}</form>`:'';
+    const shipForm=canShip?`<form id="shipmentForm" class="flow-form"><label>${'Trạng thái giao nhận'}<select name="shipmentStatus"${shipLock}>${Object.keys(shipmentStatusText).filter(s=>shipLocked||s===shipment.shipmentStatus||(s==='RETURNED'?canReturn:shipOrder.indexOf(s)>shipOrder.indexOf(shipment.shipmentStatus))).filter(s=>!isPickup(order)||!['SHIPPED','IN_TRANSIT'].includes(s)).map(s=>`<option value="${s}"${s===shipment.shipmentStatus?' selected':''}>${escape(shipmentStatusText[s])}</option>`).join('')}</select></label><label>${'Mã vận đơn'}<input name="trackingNumber" value="${escape(shipment.trackingNumber||'')}" maxlength="100"${shipLock}></label><button class="button compact"${shipLock}>${'Lưu giao nhận'}</button>${shipLocked?`<small class="muted">${'Đơn đã giao: thông tin giao nhận không đổi được nữa.'}</small>`:''}</form>`:'';
     const panel=detailPanel('orderManage',`<h2>${'Xử lý đơn hàng'}</h2><div class="profile-grid">${stepForm}${shipForm}</div>`);
     panel.querySelector('#orderStatusForm')?.addEventListener('submit',async e=>{
       e.preventDefault();
@@ -337,7 +345,14 @@
     panel.querySelector('#shipmentForm')?.addEventListener('submit',async e=>{
       e.preventDefault();
       const form=new FormData(e.target);
-      try{await send(`/api/v1/manager/orders/${order.id}/shipment`,'PATCH',{shipmentStatus:form.get('shipmentStatus'),trackingNumber:form.get('trackingNumber')});tell('Đã cập nhật thông tin giao nhận.');await load()}catch(err){tell(err.message,true)}
+      const body={shipmentStatus:form.get('shipmentStatus'),trackingNumber:form.get('trackingNumber')};
+      if(body.shipmentStatus==='RETURNED'){
+        // a return cancels the order and puts the bikes back on sale: asked for like a cancellation, with the reason
+        const reason=askCancelReason('Hoàn trả sẽ hủy đơn hàng và trả xe về kho. Nhập lý do hoàn trả để xác nhận');
+        if(reason===null)return;
+        body.reason=reason;
+      }
+      try{await send(`/api/v1/manager/orders/${order.id}/shipment`,'PATCH',body);tell('Đã cập nhật thông tin giao nhận.');await load()}catch(err){tell(err.message,true)}
     });
   };
   // A waiting pickup order shows the day the store keeps the bike until; staff can move it when the customer reschedules.
